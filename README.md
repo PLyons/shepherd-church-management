@@ -1,6 +1,6 @@
-# Shepherd Frontend
+# Shepherd Church Management System
 
-A React + TypeScript church management system built with Vite and Supabase.
+A comprehensive React + TypeScript church management system built with Vite and Supabase.
 
 ## Features
 
@@ -75,3 +75,5 @@ A React + TypeScript church management system built with Vite and Supabase.
 - `src/hooks/` - Custom React hooks
 - `src/contexts/` - React contexts for global state
 - `supabase/` - Database migrations and functions
+- `docs/` - Project documentation and guides
+- `tasks/` - Implementation task files organized by phase

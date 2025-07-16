@@ -165,7 +165,7 @@ If you are unsure of assumptions or hit ambiguous scope:
 
 ### Current Project Context
 - **Project Name**: Shepherd Church Management System
-- **Frontend Location**: `shepherd-frontend/` subdirectory
+- **Frontend Location**: Root directory (consolidated structure)
 - **Database Schema**: `churchops` schema in Supabase
 - **Development Server**: http://localhost:5173 (run `npm run dev`)
 
