@@ -158,3 +158,38 @@ If you are unsure of assumptions or hit ambiguous scope:
 - **Highlight any deviations** from the original procedure with justification
 - **Suggest improvements** when the specified approach could be optimized
 - **Confirm completion** of each task with a summary of what was done
+
+---
+
+## Project Status Reference
+
+### Current Project Context
+- **Project Name**: Shepherd Church Management System
+- **Frontend Location**: `shepherd-frontend/` subdirectory
+- **Database Schema**: `churchops` schema in Supabase
+- **Development Server**: http://localhost:5173 (run `npm run dev`)
+
+### Key Files to Reference
+- **`/docs/project_tracker.md`** - Current progress, completed tasks, and next steps
+- **`/docs/prd.md`** - Full project requirements and specifications
+- **`/lib/constants.ts`** - Project constants, types, and enums
+- **`/lib/supabase.ts`** - Supabase client configuration
+- **`/supabase/config.toml`** - Local Supabase configuration
+- **`.env.local`** - Environment variables (Supabase credentials)
+
+### Session Startup Protocol
+1. **Always read** `docs/Claude.md` first to establish context
+2. **Check** `docs/project_tracker.md` for current progress and next tasks
+3. **Verify** which phase we're in and any dependencies
+4. **Review** any session notes from previous work
+5. **Confirm** development environment is ready before starting
+
+### Custom Commands Available
+- **`/end-session`** - Automated session cleanup and project state saving
+
+### Important Project Details
+- **Supabase Project**: Connected and verified working
+- **Authentication**: Email/Password and Magic Link enabled
+- **File Structure**: 169 files created, components organized by feature
+- **Git Repos**: Both parent and frontend have separate repositories
+- **Phase Status**: Phase 1 complete (Environment Setup), Phase 2 ready (Database Schema)
