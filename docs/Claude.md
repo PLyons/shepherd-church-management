@@ -166,32 +166,47 @@ If you are unsure of assumptions or hit ambiguous scope:
 ### Current Project Context
 - **Project Name**: Shepherd Church Management System
 - **Frontend Location**: Root directory (consolidated structure)
-- **Database Schema**: `churchops` schema in Supabase
+- **Database Schema**: `churchops` schema in local PostgreSQL
 - **Development Server**: http://localhost:5173 (run `npm run dev`)
+- **Database Studio**: http://localhost:54323 (Supabase Studio)
+- **API Endpoint**: http://localhost:54321 (Supabase API)
 
 ### Key Files to Reference
 - **`/docs/project_tracker.md`** - Current progress, completed tasks, and next steps
 - **`/docs/prd.md`** - Full project requirements and specifications
-- **`/lib/constants.ts`** - Project constants, types, and enums
-- **`/lib/supabase.ts`** - Supabase client configuration
+- **`/src/lib/supabase.ts`** - Supabase client configuration
 - **`/supabase/config.toml`** - Local Supabase configuration
-- **`.env.local`** - Environment variables (Supabase credentials)
+- **`/supabase/seed.sql`** - Database seed data with 14 test members
+- **`/supabase/migrations/`** - Database schema migrations
+- **`.env.local`** - Environment variables (local development)
+- **`.env.local.development`** - Local development template
+- **`.env.local.hosted-backup`** - Hosted Supabase configuration
+- **`/LOCAL_DEVELOPMENT.md`** - Complete local development guide
+- **`/docker-compose.yml`** - Docker stack configuration
 
 ### Session Startup Protocol
 1. **Always read** `docs/Claude.md` first to establish context
 2. **Check** `docs/project_tracker.md` for current progress and next tasks
 3. **Verify** which phase we're in and any dependencies
-4. **Review** any session notes from previous work
-5. **Confirm** development environment is ready before starting
+4. **Start local development** with `supabase start && npm run dev`
+5. **Confirm** database seeding and authentication working
+6. **Review** any session notes from previous work
 
-### Custom Commands Available
+### Development Commands Available
+- **`supabase start`** - Start local development stack
+- **`supabase stop`** - Stop local development stack  
+- **`supabase db reset`** - Reset database with fresh schema and seed data
+- **`npm run dev`** - Start React development server
+- **`docker exec supabase_db_shepherd-frontend psql -U postgres -c "SQL"`** - Direct database queries
 - **`/end-session`** - Automated session cleanup and project state saving
 
 ### Important Project Details
-- **Supabase Project**: Connected and verified working (using hosted instance at app.supabase.com)
-- **Database Access**: Direct access via Supabase Dashboard at https://app.supabase.com/project/aroglkyqegrxbphbfwgj
-- **Schema Management**: Use Supabase Dashboard SQL Editor or migrations applied directly to hosted instance
-- **Authentication**: Email/Password and Magic Link enabled
+- **Development Environment**: Docker-based local development with Supabase CLI
+- **Local Stack**: PostgreSQL + Supabase services running on localhost
+- **Database Access**: Direct SQL access via Docker container and Supabase Studio
+- **Schema Management**: Migrations in `/supabase/migrations/` applied automatically
+- **Seed Data**: Automated population with 14 members across 6 households
+- **Authentication**: Local auth with test user admin@test.com / password123
 - **File Structure**: 169 files created, components organized by feature
-- **Git Repos**: Both parent and frontend have separate repositories
-- **Phase Status**: Phase 1, 2, 3 & 4 complete (Environment Setup, Database Schema, Authentication & Security, Core UI Implementation), Phase 5 ready (Member Profiles)
+- **Git Repos**: Single consolidated repository structure
+- **Phase Status**: Phase 1, 2, 3, 4 & 5 complete (Environment Setup, Database Schema, Authentication & Security, Core UI Implementation, Member Profiles + Local Development), Phase 6 ready (Event Management)

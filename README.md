@@ -27,6 +27,8 @@ A comprehensive React + TypeScript church management system built with Vite and 
 
 ### Quick Start
 
+#### Option A: Local Development (Recommended)
+
 1. **Clone Repository**
    ```bash
    git clone https://github.com/PLyons/shepherd-church-management.git
@@ -36,25 +38,48 @@ A comprehensive React + TypeScript church management system built with Vite and 
 2. **Install Dependencies**
    ```bash
    npm install
+   npm install -g @supabase/cli
    ```
 
-3. **Configure Environment**
-   - Copy `.env.example` to `.env.local`
-   - Add your Supabase project URL and anon key
-   - Current project uses hosted Supabase instance (see `.env.local`)
+3. **Start Local Development**
+   ```bash
+   # Copy local development environment
+   cp .env.local.development .env.local
+   
+   # Start Supabase local stack
+   supabase start
+   
+   # Start React development server
+   npm run dev
+   ```
 
-4. **Start Development Server**
+4. **Access Services**
+   - **App**: http://localhost:5173
+   - **Database**: http://localhost:54323 (Supabase Studio)
+   - **Login**: admin@test.com / password123
+
+#### Option B: Hosted Development
+
+1. **Configure Environment**
+   - Copy `.env.local.hosted-backup` to `.env.local`
+   - Uses hosted Supabase instance
+
+2. **Start Development Server**
    ```bash
    npm run dev
    ```
 
 ### Database Setup
 
-The database schema is already deployed to the hosted Supabase instance. If setting up a new project:
+#### Local Development
+- **Automatic**: Database schema and seed data applied automatically with `supabase start`
+- **Reset**: Use `supabase db reset` for fresh database with test data
+- **Studio**: Access database at http://localhost:54323
 
-1. Create Supabase project at https://app.supabase.com
-2. Run the migration files in `/supabase/migrations/` in order
-3. Update `.env.local` with your project credentials
+#### Hosted Development
+- Schema deployed to hosted Supabase instance
+- Access via https://app.supabase.com/project/aroglkyqegrxbphbfwgj
+- Manual seed data required
 
 ### Current Status
 
@@ -80,8 +105,18 @@ The database schema is already deployed to the hosted Supabase instance. If sett
 - React Router with authentication protection
 - Mobile-friendly layout and navigation
 
-**🔄 Phase 5 Ready:** Member Profiles
-- Next: Implement member directory and profile pages
+**✅ Phase 5 Complete:** Member Profiles + Local Development
+- Member directory with search and pagination implemented
+- Individual member profile pages with editing capabilities
+- Household profile system with member relationships
+- Member creation form with role-based access control
+- **Docker-based local development environment setup**
+- **Automated database seeding with 14 test members**
+- **Local vs hosted development workflow established**
+- All member management features tested and functional
+
+**🔄 Phase 6 Ready:** Event Management
+- Next: Implement event calendar and management system
 
 ## Available Scripts
 

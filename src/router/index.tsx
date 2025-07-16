@@ -8,7 +8,9 @@ import Dashboard from '../pages/Dashboard';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
 import Members from '../pages/Members';
+import MemberProfile from '../pages/MemberProfile';
 import Households from '../pages/Households';
+import HouseholdProfile from '../pages/HouseholdProfile';
 import Events from '../pages/Events';
 import Donations from '../pages/Donations';
 import Reports from '../pages/Reports';
@@ -55,8 +57,20 @@ export const router = createBrowserRouter([
         element: <Members />,
       },
       {
+        path: 'members/:id',
+        element: <MemberProfile />,
+      },
+      {
         path: 'households',
         element: <Households />,
+      },
+      {
+        path: 'households/:id',
+        element: (
+          <RoleGuard allowedRoles={['admin', 'pastor']}>
+            <HouseholdProfile />
+          </RoleGuard>
+        ),
       },
       {
         path: 'events',
