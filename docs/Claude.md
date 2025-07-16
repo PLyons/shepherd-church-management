@@ -188,7 +188,9 @@ If you are unsure of assumptions or hit ambiguous scope:
 - **`/end-session`** - Automated session cleanup and project state saving
 
 ### Important Project Details
-- **Supabase Project**: Connected and verified working
+- **Supabase Project**: Connected and verified working (using hosted instance at app.supabase.com)
+- **Database Access**: Direct access via Supabase Dashboard at https://app.supabase.com/project/aroglkyqegrxbphbfwgj
+- **Schema Management**: Use Supabase Dashboard SQL Editor or migrations applied directly to hosted instance
 - **Authentication**: Email/Password and Magic Link enabled
 - **File Structure**: 169 files created, components organized by feature
 - **Git Repos**: Both parent and frontend have separate repositories
