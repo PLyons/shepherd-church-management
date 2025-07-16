@@ -24,39 +24,58 @@ A comprehensive React + TypeScript church management system built with Vite and 
 ### Prerequisites
 - Node.js 18+
 - Supabase account (free tier)
-- Supabase CLI (optional, for local development)
 
-### Initial Setup
+### Quick Start
 
-1. **Create Supabase Project**
-   - Follow the guide in `docs/supabase-setup-guide.md`
-   - Create a project named "ChurchOps Dev"
-   - Enable Email/Password and Magic Link authentication
+1. **Clone Repository**
+   ```bash
+   git clone https://github.com/PLyons/shepherd-church-management.git
+   cd shepherd-church-management
+   ```
 
-2. **Configure Environment**
-   - Copy `.env.example` to `.env.local`
-   - Add your Supabase project URL and anon key from the Supabase dashboard
-
-3. **Install Dependencies**
+2. **Install Dependencies**
    ```bash
    npm install
    ```
+
+3. **Configure Environment**
+   - Copy `.env.example` to `.env.local`
+   - Add your Supabase project URL and anon key
+   - Current project uses hosted Supabase instance (see `.env.local`)
 
 4. **Start Development Server**
    ```bash
    npm run dev
    ```
 
-### Local Development with Supabase CLI
+### Database Setup
 
-1. Start local Supabase:
-   ```bash
-   supabase start
-   ```
+The database schema is already deployed to the hosted Supabase instance. If setting up a new project:
 
-2. Update `.env.local` to use local URLs (see comments in file)
+1. Create Supabase project at https://app.supabase.com
+2. Run the migration files in `/supabase/migrations/` in order
+3. Update `.env.local` with your project credentials
 
-3. Access Supabase Studio at http://localhost:54323
+### Current Status
+
+**✅ Phase 1 Complete:** Environment Setup
+- React + TypeScript + Vite configured
+- Component structure scaffolded
+- Supabase connection established
+
+**✅ Phase 2 Complete:** Database Schema  
+- 10 core tables created with relationships
+- Households, members, events, donations, volunteers
+- All tables accessible via Supabase Dashboard
+
+**✅ Phase 3 Complete:** Authentication & Security
+- Email and Magic Link authentication enabled
+- Row Level Security (RLS) policies configured
+- AuthContext and route protection implemented
+- Role-based access control (admin, pastor, member)
+
+**🔄 Phase 4 Ready:** Core UI Implementation
+- Next: Setup routing and layout components
 
 ## Available Scripts
 
