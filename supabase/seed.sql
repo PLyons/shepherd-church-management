@@ -1,0 +1,2 @@
+-- Seed data for Shepherd Church Management System
+-- This file contains initial data for testing and development
