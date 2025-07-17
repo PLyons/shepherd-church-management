@@ -12,6 +12,8 @@ import MemberProfile from '../pages/MemberProfile';
 import Households from '../pages/Households';
 import HouseholdProfile from '../pages/HouseholdProfile';
 import Events from '../pages/Events';
+import EventDetail from '../pages/EventDetail';
+import EventForm from '../pages/EventForm';
 import Donations from '../pages/Donations';
 import Reports from '../pages/Reports';
 import Sermons from '../pages/Sermons';
@@ -75,6 +77,26 @@ export const router = createBrowserRouter([
       {
         path: 'events',
         element: <Events />,
+      },
+      {
+        path: 'events/new',
+        element: (
+          <RoleGuard allowedRoles={['admin', 'pastor']}>
+            <EventForm />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'events/:id',
+        element: <EventDetail />,
+      },
+      {
+        path: 'events/:id/edit',
+        element: (
+          <RoleGuard allowedRoles={['admin', 'pastor']}>
+            <EventForm />
+          </RoleGuard>
+        ),
       },
       {
         path: 'donations',

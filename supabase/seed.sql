@@ -280,4 +280,188 @@ WHERE NOT EXISTS (
     SELECT 1 FROM churchops.sermons WHERE title = 'Love Your Neighbor' AND date_preached = CURRENT_DATE - INTERVAL '14 days'
 );
 
+-- Events
+INSERT INTO churchops.events (title, description, start_time, end_time, location, is_public, created_by)
+SELECT 
+    'Sunday Morning Service', 
+    'Join us for worship, fellowship, and the Word of God. All are welcome!', 
+    CURRENT_DATE + INTERVAL '7 days' + TIME '10:30:00',
+    CURRENT_DATE + INTERVAL '7 days' + TIME '12:00:00',
+    'Main Sanctuary',
+    true,
+    (SELECT id FROM churchops.members WHERE email = 'john.johnson@email.com' LIMIT 1)
+WHERE NOT EXISTS (
+    SELECT 1 FROM churchops.events WHERE title = 'Sunday Morning Service' AND start_time::date = (CURRENT_DATE + INTERVAL '7 days')::date
+);
+
+INSERT INTO churchops.events (title, description, start_time, end_time, location, is_public, created_by)
+SELECT 
+    'Wednesday Bible Study', 
+    'Deep dive into the book of Romans. Bring your Bible and notebook!', 
+    CURRENT_DATE + INTERVAL '3 days' + TIME '19:00:00',
+    CURRENT_DATE + INTERVAL '3 days' + TIME '20:30:00',
+    'Fellowship Hall',
+    false,
+    (SELECT id FROM churchops.members WHERE email = 'john.johnson@email.com' LIMIT 1)
+WHERE NOT EXISTS (
+    SELECT 1 FROM churchops.events WHERE title = 'Wednesday Bible Study' AND start_time::date = (CURRENT_DATE + INTERVAL '3 days')::date
+);
+
+INSERT INTO churchops.events (title, description, start_time, end_time, location, is_public, created_by)
+SELECT 
+    'Youth Group Meeting', 
+    'Games, worship, and discussion for teens aged 13-18. Pizza provided!', 
+    CURRENT_DATE + INTERVAL '5 days' + TIME '18:00:00',
+    CURRENT_DATE + INTERVAL '5 days' + TIME '20:00:00',
+    'Youth Room',
+    false,
+    (SELECT id FROM churchops.members WHERE email = 'mary.johnson@email.com' LIMIT 1)
+WHERE NOT EXISTS (
+    SELECT 1 FROM churchops.events WHERE title = 'Youth Group Meeting' AND start_time::date = (CURRENT_DATE + INTERVAL '5 days')::date
+);
+
+INSERT INTO churchops.events (title, description, start_time, end_time, location, is_public, created_by)
+SELECT 
+    'Community Outreach Day', 
+    'Join us as we serve our community! We''ll be helping at the local food bank and visiting nursing homes.', 
+    CURRENT_DATE + INTERVAL '14 days' + TIME '09:00:00',
+    CURRENT_DATE + INTERVAL '14 days' + TIME '14:00:00',
+    'Meet at Church Parking Lot',
+    true,
+    (SELECT id FROM churchops.members WHERE email = 'mary.johnson@email.com' LIMIT 1)
+WHERE NOT EXISTS (
+    SELECT 1 FROM churchops.events WHERE title = 'Community Outreach Day' AND start_time::date = (CURRENT_DATE + INTERVAL '14 days')::date
+);
+
+INSERT INTO churchops.events (title, description, start_time, end_time, location, is_public, created_by)
+SELECT 
+    'Prayer Meeting', 
+    'Come together for a time of corporate prayer and intercession.', 
+    CURRENT_DATE + INTERVAL '2 days' + TIME '06:00:00',
+    CURRENT_DATE + INTERVAL '2 days' + TIME '07:00:00',
+    'Prayer Room',
+    false,
+    (SELECT id FROM churchops.members WHERE email = 'john.johnson@email.com' LIMIT 1)
+WHERE NOT EXISTS (
+    SELECT 1 FROM churchops.events WHERE title = 'Prayer Meeting' AND start_time::date = (CURRENT_DATE + INTERVAL '2 days')::date
+);
+
+-- Event Attendance (RSVPs)
+INSERT INTO churchops.event_attendance (event_id, member_id, status)
+SELECT 
+    (SELECT id FROM churchops.events WHERE title = 'Sunday Morning Service' AND start_time::date = (CURRENT_DATE + INTERVAL '7 days')::date LIMIT 1),
+    (SELECT id FROM churchops.members WHERE email = 'john.johnson@email.com' LIMIT 1),
+    'Attending'
+WHERE EXISTS (SELECT 1 FROM churchops.events WHERE title = 'Sunday Morning Service' AND start_time::date = (CURRENT_DATE + INTERVAL '7 days')::date)
+AND NOT EXISTS (
+    SELECT 1 FROM churchops.event_attendance 
+    WHERE event_id = (SELECT id FROM churchops.events WHERE title = 'Sunday Morning Service' AND start_time::date = (CURRENT_DATE + INTERVAL '7 days')::date LIMIT 1)
+    AND member_id = (SELECT id FROM churchops.members WHERE email = 'john.johnson@email.com' LIMIT 1)
+);
+
+INSERT INTO churchops.event_attendance (event_id, member_id, status)
+SELECT 
+    (SELECT id FROM churchops.events WHERE title = 'Sunday Morning Service' AND start_time::date = (CURRENT_DATE + INTERVAL '7 days')::date LIMIT 1),
+    (SELECT id FROM churchops.members WHERE email = 'mary.johnson@email.com' LIMIT 1),
+    'Attending'
+WHERE EXISTS (SELECT 1 FROM churchops.events WHERE title = 'Sunday Morning Service' AND start_time::date = (CURRENT_DATE + INTERVAL '7 days')::date)
+AND NOT EXISTS (
+    SELECT 1 FROM churchops.event_attendance 
+    WHERE event_id = (SELECT id FROM churchops.events WHERE title = 'Sunday Morning Service' AND start_time::date = (CURRENT_DATE + INTERVAL '7 days')::date LIMIT 1)
+    AND member_id = (SELECT id FROM churchops.members WHERE email = 'mary.johnson@email.com' LIMIT 1)
+);
+
+INSERT INTO churchops.event_attendance (event_id, member_id, status)
+SELECT 
+    (SELECT id FROM churchops.events WHERE title = 'Youth Group Meeting' AND start_time::date = (CURRENT_DATE + INTERVAL '5 days')::date LIMIT 1),
+    (SELECT id FROM churchops.members WHERE email = 'sarah.johnson@email.com' LIMIT 1),
+    'Attending'
+WHERE EXISTS (SELECT 1 FROM churchops.events WHERE title = 'Youth Group Meeting' AND start_time::date = (CURRENT_DATE + INTERVAL '5 days')::date)
+AND NOT EXISTS (
+    SELECT 1 FROM churchops.event_attendance 
+    WHERE event_id = (SELECT id FROM churchops.events WHERE title = 'Youth Group Meeting' AND start_time::date = (CURRENT_DATE + INTERVAL '5 days')::date LIMIT 1)
+    AND member_id = (SELECT id FROM churchops.members WHERE email = 'sarah.johnson@email.com' LIMIT 1)
+);
+
+-- Sample Donations
+INSERT INTO churchops.donations (member_id, category_id, amount, donation_date, method, source_label, note)
+SELECT 
+    (SELECT id FROM churchops.members WHERE email = 'john.johnson@email.com' LIMIT 1),
+    (SELECT id FROM churchops.donation_categories WHERE name = 'Tithe' LIMIT 1),
+    500.00,
+    CURRENT_DATE - INTERVAL '3 days',
+    'check',
+    'Check #1001',
+    'Monthly tithe'
+WHERE NOT EXISTS (
+    SELECT 1 FROM churchops.donations 
+    WHERE member_id = (SELECT id FROM churchops.members WHERE email = 'john.johnson@email.com' LIMIT 1)
+    AND donation_date = CURRENT_DATE - INTERVAL '3 days'
+    AND amount = 500.00
+);
+
+INSERT INTO churchops.donations (member_id, category_id, amount, donation_date, method, source_label, note)
+SELECT 
+    (SELECT id FROM churchops.members WHERE email = 'mary.johnson@email.com' LIMIT 1),
+    (SELECT id FROM churchops.donation_categories WHERE name = 'Missions' LIMIT 1),
+    150.00,
+    CURRENT_DATE - INTERVAL '1 week',
+    'cash',
+    NULL,
+    'Special offering for missions'
+WHERE NOT EXISTS (
+    SELECT 1 FROM churchops.donations 
+    WHERE member_id = (SELECT id FROM churchops.members WHERE email = 'mary.johnson@email.com' LIMIT 1)
+    AND donation_date = CURRENT_DATE - INTERVAL '1 week'
+    AND amount = 150.00
+);
+
+INSERT INTO churchops.donations (member_id, category_id, amount, donation_date, method, source_label, note)
+SELECT 
+    NULL, -- Anonymous donation
+    (SELECT id FROM churchops.donation_categories WHERE name = 'Building' LIMIT 1),
+    250.00,
+    CURRENT_DATE - INTERVAL '5 days',
+    'cash',
+    NULL,
+    'Anonymous building fund donation'
+WHERE NOT EXISTS (
+    SELECT 1 FROM churchops.donations 
+    WHERE member_id IS NULL
+    AND donation_date = CURRENT_DATE - INTERVAL '5 days'
+    AND amount = 250.00
+);
+
+INSERT INTO churchops.donations (member_id, category_id, amount, donation_date, method, source_label, note)
+SELECT 
+    (SELECT id FROM churchops.members WHERE email = 'robert.smith@email.com' LIMIT 1),
+    (SELECT id FROM churchops.donation_categories WHERE name = 'Tithe' LIMIT 1),
+    300.00,
+    CURRENT_DATE - INTERVAL '2 days',
+    'online',
+    'TX-2025-001',
+    'Online tithe payment'
+WHERE NOT EXISTS (
+    SELECT 1 FROM churchops.donations 
+    WHERE member_id = (SELECT id FROM churchops.members WHERE email = 'robert.smith@email.com' LIMIT 1)
+    AND donation_date = CURRENT_DATE - INTERVAL '2 days'
+    AND amount = 300.00
+);
+
+INSERT INTO churchops.donations (member_id, category_id, amount, donation_date, method, source_label, note)
+SELECT 
+    (SELECT id FROM churchops.members WHERE email = 'susan.smith@email.com' LIMIT 1),
+    (SELECT id FROM churchops.donation_categories WHERE name = 'Missions' LIMIT 1),
+    75.00,
+    CURRENT_DATE - INTERVAL '10 days',
+    'card',
+    NULL,
+    'Credit card donation'
+WHERE NOT EXISTS (
+    SELECT 1 FROM churchops.donations 
+    WHERE member_id = (SELECT id FROM churchops.members WHERE email = 'susan.smith@email.com' LIMIT 1)
+    AND donation_date = CURRENT_DATE - INTERVAL '10 days'
+    AND amount = 75.00
+);
+
 COMMIT;
