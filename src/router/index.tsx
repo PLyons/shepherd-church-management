@@ -17,9 +17,9 @@ import EventForm from '../pages/EventForm';
 import Donations from '../pages/Donations';
 import Reports from '../pages/Reports';
 import Sermons from '../pages/Sermons';
-import Volunteers from '../pages/Volunteers';
+import Volunteers from '../pages/Volunteers';\nimport MyVolunteering from '../pages/MyVolunteering';
 import Settings from '../pages/Settings';
-import NotFound from '../pages/NotFound';
+import QRRegistration from '../pages/QRRegistration';\nimport NotFound from '../pages/NotFound';
 
 export const router = createBrowserRouter([
   {
@@ -123,6 +123,10 @@ export const router = createBrowserRouter([
         element: <Volunteers />,
       },
       {
+        path: 'my-volunteering',
+        element: <MyVolunteering />,
+      },
+      {
         path: 'settings',
         element: (
           <RoleGuard allowedRoles={['admin', 'pastor']}>
@@ -131,6 +135,14 @@ export const router = createBrowserRouter([
         ),
       },
     ],
+  },
+  {
+    path: '/register/qr',
+    element: (
+      <AuthGuard requireAuth={false}>
+        <QRRegistration />
+      </AuthGuard>
+    ),
   },
   {
     path: '*',

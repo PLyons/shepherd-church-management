@@ -17,6 +17,7 @@ const navigationItems = [
   { name: 'Reports', href: '/reports', roles: ['admin', 'pastor'] },
   { name: 'Sermons', href: '/sermons', roles: ['admin', 'pastor', 'member'] },
   { name: 'Volunteers', href: '/volunteers', roles: ['admin', 'pastor', 'member'] },
+  { name: 'My Schedule', href: '/my-volunteering', roles: ['admin', 'pastor', 'member'] },
   { name: 'Settings', href: '/settings', roles: ['admin', 'pastor'] },
 ];
 

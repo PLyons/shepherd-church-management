@@ -464,4 +464,192 @@ WHERE NOT EXISTS (
     AND amount = 75.00
 );
 
+-- Additional sample sermons for testing the sermon archive
+INSERT INTO churchops.sermons (title, speaker_name, date_preached, notes, media_url, created_by)
+SELECT 
+    'Walking in Faith', 'Pastor John Johnson', CURRENT_DATE - INTERVAL '21 days', 
+    'Scripture: Hebrews 11:1-6
+
+Main Points:
+1. Faith is the assurance of things hoped for
+2. Faith requires action and obedience
+3. God rewards those who seek Him faithfully
+
+Application:
+- Trust God in uncertain times
+- Take steps of obedience even when you cannot see the outcome
+- Remember God''s faithfulness in the past',
+    NULL, -- No media file for this sermon
+    (SELECT id FROM churchops.members WHERE email = 'john.johnson@email.com' LIMIT 1)
+WHERE NOT EXISTS (
+    SELECT 1 FROM churchops.sermons WHERE title = 'Walking in Faith' AND date_preached = CURRENT_DATE - INTERVAL '21 days'
+);
+
+INSERT INTO churchops.sermons (title, speaker_name, date_preached, notes, media_url, created_by)
+SELECT 
+    'The Good Shepherd', 'Guest Speaker Rev. David Thompson', CURRENT_DATE - INTERVAL '28 days', 
+    'Scripture: John 10:11-16
+
+Key Themes:
+1. Jesus as the Good Shepherd who lays down His life
+2. The shepherd knows His sheep and they know His voice
+3. One flock under one shepherd
+
+Practical Applications:
+- Learning to recognize God''s voice in daily life
+- Finding security in God''s protection and guidance
+- Understanding our role in bringing others to the fold',
+    NULL,
+    (SELECT id FROM churchops.members WHERE email = 'john.johnson@email.com' LIMIT 1)
+WHERE NOT EXISTS (
+    SELECT 1 FROM churchops.sermons WHERE title = 'The Good Shepherd' AND date_preached = CURRENT_DATE - INTERVAL '28 days'
+);
+
+INSERT INTO churchops.sermons (title, speaker_name, date_preached, notes, media_url, created_by)
+SELECT 
+    'Blessed Are the Peacemakers', 'Pastor John Johnson', CURRENT_DATE - INTERVAL '35 days', 
+    'Scripture: Matthew 5:9, Romans 12:18
+
+Sermon Series: The Beatitudes (Part 7)
+
+Outline:
+1. What does it mean to be a peacemaker?
+2. The difference between peacekeeping and peacemaking
+3. How to bring peace in conflict situations
+
+Discussion Questions:
+- Where in your life do you need to be a peacemaker?
+- How can we promote peace in our community?
+- What does it mean to be called "children of God"?',
+    NULL,
+    (SELECT id FROM churchops.members WHERE email = 'john.johnson@email.com' LIMIT 1)
+WHERE NOT EXISTS (
+    SELECT 1 FROM churchops.sermons WHERE title = 'Blessed Are the Peacemakers' AND date_preached = CURRENT_DATE - INTERVAL '35 days'
+);
+
+INSERT INTO churchops.sermons (title, speaker_name, date_preached, notes, media_url, created_by)
+SELECT 
+    'Thanksgiving and Gratitude', 'Pastor John Johnson', CURRENT_DATE - INTERVAL '42 days', 
+    'Scripture: 1 Thessalonians 5:16-18, Psalm 100
+
+Thanksgiving Message:
+
+Introduction:
+- Gratitude transforms our perspective
+- Biblical foundation for thanksgiving in all circumstances
+
+Three Pillars of Gratitude:
+1. Gratitude to God for His faithfulness
+2. Gratitude for community and relationships  
+3. Gratitude in trials as they build character
+
+Challenge:
+Keep a gratitude journal for the next 30 days
+Look for God''s hand in everyday moments
+Express thankfulness to those around you',
+    NULL,
+    (SELECT id FROM churchops.members WHERE email = 'john.johnson@email.com' LIMIT 1)
+WHERE NOT EXISTS (
+    SELECT 1 FROM churchops.sermons WHERE title = 'Thanksgiving and Gratitude' AND date_preached = CURRENT_DATE - INTERVAL '42 days'
+);
+
+-- Sample Volunteer Slots for upcoming events
+INSERT INTO churchops.volunteer_slots (event_id, role_id, assigned_to, status, note)
+SELECT 
+    (SELECT id FROM churchops.events WHERE title = 'Sunday Morning Service' AND start_time::date = (CURRENT_DATE + INTERVAL '7 days')::date LIMIT 1),
+    (SELECT id FROM churchops.volunteer_roles WHERE name = 'Greeter' LIMIT 1),
+    NULL, -- Unassigned
+    'Open',
+    'Welcome visitors at the main entrance'
+WHERE EXISTS (SELECT 1 FROM churchops.events WHERE title = 'Sunday Morning Service' AND start_time::date = (CURRENT_DATE + INTERVAL '7 days')::date)
+AND NOT EXISTS (
+    SELECT 1 FROM churchops.volunteer_slots vs
+    WHERE vs.event_id = (SELECT id FROM churchops.events WHERE title = 'Sunday Morning Service' AND start_time::date = (CURRENT_DATE + INTERVAL '7 days')::date LIMIT 1)
+    AND vs.role_id = (SELECT id FROM churchops.volunteer_roles WHERE name = 'Greeter' LIMIT 1)
+);
+
+INSERT INTO churchops.volunteer_slots (event_id, role_id, assigned_to, status, note)
+SELECT 
+    (SELECT id FROM churchops.events WHERE title = 'Sunday Morning Service' AND start_time::date = (CURRENT_DATE + INTERVAL '7 days')::date LIMIT 1),
+    (SELECT id FROM churchops.volunteer_roles WHERE name = 'Sound Desk' LIMIT 1),
+    (SELECT id FROM churchops.members WHERE email = 'robert.smith@email.com' LIMIT 1), -- Pre-assigned
+    'Filled',
+    'Operate sound equipment during service'
+WHERE EXISTS (SELECT 1 FROM churchops.events WHERE title = 'Sunday Morning Service' AND start_time::date = (CURRENT_DATE + INTERVAL '7 days')::date)
+AND NOT EXISTS (
+    SELECT 1 FROM churchops.volunteer_slots vs
+    WHERE vs.event_id = (SELECT id FROM churchops.events WHERE title = 'Sunday Morning Service' AND start_time::date = (CURRENT_DATE + INTERVAL '7 days')::date LIMIT 1)
+    AND vs.role_id = (SELECT id FROM churchops.volunteer_roles WHERE name = 'Sound Desk' LIMIT 1)
+);
+
+INSERT INTO churchops.volunteer_slots (event_id, role_id, assigned_to, status, note)
+SELECT 
+    (SELECT id FROM churchops.events WHERE title = 'Sunday Morning Service' AND start_time::date = (CURRENT_DATE + INTERVAL '7 days')::date LIMIT 1),
+    (SELECT id FROM churchops.volunteer_roles WHERE name = 'Usher' LIMIT 1),
+    NULL, -- Unassigned
+    'Open',
+    'Help with seating and offering collection'
+WHERE EXISTS (SELECT 1 FROM churchops.events WHERE title = 'Sunday Morning Service' AND start_time::date = (CURRENT_DATE + INTERVAL '7 days')::date)
+AND NOT EXISTS (
+    SELECT 1 FROM churchops.volunteer_slots vs
+    WHERE vs.event_id = (SELECT id FROM churchops.events WHERE title = 'Sunday Morning Service' AND start_time::date = (CURRENT_DATE + INTERVAL '7 days')::date LIMIT 1)
+    AND vs.role_id = (SELECT id FROM churchops.volunteer_roles WHERE name = 'Usher' LIMIT 1)
+);
+
+INSERT INTO churchops.volunteer_slots (event_id, role_id, assigned_to, status, note)
+SELECT 
+    (SELECT id FROM churchops.events WHERE title = 'Wednesday Bible Study' AND start_time::date = (CURRENT_DATE + INTERVAL '3 days')::date LIMIT 1),
+    (SELECT id FROM churchops.volunteer_roles WHERE name = 'Greeter' LIMIT 1),
+    (SELECT id FROM churchops.members WHERE email = 'mary.johnson@email.com' LIMIT 1), -- Pre-assigned
+    'Filled',
+    'Welcome members to Bible study'
+WHERE EXISTS (SELECT 1 FROM churchops.events WHERE title = 'Wednesday Bible Study' AND start_time::date = (CURRENT_DATE + INTERVAL '3 days')::date)
+AND NOT EXISTS (
+    SELECT 1 FROM churchops.volunteer_slots vs
+    WHERE vs.event_id = (SELECT id FROM churchops.events WHERE title = 'Wednesday Bible Study' AND start_time::date = (CURRENT_DATE + INTERVAL '3 days')::date LIMIT 1)
+    AND vs.role_id = (SELECT id FROM churchops.volunteer_roles WHERE name = 'Greeter' LIMIT 1)
+);
+
+INSERT INTO churchops.volunteer_slots (event_id, role_id, assigned_to, status, note)
+SELECT 
+    (SELECT id FROM churchops.events WHERE title = 'Community Outreach Day' AND start_time::date = (CURRENT_DATE + INTERVAL '14 days')::date LIMIT 1),
+    (SELECT id FROM churchops.volunteer_roles WHERE name = 'Kitchen' LIMIT 1),
+    NULL, -- Unassigned
+    'Open',
+    'Help prepare lunch for volunteers'
+WHERE EXISTS (SELECT 1 FROM churchops.events WHERE title = 'Community Outreach Day' AND start_time::date = (CURRENT_DATE + INTERVAL '14 days')::date)
+AND NOT EXISTS (
+    SELECT 1 FROM churchops.volunteer_slots vs
+    WHERE vs.event_id = (SELECT id FROM churchops.events WHERE title = 'Community Outreach Day' AND start_time::date = (CURRENT_DATE + INTERVAL '14 days')::date LIMIT 1)
+    AND vs.role_id = (SELECT id FROM churchops.volunteer_roles WHERE name = 'Kitchen' LIMIT 1)
+);
+
+INSERT INTO churchops.volunteer_slots (event_id, role_id, assigned_to, status, note)
+SELECT 
+    (SELECT id FROM churchops.events WHERE title = 'Community Outreach Day' AND start_time::date = (CURRENT_DATE + INTERVAL '14 days')::date LIMIT 1),
+    (SELECT id FROM churchops.volunteer_roles WHERE name = 'Parking' LIMIT 1),
+    NULL, -- Unassigned
+    'Open',
+    'Direct traffic and assist with parking at outreach venues'
+WHERE EXISTS (SELECT 1 FROM churchops.events WHERE title = 'Community Outreach Day' AND start_time::date = (CURRENT_DATE + INTERVAL '14 days')::date)
+AND NOT EXISTS (
+    SELECT 1 FROM churchops.volunteer_slots vs
+    WHERE vs.event_id = (SELECT id FROM churchops.events WHERE title = 'Community Outreach Day' AND start_time::date = (CURRENT_DATE + INTERVAL '14 days')::date LIMIT 1)
+    AND vs.role_id = (SELECT id FROM churchops.volunteer_roles WHERE name = 'Parking' LIMIT 1)
+);
+
+INSERT INTO churchops.volunteer_slots (event_id, role_id, assigned_to, status, note)
+SELECT 
+    (SELECT id FROM churchops.events WHERE title = 'Youth Group Meeting' AND start_time::date = (CURRENT_DATE + INTERVAL '5 days')::date LIMIT 1),
+    (SELECT id FROM churchops.volunteer_roles WHERE name = 'Children Ministry' LIMIT 1),
+    (SELECT id FROM churchops.members WHERE email = 'jennifer.smith@email.com' LIMIT 1), -- Pre-assigned
+    'Filled',
+    'Supervise youth activities and games'
+WHERE EXISTS (SELECT 1 FROM churchops.events WHERE title = 'Youth Group Meeting' AND start_time::date = (CURRENT_DATE + INTERVAL '5 days')::date)
+AND NOT EXISTS (
+    SELECT 1 FROM churchops.volunteer_slots vs
+    WHERE vs.event_id = (SELECT id FROM churchops.events WHERE title = 'Youth Group Meeting' AND start_time::date = (CURRENT_DATE + INTERVAL '5 days')::date LIMIT 1)
+    AND vs.role_id = (SELECT id FROM churchops.volunteer_roles WHERE name = 'Children Ministry' LIMIT 1)
+);
+
 COMMIT;
