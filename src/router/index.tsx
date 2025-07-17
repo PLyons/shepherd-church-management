@@ -17,9 +17,11 @@ import EventForm from '../pages/EventForm';
 import Donations from '../pages/Donations';
 import Reports from '../pages/Reports';
 import Sermons from '../pages/Sermons';
-import Volunteers from '../pages/Volunteers';\nimport MyVolunteering from '../pages/MyVolunteering';
+import Volunteers from '../pages/Volunteers';
+import MyVolunteering from '../pages/MyVolunteering';
 import Settings from '../pages/Settings';
-import QRRegistration from '../pages/QRRegistration';\nimport NotFound from '../pages/NotFound';
+import QRRegistration from '../pages/QRRegistration';
+import NotFound from '../pages/NotFound';
 
 export const router = createBrowserRouter([
   {
