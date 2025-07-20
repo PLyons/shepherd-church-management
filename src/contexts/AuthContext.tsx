@@ -20,6 +20,8 @@ interface AuthContextType {
   signInWithMagicLink: (email: string) => Promise<{ error: any }>;
   signUp: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<{ error: any }>;
+  resetPassword: (email: string) => Promise<{ error: any }>;
+  updatePassword: (password: string) => Promise<{ error: any }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,13 +33,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Check if we're coming from a password reset
+    const urlParams = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const isPasswordReset = hashParams.get('type') === 'recovery' || 
+                           urlParams.get('type') === 'recovery' ||
+                           localStorage.getItem('password_reset_requested') === 'true';
+    
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchMemberData(session.user.email!);
+      
+      // If we have a session and it's a password reset, redirect to set password
+      if (session?.user && isPasswordReset) {
+        console.log('Password reset flow detected in AuthContext, redirecting to /set-password');
+        localStorage.removeItem('password_reset_requested');
+        // Set loading to false before redirect
+        setLoading(false);
+        // Use React Router navigation instead of window.location
+        setTimeout(() => {
+          window.location.replace('/set-password');
+        }, 100);
+        return;
       }
+      
+      if (session?.user) {
+        await fetchMemberData(session.user.email!);
+      } else {
+        setMember(null);
+      }
+      setLoading(false);
+    }).catch((error) => {
+      console.error('Error getting session:', error);
       setLoading(false);
     });
 
@@ -45,6 +73,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event, session?.user?.email);
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -61,6 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const fetchMemberData = async (email: string) => {
     try {
+      console.log('Fetching member data for:', email);
       const { data, error } = await supabase
         .from('members')
         .select('id, email, first_name, last_name, role, household_id')
@@ -69,12 +99,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         console.error('Error fetching member data:', error);
+        setMember(null);
         return;
       }
 
+      console.log('Member data fetched:', data);
       setMember(data);
     } catch (error) {
       console.error('Error fetching member data:', error);
+      setMember(null);
     }
   };
 
@@ -112,6 +145,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { error };
   };
 
+  const resetPassword = async (email: string) => {
+    // Use the current origin to handle dynamic port assignments
+    const currentOrigin = window.location.origin;
+    console.log('Sending password reset with redirectTo:', `${currentOrigin}/auth/callback`);
+    
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${currentOrigin}/auth/callback`,
+    });
+    return { error };
+  };
+
+  const updatePassword = async (password: string) => {
+    const { error } = await supabase.auth.updateUser({
+      password,
+    });
+    return { error };
+  };
+
   const value = {
     user,
     member,
@@ -121,6 +172,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signInWithMagicLink,
     signUp,
     signOut,
+    resetPassword,
+    updatePassword,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

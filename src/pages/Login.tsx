@@ -111,10 +111,17 @@ export default function Login() {
             </button>
           </div>
 
-          <div className="text-center">
-            <Link to="/register" className="text-blue-600 hover:text-blue-500">
-              Need an account? Register here
-            </Link>
+          <div className="text-center space-y-2">
+            <div>
+              <Link to="/reset-password" className="text-blue-600 hover:text-blue-500">
+                Forgot your password?
+              </Link>
+            </div>
+            <div>
+              <Link to="/register" className="text-blue-600 hover:text-blue-500">
+                Need an account? Register here
+              </Link>
+            </div>
           </div>
         </form>
       </div>

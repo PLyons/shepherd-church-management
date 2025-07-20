@@ -28,7 +28,10 @@ export function AuthGuard({ children, requireAuth = true }: AuthGuardProps) {
   if (!requireAuth && user) {
     // User is logged in but trying to access auth pages (login/register)
     // Redirect to dashboard
-    return <Navigate to="/dashboard" replace />;
+    // Exception: Don't redirect from auth/callback as it needs to process tokens
+    if (location.pathname !== '/auth/callback') {
+      return <Navigate to="/dashboard" replace />;
+    }
   }
 
   return <>{children}</>;

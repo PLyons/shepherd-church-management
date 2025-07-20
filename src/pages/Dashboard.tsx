@@ -57,7 +57,8 @@ type UpcomingCommitment = {
 };
 
 export default function Dashboard() {
-  const { member, memberRole } = useAuth();
+  const { member } = useAuth();
+  const memberRole = member?.role || null;
   const [stats, setStats] = useState<DashboardStats>({
     totalMembers: 0,
     activeMembers: 0,
@@ -241,7 +242,7 @@ export default function Dashboard() {
       {/* Welcome Section */}
       <div>
         <h1 className="text-3xl font-bold text-gray-900">
-          Welcome back, {member?.first_name}!
+          Welcome back{member?.first_name ? `, ${member.first_name}` : ''}!
         </h1>
         <p className="text-gray-600 mt-2">
           Here's what's happening in your church community.

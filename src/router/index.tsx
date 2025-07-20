@@ -21,6 +21,9 @@ import Volunteers from '../pages/Volunteers';
 import MyVolunteering from '../pages/MyVolunteering';
 import Settings from '../pages/Settings';
 import QRRegistration from '../pages/QRRegistration';
+import AuthCallback from '../pages/AuthCallback';
+import PasswordReset from '../pages/PasswordReset';
+import SetPassword from '../pages/SetPassword';
 import NotFound from '../pages/NotFound';
 
 export const router = createBrowserRouter([
@@ -139,6 +142,26 @@ export const router = createBrowserRouter([
     ],
   },
   {
+    path: '/auth/callback',
+    element: (
+      <AuthGuard requireAuth={false}>
+        <AuthCallback />
+      </AuthGuard>
+    ),
+  },
+  {
+    path: '/reset-password',
+    element: (
+      <AuthGuard requireAuth={false}>
+        <PasswordReset />
+      </AuthGuard>
+    ),
+  },
+  {
+    path: '/set-password',
+    element: <SetPassword />,
+  },
+  {
     path: '/register/qr',
     element: (
       <AuthGuard requireAuth={false}>
@@ -150,4 +173,13 @@ export const router = createBrowserRouter([
     path: '*',
     element: <NotFound />,
   },
-]);
+], {
+  future: {
+    v7_startTransition: true,
+    v7_relativeSplatPath: true,
+    v7_fetcherPersist: true,
+    v7_normalizeFormMethod: true,
+    v7_partialHydration: true,
+    v7_skipActionErrorRevalidation: true,
+  },
+});
