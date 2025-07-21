@@ -1,21 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Calendar from 'react-calendar';
-import { supabase } from '../lib/supabase';
+import { eventsService } from '../services/firebase';
 import { useAuth } from '../hooks/useUnifiedAuth';
+import { Event } from '../types/firestore';
 import 'react-calendar/dist/Calendar.css';
-
-type Event = {
-  id: string;
-  title: string;
-  description: string | null;
-  start_time: string | null;
-  end_time: string | null;
-  location: string | null;
-  is_public: boolean;
-  created_by: string | null;
-  created_at: string;
-};
 
 type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];
@@ -34,21 +23,34 @@ export default function Events() {
   const fetchEvents = async () => {
     try {
       setLoading(true);
-      const query = supabase
-        .from('events')
-        .select('*')
-        .order('start_time', { ascending: true });
-
-      // Non-members can only see public events
-      if (!user || memberRole === 'visitor') {
-        query.eq('is_public', true);
-      }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-      setEvents(data || []);
+      console.log('📅 Fetching events from Firebase...');
+      
+      // Get all events (Firebase security rules will filter based on auth)
+      const allEvents = await eventsService.getAll();
+      console.log('📅 Firebase returned events:', allEvents);
+      
+      // Filter for public events if user is not authenticated or is a visitor
+      const filteredEvents = (!user || memberRole === 'visitor') 
+        ? allEvents.filter(event => event.isPublic)
+        : allEvents;
+      
+      // Sort by start time
+      const sortedEvents = filteredEvents.sort((a, b) => {
+        if (!a.startTime) return 1;
+        if (!b.startTime) return -1;
+        return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+      });
+      
+      console.log('📅 Final filtered events:', sortedEvents);
+      console.log('📅 Current date for comparison:', new Date());
+      console.log('📅 Event dates:');
+      sortedEvents.forEach((event, idx) => {
+        console.log(`  ${idx}: ${event.title} - startTime: ${event.startTime} (${event.startTime ? new Date(event.startTime) : 'No date'})`);
+      });
+      
+      setEvents(sortedEvents);
     } catch (err) {
+      console.error('📅 Error fetching events:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch events');
     } finally {
       setLoading(false);
@@ -57,8 +59,8 @@ export default function Events() {
 
   const getEventsForDate = (date: Date) => {
     return events.filter(event => {
-      if (!event.start_time) return false;
-      const eventDate = new Date(event.start_time);
+      if (!event.startTime) return false;
+      const eventDate = new Date(event.startTime);
       return (
         eventDate.getDate() === date.getDate() &&
         eventDate.getMonth() === date.getMonth() &&
@@ -171,14 +173,14 @@ export default function Events() {
                   >
                     <h3 className="font-medium text-gray-900">{event.title}</h3>
                     <p className="text-sm text-gray-600 mt-1">
-                      {formatDateRange(event.start_time, event.end_time)}
+                      {formatDateRange(event.startTime, event.endTime)}
                     </p>
                     {event.location && (
                       <p className="text-sm text-gray-600">
                         📍 {event.location}
                       </p>
                     )}
-                    {event.is_public && (
+                    {event.isPublic && (
                       <span className="inline-block mt-2 px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded">
                         Public Event
                       </span>
@@ -193,10 +195,18 @@ export default function Events() {
 
       {/* Upcoming Events List */}
       <div className="bg-white shadow rounded-lg p-6">
-        <h2 className="text-xl font-semibold mb-4">Upcoming Events</h2>
+        <h2 className="text-xl font-semibold mb-4">All Events (Temporarily showing all)</h2>
         <div className="space-y-4">
           {events
-            .filter(event => event.start_time && new Date(event.start_time) >= new Date())
+            .filter(event => {
+              const hasStartTime = !!event.startTime;
+              const eventDate = event.startTime ? new Date(event.startTime) : null;
+              const now = new Date();
+              const isUpcoming = eventDate ? eventDate >= now : false;
+              console.log(`🔍 Event ${event.title}: hasStartTime=${hasStartTime}, eventDate=${eventDate}, now=${now}, isUpcoming=${isUpcoming}`);
+              // Temporarily show all events, not just upcoming ones
+              return hasStartTime;
+            })
             .slice(0, 10)
             .map(event => (
               <Link
@@ -214,7 +224,7 @@ export default function Events() {
                     )}
                     <div className="mt-2 space-y-1">
                       <p className="text-sm text-gray-600">
-                        📅 {event.start_time ? new Date(event.start_time).toLocaleDateString('en-US', {
+                        📅 {event.startTime ? new Date(event.startTime).toLocaleDateString('en-US', {
                           weekday: 'long',
                           year: 'numeric',
                           month: 'long',
@@ -222,7 +232,7 @@ export default function Events() {
                         }) : 'Date TBD'}
                       </p>
                       <p className="text-sm text-gray-600">
-                        🕐 {formatDateRange(event.start_time, event.end_time)}
+                        🕐 {formatDateRange(event.startTime, event.endTime)}
                       </p>
                       {event.location && (
                         <p className="text-sm text-gray-600">
@@ -231,7 +241,7 @@ export default function Events() {
                       )}
                     </div>
                   </div>
-                  {event.is_public && (
+                  {event.isPublic && (
                     <span className="ml-4 px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded">
                       Public
                     </span>

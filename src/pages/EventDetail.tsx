@@ -1,29 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { eventsService } from '../services/firebase';
 import { useAuth } from '../hooks/useUnifiedAuth';
 import { useToast } from '../contexts/ToastContext';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import { Event } from '../types/firestore';
 
-type Event = {
+// Firebase types are imported from firestore types
+type AttendanceRecord = {
   id: string;
-  title: string;
-  description: string | null;
-  start_time: string | null;
-  end_time: string | null;
-  location: string | null;
-  is_public: boolean;
-  created_by: string | null;
-  created_at: string;
-};
-
-type Attendance = {
-  id: string;
-  event_id: string;
-  member_id: string;
+  eventId: string;
+  memberId: string;
   status: 'Attending' | 'Absent' | 'Tentative' | null;
   note: string | null;
-  created_at: string;
+  createdAt: string;
 };
 
 export default function EventDetail() {
@@ -32,8 +22,8 @@ export default function EventDetail() {
   const { user, member, memberRole } = useAuth();
   const { showToast } = useToast();
   const [event, setEvent] = useState<Event | null>(null);
-  const [attendees, setAttendees] = useState<Attendance[]>([]);
-  const [myAttendance, setMyAttendance] = useState<Attendance | null>(null);
+  const [attendees, setAttendees] = useState<AttendanceRecord[]>([]);
+  const [myAttendance, setMyAttendance] = useState<AttendanceRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -56,23 +46,14 @@ export default function EventDetail() {
       setError(null);
       
       // Fetch event details
-      const { data: eventData, error: eventError } = await supabase
-        .from('events')
-        .select('*')
-        .eq('id', id)
-        .single();
-
-      if (eventError) {
-        console.error('Event fetch error:', eventError);
-        throw new Error(`Failed to fetch event: ${eventError.message}`);
-      }
+      const eventData = await eventsService.getById(id);
       
       if (!eventData) {
         throw new Error('Event not found');
       }
 
       // Check if user has permission to view this event
-      if (!eventData.is_public && !user) {
+      if (!eventData.isPublic && !user) {
         setError('You must be logged in to view this event');
         setLoading(false);
         return;
@@ -80,31 +61,11 @@ export default function EventDetail() {
 
       setEvent(eventData);
 
-      // Fetch attendance records
-      try {
-        const { data: attendanceData, error: attendanceError } = await supabase
-          .from('event_attendance')
-          .select('*')
-          .eq('event_id', id)
-          .order('created_at', { ascending: false });
-
-        if (attendanceError) {
-          console.warn('Attendance fetch error:', attendanceError);
-          // Don't fail the whole page for attendance errors
-          setAttendees([]);
-        } else {
-          setAttendees(attendanceData || []);
-
-          // Find current user's attendance
-          if (member) {
-            const myRecord = attendanceData?.find(a => a.member_id === member.id);
-            setMyAttendance(myRecord || null);
-          }
-        }
-      } catch (attendanceErr) {
-        console.warn('Attendance error:', attendanceErr);
-        setAttendees([]);
-      }
+      // Note: Attendance feature not yet implemented in Firebase
+      // This would require creating an attendance subcollection or separate service
+      // For now, disable attendance functionality until Firebase service is built
+      setAttendees([]);
+      setMyAttendance(null);
     } catch (err) {
       console.error('Event details error:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch event details');
@@ -119,37 +80,9 @@ export default function EventDetail() {
       return;
     }
 
-    try {
-      setUpdating(true);
-
-      if (myAttendance) {
-        // Update existing RSVP
-        const { error } = await supabase
-          .from('event_attendance')
-          .update({ status: status })
-          .eq('id', myAttendance.id);
-
-        if (error) throw error;
-      } else {
-        // Create new RSVP
-        const { error } = await supabase
-          .from('event_attendance')
-          .insert({
-            event_id: id,
-            member_id: member.id,
-            status: status
-          });
-
-        if (error) throw error;
-      }
-
-      showToast('RSVP updated successfully', 'success');
-      fetchEventDetails(); // Refresh data
-    } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Failed to update RSVP', 'error');
-    } finally {
-      setUpdating(false);
-    }
+    // TODO: Implement RSVP functionality with Firebase
+    // This requires creating an attendance service for Firebase
+    showToast('RSVP functionality will be available in the next update', 'info');
   };
 
   const handleDelete = async () => {
@@ -159,13 +92,7 @@ export default function EventDetail() {
 
     try {
       setUpdating(true);
-      const { error } = await supabase
-        .from('events')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
+      await eventsService.delete(id!);
       showToast('Event deleted successfully', 'success');
       navigate('/events');
     } catch (err) {
@@ -260,7 +187,7 @@ export default function EventDetail() {
             ← Back to Events
           </Link>
           <h1 className="text-3xl font-bold text-gray-900">{event.title}</h1>
-          {event.is_public && (
+          {event.isPublic && (
             <span className="inline-block mt-2 px-3 py-1 text-sm font-medium bg-green-100 text-green-800 rounded-full">
               Public Event
             </span>
@@ -292,7 +219,7 @@ export default function EventDetail() {
         <div className="space-y-3">
           <div>
             <span className="text-gray-600">Date & Time:</span>
-            <p className="font-medium">{formatDateRange(event.start_time, event.end_time)}</p>
+            <p className="font-medium">{formatDateRange(event.startTime, event.endTime)}</p>
           </div>
           
           {event.location && (
@@ -309,7 +236,7 @@ export default function EventDetail() {
             </div>
           )}
           
-          {event.created_by && (
+          {event.createdBy && (
             <div>
               <span className="text-gray-600">Created by:</span>
               <p className="font-medium">Church Administrator</p>
@@ -374,7 +301,7 @@ export default function EventDetail() {
               >
                 <div>
                   <span className="font-medium">
-                    Member {attendance.member_id.slice(0, 8)}
+                    Member {attendance.memberId.slice(0, 8)}
                   </span>
                 </div>
                 <div className="flex items-center gap-3">

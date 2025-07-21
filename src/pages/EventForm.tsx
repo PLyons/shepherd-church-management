@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { eventsService } from '../services/firebase';
 import { useAuth } from '../hooks/useUnifiedAuth';
 import { useToast } from '../contexts/ToastContext';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import { Event } from '../types/firestore';
 
 type EventFormData = {
   title: string;
   description: string;
-  start_time: string;
-  end_time: string;
+  startTime: string;
+  endTime: string;
   location: string;
-  is_public: boolean;
+  isPublic: boolean;
 };
 
 export default function EventForm() {
@@ -24,10 +25,10 @@ export default function EventForm() {
   const [formData, setFormData] = useState<EventFormData>({
     title: '',
     description: '',
-    start_time: '',
-    end_time: '',
+    startTime: '',
+    endTime: '',
     location: '',
-    is_public: false,
+    isPublic: false,
   });
 
   const isEditMode = !!id;
@@ -41,23 +42,19 @@ export default function EventForm() {
   const fetchEvent = async () => {
     try {
       setInitialLoading(true);
-      const { data, error } = await supabase
-        .from('events')
-        .select('*')
-        .eq('id', id)
-        .single();
+      const event = await eventsService.getById(id!);
 
-      if (error) throw error;
-
-      if (data) {
+      if (event) {
         setFormData({
-          title: data.title || '',
-          description: data.description || '',
-          start_time: data.start_time ? formatDateTimeForInput(data.start_time) : '',
-          end_time: data.end_time ? formatDateTimeForInput(data.end_time) : '',
-          location: data.location || '',
-          is_public: data.is_public || false,
+          title: event.title || '',
+          description: event.description || '',
+          startTime: event.startTime ? formatDateTimeForInput(event.startTime) : '',
+          endTime: event.endTime ? formatDateTimeForInput(event.endTime) : '',
+          location: event.location || '',
+          isPublic: event.isPublic || false,
         });
+      } else {
+        throw new Error('Event not found');
       }
     } catch (err) {
       showToast(err instanceof Error ? err.message : 'Failed to fetch event', 'error');
@@ -92,13 +89,13 @@ export default function EventForm() {
       return;
     }
 
-    if (!formData.start_time) {
+    if (!formData.startTime) {
       showToast('Start date/time is required', 'error');
       return;
     }
 
     // Validate end time is after start time
-    if (formData.end_time && new Date(formData.end_time) <= new Date(formData.start_time)) {
+    if (formData.endTime && new Date(formData.endTime) <= new Date(formData.startTime)) {
       showToast('End time must be after start time', 'error');
       return;
     }
@@ -106,43 +103,30 @@ export default function EventForm() {
     try {
       setLoading(true);
 
-      const eventData = {
+      const eventData: Partial<Event> = {
         title: formData.title.trim(),
-        description: formData.description.trim() || null,
-        start_time: new Date(formData.start_time).toISOString(),
-        end_time: formData.end_time ? new Date(formData.end_time).toISOString() : null,
-        location: formData.location.trim() || null,
-        is_public: formData.is_public,
+        description: formData.description.trim() || '',
+        startTime: new Date(formData.startTime).toISOString(),
+        endTime: formData.endTime ? new Date(formData.endTime).toISOString() : '',
+        location: formData.location.trim() || '',
+        isPublic: formData.isPublic,
       };
 
       if (isEditMode) {
         // Update existing event
-        const { error } = await supabase
-          .from('events')
-          .update(eventData)
-          .eq('id', id);
-
-        if (error) throw error;
+        await eventsService.update(id!, eventData);
         showToast('Event updated successfully', 'success');
       } else {
         // Create new event
-        const { data, error } = await supabase
-          .from('events')
-          .insert({
-            ...eventData,
-            created_by: member.id,
-          })
-          .select()
-          .single();
-
-        if (error) throw error;
+        const newEvent = await eventsService.create({
+          ...eventData,
+          createdBy: member.id,
+        });
         showToast('Event created successfully', 'success');
         
         // Navigate to the new event
-        if (data) {
-          navigate(`/events/${data.id}`);
-          return;
-        }
+        navigate(`/events/${newEvent.id}`);
+        return;
       }
 
       navigate('/events');
@@ -220,14 +204,14 @@ export default function EventForm() {
         {/* Date and Time */}
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>
-            <label htmlFor="start_time" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="startTime" className="block text-sm font-medium text-gray-700">
               Start Date & Time *
             </label>
             <input
               type="datetime-local"
-              id="start_time"
-              name="start_time"
-              value={formData.start_time}
+              id="startTime"
+              name="startTime"
+              value={formData.startTime}
               onChange={handleChange}
               required
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
@@ -235,16 +219,16 @@ export default function EventForm() {
           </div>
 
           <div>
-            <label htmlFor="end_time" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="endTime" className="block text-sm font-medium text-gray-700">
               End Date & Time
             </label>
             <input
               type="datetime-local"
-              id="end_time"
-              name="end_time"
-              value={formData.end_time}
+              id="endTime"
+              name="endTime"
+              value={formData.endTime}
               onChange={handleChange}
-              min={formData.start_time}
+              min={formData.startTime}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
             />
           </div>
@@ -270,13 +254,13 @@ export default function EventForm() {
         <div className="flex items-center">
           <input
             type="checkbox"
-            id="is_public"
-            name="is_public"
-            checked={formData.is_public}
+            id="isPublic"
+            name="isPublic"
+            checked={formData.isPublic}
             onChange={handleChange}
             className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
-          <label htmlFor="is_public" className="ml-2 block text-sm text-gray-700">
+          <label htmlFor="isPublic" className="ml-2 block text-sm text-gray-700">
             Public Event (visible to non-members)
           </label>
         </div>
