@@ -1,0 +1,126 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/members/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/members/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isPastor() {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/members/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/members/$(request.auth.uid)).data.role == 'pastor';
+    }
+    
+    function isAdminOrPastor() {
+      return isAdmin() || isPastor();
+    }
+    
+    function isMemberOwner(memberId) {
+      return isAuthenticated() && request.auth.uid == memberId;
+    }
+    
+    function isValidMemberData() {
+      return request.resource.data.keys().hasAll(['firstName', 'lastName', 'email', 'role', 'memberStatus']) &&
+             request.resource.data.role in ['admin', 'pastor', 'member'] &&
+             request.resource.data.memberStatus in ['active', 'inactive', 'visitor'];
+    }
+    
+    // Members collection
+    match /members/{memberId} {
+      // Anyone authenticated can read member profiles
+      allow read: if isAuthenticated();
+      
+      // Members can update their own profile, admins/pastors can update any
+      allow update: if isMemberOwner(memberId) || isAdminOrPastor();
+      
+      // Only admins/pastors can create new members
+      allow create: if isAdminOrPastor() && isValidMemberData();
+      
+      // Only admins can delete members
+      allow delete: if isAdmin();
+    }
+    
+    // Households collection  
+    match /households/{householdId} {
+      // Anyone authenticated can read household info
+      allow read: if isAuthenticated();
+      
+      // Only admins/pastors can modify households
+      allow write: if isAdminOrPastor();
+    }
+    
+    // Events collection
+    match /events/{eventId} {
+      // Anyone can read public events, authenticated users can read all
+      allow read: if resource.data.isPublic == true || isAuthenticated();
+      
+      // Only admins/pastors can create/update/delete events
+      allow write: if isAdminOrPastor();
+      
+      // Event RSVPs subcollection
+      match /rsvps/{rsvpId} {
+        // Members can read RSVPs for events they have access to
+        allow read: if isAuthenticated();
+        
+        // Members can create/update their own RSVPs
+        allow write: if isAuthenticated() && 
+                        (request.auth.uid == rsvpId || // RSVP ID matches user ID
+                         request.resource.data.memberId == request.auth.uid);
+      }
+      
+      // Event Attendance subcollection  
+      match /attendance/{attendanceId} {
+        // Members can read attendance for events they have access to
+        allow read: if isAuthenticated();
+        
+        // Only admins/pastors can manage attendance
+        allow write: if isAdminOrPastor();
+      }
+    }
+    
+    // Donations collection (future feature)
+    match /donations/{donationId} {
+      // Only admins/pastors can access donation data
+      allow read, write: if isAdminOrPastor();
+    }
+    
+    // Sermons collection (future feature)
+    match /sermons/{sermonId} {
+      // Anyone can read sermons
+      allow read: if true;
+      
+      // Only admins/pastors can manage sermons
+      allow write: if isAdminOrPastor();
+    }
+    
+    // Volunteer roles and slots (future feature)
+    match /volunteer_roles/{roleId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdminOrPastor();
+    }
+    
+    match /volunteer_slots/{slotId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdminOrPastor();
+    }
+    
+    // Member events/activities (future feature)
+    match /member_events/{eventId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdminOrPastor();
+    }
+    
+    // Default rule - deny everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

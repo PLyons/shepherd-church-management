@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Member, Household } from '../../types';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useUnifiedAuth';
 import { X, User, Save } from 'lucide-react';
 
 interface MemberFormProps {

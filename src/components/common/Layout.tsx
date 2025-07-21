@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Navigation } from './Navigation';
 import { MobileMenu } from './MobileMenu';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useUnifiedAuth';
 
 export function Layout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

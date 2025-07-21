@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useUnifiedAuth';
 import { supabase } from '../lib/supabase';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 

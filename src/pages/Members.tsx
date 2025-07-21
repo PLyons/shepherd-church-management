@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { firebaseService } from '../services/firebase';
 import { Member } from '../types';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useUnifiedAuth';
 import { Search, User, Users, Eye, Plus } from 'lucide-react';
 import { MemberForm } from '../components/members/MemberForm';
 
@@ -23,29 +23,21 @@ export default function Members() {
   const fetchMembers = async () => {
     setLoading(true);
     try {
-      let query = supabase
-        .from('members')
-        .select(`
-          *,
-          household:households!household_id (
-            id,
-            family_name
-          )
-        `, { count: 'exact' })
-        .order('last_name', { ascending: true })
-        .order('first_name', { ascending: true });
+      // Use Firebase service to get member directory
+      const options = {
+        search: searchTerm || undefined,
+        limit: itemsPerPage,
+        orderBy: 'name' as const,
+        orderDirection: 'asc' as const
+      };
 
-      if (searchTerm) {
-        query = query.or(`first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`);
-      }
-
-      const { data, error, count } = await query
-        .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage - 1);
-
-      if (error) throw error;
-
-      setMembers(data || []);
-      setTotalCount(count || 0);
+      const data = await firebaseService.members.getMemberDirectory(options);
+      
+      setMembers(data);
+      
+      // For now, set total count to the length of returned data
+      // In a production app, you'd implement proper pagination with counts
+      setTotalCount(data.length);
     } catch (error) {
       console.error('Error fetching members:', error);
     } finally {
@@ -177,7 +169,7 @@ export default function Members() {
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900">
-                          {memberItem.first_name} {memberItem.last_name}
+                          {memberItem.firstName} {memberItem.lastName}
                         </div>
                       </div>
                     </div>
@@ -186,8 +178,8 @@ export default function Members() {
                     <div className="text-sm text-gray-900">{memberItem.email}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(memberItem.member_status)}`}>
-                      {memberItem.member_status}
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(memberItem.memberStatus)}`}>
+                      {memberItem.memberStatus}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -197,7 +189,7 @@ export default function Members() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      {memberItem.household?.family_name || 'N/A'}
+                      {memberItem.householdName || 'N/A'}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">

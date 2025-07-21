@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
-import { useAuth } from '../contexts/AuthContext';
+import { firebaseService } from '../services/firebase';
+import { useAuth } from '../hooks/useUnifiedAuth';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { 
   Users, 
@@ -83,122 +83,34 @@ export default function Dashboard() {
     try {
       setLoading(true);
       
-      const now = new Date();
-      const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-      
-      // Fetch all stats in parallel
-      const [
-        membersData,
-        upcomingEventsData,
-        thisWeekEventsData,
-        monthlyDonationsData,
-        totalDonationsData,
-        sermonsData,
-        volunteerSlotsData,
-        myCommitmentsData,
-        recentEventsData,
-        recentSermonsData,
-        myUpcomingCommitmentsData
-      ] = await Promise.all([
-        // Total and active members
-        supabase.from('members').select('member_status', { count: 'exact' }),
-        
-        // Upcoming events
-        supabase
-          .from('events')
-          .select('*', { count: 'exact' })
-          .gte('start_time', now.toISOString()),
-        
-        // This week's events
-        supabase
-          .from('events')
-          .select('*', { count: 'exact' })
-          .gte('start_time', now.toISOString())
-          .lte('start_time', weekFromNow.toISOString()),
-        
-        // Monthly donations (if user has access)
-        memberRole === 'admin' || memberRole === 'pastor'
-          ? supabase
-              .from('donations')
-              .select('amount')
-              .gte('donation_date', monthStart.toISOString().split('T')[0])
-          : { data: [], error: null },
-        
-        // Total donations (if user has access)
-        memberRole === 'admin' || memberRole === 'pastor'
-          ? supabase.from('donations').select('amount')
-          : { data: [], error: null },
-        
-        // Total sermons
-        supabase.from('sermons').select('*', { count: 'exact' }),
-        
-        // Open volunteer slots
-        supabase
-          .from('volunteer_slots')
-          .select('*', { count: 'exact' })
-          .eq('status', 'Open'),
-        
-        // My upcoming commitments
-        member?.id
-          ? supabase
-              .from('volunteer_slots')
-              .select('*', { count: 'exact' })
-              .eq('assigned_to', member.id)
-              .eq('status', 'Filled')
-          : { data: [], error: null, count: 0 },
-        
-        // Recent events for display
-        supabase
-          .from('events')
-          .select('id, title, start_time, location, is_public')
-          .gte('start_time', now.toISOString())
-          .order('start_time')
-          .limit(3),
-        
-        // Recent sermons
-        supabase
-          .from('sermons')
-          .select('id, title, speaker_name, date_preached, media_url')
-          .order('date_preached', { ascending: false })
-          .limit(3),
-        
-        // My upcoming volunteer commitments with details
-        member?.id
-          ? supabase
-              .from('volunteer_slots')
-              .select(`
-                id,
-                role:volunteer_roles(name),
-                event:events(title, start_time, location)
-              `)
-              .eq('assigned_to', member.id)
-              .eq('status', 'Filled')
-              .order('created_at')
-              .limit(3)
-          : { data: [], error: null }
-      ]);
-      
-      // Calculate stats
-      const activeMembers = membersData.data?.filter(m => m.member_status === 'active').length || 0;
-      const monthlyDonationAmount = monthlyDonationsData.data?.reduce((sum, d) => sum + d.amount, 0) || 0;
-      const totalDonationAmount = totalDonationsData.data?.reduce((sum, d) => sum + d.amount, 0) || 0;
+      // Get dashboard stats from Firebase service
+      const dashboardStats = await firebaseService.getDashboardStats();
       
       setStats({
-        totalMembers: membersData.count || 0,
-        activeMembers,
-        upcomingEvents: upcomingEventsData.count || 0,
-        thisWeekEvents: thisWeekEventsData.count || 0,
-        monthlyDonations: monthlyDonationAmount,
-        totalDonations: totalDonationAmount,
-        totalSermons: sermonsData.count || 0,
-        openVolunteerSlots: volunteerSlotsData.count || 0,
-        myUpcomingCommitments: myCommitmentsData.count || 0,
+        totalMembers: dashboardStats.members.total,
+        activeMembers: dashboardStats.members.active,
+        upcomingEvents: dashboardStats.events.upcoming,
+        thisWeekEvents: dashboardStats.events.upcoming, // Firebase service can be enhanced for week filtering
+        monthlyDonations: 0, // TODO: Add donations when implemented
+        totalDonations: 0, // TODO: Add donations when implemented
+        totalSermons: 0, // TODO: Add sermons when implemented
+        openVolunteerSlots: 0, // TODO: Add volunteers when implemented
+        myUpcomingCommitments: 0, // TODO: Add volunteers when implemented
       });
-      
-      setRecentEvents(recentEventsData.data || []);
-      setRecentSermons(recentSermonsData.data || []);
-      setUpcomingCommitments(myUpcomingCommitmentsData.data || []);
+
+      // Get recent events
+      const upcomingEvents = await firebaseService.events.getUpcomingEvents(5, false);
+      setRecentEvents(upcomingEvents.map(event => ({
+        id: event.id,
+        title: event.title,
+        start_time: event.startTime,
+        location: event.location || null,
+        is_public: event.isPublic
+      })));
+
+      // For now, set empty arrays for features not yet implemented in Firebase
+      setRecentSermons([]);
+      setUpcomingCommitments([]);
       
     } catch (error) {
       console.error('Error fetching dashboard data:', error);

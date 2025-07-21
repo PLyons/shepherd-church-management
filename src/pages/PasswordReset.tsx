@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
+import { useAuth } from '../hooks/useUnifiedAuth';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import { Mail, CheckCircle } from 'lucide-react';
 
 export default function PasswordReset() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
+  const { resetPassword } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,25 +18,24 @@ export default function PasswordReset() {
 
     try {
       console.log('Attempting password reset for:', email);
-      console.log('Redirect URL:', `${window.location.origin}/auth/callback`);
       
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      });
+      await resetPassword(email);
       
-      if (error) {
-        console.error('Password reset error:', error);
-        setMessage(`Error: ${error.message}`);
-        setIsSuccess(false);
-      } else {
-        // Store a flag to indicate password reset was requested
-        localStorage.setItem('password_reset_requested', 'true');
-        setMessage('Password reset email sent! Check your inbox for instructions.');
-        setIsSuccess(true);
-      }
+      // Store a flag to indicate password reset was requested
+      localStorage.setItem('password_reset_requested', 'true');
+      setMessage('Password reset email sent! Check your inbox for instructions.');
+      setIsSuccess(true);
     } catch (err: any) {
-      console.error('Unexpected error:', err);
-      setMessage('An unexpected error occurred. Please try again.');
+      console.error('Password reset error:', err);
+      
+      // Handle specific Firebase error codes
+      if (err.code === 'auth/user-not-found') {
+        setMessage('No account found with this email address.');
+      } else if (err.code === 'auth/invalid-email') {
+        setMessage('Please enter a valid email address.');
+      } else {
+        setMessage(err.message || 'An error occurred. Please try again.');
+      }
       setIsSuccess(false);
     } finally {
       setLoading(false);
