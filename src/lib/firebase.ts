@@ -8,7 +8,9 @@ const isNode = typeof window === 'undefined' && typeof global !== 'undefined';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: isNode ? process.env.VITE_FIREBASE_API_KEY : "AIzaSyDuWQ35Fwb-ljb1Jq-GH5dzIHhTLDpgJxc",
+  apiKey: process.env.VITE_FIREBASE_API_KEY || (() => {
+    throw new Error('VITE_FIREBASE_API_KEY environment variable is required');
+  })(),
   authDomain: isNode ? process.env.VITE_FIREBASE_AUTH_DOMAIN : "shepherd-cms-ba981.firebaseapp.com",
   projectId: isNode ? process.env.VITE_FIREBASE_PROJECT_ID : "shepherd-cms-ba981",
   storageBucket: isNode ? process.env.VITE_FIREBASE_STORAGE_BUCKET : "shepherd-cms-ba981.firebasestorage.app",

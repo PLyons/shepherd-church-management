@@ -7,6 +7,22 @@ node_modules/
 .env
 .env.local
 .env.*.local
+.env.development
+.env.production
+
+# Firebase config files
+firebase-config.json
+.firebase/
+firebase-debug.log
+firestore-debug.log
+
+# API Keys and secrets (prevent accidental commits)
+**/firebase-config.ts
+**/config/firebase.ts
+**/*-key.json
+**/*-credentials.json
+**/*secret*
+**/*key*
 
 # Build outputs
 dist/
