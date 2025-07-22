@@ -53,14 +53,24 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
 
   // Listen to auth state changes
   useEffect(() => {
+    console.log('FirebaseAuthContext: Setting up auth state listener');
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      console.log('FirebaseAuthContext: Auth state changed, user:', user ? user.uid : 'null');
       setUser(user);
       if (user) {
-        const memberData = await fetchMemberData(user.uid);
-        setMember(memberData);
+        console.log('FirebaseAuthContext: Fetching member data for user:', user.uid);
+        try {
+          const memberData = await fetchMemberData(user.uid);
+          console.log('FirebaseAuthContext: Member data fetched:', memberData);
+          setMember(memberData);
+        } catch (error) {
+          console.error('FirebaseAuthContext: Error fetching member data:', error);
+          setMember(null);
+        }
       } else {
         setMember(null);
       }
+      console.log('FirebaseAuthContext: Setting loading to false');
       setLoading(false);
     });
 

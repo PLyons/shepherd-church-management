@@ -18,18 +18,15 @@ export default function Login() {
 
     try {
       if (useMagicLink) {
-        const { error } = await signInWithMagicLink(email);
-        if (error) {
-          setMessage(`Error: ${error.message}`);
-        } else {
-          setMessage('Check your email for a magic link!');
-        }
+        await signInWithMagicLink(email);
+        setMessage('Check your email for a magic link!');
       } else {
-        const { error } = await signIn(email, password);
-        if (error) {
-          setMessage(`Error: ${error.message}`);
-        }
+        await signIn(email, password);
+        // If we get here, sign in was successful and navigation will happen automatically
       }
+    } catch (error: any) {
+      console.error('Login error:', error);
+      setMessage(`Error: ${error.message || 'Failed to sign in'}`);
     } finally {
       setLoading(false);
     }

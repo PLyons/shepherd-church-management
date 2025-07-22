@@ -17,9 +17,14 @@ import {
   DocumentReference,
   Query,
   QueryConstraint,
-  FirestoreError
+  FirestoreError,
+  getCountFromServer
 } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
+// Use Node.js compatible Firebase config if in Node environment
+const isNode = typeof window === 'undefined' && typeof global !== 'undefined';
+const { db } = isNode 
+  ? await import('../../lib/firebase-node')
+  : await import('../../lib/firebase');
 import { QueryOptions } from '../../types/firestore';
 
 // ============================================================================
@@ -215,8 +220,45 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
    * Count documents with optional filtering
    */
   async count(options?: QueryOptions): Promise<number> {
-    const results = await this.getAll(options);
-    return results.length;
+    try {
+      const constraints: any[] = [];
+      
+      // Apply where conditions
+      if (options?.where && options.where.length > 0) {
+        options.where.forEach(condition => {
+          constraints.push(where(condition.field, condition.operator, condition.value));
+        });
+      }
+
+      // Create query with constraints
+      const baseQuery = constraints.length > 0 
+        ? query(this.getCollectionRef(), ...constraints)
+        : this.getCollectionRef();
+
+      // Use Firestore's count aggregation for better performance
+      const countSnapshot = await getCountFromServer(baseQuery);
+      const count = countSnapshot.data().count;
+      
+      console.log(`BaseService: Count for ${this.collectionName}:`, count);
+      return count;
+    } catch (error) {
+      console.error(`Error counting ${this.collectionName} documents:`, error);
+      
+      // If count fails, fallback to getting documents and counting them
+      // This can happen if the collection doesn't exist yet
+      if (error.code === 'not-found' || error.code === 'permission-denied') {
+        console.warn(`BaseService: Fallback to document count for ${this.collectionName}`);
+        try {
+          const results = await this.getAll(options);
+          return results.length;
+        } catch (fallbackError) {
+          console.error(`BaseService: Fallback count also failed for ${this.collectionName}:`, fallbackError);
+          return 0; // Return 0 if both methods fail
+        }
+      }
+      
+      throw this.handleFirestoreError(error);
+    }
   }
 
   // ============================================================================

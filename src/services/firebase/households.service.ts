@@ -340,11 +340,18 @@ export class HouseholdsService extends BaseFirestoreService<HouseholdDocument, H
     citiesCount: number;
     statesCount: number;
   }> {
-    const households = await this.getAll();
-    
-    const total = households.length;
-    const withPrimaryContact = households.filter(h => h.primaryContactId).length;
+    // Use count for better performance for basic stats
+    const [total, withPrimaryContact] = await Promise.all([
+      this.count(),
+      this.count({ where: [{ field: 'primaryContactId', operator: '!=', value: null }] })
+    ]);
+
     const withoutPrimaryContact = total - withPrimaryContact;
+
+    // For detailed stats that require data aggregation, we'll need to fetch household data
+    // But we can limit this to essential fields and use a reasonable limit
+    const households = await this.getAll({ limit: 1000 }); // Reasonable limit for stats calculation
+    
     const totalMembers = households.reduce((sum, h) => sum + (h.memberCount || 0), 0);
     const averageMemberCount = total > 0 ? totalMembers / total : 0;
     

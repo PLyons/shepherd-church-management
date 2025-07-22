@@ -402,25 +402,36 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
     averageRSVPs: number;
     averageAttendance: number;
   }> {
-    const [allEvents, upcomingEvents, pastEvents] = await Promise.all([
-      this.getAll(),
-      this.getUpcomingEvents(1000),
-      this.getPastEvents(1000)
-    ]);
-
     const now = new Date();
     const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const thisMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    const thisMonthEvents = await this.getEventsByDateRange(thisMonthStart, thisMonthEnd);
 
-    const publicEvents = allEvents.filter(e => e.isPublic);
-    const totalRSVPs = allEvents.reduce((sum, e) => sum + e.rsvpStats.total, 0);
-    const averageRSVPs = allEvents.length > 0 ? totalRSVPs / allEvents.length : 0;
+    // Use count queries for better performance
+    const [total, publicCount, upcomingCount, pastCount, thisMonthCount] = await Promise.all([
+      this.count(),
+      this.count({ where: [{ field: 'isPublic', operator: '==', value: true }] }),
+      this.count({ where: [{ field: 'startTime', operator: '>=', value: now.toISOString() }] }),
+      this.count({ where: [{ field: 'startTime', operator: '<', value: now.toISOString() }] }),
+      this.count({
+        where: [
+          { field: 'startTime', operator: '>=', value: thisMonthStart.toISOString() },
+          { field: 'startTime', operator: '<=', value: thisMonthEnd.toISOString() }
+        ]
+      })
+    ]);
 
-    // Calculate average attendance (would need to check attendance subcollections)
+    // For averages, we'll need to fetch a sample of events
+    // Get a small sample of recent events for RSVP average
+    const recentEvents = await this.getAll({ limit: 50, orderBy: { field: 'startTime', direction: 'desc' } });
+    const totalRSVPs = recentEvents.reduce((sum, e) => sum + e.rsvpStats.total, 0);
+    const averageRSVPs = recentEvents.length > 0 ? totalRSVPs / recentEvents.length : 0;
+
+    // Calculate average attendance from recent past events
+    const recentPastEvents = await this.getPastEvents(20);
     let totalAttendance = 0;
     let eventsWithAttendance = 0;
-    for (const event of pastEvents.slice(0, 50)) { // Sample recent events
+    
+    for (const event of recentPastEvents) {
       try {
         const attendance = await this.getEventAttendance(event.id);
         const attendedCount = attendance.filter(a => a.attended).length;
@@ -434,12 +445,12 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
     const averageAttendance = eventsWithAttendance > 0 ? totalAttendance / eventsWithAttendance : 0;
 
     return {
-      total: allEvents.length,
-      public: publicEvents.length,
-      private: allEvents.length - publicEvents.length,
-      upcoming: upcomingEvents.length,
-      past: pastEvents.length,
-      thisMonth: thisMonthEvents.length,
+      total,
+      public: publicCount,
+      private: total - publicCount,
+      upcoming: upcomingCount,
+      past: pastCount,
+      thisMonth: thisMonthCount,
       averageRSVPs: Math.round(averageRSVPs * 100) / 100,
       averageAttendance: Math.round(averageAttendance * 100) / 100,
     };

@@ -76,13 +76,13 @@ async function main() {
 
   // Now import the seeding functions after env is loaded
   const { seedFirebaseData } = await import('./seed-firebase-data');
-  const { firebaseService } = await import('../services/firebase');
+  const { nodeFirebaseService } = await import('../services/firebase/node-firebase.service');
 
   try {
     switch (command) {
       case 'count':
         console.log('📊 Checking Firebase data counts...\n');
-        const counts = await firebaseService.getCollectionCounts();
+        const counts = await nodeFirebaseService.getCollectionCounts();
         console.log('CURRENT FIREBASE DATA:');
         console.log(`  Households: ${counts.households}`);
         console.log(`  Members:    ${counts.members}`);
