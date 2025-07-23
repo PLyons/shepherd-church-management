@@ -26,160 +26,163 @@ import PasswordReset from '../pages/PasswordReset';
 import SetPassword from '../pages/SetPassword';
 import NotFound from '../pages/NotFound';
 
-export const router = createBrowserRouter([
+export const router = createBrowserRouter(
+  [
+    {
+      path: '/',
+      element: <Navigate to="/dashboard" replace />,
+    },
+    {
+      path: '/login',
+      element: (
+        <AuthGuard requireAuth={false}>
+          <Login />
+        </AuthGuard>
+      ),
+    },
+    {
+      path: '/register',
+      element: (
+        <AuthGuard requireAuth={false}>
+          <Register />
+        </AuthGuard>
+      ),
+    },
+    {
+      path: '/',
+      element: (
+        <AuthGuard>
+          <Layout />
+        </AuthGuard>
+      ),
+      children: [
+        {
+          path: 'dashboard',
+          element: <Dashboard />,
+        },
+        {
+          path: 'members',
+          element: <Members />,
+        },
+        {
+          path: 'members/:id',
+          element: <MemberProfile />,
+        },
+        {
+          path: 'households',
+          element: <Households />,
+        },
+        {
+          path: 'households/:id',
+          element: (
+            <RoleGuard allowedRoles={['admin', 'pastor']}>
+              <HouseholdProfile />
+            </RoleGuard>
+          ),
+        },
+        {
+          path: 'events',
+          element: <Events />,
+        },
+        {
+          path: 'events/new',
+          element: (
+            <RoleGuard allowedRoles={['admin', 'pastor']}>
+              <EventForm />
+            </RoleGuard>
+          ),
+        },
+        {
+          path: 'events/:id',
+          element: <EventDetail />,
+        },
+        {
+          path: 'events/:id/edit',
+          element: (
+            <RoleGuard allowedRoles={['admin', 'pastor']}>
+              <EventForm />
+            </RoleGuard>
+          ),
+        },
+        {
+          path: 'donations',
+          element: (
+            <RoleGuard allowedRoles={['admin', 'pastor']}>
+              <Donations />
+            </RoleGuard>
+          ),
+        },
+        {
+          path: 'reports',
+          element: (
+            <RoleGuard allowedRoles={['admin', 'pastor']}>
+              <Reports />
+            </RoleGuard>
+          ),
+        },
+        {
+          path: 'sermons',
+          element: <Sermons />,
+        },
+        {
+          path: 'volunteers',
+          element: <Volunteers />,
+        },
+        {
+          path: 'my-volunteering',
+          element: <MyVolunteering />,
+        },
+        {
+          path: 'settings',
+          element: (
+            <RoleGuard allowedRoles={['admin', 'pastor']}>
+              <Settings />
+            </RoleGuard>
+          ),
+        },
+      ],
+    },
+    {
+      path: '/auth/callback',
+      element: (
+        <AuthGuard requireAuth={false}>
+          <AuthCallback />
+        </AuthGuard>
+      ),
+    },
+    {
+      path: '/reset-password',
+      element: (
+        <AuthGuard requireAuth={false}>
+          <PasswordReset />
+        </AuthGuard>
+      ),
+    },
+    {
+      path: '/set-password',
+      element: <SetPassword />,
+    },
+    {
+      path: '/register/qr',
+      element: (
+        <AuthGuard requireAuth={false}>
+          <QRRegistration />
+        </AuthGuard>
+      ),
+    },
+    {
+      path: '*',
+      element: <NotFound />,
+    },
+  ],
   {
-    path: '/',
-    element: <Navigate to="/dashboard" replace />,
-  },
-  {
-    path: '/login',
-    element: (
-      <AuthGuard requireAuth={false}>
-        <Login />
-      </AuthGuard>
-    ),
-  },
-  {
-    path: '/register',
-    element: (
-      <AuthGuard requireAuth={false}>
-        <Register />
-      </AuthGuard>
-    ),
-  },
-  {
-    path: '/',
-    element: (
-      <AuthGuard>
-        <Layout />
-      </AuthGuard>
-    ),
-    children: [
-      {
-        path: 'dashboard',
-        element: <Dashboard />,
-      },
-      {
-        path: 'members',
-        element: <Members />,
-      },
-      {
-        path: 'members/:id',
-        element: <MemberProfile />,
-      },
-      {
-        path: 'households',
-        element: <Households />,
-      },
-      {
-        path: 'households/:id',
-        element: (
-          <RoleGuard allowedRoles={['admin', 'pastor']}>
-            <HouseholdProfile />
-          </RoleGuard>
-        ),
-      },
-      {
-        path: 'events',
-        element: <Events />,
-      },
-      {
-        path: 'events/new',
-        element: (
-          <RoleGuard allowedRoles={['admin', 'pastor']}>
-            <EventForm />
-          </RoleGuard>
-        ),
-      },
-      {
-        path: 'events/:id',
-        element: <EventDetail />,
-      },
-      {
-        path: 'events/:id/edit',
-        element: (
-          <RoleGuard allowedRoles={['admin', 'pastor']}>
-            <EventForm />
-          </RoleGuard>
-        ),
-      },
-      {
-        path: 'donations',
-        element: (
-          <RoleGuard allowedRoles={['admin', 'pastor']}>
-            <Donations />
-          </RoleGuard>
-        ),
-      },
-      {
-        path: 'reports',
-        element: (
-          <RoleGuard allowedRoles={['admin', 'pastor']}>
-            <Reports />
-          </RoleGuard>
-        ),
-      },
-      {
-        path: 'sermons',
-        element: <Sermons />,
-      },
-      {
-        path: 'volunteers',
-        element: <Volunteers />,
-      },
-      {
-        path: 'my-volunteering',
-        element: <MyVolunteering />,
-      },
-      {
-        path: 'settings',
-        element: (
-          <RoleGuard allowedRoles={['admin', 'pastor']}>
-            <Settings />
-          </RoleGuard>
-        ),
-      },
-    ],
-  },
-  {
-    path: '/auth/callback',
-    element: (
-      <AuthGuard requireAuth={false}>
-        <AuthCallback />
-      </AuthGuard>
-    ),
-  },
-  {
-    path: '/reset-password',
-    element: (
-      <AuthGuard requireAuth={false}>
-        <PasswordReset />
-      </AuthGuard>
-    ),
-  },
-  {
-    path: '/set-password',
-    element: <SetPassword />,
-  },
-  {
-    path: '/register/qr',
-    element: (
-      <AuthGuard requireAuth={false}>
-        <QRRegistration />
-      </AuthGuard>
-    ),
-  },
-  {
-    path: '*',
-    element: <NotFound />,
-  },
-], {
-  future: {
-    v7_startTransition: true,
-    v7_relativeSplatPath: true,
-    v7_fetcherPersist: true,
-    v7_normalizeFormMethod: true,
-    v7_partialHydration: true,
-    v7_skipActionErrorRevalidation: true,
-  },
-});
+    future: {
+      v7_startTransition: true,
+      v7_relativeSplatPath: true,
+      v7_fetcherPersist: true,
+      v7_normalizeFormMethod: true,
+      v7_partialHydration: true,
+      v7_skipActionErrorRevalidation: true,
+    },
+  }
+);

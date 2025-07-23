@@ -1,35 +1,41 @@
-import { http, HttpResponse } from 'msw'
+import { http, HttpResponse } from 'msw';
 
 export const handlers = [
   // Firebase Auth endpoints
-  http.post('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword', () => {
-    return HttpResponse.json({
-      kind: 'identitytoolkit#VerifyPasswordResponse',
-      localId: 'test-user-id',
-      email: 'test@example.com',
-      displayName: '',
-      idToken: 'mock-id-token',
-      refreshToken: 'mock-refresh-token',
-      expiresIn: '3600'
-    })
-  }),
+  http.post(
+    'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword',
+    () => {
+      return HttpResponse.json({
+        kind: 'identitytoolkit#VerifyPasswordResponse',
+        localId: 'test-user-id',
+        email: 'test@example.com',
+        displayName: '',
+        idToken: 'mock-id-token',
+        refreshToken: 'mock-refresh-token',
+        expiresIn: '3600',
+      });
+    }
+  ),
 
-  http.post('https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode', () => {
-    return HttpResponse.json({
-      kind: 'identitytoolkit#GetOobConfirmationCodeResponse',
-      email: 'test@example.com'
-    })
-  }),
+  http.post(
+    'https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode',
+    () => {
+      return HttpResponse.json({
+        kind: 'identitytoolkit#GetOobConfirmationCodeResponse',
+        email: 'test@example.com',
+      });
+    }
+  ),
 
   // Firebase Firestore endpoints
   http.post('*/v1/projects/*/databases/(default)/documents:commit', () => {
     return HttpResponse.json({
       writeResults: [
         {
-          updateTime: '2022-01-01T00:00:00.000000Z'
-        }
-      ]
-    })
+          updateTime: '2022-01-01T00:00:00.000000Z',
+        },
+      ],
+    });
   }),
 
   http.get('*/v1/projects/*/databases/(default)/documents/*', () => {
@@ -38,11 +44,11 @@ export const handlers = [
       fields: {
         id: { stringValue: 'test-id' },
         name: { stringValue: 'Test Document' },
-        createdAt: { timestampValue: '2022-01-01T00:00:00.000000Z' }
+        createdAt: { timestampValue: '2022-01-01T00:00:00.000000Z' },
       },
       createTime: '2022-01-01T00:00:00.000000Z',
-      updateTime: '2022-01-01T00:00:00.000000Z'
-    })
+      updateTime: '2022-01-01T00:00:00.000000Z',
+    });
   }),
 
   // Supabase endpoints (for legacy support during migration)
@@ -55,25 +61,27 @@ export const handlers = [
       user: {
         id: 'test-user-id',
         email: 'test@example.com',
-        role: 'authenticated'
-      }
-    })
+        role: 'authenticated',
+      },
+    });
   }),
 
   http.get('*/rest/v1/*', () => {
-    return HttpResponse.json([])
+    return HttpResponse.json([]);
   }),
 
   http.post('*/rest/v1/*', () => {
     return HttpResponse.json({
       id: 'test-id',
-      created_at: '2022-01-01T00:00:00.000000Z'
-    })
+      created_at: '2022-01-01T00:00:00.000000Z',
+    });
   }),
 
   // Handle any unhandled requests
   http.all('*', (req) => {
-    console.warn(`Unhandled ${req.request.method} request to ${req.request.url}`)
-    return new HttpResponse(null, { status: 404 })
-  })
-]
+    console.warn(
+      `Unhandled ${req.request.method} request to ${req.request.url}`
+    );
+    return new HttpResponse(null, { status: 404 });
+  }),
+];

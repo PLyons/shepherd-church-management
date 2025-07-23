@@ -1,5 +1,5 @@
-import { faker } from '@faker-js/faker'
-import { Member, Household } from '@/types'
+import { faker } from '@faker-js/faker';
+import { Member, Household } from '@/types';
 
 export const createMockMember = (overrides: Partial<Member> = {}): Member => {
   return {
@@ -17,10 +17,12 @@ export const createMockMember = (overrides: Partial<Member> = {}): Member => {
     createdAt: faker.date.past(),
     updatedAt: faker.date.recent(),
     ...overrides,
-  }
-}
+  };
+};
 
-export const createMockHousehold = (overrides: Partial<Household> = {}): Household => {
+export const createMockHousehold = (
+  overrides: Partial<Household> = {}
+): Household => {
   return {
     id: faker.string.uuid(),
     name: `${faker.person.lastName()} Family`,
@@ -34,26 +36,26 @@ export const createMockHousehold = (overrides: Partial<Household> = {}): Househo
     createdAt: faker.date.past(),
     updatedAt: faker.date.recent(),
     ...overrides,
-  }
-}
+  };
+};
 
 export const createMockMembers = (count: number = 5): Member[] => {
-  return Array.from({ length: count }, () => createMockMember())
-}
+  return Array.from({ length: count }, () => createMockMember());
+};
 
 export const createMockHouseholds = (count: number = 3): Household[] => {
-  return Array.from({ length: count }, () => createMockHousehold())
-}
+  return Array.from({ length: count }, () => createMockHousehold());
+};
 
 export const createMockFamily = (memberCount: number = 3) => {
-  const household = createMockHousehold()
-  const members = Array.from({ length: memberCount }, (_, index) => 
-    createMockMember({ 
+  const household = createMockHousehold();
+  const members = Array.from({ length: memberCount }, (_, index) =>
+    createMockMember({
       householdId: household.id,
       lastName: household.name.split(' ')[0], // Use household's last name
       role: index === 0 ? 'admin' : 'member', // First member is admin
     })
-  )
-  
-  return { household, members }
-}
+  );
+
+  return { household, members };
+};

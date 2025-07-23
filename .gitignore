@@ -55,3 +55,7 @@ coverage/
 
 # Misc
 *.pem
+
+# Serena AI assistant
+serena/
+.serena/

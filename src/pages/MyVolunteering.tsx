@@ -2,7 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useUnifiedAuth';
 import { useToast } from '../contexts/ToastContext';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
-import { Calendar, Clock, MapPin, User, Users, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  User,
+  Users,
+  AlertCircle,
+  CheckCircle,
+  XCircle,
+} from 'lucide-react';
 
 type VolunteerCommitment = {
   id: string;
@@ -44,28 +53,37 @@ export default function MyVolunteering() {
   const fetchMyCommitments = async () => {
     try {
       setLoading(true);
-      
+
       const { data, error } = await supabase
         .from('volunteer_slots')
-        .select(`
+        .select(
+          `
           *,
           role:volunteer_roles(id, name, description),
           event:events(id, title, start_time, end_time, location, description, is_public)
-        `)
+        `
+        )
         .eq('assigned_to', user?.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       setCommitments(data || []);
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Failed to load volunteer commitments', 'error');
+      showToast(
+        err instanceof Error
+          ? err.message
+          : 'Failed to load volunteer commitments',
+        'error'
+      );
     } finally {
       setLoading(false);
     }
   };
 
   const handleCancelCommitment = async (slotId: string) => {
-    if (!confirm('Are you sure you want to cancel this volunteer commitment?')) {
+    if (
+      !confirm('Are you sure you want to cancel this volunteer commitment?')
+    ) {
       return;
     }
 
@@ -75,7 +93,7 @@ export default function MyVolunteering() {
         .update({
           assigned_to: null,
           status: 'Open',
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq('id', slotId)
         .eq('assigned_to', user?.id);
@@ -85,7 +103,10 @@ export default function MyVolunteering() {
       showToast('Volunteer commitment cancelled successfully', 'success');
       await fetchMyCommitments();
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Failed to cancel commitment', 'error');
+      showToast(
+        err instanceof Error ? err.message : 'Failed to cancel commitment',
+        'error'
+      );
     }
   };
 
@@ -96,25 +117,25 @@ export default function MyVolunteering() {
       month: 'long',
       day: 'numeric',
       hour: 'numeric',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
   const formatTime = (dateTimeString: string) => {
     return new Date(dateTimeString).toLocaleTimeString('en-US', {
       hour: 'numeric',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
   const getFilteredCommitments = () => {
     const now = new Date();
-    
+
     switch (filter) {
       case 'upcoming':
-        return commitments.filter(c => new Date(c.event.start_time) >= now);
+        return commitments.filter((c) => new Date(c.event.start_time) >= now);
       case 'past':
-        return commitments.filter(c => new Date(c.event.start_time) < now);
+        return commitments.filter((c) => new Date(c.event.start_time) < now);
       default:
         return commitments;
     }
@@ -123,7 +144,7 @@ export default function MyVolunteering() {
   const getEventStatus = (eventStartTime: string) => {
     const now = new Date();
     const eventTime = new Date(eventStartTime);
-    
+
     if (eventTime < now) {
       return { status: 'completed', color: 'text-gray-500', icon: CheckCircle };
     } else if (eventTime.getTime() - now.getTime() < 24 * 60 * 60 * 1000) {
@@ -134,7 +155,9 @@ export default function MyVolunteering() {
   };
 
   const filteredCommitments = getFilteredCommitments();
-  const upcomingCount = commitments.filter(c => new Date(c.event.start_time) >= new Date()).length;
+  const upcomingCount = commitments.filter(
+    (c) => new Date(c.event.start_time) >= new Date()
+  ).length;
   const totalCount = commitments.length;
 
   if (loading) {
@@ -149,7 +172,9 @@ export default function MyVolunteering() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">My Volunteer Schedule</h1>
+          <h1 className="text-3xl font-bold text-gray-900">
+            My Volunteer Schedule
+          </h1>
           <p className="mt-2 text-gray-600">
             Your volunteer commitments and upcoming service opportunities
           </p>
@@ -168,8 +193,12 @@ export default function MyVolunteering() {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Total Commitments</dt>
-                  <dd className="text-lg font-medium text-gray-900">{totalCount}</dd>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Total Commitments
+                  </dt>
+                  <dd className="text-lg font-medium text-gray-900">
+                    {totalCount}
+                  </dd>
                 </dl>
               </div>
             </div>
@@ -186,8 +215,12 @@ export default function MyVolunteering() {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Upcoming</dt>
-                  <dd className="text-lg font-medium text-gray-900">{upcomingCount}</dd>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Upcoming
+                  </dt>
+                  <dd className="text-lg font-medium text-gray-900">
+                    {upcomingCount}
+                  </dd>
                 </dl>
               </div>
             </div>
@@ -204,8 +237,12 @@ export default function MyVolunteering() {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Completed</dt>
-                  <dd className="text-lg font-medium text-gray-900">{totalCount - upcomingCount}</dd>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Completed
+                  </dt>
+                  <dd className="text-lg font-medium text-gray-900">
+                    {totalCount - upcomingCount}
+                  </dd>
                 </dl>
               </div>
             </div>
@@ -255,15 +292,15 @@ export default function MyVolunteering() {
             <div className="px-6 py-12 text-center">
               <Users className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-2 text-sm font-medium text-gray-900">
-                {filter === 'upcoming' 
-                  ? 'No upcoming volunteer commitments' 
-                  : filter === 'past' 
-                    ? 'No past volunteer commitments' 
+                {filter === 'upcoming'
+                  ? 'No upcoming volunteer commitments'
+                  : filter === 'past'
+                    ? 'No past volunteer commitments'
                     : 'No volunteer commitments'}
               </h3>
               <p className="mt-1 text-sm text-gray-500">
-                {filter === 'upcoming' 
-                  ? 'Visit the Volunteers page to sign up for opportunities.' 
+                {filter === 'upcoming'
+                  ? 'Visit the Volunteers page to sign up for opportunities.'
                   : 'Your volunteer history will appear here.'}
               </p>
             </div>
@@ -271,37 +308,50 @@ export default function MyVolunteering() {
             filteredCommitments.map((commitment) => {
               const eventStatus = getEventStatus(commitment.event.start_time);
               const StatusIcon = eventStatus.icon;
-              
+
               return (
-                <div key={commitment.id} className="px-6 py-6 hover:bg-gray-50 transition-colors">
+                <div
+                  key={commitment.id}
+                  className="px-6 py-6 hover:bg-gray-50 transition-colors"
+                >
                   <div className="flex items-start justify-between">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center mb-3">
-                        <StatusIcon className={`w-5 h-5 mr-2 ${eventStatus.color}`} />
+                        <StatusIcon
+                          className={`w-5 h-5 mr-2 ${eventStatus.color}`}
+                        />
                         <h3 className="text-lg font-semibold text-gray-900">
                           {commitment.role.name}
                         </h3>
-                        <span className={`ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          commitment.status === 'Filled' 
-                            ? 'bg-green-100 text-green-800' 
-                            : commitment.status === 'Cancelled'
-                              ? 'bg-red-100 text-red-800'
-                              : 'bg-yellow-100 text-yellow-800'
-                        }`}>
+                        <span
+                          className={`ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            commitment.status === 'Filled'
+                              ? 'bg-green-100 text-green-800'
+                              : commitment.status === 'Cancelled'
+                                ? 'bg-red-100 text-red-800'
+                                : 'bg-yellow-100 text-yellow-800'
+                          }`}
+                        >
                           {commitment.status}
                         </span>
                       </div>
-                      
+
                       <div className="space-y-2 text-sm text-gray-600">
                         <div className="flex items-center">
                           <Calendar className="w-4 h-4 mr-2 text-gray-400" />
-                          <span className="font-medium">{commitment.event.title}</span>
+                          <span className="font-medium">
+                            {commitment.event.title}
+                          </span>
                         </div>
                         <div className="flex items-center">
                           <Clock className="w-4 h-4 mr-2 text-gray-400" />
-                          <span>{formatDateTime(commitment.event.start_time)}</span>
+                          <span>
+                            {formatDateTime(commitment.event.start_time)}
+                          </span>
                           {commitment.event.end_time && (
-                            <span className="ml-1">- {formatTime(commitment.event.end_time)}</span>
+                            <span className="ml-1">
+                              - {formatTime(commitment.event.end_time)}
+                            </span>
                           )}
                         </div>
                         {commitment.event.location && (
@@ -311,13 +361,13 @@ export default function MyVolunteering() {
                           </div>
                         )}
                       </div>
-                      
+
                       {commitment.role.description && (
                         <p className="mt-3 text-sm text-gray-700">
                           <strong>Role:</strong> {commitment.role.description}
                         </p>
                       )}
-                      
+
                       {commitment.note && (
                         <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
                           <p className="text-sm text-blue-700">
@@ -325,14 +375,24 @@ export default function MyVolunteering() {
                           </p>
                         </div>
                       )}
-                      
+
                       {commitment.event.description && (
                         <div className="mt-3">
                           <details className="group">
                             <summary className="cursor-pointer text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center">
                               <span>View Event Details</span>
-                              <svg className="w-4 h-4 ml-1 transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              <svg
+                                className="w-4 h-4 ml-1 transition-transform group-open:rotate-180"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M19 9l-7 7-7-7"
+                                />
                               </svg>
                             </summary>
                             <div className="mt-2 text-sm text-gray-700 pl-2 border-l-2 border-gray-200">
@@ -342,8 +402,9 @@ export default function MyVolunteering() {
                         </div>
                       )}
                     </div>
-                    
-                    {eventStatus.status === 'upcoming' || eventStatus.status === 'soon' ? (
+
+                    {eventStatus.status === 'upcoming' ||
+                    eventStatus.status === 'soon' ? (
                       <div className="ml-6 flex-shrink-0">
                         <button
                           onClick={() => handleCancelCommitment(commitment.id)}

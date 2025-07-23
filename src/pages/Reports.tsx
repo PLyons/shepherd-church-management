@@ -38,7 +38,7 @@ export default function Reports() {
     totalDonations: 0,
     totalDonors: 0,
     averageDonation: 0,
-    anonymousDonations: 0
+    anonymousDonations: 0,
   });
 
   useEffect(() => {
@@ -48,18 +48,20 @@ export default function Reports() {
   const fetchReportData = async () => {
     try {
       setLoading(true);
-      
+
       // Fetch donations for the year with category and member info
       const { data: donations, error: donationsError } = await supabase
         .from('donations')
-        .select(`
+        .select(
+          `
           amount,
           donation_date,
           category_id,
           member_id,
           donation_categories!inner(id, name, description),
           members(first_name, last_name, email)
-        `)
+        `
+        )
         .gte('donation_date', `${reportYear}-01-01`)
         .lt('donation_date', `${reportYear + 1}-01-01`)
         .order('donation_date');
@@ -67,32 +69,42 @@ export default function Reports() {
       if (donationsError) throw donationsError;
 
       // Process category totals
-      const categoryTotals = new Map<string, { name: string; description: string | null; total: number }>();
-      
+      const categoryTotals = new Map<
+        string,
+        { name: string; description: string | null; total: number }
+      >();
+
       // Process monthly data
       const monthlyTotals = new Map<string, { total: number; count: number }>();
-      
-      // Process donor data
-      const donorTotals = new Map<string, { 
-        name: string | null; 
-        email: string | null; 
-        total: number; 
-        count: number; 
-        isAnonymous: boolean 
-      }>();
 
-      donations?.forEach(donation => {
+      // Process donor data
+      const donorTotals = new Map<
+        string,
+        {
+          name: string | null;
+          email: string | null;
+          total: number;
+          count: number;
+          isAnonymous: boolean;
+        }
+      >();
+
+      donations?.forEach((donation) => {
         const donationAmount = donation.amount;
         const donationDate = new Date(donation.donation_date);
         const monthKey = `${donationDate.getFullYear()}-${String(donationDate.getMonth() + 1).padStart(2, '0')}`;
-        
+
         // Category totals
         const categoryId = donation.category_id;
         const categoryName = donation.donation_categories?.name || 'Unknown';
         const categoryDesc = donation.donation_categories?.description || null;
-        
+
         if (!categoryTotals.has(categoryId)) {
-          categoryTotals.set(categoryId, { name: categoryName, description: categoryDesc, total: 0 });
+          categoryTotals.set(categoryId, {
+            name: categoryName,
+            description: categoryDesc,
+            total: 0,
+          });
         }
         categoryTotals.get(categoryId)!.total += donationAmount;
 
@@ -106,18 +118,19 @@ export default function Reports() {
 
         // Donor totals
         const donorKey = donation.member_id || 'anonymous';
-        const donorName = donation.members ? 
-          `${donation.members.first_name} ${donation.members.last_name}` : null;
+        const donorName = donation.members
+          ? `${donation.members.first_name} ${donation.members.last_name}`
+          : null;
         const donorEmail = donation.members?.email || null;
         const isAnonymous = !donation.member_id;
 
         if (!donorTotals.has(donorKey)) {
-          donorTotals.set(donorKey, { 
-            name: donorName, 
-            email: donorEmail, 
-            total: 0, 
-            count: 0, 
-            isAnonymous 
+          donorTotals.set(donorKey, {
+            name: donorName,
+            email: donorEmail,
+            total: 0,
+            count: 0,
+            isAnonymous,
           });
         }
         const donorInfo = donorTotals.get(donorKey)!;
@@ -126,37 +139,50 @@ export default function Reports() {
       });
 
       // Convert maps to arrays
-      const categoryArray: DonationCategory[] = Array.from(categoryTotals.entries()).map(([id, data]) => ({
+      const categoryArray: DonationCategory[] = Array.from(
+        categoryTotals.entries()
+      ).map(([id, data]) => ({
         id,
         name: data.name,
         description: data.description,
-        total_amount: data.total
+        total_amount: data.total,
       }));
 
-      const monthlyArray: MonthlyData[] = Array.from(monthlyTotals.entries()).map(([monthKey, data]) => {
+      const monthlyArray: MonthlyData[] = Array.from(
+        monthlyTotals.entries()
+      ).map(([monthKey, data]) => {
         const [year, month] = monthKey.split('-');
         return {
-          month: new Date(parseInt(year), parseInt(month) - 1).toLocaleDateString('en-US', { month: 'long' }),
+          month: new Date(
+            parseInt(year),
+            parseInt(month) - 1
+          ).toLocaleDateString('en-US', { month: 'long' }),
           year: parseInt(year),
           total_amount: data.total,
-          donation_count: data.count
+          donation_count: data.count,
         };
       });
 
-      const donorArray: DonorSummary[] = Array.from(donorTotals.entries()).map(([key, data]) => ({
-        member_id: key === 'anonymous' ? null : key,
-        member_name: data.name,
-        email: data.email,
-        total_amount: data.total,
-        donation_count: data.count,
-        is_anonymous: data.isAnonymous
-      })).sort((a, b) => b.total_amount - a.total_amount);
+      const donorArray: DonorSummary[] = Array.from(donorTotals.entries())
+        .map(([key, data]) => ({
+          member_id: key === 'anonymous' ? null : key,
+          member_name: data.name,
+          email: data.email,
+          total_amount: data.total,
+          donation_count: data.count,
+          is_anonymous: data.isAnonymous,
+        }))
+        .sort((a, b) => b.total_amount - a.total_amount);
 
       // Calculate yearly totals
-      const totalDonations = donations?.reduce((sum, d) => sum + d.amount, 0) || 0;
+      const totalDonations =
+        donations?.reduce((sum, d) => sum + d.amount, 0) || 0;
       const totalDonors = donorTotals.size;
-      const averageDonation = donations?.length ? totalDonations / donations.length : 0;
-      const anonymousDonations = donorArray.find(d => d.is_anonymous)?.total_amount || 0;
+      const averageDonation = donations?.length
+        ? totalDonations / donations.length
+        : 0;
+      const anonymousDonations =
+        donorArray.find((d) => d.is_anonymous)?.total_amount || 0;
 
       setCategoryData(categoryArray);
       setMonthlyData(monthlyArray);
@@ -165,11 +191,13 @@ export default function Reports() {
         totalDonations,
         totalDonors,
         averageDonation,
-        anonymousDonations
+        anonymousDonations,
       });
-
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Failed to load report data', 'error');
+      showToast(
+        err instanceof Error ? err.message : 'Failed to load report data',
+        'error'
+      );
     } finally {
       setLoading(false);
     }
@@ -178,7 +206,7 @@ export default function Reports() {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'USD',
     }).format(amount);
   };
 
@@ -233,8 +261,13 @@ export default function Reports() {
             onChange={(e) => setReportYear(parseInt(e.target.value))}
             className="rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           >
-            {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(year => (
-              <option key={year} value={year}>{year}</option>
+            {Array.from(
+              { length: 5 },
+              (_, i) => new Date().getFullYear() - i
+            ).map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
             ))}
           </select>
           <button
@@ -256,10 +289,11 @@ export default function Reports() {
             Tax Year {reportYear} • Church Financial Summary
           </p>
           <p className="text-center text-sm text-gray-500 mt-1">
-            Generated on {new Date().toLocaleDateString('en-US', { 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
+            Generated on{' '}
+            {new Date().toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
             })}
           </p>
         </div>
@@ -276,8 +310,12 @@ export default function Reports() {
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Total Donations</dt>
-                    <dd className="text-lg font-medium text-gray-900">{formatCurrency(yearlyTotals.totalDonations)}</dd>
+                    <dt className="text-sm font-medium text-gray-500 truncate">
+                      Total Donations
+                    </dt>
+                    <dd className="text-lg font-medium text-gray-900">
+                      {formatCurrency(yearlyTotals.totalDonations)}
+                    </dd>
                   </dl>
                 </div>
               </div>
@@ -294,8 +332,12 @@ export default function Reports() {
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Total Donors</dt>
-                    <dd className="text-lg font-medium text-gray-900">{yearlyTotals.totalDonors}</dd>
+                    <dt className="text-sm font-medium text-gray-500 truncate">
+                      Total Donors
+                    </dt>
+                    <dd className="text-lg font-medium text-gray-900">
+                      {yearlyTotals.totalDonors}
+                    </dd>
                   </dl>
                 </div>
               </div>
@@ -312,8 +354,12 @@ export default function Reports() {
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Average Donation</dt>
-                    <dd className="text-lg font-medium text-gray-900">{formatCurrency(yearlyTotals.averageDonation)}</dd>
+                    <dt className="text-sm font-medium text-gray-500 truncate">
+                      Average Donation
+                    </dt>
+                    <dd className="text-lg font-medium text-gray-900">
+                      {formatCurrency(yearlyTotals.averageDonation)}
+                    </dd>
                   </dl>
                 </div>
               </div>
@@ -330,8 +376,12 @@ export default function Reports() {
                 </div>
                 <div className="ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Anonymous</dt>
-                    <dd className="text-lg font-medium text-gray-900">{formatCurrency(yearlyTotals.anonymousDonations)}</dd>
+                    <dt className="text-sm font-medium text-gray-500 truncate">
+                      Anonymous
+                    </dt>
+                    <dd className="text-lg font-medium text-gray-900">
+                      {formatCurrency(yearlyTotals.anonymousDonations)}
+                    </dd>
                   </dl>
                 </div>
               </div>
@@ -373,7 +423,11 @@ export default function Reports() {
                       {formatCurrency(category.total_amount)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {((category.total_amount / yearlyTotals.totalDonations) * 100).toFixed(1)}%
+                      {(
+                        (category.total_amount / yearlyTotals.totalDonations) *
+                        100
+                      ).toFixed(1)}
+                      %
                     </td>
                   </tr>
                 ))}
@@ -416,7 +470,9 @@ export default function Reports() {
                       {month.donation_count}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatCurrency(month.total_amount / month.donation_count)}
+                      {formatCurrency(
+                        month.total_amount / month.donation_count
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -428,7 +484,9 @@ export default function Reports() {
         {/* Top Donors (Admin/Pastor only) */}
         {(memberRole === 'admin' || memberRole === 'pastor') && (
           <div className="section bg-white shadow rounded-lg p-6">
-            <h3 className="text-lg font-semibold mb-4">Donor Summary (Top 20)</h3>
+            <h3 className="text-lg font-semibold mb-4">
+              Donor Summary (Top 20)
+            </h3>
             <div className="overflow-x-auto">
               <table className="table min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -455,13 +513,15 @@ export default function Reports() {
                     <tr key={index}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {donor.is_anonymous ? (
-                          <span className="text-gray-500 italic">Anonymous</span>
+                          <span className="text-gray-500 italic">
+                            Anonymous
+                          </span>
                         ) : (
                           donor.member_name || 'Unknown'
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {donor.is_anonymous ? '-' : (donor.email || '-')}
+                        {donor.is_anonymous ? '-' : donor.email || '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {formatCurrency(donor.total_amount)}
@@ -470,7 +530,9 @@ export default function Reports() {
                         {donor.donation_count}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {formatCurrency(donor.total_amount / donor.donation_count)}
+                        {formatCurrency(
+                          donor.total_amount / donor.donation_count
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -484,8 +546,16 @@ export default function Reports() {
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <div className="flex">
             <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              <svg
+                className="h-5 w-5 text-yellow-400"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                  clipRule="evenodd"
+                />
               </svg>
             </div>
             <div className="ml-3">
@@ -494,9 +564,11 @@ export default function Reports() {
               </h3>
               <div className="mt-2 text-sm text-yellow-700">
                 <p>
-                  This report provides a summary of donations received during the {reportYear} tax year. 
-                  Individual donation receipts should be provided to donors for tax deduction purposes. 
-                  Consult with a qualified accountant or tax professional for specific compliance requirements.
+                  This report provides a summary of donations received during
+                  the {reportYear} tax year. Individual donation receipts should
+                  be provided to donors for tax deduction purposes. Consult with
+                  a qualified accountant or tax professional for specific
+                  compliance requirements.
                 </p>
               </div>
             </div>

@@ -13,13 +13,22 @@ config({ path: '.env.local' });
 
 // Firebase configuration with fallbacks
 const firebaseConfig = {
-  apiKey: process.env.VITE_FIREBASE_API_KEY || "AIzaSyDuWQ35Fwb-ljb1Jq-GH5dzIHhTLDpgJxc",
-  authDomain: process.env.VITE_FIREBASE_AUTH_DOMAIN || "shepherd-cms-ba981.firebaseapp.com",
-  projectId: process.env.VITE_FIREBASE_PROJECT_ID || "shepherd-cms-ba981",
-  storageBucket: process.env.VITE_FIREBASE_STORAGE_BUCKET || "shepherd-cms-ba981.firebasestorage.app",
-  messagingSenderId: process.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "280357223841",
-  appId: process.env.VITE_FIREBASE_APP_ID || "1:280357223841:web:73c9fb5edf2c0471b45fe0",
-  measurementId: process.env.VITE_FIREBASE_MEASUREMENT_ID || "G-L4YXRH7NJJ"
+  apiKey:
+    process.env.VITE_FIREBASE_API_KEY ||
+    'AIzaSyDuWQ35Fwb-ljb1Jq-GH5dzIHhTLDpgJxc',
+  authDomain:
+    process.env.VITE_FIREBASE_AUTH_DOMAIN ||
+    'shepherd-cms-ba981.firebaseapp.com',
+  projectId: process.env.VITE_FIREBASE_PROJECT_ID || 'shepherd-cms-ba981',
+  storageBucket:
+    process.env.VITE_FIREBASE_STORAGE_BUCKET ||
+    'shepherd-cms-ba981.firebasestorage.app',
+  messagingSenderId:
+    process.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '280357223841',
+  appId:
+    process.env.VITE_FIREBASE_APP_ID ||
+    '1:280357223841:web:73c9fb5edf2c0471b45fe0',
+  measurementId: process.env.VITE_FIREBASE_MEASUREMENT_ID || 'G-L4YXRH7NJJ',
 };
 
 // Initialize Firebase
@@ -36,13 +45,13 @@ export class NodeFirebaseService {
     const [membersCount, householdsCount, eventsCount] = await Promise.all([
       getCountFromServer(collection(db, 'members')),
       getCountFromServer(collection(db, 'households')),
-      getCountFromServer(collection(db, 'events'))
+      getCountFromServer(collection(db, 'events')),
     ]);
 
     return {
       members: membersCount.data().count,
       households: householdsCount.data().count,
-      events: eventsCount.data().count
+      events: eventsCount.data().count,
     };
   }
 
@@ -52,9 +61,9 @@ export class NodeFirebaseService {
       await getDocs(testCollection);
       return { success: true };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }

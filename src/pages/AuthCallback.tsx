@@ -12,38 +12,44 @@ export default function AuthCallback() {
     console.log('AuthCallback component mounted!');
     console.log('Current URL:', window.location.href);
     console.log('Search params:', window.location.search);
-    
+
     const handleAuthCallback = async () => {
       try {
         // Parse URL search parameters for Firebase auth actions
         const mode = searchParams.get('mode');
         const oobCode = searchParams.get('oobCode');
         const continueUrl = searchParams.get('continueUrl');
-        
+
         console.log('AuthCallback Debug:', {
           mode,
           oobCode: !!oobCode,
-          continueUrl
+          continueUrl,
         });
-        
+
         // Handle different Firebase auth modes
         switch (mode) {
           case 'resetPassword':
-            console.log('Password reset flow detected, redirecting to /set-password');
-            navigate(`/set-password?mode=${mode}&oobCode=${oobCode}`, { replace: true });
+            console.log(
+              'Password reset flow detected, redirecting to /set-password'
+            );
+            navigate(`/set-password?mode=${mode}&oobCode=${oobCode}`, {
+              replace: true,
+            });
             return;
-          
+
           case 'verifyEmail':
             console.log('Email verification flow detected');
             // For now, just redirect to login with a message
-            navigate('/login?message=Email verification completed', { replace: true });
+            navigate('/login?message=Email verification completed', {
+              replace: true,
+            });
             return;
-            
+
           case 'signIn':
             console.log('Sign-in flow detected, redirecting to dashboard');
             navigate('/dashboard', { replace: true });
             return;
-            
+
           default:
             console.log('Unknown or no mode, redirecting to login');
             navigate('/login', { replace: true });
@@ -86,13 +92,11 @@ export default function AuthCallback() {
               There was a problem completing your authentication
             </p>
           </div>
-          
+
           <div className="bg-red-50 border border-red-200 rounded-md p-4">
-            <div className="text-sm text-red-700">
-              {error}
-            </div>
+            <div className="text-sm text-red-700">{error}</div>
           </div>
-          
+
           <div className="text-center">
             <button
               onClick={handleRetry}

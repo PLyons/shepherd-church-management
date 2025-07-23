@@ -18,7 +18,10 @@ if (typeof globalThis.fetch === 'undefined') {
 }
 
 // Debug environment loading
-console.log('Environment loading result:', result.error ? result.error : 'Success');
+console.log(
+  'Environment loading result:',
+  result.error ? result.error : 'Success'
+);
 console.log('Firebase API Key found:', !!process.env.VITE_FIREBASE_API_KEY);
 
 // Command line argument parsing
@@ -69,14 +72,21 @@ NOTES:
 
 // Main execution
 async function main() {
-  if (!command || command === 'help' || command === '--help' || command === '-h') {
+  if (
+    !command ||
+    command === 'help' ||
+    command === '--help' ||
+    command === '-h'
+  ) {
     showHelp();
     return;
   }
 
   // Now import the seeding functions after env is loaded
   const { seedFirebaseData } = await import('./seed-firebase-data');
-  const { nodeFirebaseService } = await import('../services/firebase/node-firebase.service');
+  const { nodeFirebaseService } = await import(
+    '../services/firebase/node-firebase.service'
+  );
 
   try {
     switch (command) {
@@ -87,7 +97,9 @@ async function main() {
         console.log(`  Households: ${counts.households}`);
         console.log(`  Members:    ${counts.members}`);
         console.log(`  Events:     ${counts.events}`);
-        console.log(`  Total:      ${counts.households + counts.members + counts.events} documents`);
+        console.log(
+          `  Total:      ${counts.households + counts.members + counts.events} documents`
+        );
         break;
 
       case 'seed':
@@ -95,22 +107,24 @@ async function main() {
           clearExisting: args.includes('--clear'),
           skipHouseholds: args.includes('--skip-households'),
           skipMembers: args.includes('--skip-members'),
-          skipEvents: args.includes('--skip-events')
+          skipEvents: args.includes('--skip-events'),
         };
 
         if (options.clearExisting) {
-          console.log('⚠️  WARNING: This will delete existing Firebase data first!\n');
+          console.log(
+            '⚠️  WARNING: This will delete existing Firebase data first!\n'
+          );
         }
 
         const seedResult = await seedFirebaseData(options);
-        
+
         if (seedResult.success) {
           console.log('🎉 SEEDING COMPLETED SUCCESSFULLY!');
           console.log('\n📋 FINAL SUMMARY:');
           console.log(`Households: ${seedResult.summary.households} created`);
           console.log(`Members:    ${seedResult.summary.members} created`);
           console.log(`Events:     ${seedResult.summary.events} created`);
-          
+
           if (seedResult.summary.members > 0) {
             console.log('\n🔐 AUTHENTICATION READY:');
             console.log('You can now test Firebase Auth with these accounts:');
@@ -120,18 +134,19 @@ async function main() {
             console.log('• david.williams@email.com (Member)');
             console.log('(Use password reset to set passwords for testing)');
           }
-          
+
           console.log('\n✅ Your Firebase is now ready for beta testing!');
         } else {
           console.log('\n❌ SEEDING FAILED');
-          seedResult.errors.forEach(error => console.log(`  - ${error}`));
+          seedResult.errors.forEach((error) => console.log(`  - ${error}`));
           process.exit(1);
         }
         break;
 
       case 'clear':
         // Safety check
-        const confirmClear = process.env.CONFIRM_CLEAR === 'yes' || args.includes('--confirm');
+        const confirmClear =
+          process.env.CONFIRM_CLEAR === 'yes' || args.includes('--confirm');
         if (!confirmClear) {
           console.log('⚠️  WARNING: This will delete ALL Firebase data!');
           console.log('To confirm, run: CONFIRM_CLEAR=yes npm run seed clear');
@@ -140,18 +155,18 @@ async function main() {
         }
 
         console.log('🗑️  Clearing all Firebase data...');
-        const clearResult = await seedFirebaseData({ 
+        const clearResult = await seedFirebaseData({
           clearExisting: true,
           skipHouseholds: true,
           skipMembers: true,
-          skipEvents: true
+          skipEvents: true,
         });
 
         if (clearResult.success) {
           console.log('✅ All Firebase data cleared successfully');
         } else {
           console.log('❌ Failed to clear data');
-          clearResult.errors.forEach(error => console.log(`  - ${error}`));
+          clearResult.errors.forEach((error) => console.log(`  - ${error}`));
           process.exit(1);
         }
         break;
@@ -161,9 +176,11 @@ async function main() {
         console.log('Run "npm run seed help" for available commands');
         process.exit(1);
     }
-
   } catch (error) {
-    console.error('\n❌ Seeding failed:', error instanceof Error ? error.message : error);
+    console.error(
+      '\n❌ Seeding failed:',
+      error instanceof Error ? error.message : error
+    );
     process.exit(1);
   }
 }

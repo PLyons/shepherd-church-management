@@ -7,7 +7,9 @@ import { Member, Household, SupabaseMember, SupabaseHousehold } from '../types';
 /**
  * Converts Supabase member format to unified Member format
  */
-export const supabaseMemberToMember = (supabaseMember: SupabaseMember): Member => {
+export const supabaseMemberToMember = (
+  supabaseMember: SupabaseMember
+): Member => {
   return {
     id: supabaseMember.id,
     firstName: supabaseMember.first_name,
@@ -24,7 +26,9 @@ export const supabaseMemberToMember = (supabaseMember: SupabaseMember): Member =
     createdAt: supabaseMember.created_at,
     updatedAt: supabaseMember.updated_at,
     fullName: `${supabaseMember.first_name} ${supabaseMember.last_name}`.trim(),
-    household: supabaseMember.household ? supabaseHouseholdToHousehold(supabaseMember.household) : undefined,
+    household: supabaseMember.household
+      ? supabaseHouseholdToHousehold(supabaseMember.household)
+      : undefined,
   };
 };
 
@@ -46,14 +50,18 @@ export const memberToSupabaseMember = (member: Member): SupabaseMember => {
     joined_at: member.joinedAt || member.createdAt,
     created_at: member.createdAt,
     updated_at: member.updatedAt,
-    household: member.household ? householdToSupabaseHousehold(member.household) : undefined,
+    household: member.household
+      ? householdToSupabaseHousehold(member.household)
+      : undefined,
   };
 };
 
 /**
  * Converts Supabase household format to unified Household format
  */
-export const supabaseHouseholdToHousehold = (supabaseHousehold: SupabaseHousehold): Household => {
+export const supabaseHouseholdToHousehold = (
+  supabaseHousehold: SupabaseHousehold
+): Household => {
   return {
     id: supabaseHousehold.id,
     familyName: supabaseHousehold.family_name,
@@ -82,7 +90,9 @@ export const supabaseHouseholdToHousehold = (supabaseHousehold: SupabaseHousehol
 /**
  * Converts unified Household format to Supabase household format
  */
-export const householdToSupabaseHousehold = (household: Household): SupabaseHousehold => {
+export const householdToSupabaseHousehold = (
+  household: Household
+): SupabaseHousehold => {
   return {
     id: household.id,
     family_name: household.familyName,
@@ -120,11 +130,12 @@ export {
  * Determines if a data object is in Supabase format
  */
 export const isSupabaseFormat = (data: any): boolean => {
-  return data && (
-    data.hasOwnProperty('first_name') || 
-    data.hasOwnProperty('family_name') ||
-    data.hasOwnProperty('household_id') ||
-    data.hasOwnProperty('member_status')
+  return (
+    data &&
+    (data.hasOwnProperty('first_name') ||
+      data.hasOwnProperty('family_name') ||
+      data.hasOwnProperty('household_id') ||
+      data.hasOwnProperty('member_status'))
   );
 };
 
@@ -132,11 +143,12 @@ export const isSupabaseFormat = (data: any): boolean => {
  * Determines if a data object is in Firebase format
  */
 export const isFirebaseFormat = (data: any): boolean => {
-  return data && (
-    data.hasOwnProperty('firstName') || 
-    data.hasOwnProperty('familyName') ||
-    data.hasOwnProperty('householdId') ||
-    data.hasOwnProperty('memberStatus')
+  return (
+    data &&
+    (data.hasOwnProperty('firstName') ||
+      data.hasOwnProperty('familyName') ||
+      data.hasOwnProperty('householdId') ||
+      data.hasOwnProperty('memberStatus'))
   );
 };
 

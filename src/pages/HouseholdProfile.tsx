@@ -2,17 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Household, Member } from '../types';
 import { useAuth } from '../hooks/useUnifiedAuth';
-import { 
-  Home, 
-  MapPin, 
-  Users, 
-  User, 
-  Mail, 
-  Phone, 
-  ArrowLeft, 
+import {
+  Home,
+  MapPin,
+  Users,
+  User,
+  Mail,
+  Phone,
+  ArrowLeft,
   Crown,
   Shield,
-  Clock
+  Clock,
 } from 'lucide-react';
 
 export default function HouseholdProfile() {
@@ -34,7 +34,8 @@ export default function HouseholdProfile() {
     try {
       const { data, error } = await supabase
         .from('households')
-        .select(`
+        .select(
+          `
           *,
           members:members!household_id (
             id,
@@ -48,7 +49,8 @@ export default function HouseholdProfile() {
             member_status,
             joined_at
           )
-        `)
+        `
+        )
         .eq('id', id)
         .single();
 
@@ -62,7 +64,8 @@ export default function HouseholdProfile() {
     }
   };
 
-  const canView = currentMember?.role === 'admin' || currentMember?.role === 'pastor';
+  const canView =
+    currentMember?.role === 'admin' || currentMember?.role === 'pastor';
 
   const getRoleColor = (role: string) => {
     switch (role) {
@@ -92,7 +95,7 @@ export default function HouseholdProfile() {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 
@@ -101,11 +104,14 @@ export default function HouseholdProfile() {
     const birth = new Date(birthdate);
     let age = today.getFullYear() - birth.getFullYear();
     const monthDiff = today.getMonth() - birth.getMonth();
-    
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birth.getDate())
+    ) {
       age--;
     }
-    
+
     return age;
   };
 
@@ -113,7 +119,9 @@ export default function HouseholdProfile() {
     return (
       <div className="text-center py-12">
         <Shield className="mx-auto h-12 w-12 text-gray-400" />
-        <h3 className="mt-2 text-sm font-medium text-gray-900">Access Denied</h3>
+        <h3 className="mt-2 text-sm font-medium text-gray-900">
+          Access Denied
+        </h3>
         <p className="mt-1 text-sm text-gray-500">
           You don't have permission to view household information.
         </p>
@@ -140,7 +148,9 @@ export default function HouseholdProfile() {
     return (
       <div className="text-center py-12">
         <Home className="mx-auto h-12 w-12 text-gray-400" />
-        <h3 className="mt-2 text-sm font-medium text-gray-900">Household not found</h3>
+        <h3 className="mt-2 text-sm font-medium text-gray-900">
+          Household not found
+        </h3>
         <p className="mt-1 text-sm text-gray-500">
           The household you're looking for doesn't exist.
         </p>
@@ -155,7 +165,9 @@ export default function HouseholdProfile() {
     );
   }
 
-  const primaryContact = household.members?.find(m => m.id === household.primary_contact_id);
+  const primaryContact = household.members?.find(
+    (m) => m.id === household.primary_contact_id
+  );
   const sortedMembers = household.members?.sort((a, b) => {
     if (a.id === household.primary_contact_id) return -1;
     if (b.id === household.primary_contact_id) return 1;
@@ -184,7 +196,7 @@ export default function HouseholdProfile() {
               <Users className="h-5 w-5" />
               Household Members ({household.members?.length || 0})
             </h2>
-            
+
             {sortedMembers && sortedMembers.length > 0 ? (
               <div className="space-y-4">
                 {sortedMembers.map((member) => (
@@ -221,10 +233,14 @@ export default function HouseholdProfile() {
                           )}
                         </div>
                         <div className="flex items-center gap-2 mt-2">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(member.member_status)}`}>
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(member.member_status)}`}
+                          >
                             {member.member_status}
                           </span>
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(member.role)}`}>
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(member.role)}`}
+                          >
                             {member.role}
                           </span>
                           {member.birthdate && (
@@ -249,7 +265,9 @@ export default function HouseholdProfile() {
             ) : (
               <div className="text-center py-8">
                 <Users className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No members found</h3>
+                <h3 className="mt-2 text-sm font-medium text-gray-900">
+                  No members found
+                </h3>
                 <p className="mt-1 text-sm text-gray-500">
                   This household doesn't have any members yet.
                 </p>
@@ -260,7 +278,9 @@ export default function HouseholdProfile() {
 
         <div className="space-y-6">
           <div className="bg-white shadow-sm rounded-lg p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Household Information</h2>
+            <h2 className="text-lg font-medium text-gray-900 mb-4">
+              Household Information
+            </h2>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -268,7 +288,9 @@ export default function HouseholdProfile() {
                 </label>
                 <div className="flex items-center gap-2">
                   <Home className="h-4 w-4 text-gray-400" />
-                  <span className="text-gray-900 font-medium">{household.family_name}</span>
+                  <span className="text-gray-900 font-medium">
+                    {household.family_name}
+                  </span>
                 </div>
               </div>
 
@@ -295,7 +317,9 @@ export default function HouseholdProfile() {
                 </label>
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-gray-400" />
-                  <span className="text-gray-900">{formatDate(household.created_at)}</span>
+                  <span className="text-gray-900">
+                    {formatDate(household.created_at)}
+                  </span>
                 </div>
               </div>
             </div>
@@ -303,13 +327,21 @@ export default function HouseholdProfile() {
 
           {(household.address_line1 || household.city || household.state) && (
             <div className="bg-white shadow-sm rounded-lg p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Address</h2>
+              <h2 className="text-lg font-medium text-gray-900 mb-4">
+                Address
+              </h2>
               <div className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 text-gray-400 mt-1" />
                 <div className="text-gray-900">
-                  {household.address_line1 && <div>{household.address_line1}</div>}
-                  {household.address_line2 && <div>{household.address_line2}</div>}
-                  {(household.city || household.state || household.postal_code) && (
+                  {household.address_line1 && (
+                    <div>{household.address_line1}</div>
+                  )}
+                  {household.address_line2 && (
+                    <div>{household.address_line2}</div>
+                  )}
+                  {(household.city ||
+                    household.state ||
+                    household.postal_code) && (
                     <div>
                       {household.city && `${household.city}, `}
                       {household.state && `${household.state} `}
@@ -323,22 +355,30 @@ export default function HouseholdProfile() {
           )}
 
           <div className="bg-white shadow-sm rounded-lg p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Quick Stats</h2>
+            <h2 className="text-lg font-medium text-gray-900 mb-4">
+              Quick Stats
+            </h2>
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Total Members</span>
-                <span className="font-medium text-gray-900">{household.members?.length || 0}</span>
+                <span className="font-medium text-gray-900">
+                  {household.members?.length || 0}
+                </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Active Members</span>
                 <span className="font-medium text-green-600">
-                  {household.members?.filter(m => m.member_status === 'active').length || 0}
+                  {household.members?.filter(
+                    (m) => m.member_status === 'active'
+                  ).length || 0}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600">Visitors</span>
                 <span className="font-medium text-blue-600">
-                  {household.members?.filter(m => m.member_status === 'visitor').length || 0}
+                  {household.members?.filter(
+                    (m) => m.member_status === 'visitor'
+                  ).length || 0}
                 </span>
               </div>
             </div>

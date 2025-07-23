@@ -9,15 +9,31 @@ interface NavigationProps {
 }
 
 const navigationItems = [
-  { name: 'Dashboard', href: '/dashboard', roles: ['admin', 'pastor', 'member'] },
+  {
+    name: 'Dashboard',
+    href: '/dashboard',
+    roles: ['admin', 'pastor', 'member'],
+  },
   { name: 'Members', href: '/members', roles: ['admin', 'pastor', 'member'] },
-  { name: 'Households', href: '/households', roles: ['admin', 'pastor', 'member'] },
+  {
+    name: 'Households',
+    href: '/households',
+    roles: ['admin', 'pastor', 'member'],
+  },
   { name: 'Events', href: '/events', roles: ['admin', 'pastor', 'member'] },
   { name: 'Donations', href: '/donations', roles: ['admin', 'pastor'] },
   { name: 'Reports', href: '/reports', roles: ['admin', 'pastor'] },
   { name: 'Sermons', href: '/sermons', roles: ['admin', 'pastor', 'member'] },
-  { name: 'Volunteers', href: '/volunteers', roles: ['admin', 'pastor', 'member'] },
-  { name: 'My Schedule', href: '/my-volunteering', roles: ['admin', 'pastor', 'member'] },
+  {
+    name: 'Volunteers',
+    href: '/volunteers',
+    roles: ['admin', 'pastor', 'member'],
+  },
+  {
+    name: 'My Schedule',
+    href: '/my-volunteering',
+    roles: ['admin', 'pastor', 'member'],
+  },
   { name: 'Settings', href: '/settings', roles: ['admin', 'pastor'] },
 ];
 
@@ -25,7 +41,7 @@ export function Navigation({ onMobileMenuToggle, userRole }: NavigationProps) {
   const location = useLocation();
   const { member, signOut } = useAuth();
 
-  const visibleItems = navigationItems.filter(item => 
+  const visibleItems = navigationItems.filter((item) =>
     item.roles.includes(userRole)
   );
 
@@ -72,12 +88,14 @@ export function Navigation({ onMobileMenuToggle, userRole }: NavigationProps) {
             <div className="hidden md:flex md:items-center md:space-x-4">
               <div className="flex items-center space-x-2 text-sm text-gray-700">
                 <User className="h-4 w-4" />
-                <span>{member?.first_name} {member?.last_name}</span>
+                <span>
+                  {member?.first_name} {member?.last_name}
+                </span>
                 <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full capitalize">
                   {member?.role}
                 </span>
               </div>
-              
+
               <button
                 onClick={handleSignOut}
                 className="flex items-center space-x-1 text-sm text-gray-500 hover:text-gray-700"

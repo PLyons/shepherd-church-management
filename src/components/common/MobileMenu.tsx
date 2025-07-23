@@ -10,14 +10,26 @@ interface MobileMenuProps {
 }
 
 const navigationItems = [
-  { name: 'Dashboard', href: '/dashboard', roles: ['admin', 'pastor', 'member'] },
+  {
+    name: 'Dashboard',
+    href: '/dashboard',
+    roles: ['admin', 'pastor', 'member'],
+  },
   { name: 'Members', href: '/members', roles: ['admin', 'pastor', 'member'] },
-  { name: 'Households', href: '/households', roles: ['admin', 'pastor', 'member'] },
+  {
+    name: 'Households',
+    href: '/households',
+    roles: ['admin', 'pastor', 'member'],
+  },
   { name: 'Events', href: '/events', roles: ['admin', 'pastor', 'member'] },
   { name: 'Donations', href: '/donations', roles: ['admin', 'pastor'] },
   { name: 'Reports', href: '/reports', roles: ['admin', 'pastor'] },
   { name: 'Sermons', href: '/sermons', roles: ['admin', 'pastor', 'member'] },
-  { name: 'Volunteers', href: '/volunteers', roles: ['admin', 'pastor', 'member'] },
+  {
+    name: 'Volunteers',
+    href: '/volunteers',
+    roles: ['admin', 'pastor', 'member'],
+  },
   { name: 'Settings', href: '/settings', roles: ['admin', 'pastor'] },
 ];
 
@@ -25,7 +37,7 @@ export function MobileMenu({ open, onClose, userRole }: MobileMenuProps) {
   const location = useLocation();
   const { member, signOut } = useAuth();
 
-  const visibleItems = navigationItems.filter(item => 
+  const visibleItems = navigationItems.filter((item) =>
     item.roles.includes(userRole)
   );
 
@@ -40,13 +52,17 @@ export function MobileMenu({ open, onClose, userRole }: MobileMenuProps) {
     <div className="fixed inset-0 z-50 lg:hidden">
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black bg-opacity-25" onClick={onClose} />
-      
+
       {/* Menu panel */}
       <div className="fixed inset-y-0 left-0 max-w-xs w-full bg-white shadow-xl">
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
-            <Link to="/dashboard" className="text-xl font-bold text-blue-600" onClick={onClose}>
+            <Link
+              to="/dashboard"
+              className="text-xl font-bold text-blue-600"
+              onClick={onClose}
+            >
               Shepherd
             </Link>
             <button
@@ -66,7 +82,9 @@ export function MobileMenu({ open, onClose, userRole }: MobileMenuProps) {
                 <p className="text-sm font-medium text-gray-900">
                   {member?.first_name} {member?.last_name}
                 </p>
-                <p className="text-xs text-gray-500 capitalize">{member?.role}</p>
+                <p className="text-xs text-gray-500 capitalize">
+                  {member?.role}
+                </p>
               </div>
             </div>
           </div>

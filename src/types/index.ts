@@ -40,7 +40,7 @@ export interface SupabaseHousehold {
 
 export interface Member {
   id: string;
-  
+
   // Personal Information (unified naming)
   firstName: string;
   lastName: string;
@@ -48,24 +48,24 @@ export interface Member {
   phone?: string;
   birthdate?: string;
   gender?: 'Male' | 'Female';
-  
+
   // Church Information
   role: 'admin' | 'pastor' | 'member';
   memberStatus: 'active' | 'inactive' | 'visitor';
   joinedAt?: string;
-  
+
   // Household Relationship
   householdId: string;
   isPrimaryContact?: boolean;
-  
+
   // Metadata
   createdAt: string;
   updatedAt: string;
-  
+
   // Computed/Denormalized Data
   fullName?: string;
   householdName?: string;
-  
+
   // Optional populated data
   household?: Household;
 }
@@ -73,7 +73,12 @@ export interface Member {
 export interface Household {
   id: string;
   familyName: string;
-  
+
+  // Standardization fields
+  normalizedName?: string; // Lowercase, trimmed version for uniqueness checks
+  status?: 'pending' | 'approved'; // Admin approval status
+  createdBy?: string; // UID of the member who created this household
+
   // Address Information (unified structure)
   address?: {
     line1?: string;
@@ -83,7 +88,7 @@ export interface Household {
     postalCode?: string;
     country?: string;
   };
-  
+
   // Legacy address fields for backward compatibility
   addressLine1?: string;
   addressLine2?: string;
@@ -91,19 +96,19 @@ export interface Household {
   state?: string;
   postalCode?: string;
   country?: string;
-  
+
   // Contact Information
   primaryContactId?: string;
   primaryContactName?: string;
-  
+
   // Member Management
   memberIds?: string[];
   memberCount?: number;
-  
+
   // Metadata
   createdAt: string;
   updatedAt: string;
-  
+
   // Optional populated data
   members?: Member[];
 }

@@ -18,8 +18,8 @@ const TEST_HOUSEHOLDS = [
       city: 'Springfield',
       state: 'IL',
       postalCode: '62701',
-      country: 'US'
-    }
+      country: 'US',
+    },
   },
   {
     familyName: 'Johnson Family',
@@ -29,8 +29,8 @@ const TEST_HOUSEHOLDS = [
       city: 'Springfield',
       state: 'IL',
       postalCode: '62702',
-      country: 'US'
-    }
+      country: 'US',
+    },
   },
   {
     familyName: 'Williams Family',
@@ -40,8 +40,8 @@ const TEST_HOUSEHOLDS = [
       city: 'Chatham',
       state: 'IL',
       postalCode: '62629',
-      country: 'US'
-    }
+      country: 'US',
+    },
   },
   {
     familyName: 'Brown Family',
@@ -51,8 +51,8 @@ const TEST_HOUSEHOLDS = [
       city: 'Sherman',
       state: 'IL',
       postalCode: '62684',
-      country: 'US'
-    }
+      country: 'US',
+    },
   },
   {
     familyName: 'Davis Family',
@@ -62,8 +62,8 @@ const TEST_HOUSEHOLDS = [
       city: 'Springfield',
       state: 'IL',
       postalCode: '62703',
-      country: 'US'
-    }
+      country: 'US',
+    },
   },
   {
     familyName: 'Miller Family',
@@ -73,9 +73,9 @@ const TEST_HOUSEHOLDS = [
       city: 'Rochester',
       state: 'IL',
       postalCode: '62563',
-      country: 'US'
-    }
-  }
+      country: 'US',
+    },
+  },
 ];
 
 const TEST_MEMBERS = [
@@ -91,7 +91,7 @@ const TEST_MEMBERS = [
     memberStatus: 'active' as const,
     joinedAt: '2020-01-15',
     isPrimaryContact: true,
-    householdIndex: 0
+    householdIndex: 0,
   },
   {
     firstName: 'Sarah',
@@ -104,7 +104,7 @@ const TEST_MEMBERS = [
     memberStatus: 'active' as const,
     joinedAt: '2020-01-15',
     isPrimaryContact: false,
-    householdIndex: 0
+    householdIndex: 0,
   },
 
   // Johnson Family (3 members)
@@ -119,7 +119,7 @@ const TEST_MEMBERS = [
     memberStatus: 'active' as const,
     joinedAt: '2018-06-01',
     isPrimaryContact: true,
-    householdIndex: 1
+    householdIndex: 1,
   },
   {
     firstName: 'Lisa',
@@ -132,7 +132,7 @@ const TEST_MEMBERS = [
     memberStatus: 'active' as const,
     joinedAt: '2018-06-01',
     isPrimaryContact: false,
-    householdIndex: 1
+    householdIndex: 1,
   },
   {
     firstName: 'Emma',
@@ -145,7 +145,7 @@ const TEST_MEMBERS = [
     memberStatus: 'active' as const,
     joinedAt: '2018-06-01',
     isPrimaryContact: false,
-    householdIndex: 1
+    householdIndex: 1,
   },
 
   // Williams Family (2 members)
@@ -160,7 +160,7 @@ const TEST_MEMBERS = [
     memberStatus: 'active' as const,
     joinedAt: '2021-03-20',
     isPrimaryContact: true,
-    householdIndex: 2
+    householdIndex: 2,
   },
   {
     firstName: 'Jennifer',
@@ -173,7 +173,7 @@ const TEST_MEMBERS = [
     memberStatus: 'active' as const,
     joinedAt: '2021-03-20',
     isPrimaryContact: false,
-    householdIndex: 2
+    householdIndex: 2,
   },
 
   // Brown Family (4 members)
@@ -188,7 +188,7 @@ const TEST_MEMBERS = [
     memberStatus: 'active' as const,
     joinedAt: '2019-09-08',
     isPrimaryContact: true,
-    householdIndex: 3
+    householdIndex: 3,
   },
   {
     firstName: 'Nancy',
@@ -201,7 +201,7 @@ const TEST_MEMBERS = [
     memberStatus: 'active' as const,
     joinedAt: '2019-09-08',
     isPrimaryContact: false,
-    householdIndex: 3
+    householdIndex: 3,
   },
   {
     firstName: 'Tyler',
@@ -214,7 +214,7 @@ const TEST_MEMBERS = [
     memberStatus: 'active' as const,
     joinedAt: '2019-09-08',
     isPrimaryContact: false,
-    householdIndex: 3
+    householdIndex: 3,
   },
   {
     firstName: 'Ashley',
@@ -227,7 +227,7 @@ const TEST_MEMBERS = [
     memberStatus: 'active' as const,
     joinedAt: '2019-09-08',
     isPrimaryContact: false,
-    householdIndex: 3
+    householdIndex: 3,
   },
 
   // Davis Family (2 members)
@@ -242,7 +242,7 @@ const TEST_MEMBERS = [
     memberStatus: 'active' as const,
     joinedAt: '2022-05-15',
     isPrimaryContact: true,
-    householdIndex: 4
+    householdIndex: 4,
   },
   {
     firstName: 'Jessica',
@@ -255,7 +255,7 @@ const TEST_MEMBERS = [
     memberStatus: 'active' as const,
     joinedAt: '2022-05-15',
     isPrimaryContact: false,
-    householdIndex: 4
+    householdIndex: 4,
   },
 
   // Miller Family (1 member)
@@ -270,30 +270,32 @@ const TEST_MEMBERS = [
     memberStatus: 'active' as const,
     joinedAt: '2015-04-12',
     isPrimaryContact: true,
-    householdIndex: 5
-  }
+    householdIndex: 5,
+  },
 ];
 
 const TEST_EVENTS = [
   {
     title: 'Sunday Morning Worship',
-    description: 'Join us for our weekly worship service with contemporary music and biblical teaching.',
+    description:
+      'Join us for our weekly worship service with contemporary music and biblical teaching.',
     startTime: '2024-01-28T10:00:00.000Z',
     endTime: '2024-01-28T11:30:00.000Z',
     location: 'Main Sanctuary',
     isPublic: true,
     maxCapacity: 200,
-    registrationDeadline: '2024-01-27T23:59:59.000Z'
+    registrationDeadline: '2024-01-27T23:59:59.000Z',
   },
   {
     title: 'Wednesday Bible Study',
-    description: 'Mid-week Bible study focusing on the Book of Romans. All are welcome!',
+    description:
+      'Mid-week Bible study focusing on the Book of Romans. All are welcome!',
     startTime: '2024-01-31T19:00:00.000Z',
     endTime: '2024-01-31T20:30:00.000Z',
     location: 'Fellowship Hall',
     isPublic: true,
     maxCapacity: 50,
-    registrationDeadline: '2024-01-30T17:00:00.000Z'
+    registrationDeadline: '2024-01-30T17:00:00.000Z',
   },
   {
     title: 'Youth Group Meeting',
@@ -303,8 +305,8 @@ const TEST_EVENTS = [
     location: 'Youth Room',
     isPublic: false,
     maxCapacity: 30,
-    registrationDeadline: '2024-02-02T17:00:00.000Z'
-  }
+    registrationDeadline: '2024-02-02T17:00:00.000Z',
+  },
 ];
 
 // ============================================================================
@@ -314,35 +316,40 @@ const TEST_EVENTS = [
 export async function seedHouseholds(): Promise<string[]> {
   console.log('🏠 Creating test households...');
   const householdIds: string[] = [];
-  
+
   for (let i = 0; i < TEST_HOUSEHOLDS.length; i++) {
     const householdData = TEST_HOUSEHOLDS[i];
     try {
       const household = await firebaseService.households.create({
         ...householdData,
         memberIds: [],
-        memberCount: 0
+        memberCount: 0,
       });
       householdIds.push(household.id);
-      console.log(`✓ Created household: ${household.familyName} (${household.id})`);
+      console.log(
+        `✓ Created household: ${household.familyName} (${household.id})`
+      );
     } catch (error) {
-      console.error(`✗ Failed to create household ${householdData.familyName}:`, error);
+      console.error(
+        `✗ Failed to create household ${householdData.familyName}:`,
+        error
+      );
       throw error;
     }
   }
-  
+
   return householdIds;
 }
 
 export async function seedMembers(householdIds: string[]): Promise<string[]> {
   console.log('👥 Creating test members...');
   const memberIds: string[] = [];
-  
+
   for (let i = 0; i < TEST_MEMBERS.length; i++) {
     const memberData = TEST_MEMBERS[i];
     const householdId = householdIds[memberData.householdIndex];
     const householdName = TEST_HOUSEHOLDS[memberData.householdIndex].familyName;
-    
+
     try {
       // Create member with household relationship
       const result = await firebaseService.createMemberWithHousehold({
@@ -356,38 +363,45 @@ export async function seedMembers(householdIds: string[]): Promise<string[]> {
         memberStatus: memberData.memberStatus,
         joinedAt: memberData.joinedAt,
         isPrimaryContact: memberData.isPrimaryContact,
-        existingHouseholdId: householdId
+        existingHouseholdId: householdId,
       });
-      
+
       memberIds.push(result.member.id);
-      console.log(`✓ Created member: ${memberData.firstName} ${memberData.lastName} (${result.member.id})`);
-      
+      console.log(
+        `✓ Created member: ${memberData.firstName} ${memberData.lastName} (${result.member.id})`
+      );
+
       // Set as primary contact if needed
       if (memberData.isPrimaryContact) {
         console.log(`  → Set as primary contact for ${householdName}`);
       }
     } catch (error) {
-      console.error(`✗ Failed to create member ${memberData.firstName} ${memberData.lastName}:`, error);
+      console.error(
+        `✗ Failed to create member ${memberData.firstName} ${memberData.lastName}:`,
+        error
+      );
       throw error;
     }
   }
-  
+
   return memberIds;
 }
 
-export async function seedEvents(createdByMemberId?: string): Promise<string[]> {
+export async function seedEvents(
+  createdByMemberId?: string
+): Promise<string[]> {
   console.log('📅 Creating test events...');
   const eventIds: string[] = [];
-  
+
   for (let i = 0; i < TEST_EVENTS.length; i++) {
     const eventData = TEST_EVENTS[i];
     try {
       const event = await firebaseService.events.create({
         ...eventData,
         createdBy: createdByMemberId,
-        rsvpStats: { yes: 0, no: 0, maybe: 0, total: 0 }
+        rsvpStats: { yes: 0, no: 0, maybe: 0, total: 0 },
       });
-      
+
       eventIds.push(event.id);
       console.log(`✓ Created event: ${event.title} (${event.id})`);
     } catch (error) {
@@ -395,7 +409,7 @@ export async function seedEvents(createdByMemberId?: string): Promise<string[]> 
       throw error;
     }
   }
-  
+
   return eventIds;
 }
 
@@ -439,24 +453,28 @@ export async function seedFirebaseData(options?: {
       console.log('2. Clearing existing data...');
       const counts = await firebaseService.getCollectionCounts();
       if (counts.members > 0 || counts.households > 0 || counts.events > 0) {
-        console.log(`   Found existing data: ${counts.members} members, ${counts.households} households, ${counts.events} events`);
-        
+        console.log(
+          `   Found existing data: ${counts.members} members, ${counts.households} households, ${counts.events} events`
+        );
+
         // Clear in reverse dependency order
         if (counts.members > 0) {
           const members = await firebaseService.members.getAll();
-          await firebaseService.members.deleteBatch(members.map(m => m.id));
+          await firebaseService.members.deleteBatch(members.map((m) => m.id));
           console.log(`   Cleared ${members.length} existing members`);
         }
-        
+
         if (counts.households > 0) {
           const households = await firebaseService.households.getAll();
-          await firebaseService.households.deleteBatch(households.map(h => h.id));
+          await firebaseService.households.deleteBatch(
+            households.map((h) => h.id)
+          );
           console.log(`   Cleared ${households.length} existing households`);
         }
-        
+
         if (counts.events > 0) {
           const events = await firebaseService.events.getAll();
-          await firebaseService.events.deleteBatch(events.map(e => e.id));
+          await firebaseService.events.deleteBatch(events.map((e) => e.id));
           console.log(`   Cleared ${events.length} existing events`);
         }
       } else {
@@ -481,14 +499,14 @@ export async function seedFirebaseData(options?: {
       if (householdIds.length === 0) {
         console.log('   Getting existing households...');
         const existingHouseholds = await firebaseService.households.getAll();
-        householdIds = existingHouseholds.map(h => h.id);
+        householdIds = existingHouseholds.map((h) => h.id);
         console.log(`   Found ${householdIds.length} existing households`);
       }
-      
+
       if (householdIds.length === 0) {
         throw new Error('Cannot create members: no households available');
       }
-      
+
       memberIds = await seedMembers(householdIds);
       memberCount = memberIds.length;
       console.log(`✓ Created ${memberCount} members\n`);
@@ -498,29 +516,33 @@ export async function seedFirebaseData(options?: {
     if (!options?.skipEvents) {
       console.log('5. Seeding events...');
       let createdByMemberId: string | undefined;
-      
+
       if (memberIds.length === 0) {
         console.log('   Getting existing members...');
         const existingMembers = await firebaseService.members.getAll();
         if (existingMembers.length > 0) {
           // Use first admin or pastor, otherwise first member
-          const adminOrPastor = existingMembers.find(m => m.role === 'admin' || m.role === 'pastor');
+          const adminOrPastor = existingMembers.find(
+            (m) => m.role === 'admin' || m.role === 'pastor'
+          );
           createdByMemberId = adminOrPastor?.id || existingMembers[0].id;
         }
       } else {
         // Use first created member (John Smith - admin)
         createdByMemberId = memberIds[0];
       }
-      
+
       const eventIds = await seedEvents(createdByMemberId);
       eventCount = eventIds.length;
       console.log(`✓ Created ${eventCount} events\n`);
     }
 
     const duration = Math.round((Date.now() - startTime) / 1000);
-    
+
     console.log('✅ Firebase data seeding completed successfully!');
-    console.log(`📊 Summary: ${householdCount} households, ${memberCount} members, ${eventCount} events`);
+    console.log(
+      `📊 Summary: ${householdCount} households, ${memberCount} members, ${eventCount} events`
+    );
     console.log(`⏱️  Duration: ${duration}s\n`);
 
     return {
@@ -528,20 +550,24 @@ export async function seedFirebaseData(options?: {
       summary: {
         households: householdCount,
         members: memberCount,
-        events: eventCount
+        events: eventCount,
       },
-      errors
+      errors,
     };
-
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error';
     console.error('\n❌ Firebase seeding failed:', errorMessage);
     errors.push(errorMessage);
-    
+
     return {
       success: false,
-      summary: { households: householdCount, members: memberCount, events: eventCount },
-      errors
+      summary: {
+        households: householdCount,
+        members: memberCount,
+        events: eventCount,
+      },
+      errors,
     };
   }
 }
@@ -551,5 +577,5 @@ export default {
   seedFirebaseData,
   seedHouseholds,
   seedMembers,
-  seedEvents
+  seedEvents,
 };

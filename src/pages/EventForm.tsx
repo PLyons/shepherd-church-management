@@ -48,7 +48,9 @@ export default function EventForm() {
         setFormData({
           title: event.title || '',
           description: event.description || '',
-          startTime: event.startTime ? formatDateTimeForInput(event.startTime) : '',
+          startTime: event.startTime
+            ? formatDateTimeForInput(event.startTime)
+            : '',
           endTime: event.endTime ? formatDateTimeForInput(event.endTime) : '',
           location: event.location || '',
           isPublic: event.isPublic || false,
@@ -57,7 +59,10 @@ export default function EventForm() {
         throw new Error('Event not found');
       }
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Failed to fetch event', 'error');
+      showToast(
+        err instanceof Error ? err.message : 'Failed to fetch event',
+        'error'
+      );
       navigate('/events');
     } finally {
       setInitialLoading(false);
@@ -95,7 +100,10 @@ export default function EventForm() {
     }
 
     // Validate end time is after start time
-    if (formData.endTime && new Date(formData.endTime) <= new Date(formData.startTime)) {
+    if (
+      formData.endTime &&
+      new Date(formData.endTime) <= new Date(formData.startTime)
+    ) {
       showToast('End time must be after start time', 'error');
       return;
     }
@@ -107,7 +115,9 @@ export default function EventForm() {
         title: formData.title.trim(),
         description: formData.description.trim() || '',
         startTime: new Date(formData.startTime).toISOString(),
-        endTime: formData.endTime ? new Date(formData.endTime).toISOString() : '',
+        endTime: formData.endTime
+          ? new Date(formData.endTime).toISOString()
+          : '',
         location: formData.location.trim() || '',
         isPublic: formData.isPublic,
       };
@@ -123,7 +133,7 @@ export default function EventForm() {
           createdBy: member.id,
         });
         showToast('Event created successfully', 'success');
-        
+
         // Navigate to the new event
         navigate(`/events/${newEvent.id}`);
         return;
@@ -131,17 +141,23 @@ export default function EventForm() {
 
       navigate('/events');
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Failed to save event', 'error');
+      showToast(
+        err instanceof Error ? err.message : 'Failed to save event',
+        'error'
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value, type } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? (e.target as HTMLInputElement).checked : value
+      [name]:
+        type === 'checkbox' ? (e.target as HTMLInputElement).checked : value,
     }));
   };
 
@@ -167,10 +183,16 @@ export default function EventForm() {
         </h1>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white shadow rounded-lg p-6 space-y-6">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white shadow rounded-lg p-6 space-y-6"
+      >
         {/* Title */}
         <div>
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="title"
+            className="block text-sm font-medium text-gray-700"
+          >
             Event Title *
           </label>
           <input
@@ -187,7 +209,10 @@ export default function EventForm() {
 
         {/* Description */}
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="description"
+            className="block text-sm font-medium text-gray-700"
+          >
             Description
           </label>
           <textarea
@@ -204,7 +229,10 @@ export default function EventForm() {
         {/* Date and Time */}
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div>
-            <label htmlFor="startTime" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="startTime"
+              className="block text-sm font-medium text-gray-700"
+            >
               Start Date & Time *
             </label>
             <input
@@ -219,7 +247,10 @@ export default function EventForm() {
           </div>
 
           <div>
-            <label htmlFor="endTime" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="endTime"
+              className="block text-sm font-medium text-gray-700"
+            >
               End Date & Time
             </label>
             <input
@@ -236,7 +267,10 @@ export default function EventForm() {
 
         {/* Location */}
         <div>
-          <label htmlFor="location" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="location"
+            className="block text-sm font-medium text-gray-700"
+          >
             Location
           </label>
           <input
@@ -260,7 +294,10 @@ export default function EventForm() {
             onChange={handleChange}
             className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
-          <label htmlFor="isPublic" className="ml-2 block text-sm text-gray-700">
+          <label
+            htmlFor="isPublic"
+            className="ml-2 block text-sm text-gray-700"
+          >
             Public Event (visible to non-members)
           </label>
         </div>
@@ -283,8 +320,10 @@ export default function EventForm() {
                 <LoadingSpinner className="w-4 h-4 mr-2" />
                 {isEditMode ? 'Updating...' : 'Creating...'}
               </>
+            ) : isEditMode ? (
+              'Update Event'
             ) : (
-              isEditMode ? 'Update Event' : 'Create Event'
+              'Create Event'
             )}
           </button>
         </div>

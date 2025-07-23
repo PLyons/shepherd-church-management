@@ -1,6 +1,13 @@
 import { BaseFirestoreService } from './base.service';
 import { auditService } from './audit.service';
-import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  limit,
+  getDocs,
+} from 'firebase/firestore';
 
 // ============================================================================
 // SECURE DONATIONS SERVICE WITH ROLE-BASED ACCESS CONTROL
@@ -69,7 +76,9 @@ export class DonationsService extends BaseFirestoreService<Donation, Donation> {
     // Members can ONLY access their own donations
     if (userRole === 'member') {
       if (targetUserId && targetUserId !== requestingUserId) {
-        throw new Error('Access denied: Members can only view their own donations');
+        throw new Error(
+          'Access denied: Members can only view their own donations'
+        );
       }
       return this.getDonationsByDonor(requestingUserId);
     }
@@ -82,9 +91,9 @@ export class DonationsService extends BaseFirestoreService<Donation, Donation> {
 
     // Admins can see all donations
     if (userRole === 'admin') {
-      return targetUserId ? 
-        await this.getDonationsByDonor(targetUserId) : 
-        await this.getAll();
+      return targetUserId
+        ? await this.getDonationsByDonor(targetUserId)
+        : await this.getAll();
     }
 
     throw new Error('Invalid user role');
@@ -128,7 +137,9 @@ export class DonationsService extends BaseFirestoreService<Donation, Donation> {
     );
 
     const snapshot = await getDocs(donationsQuery);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Donation));
+    return snapshot.docs.map(
+      (doc) => ({ id: doc.id, ...doc.data() }) as Donation
+    );
   }
 
   /**
@@ -136,18 +147,20 @@ export class DonationsService extends BaseFirestoreService<Donation, Donation> {
    */
   async getPersonalDonationStats(donorId: string): Promise<DonationStats> {
     const donations = await this.getDonationsByDonor(donorId);
-    
+
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth();
-    
-    const yearToDate = donations.filter(d => 
-      new Date(d.date).getFullYear() === currentYear
+
+    const yearToDate = donations.filter(
+      (d) => new Date(d.date).getFullYear() === currentYear
     );
-    
-    const thisMonth = donations.filter(d => {
+
+    const thisMonth = donations.filter((d) => {
       const donationDate = new Date(d.date);
-      return donationDate.getFullYear() === currentYear && 
-             donationDate.getMonth() === currentMonth;
+      return (
+        donationDate.getFullYear() === currentYear &&
+        donationDate.getMonth() === currentMonth
+      );
     });
 
     const totalAmount = donations.reduce((sum, d) => sum + d.amount, 0);
@@ -157,9 +170,10 @@ export class DonationsService extends BaseFirestoreService<Donation, Donation> {
     return {
       totalAmount,
       donationCount: donations.length,
-      averageDonation: donations.length > 0 ? totalAmount / donations.length : 0,
+      averageDonation:
+        donations.length > 0 ? totalAmount / donations.length : 0,
       monthlyTotal,
-      yearToDateTotal
+      yearToDateTotal,
     };
   }
 
@@ -173,36 +187,58 @@ export class DonationsService extends BaseFirestoreService<Donation, Donation> {
   async getAggregateDonationStats(): Promise<DonationStats> {
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth();
-    
+
     // Use targeted queries for better performance
     const yearStart = new Date(currentYear, 0, 1).toISOString();
     const monthStart = new Date(currentYear, currentMonth, 1).toISOString();
-    const monthEnd = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59).toISOString();
+    const monthEnd = new Date(
+      currentYear,
+      currentMonth + 1,
+      0,
+      23,
+      59,
+      59
+    ).toISOString();
 
     // Get donations for different time periods in parallel
-    const [allDonations, yearToDateDonations, thisMonthDonations, donationCount] = await Promise.all([
-      this.getAll({ limit: 1000, orderBy: { field: 'date', direction: 'desc' } }), // Recent donations for averages
+    const [
+      allDonations,
+      yearToDateDonations,
+      thisMonthDonations,
+      donationCount,
+    ] = await Promise.all([
+      this.getAll({
+        limit: 1000,
+        orderBy: { field: 'date', direction: 'desc' },
+      }), // Recent donations for averages
       this.getWhere('date', '>=', yearStart),
       this.getAll({
         where: [
           { field: 'date', operator: '>=', value: monthStart },
-          { field: 'date', operator: '<=', value: monthEnd }
-        ]
+          { field: 'date', operator: '<=', value: monthEnd },
+        ],
       }),
-      this.count()
+      this.count(),
     ]);
 
     // Calculate totals
     const totalAmount = allDonations.reduce((sum, d) => sum + d.amount, 0);
-    const monthlyTotal = thisMonthDonations.reduce((sum, d) => sum + d.amount, 0);
-    const yearToDateTotal = yearToDateDonations.reduce((sum, d) => sum + d.amount, 0);
+    const monthlyTotal = thisMonthDonations.reduce(
+      (sum, d) => sum + d.amount,
+      0
+    );
+    const yearToDateTotal = yearToDateDonations.reduce(
+      (sum, d) => sum + d.amount,
+      0
+    );
 
     return {
       totalAmount,
       donationCount,
-      averageDonation: allDonations.length > 0 ? totalAmount / allDonations.length : 0,
+      averageDonation:
+        allDonations.length > 0 ? totalAmount / allDonations.length : 0,
       monthlyTotal,
-      yearToDateTotal
+      yearToDateTotal,
     };
   }
 
@@ -211,44 +247,47 @@ export class DonationsService extends BaseFirestoreService<Donation, Donation> {
    */
   async getDonorStats(): Promise<DonorStats> {
     const donations = await this.getAll();
-    
+
     // Get unique donors
-    const uniqueDonorIds = new Set(donations.map(d => d.donorId));
+    const uniqueDonorIds = new Set(donations.map((d) => d.donorId));
     const donorCount = uniqueDonorIds.size;
-    
+
     // Regular donors (donated in last 3 months)
     const threeMonthsAgo = new Date();
     threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
-    
+
     const recentDonorIds = new Set(
       donations
-        .filter(d => new Date(d.date) >= threeMonthsAgo)
-        .map(d => d.donorId)
+        .filter((d) => new Date(d.date) >= threeMonthsAgo)
+        .map((d) => d.donorId)
     );
     const regularDonors = recentDonorIds.size;
-    
+
     // New donors (first donation in last 60 days)
     const sixtyDaysAgo = new Date();
     sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
-    
+
     const donorFirstDonations = new Map<string, Date>();
-    donations.forEach(donation => {
+    donations.forEach((donation) => {
       const donorId = donation.donorId;
       const donationDate = new Date(donation.date);
-      
-      if (!donorFirstDonations.has(donorId) || 
-          donationDate < donorFirstDonations.get(donorId)!) {
+
+      if (
+        !donorFirstDonations.has(donorId) ||
+        donationDate < donorFirstDonations.get(donorId)!
+      ) {
         donorFirstDonations.set(donorId, donationDate);
       }
     });
-    
-    const newDonors = Array.from(donorFirstDonations.values())
-      .filter(firstDonation => firstDonation >= sixtyDaysAgo).length;
+
+    const newDonors = Array.from(donorFirstDonations.values()).filter(
+      (firstDonation) => firstDonation >= sixtyDaysAgo
+    ).length;
 
     return {
       donorCount,
       regularDonors,
-      newDonors
+      newDonors,
     };
   }
 
@@ -261,18 +300,20 @@ export class DonationsService extends BaseFirestoreService<Donation, Donation> {
    * Pastors see donation amounts and patterns but not individual donor names
    */
   private sanitizeDonationsForPastor(donations: Donation[]): Donation[] {
-    return donations.map(donation => ({
+    return donations.map((donation) => ({
       ...donation,
       donorName: donation.isAnonymous ? 'Anonymous' : 'Church Member',
       donorId: 'REDACTED', // Hide actual donor ID
-      notes: donation.notes ? '[Notes available to admin only]' : undefined
+      notes: donation.notes ? '[Notes available to admin only]' : undefined,
     }));
   }
 
   /**
    * Create anonymous donation record for reporting
    */
-  private createAnonymousDonation(donation: Donation): Omit<Donation, 'donorId' | 'donorName'> {
+  private createAnonymousDonation(
+    donation: Donation
+  ): Omit<Donation, 'donorId' | 'donorName'> {
     const { donorId, donorName, ...anonymousDonation } = donation;
     return anonymousDonation;
   }
@@ -291,7 +332,9 @@ export class DonationsService extends BaseFirestoreService<Donation, Donation> {
   ): Promise<string> {
     // Only admins can record donations
     if (userRole !== 'admin') {
-      throw new Error('Access denied: Only administrators can record donations');
+      throw new Error(
+        'Access denied: Only administrators can record donations'
+      );
     }
 
     await this.logSecurityAccess(requestingUserId, userRole, 'record_donation');
@@ -300,7 +343,7 @@ export class DonationsService extends BaseFirestoreService<Donation, Donation> {
     const donation: Omit<Donation, 'id'> = {
       ...donationData,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
     };
 
     return await this.create(donation);
@@ -317,14 +360,16 @@ export class DonationsService extends BaseFirestoreService<Donation, Donation> {
   ): Promise<void> {
     // Only admins can update donations
     if (userRole !== 'admin') {
-      throw new Error('Access denied: Only administrators can update donations');
+      throw new Error(
+        'Access denied: Only administrators can update donations'
+      );
     }
 
     await this.logSecurityAccess(requestingUserId, userRole, 'update_donation');
 
     const sanitizedUpdates = {
       ...updates,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
 
     await this.update(donationId, sanitizedUpdates);
@@ -340,7 +385,9 @@ export class DonationsService extends BaseFirestoreService<Donation, Donation> {
   ): Promise<void> {
     // Only admins can delete donations
     if (userRole !== 'admin') {
-      throw new Error('Access denied: Only administrators can delete donations');
+      throw new Error(
+        'Access denied: Only administrators can delete donations'
+      );
     }
 
     await this.logSecurityAccess(requestingUserId, userRole, 'delete_donation');
@@ -361,8 +408,13 @@ export class DonationsService extends BaseFirestoreService<Donation, Donation> {
     details?: Record<string, any>
   ): Promise<void> {
     try {
-      let auditAction: 'donation_viewed' | 'donation_created' | 'donation_updated' | 'donation_deleted' | 'financial_report_accessed' = 'financial_report_accessed';
-      
+      let auditAction:
+        | 'donation_viewed'
+        | 'donation_created'
+        | 'donation_updated'
+        | 'donation_deleted'
+        | 'financial_report_accessed' = 'financial_report_accessed';
+
       if (action.includes('view') || action.includes('get')) {
         auditAction = 'donation_viewed';
       } else if (action.includes('create') || action.includes('record')) {
@@ -381,7 +433,7 @@ export class DonationsService extends BaseFirestoreService<Donation, Donation> {
         auditAction,
         {
           accessType: userRole === 'member' ? 'personal' : 'aggregate',
-          ...(details || {})
+          ...(details || {}),
         }
       );
     } catch (error) {
@@ -395,7 +447,7 @@ export class DonationsService extends BaseFirestoreService<Donation, Donation> {
       userRole,
       action,
       service: 'donations',
-      sensitiveData: true
+      sensitiveData: true,
     });
   }
 
@@ -410,19 +462,19 @@ export class DonationsService extends BaseFirestoreService<Donation, Donation> {
     if (!donation.donorId) {
       throw new Error('Donor ID is required');
     }
-    
+
     if (!donation.amount || donation.amount <= 0) {
       throw new Error('Valid donation amount is required');
     }
-    
+
     if (!donation.date) {
       throw new Error('Donation date is required');
     }
-    
+
     if (!donation.method) {
       throw new Error('Donation method is required');
     }
-    
+
     if (!donation.category) {
       throw new Error('Donation category is required');
     }

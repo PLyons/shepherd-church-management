@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { firebaseService } from '../services/firebase';
 import { Member } from '../types';
 import { useAuth } from '../hooks/useUnifiedAuth';
-import { Search, User, Users, Eye, Plus } from 'lucide-react';
+import { Search, User, Users, Eye, Plus, Trash2 } from 'lucide-react';
 import { MemberForm } from '../components/members/MemberForm';
 
 export default function Members() {
@@ -21,20 +21,30 @@ export default function Members() {
   }, [currentPage, searchTerm]);
 
   const fetchMembers = async () => {
+    console.log('Fetching members with options:', { searchTerm, itemsPerPage });
     setLoading(true);
     try {
       // Use Firebase service to get member directory
       const options = {
         search: searchTerm || undefined,
-        limit: itemsPerPage,
+        limit: Math.max(itemsPerPage, 50), // Increase limit to catch more members
         orderBy: 'name' as const,
-        orderDirection: 'asc' as const
+        orderDirection: 'asc' as const,
       };
 
       const data = await firebaseService.members.getMemberDirectory(options);
-      
+      console.log('Fetched members:', data.length, 'members');
+      console.log(
+        'Members data:',
+        data.map((m) => ({
+          name: `${m.firstName} ${m.lastName}`,
+          email: m.email,
+          household: m.householdName,
+        }))
+      );
+
       setMembers(data);
-      
+
       // For now, set total count to the length of returned data
       // In a production app, you'd implement proper pagination with counts
       setTotalCount(data.length);
@@ -53,12 +63,38 @@ export default function Members() {
     fetchMembers();
   };
 
-  const handleAddMember = (newMember: Member) => {
+  const handleAddMember = async (newMember: Member) => {
+    console.log('Member added successfully:', newMember);
     setShowForm(false);
-    fetchMembers(); // Refresh the list
+
+    // Add a small delay to ensure Firebase has propagated the changes
+    setTimeout(async () => {
+      console.log('Refreshing member list...');
+      await fetchMembers();
+      console.log('Member list refreshed');
+    }, 500);
+  };
+
+  const handleDeleteMember = async (memberId: string, memberName: string) => {
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete ${memberName}? This action cannot be undone.`
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      await firebaseService.members.delete(memberId);
+      // Refresh the member list
+      await fetchMembers();
+    } catch (error) {
+      console.error('Error deleting member:', error);
+      alert(error instanceof Error ? error.message : 'Failed to delete member');
+    }
   };
 
   const canAddMembers = member?.role === 'admin' || member?.role === 'pastor';
+  const canDeleteMembers =
+    member?.role === 'admin' || member?.role === 'pastor';
 
   const getRoleColor = (role: string) => {
     switch (role) {
@@ -104,13 +140,21 @@ export default function Members() {
             {totalCount} total members
           </div>
           {canAddMembers && (
-            <button
-              onClick={() => setShowForm(true)}
-              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Member
-            </button>
+            <>
+              <button
+                onClick={() => setShowForm(true)}
+                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 mr-2"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Member
+              </button>
+              <button
+                onClick={() => fetchMembers()}
+                className="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+              >
+                Refresh
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -175,15 +219,21 @@ export default function Members() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{memberItem.email}</div>
+                    <div className="text-sm text-gray-900">
+                      {memberItem.email}
+                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(memberItem.memberStatus)}`}>
+                    <span
+                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(memberItem.memberStatus)}`}
+                    >
                       {memberItem.memberStatus}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(memberItem.role)}`}>
+                    <span
+                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(memberItem.role)}`}
+                    >
                       {memberItem.role}
                     </span>
                   </td>
@@ -193,13 +243,29 @@ export default function Members() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <Link
-                      to={`/members/${memberItem.id}`}
-                      className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
-                    >
-                      <Eye className="h-4 w-4" />
-                      View
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <Link
+                        to={`/members/${memberItem.id}`}
+                        className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
+                      >
+                        <Eye className="h-4 w-4" />
+                        View
+                      </Link>
+                      {canDeleteMembers && (
+                        <button
+                          onClick={() =>
+                            handleDeleteMember(
+                              memberItem.id,
+                              `${memberItem.firstName} ${memberItem.lastName}`
+                            )
+                          }
+                          className="text-red-600 hover:text-red-900 flex items-center gap-1"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Delete
+                        </button>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -210,9 +276,13 @@ export default function Members() {
         {members.length === 0 && (
           <div className="text-center py-12">
             <User className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No members found</h3>
+            <h3 className="mt-2 text-sm font-medium text-gray-900">
+              No members found
+            </h3>
             <p className="mt-1 text-sm text-gray-500">
-              {searchTerm ? 'Try adjusting your search terms.' : 'No members have been added yet.'}
+              {searchTerm
+                ? 'Try adjusting your search terms.'
+                : 'No members have been added yet.'}
             </p>
           </div>
         )}
@@ -232,7 +302,9 @@ export default function Members() {
               Page {currentPage} of {totalPages}
             </span>
             <button
-              onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+              onClick={() =>
+                setCurrentPage(Math.min(totalPages, currentPage + 1))
+              }
               disabled={currentPage === totalPages}
               className="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -240,7 +312,9 @@ export default function Members() {
             </button>
           </div>
           <div className="text-sm text-gray-700">
-            Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, totalCount)} of {totalCount} results
+            Showing {(currentPage - 1) * itemsPerPage + 1} to{' '}
+            {Math.min(currentPage * itemsPerPage, totalCount)} of {totalCount}{' '}
+            results
           </div>
         </div>
       )}

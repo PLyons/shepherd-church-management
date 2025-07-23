@@ -16,9 +16,15 @@ import { EventsService } from './events.service';
 
 // Service instances for direct use (lazy loading to avoid circular deps)
 export const firebase = {
-  get members() { return membersService; },
-  get households() { return householdsService; },
-  get events() { return eventsService; },
+  get members() {
+    return membersService;
+  },
+  get households() {
+    return householdsService;
+  },
+  get events() {
+    return eventsService;
+  },
 } as const;
 
 // ============================================================================
@@ -56,7 +62,7 @@ export class FirebaseService {
     memberStatus?: 'active' | 'inactive' | 'visitor';
     joinedAt?: string;
     isPrimaryContact?: boolean;
-    
+
     // Household data (for new household)
     householdData?: {
       familyName: string;
@@ -69,13 +75,13 @@ export class FirebaseService {
         country?: string;
       };
     };
-    
+
     // Or existing household ID
     existingHouseholdId?: string;
-    
+
     // Firebase Auth UID
     authUID?: string;
-  }): Promise<{ member: any, household: any }> {
+  }): Promise<{ member: any; household: any }> {
     try {
       let household;
       let householdId: string;
@@ -96,31 +102,40 @@ export class FirebaseService {
         });
         householdId = household.id;
       } else {
-        throw new Error('Either existingHouseholdId or householdData must be provided');
+        throw new Error(
+          'Either existingHouseholdId or householdData must be provided'
+        );
       }
 
       // Create member
-      const member = await this.members.create({
-        firstName: memberData.firstName,
-        lastName: memberData.lastName,
-        email: memberData.email,
-        phone: memberData.phone,
-        birthdate: memberData.birthdate,
-        gender: memberData.gender,
-        role: memberData.role || 'member',
-        memberStatus: memberData.memberStatus || 'active',
-        joinedAt: memberData.joinedAt,
-        householdId,
-        isPrimaryContact: memberData.isPrimaryContact || false,
-        fullName: `${memberData.firstName} ${memberData.lastName}`,
-      }, memberData.authUID);
+      const member = await this.members.create(
+        {
+          firstName: memberData.firstName,
+          lastName: memberData.lastName,
+          email: memberData.email,
+          phone: memberData.phone,
+          birthdate: memberData.birthdate,
+          gender: memberData.gender,
+          role: memberData.role || 'member',
+          memberStatus: memberData.memberStatus || 'active',
+          joinedAt: memberData.joinedAt,
+          householdId,
+          isPrimaryContact: memberData.isPrimaryContact || false,
+          fullName: `${memberData.firstName} ${memberData.lastName}`,
+        },
+        memberData.authUID
+      );
 
       // Add member to household
       await this.households.addMemberToHousehold(householdId, member.id);
 
       // Set as primary contact if requested
       if (memberData.isPrimaryContact) {
-        await this.households.setPrimaryContact(householdId, member.id, member.fullName);
+        await this.households.setPrimaryContact(
+          householdId,
+          member.id,
+          member.fullName
+        );
       }
 
       return { member, household };
@@ -140,7 +155,7 @@ export class FirebaseService {
     const household = await this.households.getById(member.householdId);
     return {
       ...member,
-      household
+      household,
     };
   }
 
@@ -154,14 +169,17 @@ export class FirebaseService {
     const members = await this.members.getByHouseholdId(householdId);
     return {
       ...household,
-      members
+      members,
     };
   }
 
   /**
    * Transfer member to different household
    */
-  async transferMemberToHousehold(memberId: string, newHouseholdId: string): Promise<void> {
+  async transferMemberToHousehold(
+    memberId: string,
+    newHouseholdId: string
+  ): Promise<void> {
     const member = await this.members.getById(memberId);
     if (!member) {
       throw new Error('Member not found');
@@ -196,7 +214,7 @@ export class FirebaseService {
     const [memberStats, householdStats, eventStats] = await Promise.all([
       this.members.getStatistics(),
       this.households.getStatistics(),
-      this.events.getStatistics()
+      this.events.getStatistics(),
     ]);
 
     const overview = {
@@ -207,15 +225,15 @@ export class FirebaseService {
         // Add recent activity items here
         'Recent registrations',
         'Upcoming events',
-        'Recent RSVPs'
-      ]
+        'Recent RSVPs',
+      ],
     };
 
     return {
       members: memberStats,
       households: householdStats,
       events: eventStats,
-      overview
+      overview,
     };
   }
 
@@ -226,12 +244,15 @@ export class FirebaseService {
   /**
    * Global search across members, households, and events
    */
-  async globalSearch(searchTerm: string, options?: {
-    includeMembers?: boolean;
-    includeHouseholds?: boolean;
-    includeEvents?: boolean;
-    limit?: number;
-  }): Promise<{
+  async globalSearch(
+    searchTerm: string,
+    options?: {
+      includeMembers?: boolean;
+      includeHouseholds?: boolean;
+      includeEvents?: boolean;
+      limit?: number;
+    }
+  ): Promise<{
     members: any[];
     households: any[];
     events: any[];
@@ -241,20 +262,20 @@ export class FirebaseService {
       includeMembers = true,
       includeHouseholds = true,
       includeEvents = true,
-      limit = 20
+      limit = 20,
     } = options || {};
 
     const [members, households, events] = await Promise.all([
       includeMembers ? this.members.search(searchTerm, { limit }) : [],
       includeHouseholds ? this.households.search(searchTerm, { limit }) : [],
-      includeEvents ? this.events.searchEvents(searchTerm) : []
+      includeEvents ? this.events.searchEvents(searchTerm) : [],
     ]);
 
     return {
       members: members.slice(0, limit),
       households: households.slice(0, limit),
       events: events.slice(0, limit),
-      total: members.length + households.length + events.length
+      total: members.length + households.length + events.length,
     };
   }
 
@@ -289,7 +310,7 @@ export class FirebaseService {
         birthdate: '',
         joinedAt: '',
         isPrimaryContact: false,
-        householdName: 'Test Household'
+        householdName: 'Test Household',
       });
       const canWrite = true;
 
@@ -303,7 +324,7 @@ export class FirebaseService {
         canRead: false,
         canWrite: false,
         canDelete: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
@@ -319,7 +340,7 @@ export class FirebaseService {
     const [members, households, events] = await Promise.all([
       this.members.count(),
       this.households.count(),
-      this.events.count()
+      this.events.count(),
     ]);
 
     return { members, households, events };
@@ -364,32 +385,44 @@ export class FirebaseService {
     // Check members without households
     const allMembers = await this.members.getAll();
     const allHouseholds = await this.households.getAll();
-    const householdIds = new Set(allHouseholds.map(h => h.id));
+    const householdIds = new Set(allHouseholds.map((h) => h.id));
 
     let issuesFound = 0;
     let issuesFixed = 0;
 
     for (const member of allMembers) {
       if (!householdIds.has(member.householdId)) {
-        issues.push(`Member ${member.fullName} (${member.id}) references non-existent household ${member.householdId}`);
+        issues.push(
+          `Member ${member.fullName} (${member.id}) references non-existent household ${member.householdId}`
+        );
         issuesFound++;
       }
     }
 
     // Check households with incorrect member counts
     for (const household of allHouseholds) {
-      const actualMembers = allMembers.filter(m => m.householdId === household.id);
+      const actualMembers = allMembers.filter(
+        (m) => m.householdId === household.id
+      );
       if (actualMembers.length !== household.memberCount) {
-        issues.push(`Household ${household.familyName} has incorrect member count: ${household.memberCount} vs actual ${actualMembers.length}`);
+        issues.push(
+          `Household ${household.familyName} has incorrect member count: ${household.memberCount} vs actual ${actualMembers.length}`
+        );
         issuesFound++;
-        
+
         // Fix the count
         try {
-          await this.households.update(household.id, { memberCount: actualMembers.length });
-          fixes.push(`Fixed member count for household ${household.familyName}`);
+          await this.households.update(household.id, {
+            memberCount: actualMembers.length,
+          });
+          fixes.push(
+            `Fixed member count for household ${household.familyName}`
+          );
           issuesFixed++;
         } catch (error) {
-          issues.push(`Failed to fix member count for household ${household.familyName}`);
+          issues.push(
+            `Failed to fix member count for household ${household.familyName}`
+          );
         }
       }
     }
@@ -402,7 +435,7 @@ export class FirebaseService {
         householdsChecked: allHouseholds.length,
         issuesFound,
         issuesFixed,
-      }
+      },
     };
   }
 }

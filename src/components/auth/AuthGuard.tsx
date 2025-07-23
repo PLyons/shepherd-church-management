@@ -14,7 +14,10 @@ export function AuthGuard({ children, requireAuth = true }: AuthGuardProps) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" data-testid="loading-container">
+      <div
+        className="min-h-screen flex items-center justify-center"
+        data-testid="loading-container"
+      >
         <LoadingSpinner size="lg" />
       </div>
     );

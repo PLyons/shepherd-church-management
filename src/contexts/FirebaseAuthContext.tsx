@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { 
+import {
   User,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -12,7 +12,7 @@ import {
   updatePassword as firebaseUpdatePassword,
   EmailAuthProvider,
   reauthenticateWithCredential,
-  confirmPasswordReset
+  confirmPasswordReset,
 } from 'firebase/auth';
 import { auth, db } from '../lib/firebase';
 import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
@@ -24,17 +24,28 @@ interface AuthContextType {
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signInWithMagicLink: (email: string) => Promise<void>;
-  signUp: (email: string, password: string, memberData?: Partial<Member>) => Promise<void>;
+  signUp: (
+    email: string,
+    password: string,
+    memberData?: Partial<Member>
+  ) => Promise<void>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
-  updatePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+  updatePassword: (
+    currentPassword: string,
+    newPassword: string
+  ) => Promise<void>;
   confirmPasswordReset: (oobCode: string, newPassword: string) => Promise<void>;
   updateMember: (updates: Partial<Member>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function FirebaseAuthProvider({ children }: { children: React.ReactNode }) {
+export function FirebaseAuthProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [user, setUser] = useState<User | null>(null);
   const [member, setMember] = useState<Member | null>(null);
   const [loading, setLoading] = useState(true);
@@ -57,16 +68,25 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     console.log('FirebaseAuthContext: Setting up auth state listener');
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      console.log('FirebaseAuthContext: Auth state changed, user:', user ? user.uid : 'null');
+      console.log(
+        'FirebaseAuthContext: Auth state changed, user:',
+        user ? user.uid : 'null'
+      );
       setUser(user);
       if (user) {
-        console.log('FirebaseAuthContext: Fetching member data for user:', user.uid);
+        console.log(
+          'FirebaseAuthContext: Fetching member data for user:',
+          user.uid
+        );
         try {
           const memberData = await fetchMemberData(user.uid);
           console.log('FirebaseAuthContext: Member data fetched:', memberData);
           setMember(memberData);
         } catch (error) {
-          console.error('FirebaseAuthContext: Error fetching member data:', error);
+          console.error(
+            'FirebaseAuthContext: Error fetching member data:',
+            error
+          );
           setMember(null);
         }
       } else {
@@ -92,7 +112,11 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
             await signInWithEmailLink(auth, email, window.location.href);
             window.localStorage.removeItem('emailForSignIn');
             // Clear the URL
-            window.history.replaceState({}, document.title, window.location.pathname);
+            window.history.replaceState(
+              {},
+              document.title,
+              window.location.pathname
+            );
           } catch (error) {
             console.error('Error signing in with email link:', error);
           }
@@ -116,9 +140,17 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
     window.localStorage.setItem('emailForSignIn', email);
   };
 
-  const signUp = async (email: string, password: string, memberData?: Partial<Member>) => {
-    const { user } = await createUserWithEmailAndPassword(auth, email, password);
-    
+  const signUp = async (
+    email: string,
+    password: string,
+    memberData?: Partial<Member>
+  ) => {
+    const { user } = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+
     // Create member document in Firestore
     const now = Timestamp.now();
     const newMemberData: Partial<Member> = {
@@ -128,9 +160,9 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
       joined_at: now.toDate().toISOString(),
       created_at: now.toDate().toISOString(),
       updated_at: now.toDate().toISOString(),
-      ...memberData
+      ...memberData,
     };
-    
+
     await setDoc(doc(db, 'members', user.uid), newMemberData);
   };
 
@@ -145,20 +177,29 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
     });
   };
 
-  const updatePassword = async (currentPassword: string, newPassword: string) => {
+  const updatePassword = async (
+    currentPassword: string,
+    newPassword: string
+  ) => {
     if (!user || !user.email) {
       throw new Error('No authenticated user');
     }
 
     // Re-authenticate the user
-    const credential = EmailAuthProvider.credential(user.email, currentPassword);
+    const credential = EmailAuthProvider.credential(
+      user.email,
+      currentPassword
+    );
     await reauthenticateWithCredential(user, credential);
-    
+
     // Update password
     await firebaseUpdatePassword(user, newPassword);
   };
 
-  const confirmPasswordResetWithCode = async (oobCode: string, newPassword: string) => {
+  const confirmPasswordResetWithCode = async (
+    oobCode: string,
+    newPassword: string
+  ) => {
     await confirmPasswordReset(auth, oobCode, newPassword);
   };
 
@@ -169,11 +210,11 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
 
     const updateData = {
       ...updates,
-      updated_at: Timestamp.now().toDate().toISOString()
+      updated_at: Timestamp.now().toDate().toISOString(),
     };
 
     await setDoc(doc(db, 'members', user.uid), updateData, { merge: true });
-    
+
     // Update local state
     const updatedMember = await fetchMemberData(user.uid);
     setMember(updatedMember);
@@ -190,14 +231,10 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
     resetPassword,
     updatePassword,
     confirmPasswordReset: confirmPasswordResetWithCode,
-    updateMember
+    updateMember,
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export const useAuth = () => {

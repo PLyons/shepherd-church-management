@@ -31,23 +31,50 @@ import {
 /**
  * Converts a Firestore Timestamp to ISO string
  */
-export const timestampToString = (timestamp: Timestamp | null | undefined): string | undefined => {
-  if (!timestamp) return undefined;
-  return timestamp.toDate().toISOString();
+export const timestampToString = (
+  timestamp: Timestamp | null | undefined
+): string | undefined => {
+  if (!timestamp || !timestamp.toDate) {
+    console.warn('Invalid timestamp provided to timestampToString:', timestamp);
+    return undefined;
+  }
+  try {
+    return timestamp.toDate().toISOString();
+  } catch (error) {
+    console.error('Error converting timestamp to string:', error, timestamp);
+    return undefined;
+  }
 };
 
 /**
  * Converts an ISO string to Firestore Timestamp
  */
-export const stringToTimestamp = (dateString: string | null | undefined): Timestamp | undefined => {
+export const stringToTimestamp = (
+  dateString: string | null | undefined
+): Timestamp | undefined => {
   if (!dateString) return undefined;
-  return Timestamp.fromDate(new Date(dateString));
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      console.warn(
+        'Invalid date string provided to stringToTimestamp:',
+        dateString
+      );
+      return undefined;
+    }
+    return Timestamp.fromDate(date);
+  } catch (error) {
+    console.error('Error converting string to timestamp:', error, dateString);
+    return undefined;
+  }
 };
 
 /**
  * Converts a Date object to Firestore Timestamp
  */
-export const dateToTimestamp = (date: Date | null | undefined): Timestamp | undefined => {
+export const dateToTimestamp = (
+  date: Date | null | undefined
+): Timestamp | undefined => {
   if (!date) return undefined;
   return Timestamp.fromDate(date);
 };
@@ -64,7 +91,7 @@ export const getCurrentTimestamp = (): Timestamp => {
  */
 export const removeUndefined = <T extends Record<string, any>>(obj: T): T => {
   const result = {} as T;
-  Object.keys(obj).forEach(key => {
+  Object.keys(obj).forEach((key) => {
     if (obj[key] !== undefined) {
       result[key] = obj[key];
     }
@@ -75,7 +102,10 @@ export const removeUndefined = <T extends Record<string, any>>(obj: T): T => {
 /**
  * Generates a computed full name
  */
-export const generateFullName = (firstName: string, lastName: string): string => {
+export const generateFullName = (
+  firstName: string,
+  lastName: string
+): string => {
   return `${firstName} ${lastName}`.trim();
 };
 
@@ -83,7 +113,10 @@ export const generateFullName = (firstName: string, lastName: string): string =>
 // MEMBER CONVERTERS
 // ============================================================================
 
-export const memberDocumentToMember = (id: string, doc: MemberDocument): Member => {
+export const memberDocumentToMember = (
+  id: string,
+  doc: MemberDocument
+): Member => {
   return {
     id,
     firstName: doc.firstName,
@@ -104,9 +137,11 @@ export const memberDocumentToMember = (id: string, doc: MemberDocument): Member 
   };
 };
 
-export const memberToMemberDocument = (member: Partial<Member>): Partial<MemberDocument> => {
+export const memberToMemberDocument = (
+  member: Partial<Member>
+): Partial<MemberDocument> => {
   const now = getCurrentTimestamp();
-  
+
   return removeUndefined({
     firstName: member.firstName,
     lastName: member.lastName,
@@ -122,8 +157,10 @@ export const memberToMemberDocument = (member: Partial<Member>): Partial<MemberD
     createdAt: member.createdAt ? stringToTimestamp(member.createdAt) : now,
     updatedAt: now,
     householdName: member.householdName,
-    fullName: member.firstName && member.lastName ? 
-      generateFullName(member.firstName, member.lastName) : '',
+    fullName:
+      member.firstName && member.lastName
+        ? generateFullName(member.firstName, member.lastName)
+        : '',
   });
 };
 
@@ -131,33 +168,65 @@ export const memberToMemberDocument = (member: Partial<Member>): Partial<MemberD
 // HOUSEHOLD CONVERTERS
 // ============================================================================
 
-export const householdDocumentToHousehold = (id: string, doc: HouseholdDocument): Household => {
-  return {
+export const householdDocumentToHousehold = (
+  id: string,
+  doc: HouseholdDocument
+): Household => {
+  console.log('Converting document to household:', id, doc);
+
+  const createdAtString = timestampToString(doc.createdAt);
+  const updatedAtString = timestampToString(doc.updatedAt);
+
+  if (!createdAtString || !updatedAtString) {
+    console.error('Missing required timestamps in household document:', {
+      id,
+      createdAt: doc.createdAt,
+      updatedAt: doc.updatedAt,
+    });
+  }
+
+  const result = {
     id,
     familyName: doc.familyName,
+    normalizedName: doc.normalizedName,
+    status: doc.status,
+    createdBy: doc.createdBy,
     address: doc.address,
     primaryContactId: doc.primaryContactId,
     primaryContactName: doc.primaryContactName,
     memberIds: doc.memberIds,
     memberCount: doc.memberCount,
-    createdAt: timestampToString(doc.createdAt)!,
-    updatedAt: timestampToString(doc.updatedAt)!,
+    createdAt: createdAtString || new Date().toISOString(),
+    updatedAt: updatedAtString || new Date().toISOString(),
   };
+  console.log('Converted to household:', result);
+  return result;
 };
 
-export const householdToHouseholdDocument = (household: Partial<Household>): Partial<HouseholdDocument> => {
+export const householdToHouseholdDocument = (
+  household: Partial<Household>
+): Partial<HouseholdDocument> => {
+  console.log('Converting household to document:', household);
   const now = getCurrentTimestamp();
-  
-  return removeUndefined({
+
+  const result = removeUndefined({
     familyName: household.familyName,
+    normalizedName: household.normalizedName,
+    status: household.status,
+    createdBy: household.createdBy,
     address: household.address || {},
     primaryContactId: household.primaryContactId,
     primaryContactName: household.primaryContactName,
     memberIds: household.memberIds || [],
     memberCount: household.memberCount || 0,
-    createdAt: household.createdAt ? stringToTimestamp(household.createdAt) : now,
+    createdAt: household.createdAt
+      ? stringToTimestamp(household.createdAt)
+      : now,
     updatedAt: now,
   });
+
+  console.log('Converted to document:', result);
+  return result;
 };
 
 // ============================================================================
@@ -181,9 +250,11 @@ export const eventDocumentToEvent = (id: string, doc: EventDocument): Event => {
   };
 };
 
-export const eventToEventDocument = (event: Partial<Event>): Partial<EventDocument> => {
+export const eventToEventDocument = (
+  event: Partial<Event>
+): Partial<EventDocument> => {
   const now = getCurrentTimestamp();
-  
+
   return removeUndefined({
     title: event.title,
     description: event.description,
@@ -203,7 +274,10 @@ export const eventToEventDocument = (event: Partial<Event>): Partial<EventDocume
 // EVENT RSVP CONVERTERS
 // ============================================================================
 
-export const eventRSVPDocumentToEventRSVP = (id: string, doc: EventRSVPDocument): EventRSVP => {
+export const eventRSVPDocumentToEventRSVP = (
+  id: string,
+  doc: EventRSVPDocument
+): EventRSVP => {
   return {
     id,
     memberId: doc.memberId,
@@ -214,12 +288,16 @@ export const eventRSVPDocumentToEventRSVP = (id: string, doc: EventRSVPDocument)
   };
 };
 
-export const eventRSVPToEventRSVPDocument = (rsvp: Partial<EventRSVP>): Partial<EventRSVPDocument> => {
+export const eventRSVPToEventRSVPDocument = (
+  rsvp: Partial<EventRSVP>
+): Partial<EventRSVPDocument> => {
   return {
     memberId: rsvp.memberId,
     memberName: rsvp.memberName,
     response: rsvp.response,
-    respondedAt: rsvp.respondedAt ? stringToTimestamp(rsvp.respondedAt) : getCurrentTimestamp(),
+    respondedAt: rsvp.respondedAt
+      ? stringToTimestamp(rsvp.respondedAt)
+      : getCurrentTimestamp(),
     note: rsvp.note,
   };
 };
@@ -228,7 +306,10 @@ export const eventRSVPToEventRSVPDocument = (rsvp: Partial<EventRSVP>): Partial<
 // EVENT ATTENDANCE CONVERTERS
 // ============================================================================
 
-export const eventAttendanceDocumentToEventAttendance = (id: string, doc: EventAttendanceDocument): EventAttendance => {
+export const eventAttendanceDocumentToEventAttendance = (
+  id: string,
+  doc: EventAttendanceDocument
+): EventAttendance => {
   return {
     id,
     memberId: doc.memberId,
@@ -239,12 +320,16 @@ export const eventAttendanceDocumentToEventAttendance = (id: string, doc: EventA
   };
 };
 
-export const eventAttendanceToEventAttendanceDocument = (attendance: Partial<EventAttendance>): Partial<EventAttendanceDocument> => {
+export const eventAttendanceToEventAttendanceDocument = (
+  attendance: Partial<EventAttendance>
+): Partial<EventAttendanceDocument> => {
   return {
     memberId: attendance.memberId,
     memberName: attendance.memberName,
     attended: attendance.attended || false,
-    checkedInAt: attendance.checkedInAt ? stringToTimestamp(attendance.checkedInAt) : undefined,
+    checkedInAt: attendance.checkedInAt
+      ? stringToTimestamp(attendance.checkedInAt)
+      : undefined,
     checkedInBy: attendance.checkedInBy,
   };
 };
@@ -253,7 +338,10 @@ export const eventAttendanceToEventAttendanceDocument = (attendance: Partial<Eve
 // DONATION CONVERTERS
 // ============================================================================
 
-export const donationDocumentToDonation = (id: string, doc: DonationDocument): Donation => {
+export const donationDocumentToDonation = (
+  id: string,
+  doc: DonationDocument
+): Donation => {
   return {
     id,
     memberId: doc.memberId,
@@ -270,7 +358,9 @@ export const donationDocumentToDonation = (id: string, doc: DonationDocument): D
   };
 };
 
-export const donationToDonationDocument = (donation: Partial<Donation>): Partial<DonationDocument> => {
+export const donationToDonationDocument = (
+  donation: Partial<Donation>
+): Partial<DonationDocument> => {
   return {
     memberId: donation.memberId,
     memberName: donation.memberName,
@@ -281,7 +371,9 @@ export const donationToDonationDocument = (donation: Partial<Donation>): Partial
     note: donation.note,
     categoryId: donation.categoryId,
     categoryName: donation.categoryName,
-    createdAt: donation.createdAt ? stringToTimestamp(donation.createdAt) : getCurrentTimestamp(),
+    createdAt: donation.createdAt
+      ? stringToTimestamp(donation.createdAt)
+      : getCurrentTimestamp(),
     createdBy: donation.createdBy,
   };
 };
@@ -290,7 +382,10 @@ export const donationToDonationDocument = (donation: Partial<Donation>): Partial
 // DONATION CATEGORY CONVERTERS
 // ============================================================================
 
-export const donationCategoryDocumentToDonationCategory = (id: string, doc: DonationCategoryDocument): DonationCategory => {
+export const donationCategoryDocumentToDonationCategory = (
+  id: string,
+  doc: DonationCategoryDocument
+): DonationCategory => {
   return {
     id,
     name: doc.name,
@@ -304,9 +399,11 @@ export const donationCategoryDocumentToDonationCategory = (id: string, doc: Dona
   };
 };
 
-export const donationCategoryToDonationCategoryDocument = (category: Partial<DonationCategory>): Partial<DonationCategoryDocument> => {
+export const donationCategoryToDonationCategoryDocument = (
+  category: Partial<DonationCategory>
+): Partial<DonationCategoryDocument> => {
   const now = getCurrentTimestamp();
-  
+
   return {
     name: category.name,
     description: category.description,
@@ -323,7 +420,10 @@ export const donationCategoryToDonationCategoryDocument = (category: Partial<Don
 // SERMON CONVERTERS
 // ============================================================================
 
-export const sermonDocumentToSermon = (id: string, doc: SermonDocument): Sermon => {
+export const sermonDocumentToSermon = (
+  id: string,
+  doc: SermonDocument
+): Sermon => {
   return {
     id,
     title: doc.title,
@@ -340,9 +440,11 @@ export const sermonDocumentToSermon = (id: string, doc: SermonDocument): Sermon 
   };
 };
 
-export const sermonToSermonDocument = (sermon: Partial<Sermon>): Partial<SermonDocument> => {
+export const sermonToSermonDocument = (
+  sermon: Partial<Sermon>
+): Partial<SermonDocument> => {
   const now = getCurrentTimestamp();
-  
+
   return {
     title: sermon.title,
     speakerName: sermon.speakerName,
@@ -362,7 +464,10 @@ export const sermonToSermonDocument = (sermon: Partial<Sermon>): Partial<SermonD
 // VOLUNTEER ROLE CONVERTERS
 // ============================================================================
 
-export const volunteerRoleDocumentToVolunteerRole = (id: string, doc: VolunteerRoleDocument): VolunteerRole => {
+export const volunteerRoleDocumentToVolunteerRole = (
+  id: string,
+  doc: VolunteerRoleDocument
+): VolunteerRole => {
   return {
     id,
     name: doc.name,
@@ -375,9 +480,11 @@ export const volunteerRoleDocumentToVolunteerRole = (id: string, doc: VolunteerR
   };
 };
 
-export const volunteerRoleToVolunteerRoleDocument = (role: Partial<VolunteerRole>): Partial<VolunteerRoleDocument> => {
+export const volunteerRoleToVolunteerRoleDocument = (
+  role: Partial<VolunteerRole>
+): Partial<VolunteerRoleDocument> => {
   const now = getCurrentTimestamp();
-  
+
   return {
     name: role.name,
     description: role.description,
@@ -393,7 +500,10 @@ export const volunteerRoleToVolunteerRoleDocument = (role: Partial<VolunteerRole
 // VOLUNTEER SLOT CONVERTERS
 // ============================================================================
 
-export const volunteerSlotDocumentToVolunteerSlot = (id: string, doc: VolunteerSlotDocument): VolunteerSlot => {
+export const volunteerSlotDocumentToVolunteerSlot = (
+  id: string,
+  doc: VolunteerSlotDocument
+): VolunteerSlot => {
   return {
     id,
     eventId: doc.eventId,
@@ -410,9 +520,11 @@ export const volunteerSlotDocumentToVolunteerSlot = (id: string, doc: VolunteerS
   };
 };
 
-export const volunteerSlotToVolunteerSlotDocument = (slot: Partial<VolunteerSlot>): Partial<VolunteerSlotDocument> => {
+export const volunteerSlotToVolunteerSlotDocument = (
+  slot: Partial<VolunteerSlot>
+): Partial<VolunteerSlotDocument> => {
   const now = getCurrentTimestamp();
-  
+
   return {
     eventId: slot.eventId,
     eventTitle: slot.eventTitle,
@@ -432,7 +544,10 @@ export const volunteerSlotToVolunteerSlotDocument = (slot: Partial<VolunteerSlot
 // MEMBER EVENT CONVERTERS
 // ============================================================================
 
-export const memberEventDocumentToMemberEvent = (id: string, doc: MemberEventDocument): MemberEvent => {
+export const memberEventDocumentToMemberEvent = (
+  id: string,
+  doc: MemberEventDocument
+): MemberEvent => {
   return {
     id,
     memberId: doc.memberId,
@@ -446,9 +561,11 @@ export const memberEventDocumentToMemberEvent = (id: string, doc: MemberEventDoc
   };
 };
 
-export const memberEventToMemberEventDocument = (memberEvent: Partial<MemberEvent>): Partial<MemberEventDocument> => {
+export const memberEventToMemberEventDocument = (
+  memberEvent: Partial<MemberEvent>
+): Partial<MemberEventDocument> => {
   const now = getCurrentTimestamp();
-  
+
   return {
     memberId: memberEvent.memberId,
     memberName: memberEvent.memberName,
@@ -456,7 +573,9 @@ export const memberEventToMemberEventDocument = (memberEvent: Partial<MemberEven
     eventDate: stringToTimestamp(memberEvent.eventDate),
     description: memberEvent.description,
     notes: memberEvent.notes,
-    createdAt: memberEvent.createdAt ? stringToTimestamp(memberEvent.createdAt) : now,
+    createdAt: memberEvent.createdAt
+      ? stringToTimestamp(memberEvent.createdAt)
+      : now,
     updatedAt: now,
   };
 };

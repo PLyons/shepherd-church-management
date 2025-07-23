@@ -68,7 +68,7 @@ export default function QRRegistration() {
   const validateToken = async (tokenValue: string) => {
     try {
       setLoading(true);
-      
+
       const { data, error } = await supabase
         .from('registration_tokens')
         .select('*')
@@ -124,7 +124,8 @@ export default function QRRegistration() {
         const { data: householdData, error: householdError } = await supabase
           .from('households')
           .insert({
-            family_name: formData.household_name || `${formData.last_name} Family`,
+            family_name:
+              formData.household_name || `${formData.last_name} Family`,
             address_line1: formData.address_line1,
             city: formData.city,
             state: formData.state,
@@ -177,15 +178,20 @@ export default function QRRegistration() {
         })
         .eq('id', token.id);
 
-      showToast('Registration completed successfully! Welcome to our church!', 'success');
-      
+      showToast(
+        'Registration completed successfully! Welcome to our church!',
+        'success'
+      );
+
       // Redirect to a welcome page or login
       setTimeout(() => {
         navigate('/login?message=registration_complete');
       }, 2000);
-
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Registration failed', 'error');
+      showToast(
+        err instanceof Error ? err.message : 'Registration failed',
+        'error'
+      );
     } finally {
       setSubmitting(false);
     }
@@ -256,82 +262,129 @@ export default function QRRegistration() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Personal Information */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Personal Information</h3>
-              
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Personal Information
+              </h3>
+
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label htmlFor="first_name" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="first_name"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     First Name *
                   </label>
                   <input
                     type="text"
                     required
                     value={formData.first_name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, first_name: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        first_name: e.target.value,
+                      }))
+                    }
                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="last_name" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="last_name"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Last Name *
                   </label>
                   <input
                     type="text"
                     required
                     value={formData.last_name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, last_name: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        last_name: e.target.value,
+                      }))
+                    }
                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
                 </div>
               </div>
 
               <div className="mt-4">
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Email Address *
                 </label>
                 <input
                   type="email"
                   required
                   value={formData.email}
-                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, email: e.target.value }))
+                  }
                   className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 />
               </div>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 mt-4">
                 <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="phone"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Phone Number
                   </label>
                   <input
                     type="tel"
                     value={formData.phone}
-                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        phone: e.target.value,
+                      }))
+                    }
                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="birthdate" className="block text-sm font-medium text-gray-700">
+                  <label
+                    htmlFor="birthdate"
+                    className="block text-sm font-medium text-gray-700"
+                  >
                     Birth Date
                   </label>
                   <input
                     type="date"
                     value={formData.birthdate}
-                    onChange={(e) => setFormData(prev => ({ ...prev, birthdate: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        birthdate: e.target.value,
+                      }))
+                    }
                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   />
                 </div>
               </div>
 
               <div className="mt-4">
-                <label htmlFor="gender" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="gender"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Gender
                 </label>
                 <select
                   value={formData.gender}
-                  onChange={(e) => setFormData(prev => ({ ...prev, gender: e.target.value as 'Male' | 'Female' | '' }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      gender: e.target.value as 'Male' | 'Female' | '',
+                    }))
+                  }
                   className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 >
                   <option value="">Prefer not to say</option>
@@ -343,19 +396,27 @@ export default function QRRegistration() {
 
             {/* Household Information */}
             <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-4">Household Information</h3>
-              
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Household Information
+              </h3>
+
               {token.household_id && (
                 <div className="mb-4">
                   <label className="flex items-center">
                     <input
                       type="checkbox"
                       checked={formData.join_household}
-                      onChange={(e) => setFormData(prev => ({ ...prev, join_household: e.target.checked }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          join_household: e.target.checked,
+                        }))
+                      }
                       className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
                     />
                     <span className="ml-2 text-sm text-gray-700">
-                      Join existing household (recommended if you live with the person who invited you)
+                      Join existing household (recommended if you live with the
+                      person who invited you)
                     </span>
                   </label>
                 </div>
@@ -364,13 +425,21 @@ export default function QRRegistration() {
               {(!formData.join_household || !token.household_id) && (
                 <>
                   <div className="mb-4">
-                    <label htmlFor="household_name" className="block text-sm font-medium text-gray-700">
+                    <label
+                      htmlFor="household_name"
+                      className="block text-sm font-medium text-gray-700"
+                    >
                       Household Name
                     </label>
                     <input
                       type="text"
                       value={formData.household_name}
-                      onChange={(e) => setFormData(prev => ({ ...prev, household_name: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          household_name: e.target.value,
+                        }))
+                      }
                       placeholder={`${formData.last_name} Family`}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
@@ -378,51 +447,83 @@ export default function QRRegistration() {
 
                   <div className="space-y-4">
                     <div>
-                      <label htmlFor="address" className="block text-sm font-medium text-gray-700">
+                      <label
+                        htmlFor="address"
+                        className="block text-sm font-medium text-gray-700"
+                      >
                         Address
                       </label>
                       <input
                         type="text"
                         value={formData.address_line1}
-                        onChange={(e) => setFormData(prev => ({ ...prev, address_line1: e.target.value }))}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            address_line1: e.target.value,
+                          }))
+                        }
                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       />
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label htmlFor="city" className="block text-sm font-medium text-gray-700">
+                        <label
+                          htmlFor="city"
+                          className="block text-sm font-medium text-gray-700"
+                        >
                           City
                         </label>
                         <input
                           type="text"
                           value={formData.city}
-                          onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              city: e.target.value,
+                            }))
+                          }
                           className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         />
                       </div>
 
                       <div>
-                        <label htmlFor="state" className="block text-sm font-medium text-gray-700">
+                        <label
+                          htmlFor="state"
+                          className="block text-sm font-medium text-gray-700"
+                        >
                           State
                         </label>
                         <input
                           type="text"
                           value={formData.state}
-                          onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+                          onChange={(e) =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              state: e.target.value,
+                            }))
+                          }
                           className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label htmlFor="postal_code" className="block text-sm font-medium text-gray-700">
+                      <label
+                        htmlFor="postal_code"
+                        className="block text-sm font-medium text-gray-700"
+                      >
                         Postal Code
                       </label>
                       <input
                         type="text"
                         value={formData.postal_code}
-                        onChange={(e) => setFormData(prev => ({ ...prev, postal_code: e.target.value }))}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            postal_code: e.target.value,
+                          }))
+                        }
                         className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                       />
                     </div>

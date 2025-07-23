@@ -6,6 +6,7 @@ import {
   addDoc,
   updateDoc,
   deleteDoc,
+  setDoc,
   query,
   where,
   orderBy,
@@ -18,11 +19,11 @@ import {
   Query,
   QueryConstraint,
   FirestoreError,
-  getCountFromServer
+  getCountFromServer,
 } from 'firebase/firestore';
 // Use Node.js compatible Firebase config if in Node environment
 const isNode = typeof window === 'undefined' && typeof global !== 'undefined';
-const { db } = isNode 
+const { db } = isNode
   ? await import('../../lib/firebase-node')
   : await import('../../lib/firebase');
 import { QueryOptions } from '../../types/firestore';
@@ -44,7 +45,9 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
   // ============================================================================
 
   protected abstract documentToClient(id: string, document: TDocument): TClient;
-  protected abstract clientToDocument(client: Partial<TClient>): Partial<TDocument>;
+  protected abstract clientToDocument(
+    client: Partial<TClient>
+  ): Partial<TDocument>;
 
   // ============================================================================
   // COLLECTION REFERENCE
@@ -67,9 +70,11 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
    */
   async create(data: Partial<TClient>, customId?: string): Promise<TClient> {
     try {
+      console.log(`Creating ${this.collectionName} document with data:`, data);
       const documentData = this.clientToDocument(data);
+      console.log(`Converted to document data:`, documentData);
       const now = Timestamp.now();
-      
+
       // Add timestamps
       const finalData = {
         ...documentData,
@@ -77,16 +82,20 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
         updatedAt: now,
       };
 
+      console.log(`Final data for Firestore:`, finalData);
+
       let docRef: DocumentReference;
-      
+
       if (customId) {
         // Use custom ID (e.g., Firebase Auth UID for members)
         docRef = this.getDocRef(customId);
-        await updateDoc(docRef, finalData as any);
+        await setDoc(docRef, finalData as any);
       } else {
         // Auto-generate ID
         docRef = await addDoc(this.getCollectionRef(), finalData);
       }
+
+      console.log(`Document created with ID:`, docRef.id);
 
       // Fetch and return the created document
       const createdDoc = await getDoc(docRef);
@@ -94,7 +103,12 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
         throw new Error('Failed to create document');
       }
 
-      return this.documentToClient(createdDoc.id, createdDoc.data() as TDocument);
+      const result = this.documentToClient(
+        createdDoc.id,
+        createdDoc.data() as TDocument
+      );
+      console.log(`Returning created document:`, result);
+      return result;
     } catch (error) {
       console.error(`Error creating ${this.collectionName} document:`, error);
       throw this.handleFirestoreError(error);
@@ -127,7 +141,7 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
     try {
       const docRef = this.getDocRef(id);
       const documentData = this.clientToDocument(data);
-      
+
       // Add update timestamp
       const finalData = {
         ...documentData,
@@ -142,7 +156,10 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
         throw new Error('Document not found after update');
       }
 
-      return this.documentToClient(updatedDoc.id, updatedDoc.data() as TDocument);
+      return this.documentToClient(
+        updatedDoc.id,
+        updatedDoc.data() as TDocument
+      );
     } catch (error) {
       console.error(`Error updating ${this.collectionName} document:`, error);
       throw this.handleFirestoreError(error);
@@ -175,14 +192,18 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
 
       // Add where clauses
       if (options?.where) {
-        options.where.forEach(condition => {
-          constraints.push(where(condition.field, condition.operator, condition.value));
+        options.where.forEach((condition) => {
+          constraints.push(
+            where(condition.field, condition.operator, condition.value)
+          );
         });
       }
 
       // Add ordering
       if (options?.orderBy) {
-        constraints.push(orderBy(options.orderBy.field, options.orderBy.direction));
+        constraints.push(
+          orderBy(options.orderBy.field, options.orderBy.direction)
+        );
       }
 
       // Add limit
@@ -198,7 +219,7 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
       const q = query(this.getCollectionRef(), ...constraints);
       const querySnapshot = await getDocs(q);
 
-      return querySnapshot.docs.map(doc => 
+      return querySnapshot.docs.map((doc) =>
         this.documentToClient(doc.id, doc.data() as TDocument)
       );
     } catch (error) {
@@ -210,9 +231,23 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
   /**
    * Get documents with a simple where condition
    */
-  async getWhere(field: string, operator: '==' | '!=' | '<' | '<=' | '>' | '>=' | 'in' | 'not-in' | 'array-contains' | 'array-contains-any', value: any): Promise<TClient[]> {
+  async getWhere(
+    field: string,
+    operator:
+      | '=='
+      | '!='
+      | '<'
+      | '<='
+      | '>'
+      | '>='
+      | 'in'
+      | 'not-in'
+      | 'array-contains'
+      | 'array-contains-any',
+    value: any
+  ): Promise<TClient[]> {
     return this.getAll({
-      where: [{ field, operator, value }]
+      where: [{ field, operator, value }],
     });
   }
 
@@ -222,41 +257,49 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
   async count(options?: QueryOptions): Promise<number> {
     try {
       const constraints: any[] = [];
-      
+
       // Apply where conditions
       if (options?.where && options.where.length > 0) {
-        options.where.forEach(condition => {
-          constraints.push(where(condition.field, condition.operator, condition.value));
+        options.where.forEach((condition) => {
+          constraints.push(
+            where(condition.field, condition.operator, condition.value)
+          );
         });
       }
 
       // Create query with constraints
-      const baseQuery = constraints.length > 0 
-        ? query(this.getCollectionRef(), ...constraints)
-        : this.getCollectionRef();
+      const baseQuery =
+        constraints.length > 0
+          ? query(this.getCollectionRef(), ...constraints)
+          : this.getCollectionRef();
 
       // Use Firestore's count aggregation for better performance
       const countSnapshot = await getCountFromServer(baseQuery);
       const count = countSnapshot.data().count;
-      
+
       console.log(`BaseService: Count for ${this.collectionName}:`, count);
       return count;
     } catch (error) {
       console.error(`Error counting ${this.collectionName} documents:`, error);
-      
+
       // If count fails, fallback to getting documents and counting them
       // This can happen if the collection doesn't exist yet
       if (error.code === 'not-found' || error.code === 'permission-denied') {
-        console.warn(`BaseService: Fallback to document count for ${this.collectionName}`);
+        console.warn(
+          `BaseService: Fallback to document count for ${this.collectionName}`
+        );
         try {
           const results = await this.getAll(options);
           return results.length;
         } catch (fallbackError) {
-          console.error(`BaseService: Fallback count also failed for ${this.collectionName}:`, fallbackError);
+          console.error(
+            `BaseService: Fallback count also failed for ${this.collectionName}:`,
+            fallbackError
+          );
           return 0; // Return 0 if both methods fail
         }
       }
-      
+
       throw this.handleFirestoreError(error);
     }
   }
@@ -268,36 +311,55 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
   /**
    * Subscribe to document changes
    */
-  subscribeToDocument(id: string, callback: (data: TClient | null) => void): () => void {
+  subscribeToDocument(
+    id: string,
+    callback: (data: TClient | null) => void
+  ): () => void {
     const docRef = this.getDocRef(id);
-    
-    return onSnapshot(docRef, (docSnap) => {
-      if (docSnap.exists()) {
-        callback(this.documentToClient(docSnap.id, docSnap.data() as TDocument));
-      } else {
-        callback(null);
+
+    return onSnapshot(
+      docRef,
+      (docSnap) => {
+        if (docSnap.exists()) {
+          callback(
+            this.documentToClient(docSnap.id, docSnap.data() as TDocument)
+          );
+        } else {
+          callback(null);
+        }
+      },
+      (error) => {
+        console.error(
+          `Error in ${this.collectionName} document subscription:`,
+          error
+        );
       }
-    }, (error) => {
-      console.error(`Error in ${this.collectionName} document subscription:`, error);
-    });
+    );
   }
 
   /**
    * Subscribe to collection changes
    */
-  subscribeToCollection(options?: QueryOptions, callback?: (data: TClient[]) => void): () => void {
+  subscribeToCollection(
+    options?: QueryOptions,
+    callback?: (data: TClient[]) => void
+  ): () => void {
     const constraints: QueryConstraint[] = [];
 
     // Add where clauses
     if (options?.where) {
-      options.where.forEach(condition => {
-        constraints.push(where(condition.field, condition.operator, condition.value));
+      options.where.forEach((condition) => {
+        constraints.push(
+          where(condition.field, condition.operator, condition.value)
+        );
       });
     }
 
     // Add ordering
     if (options?.orderBy) {
-      constraints.push(orderBy(options.orderBy.field, options.orderBy.direction));
+      constraints.push(
+        orderBy(options.orderBy.field, options.orderBy.direction)
+      );
     }
 
     // Add limit
@@ -306,15 +368,22 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
     }
 
     const q = query(this.getCollectionRef(), ...constraints);
-    
-    return onSnapshot(q, (querySnapshot) => {
-      const data = querySnapshot.docs.map(doc => 
-        this.documentToClient(doc.id, doc.data() as TDocument)
-      );
-      callback?.(data);
-    }, (error) => {
-      console.error(`Error in ${this.collectionName} collection subscription:`, error);
-    });
+
+    return onSnapshot(
+      q,
+      (querySnapshot) => {
+        const data = querySnapshot.docs.map((doc) =>
+          this.documentToClient(doc.id, doc.data() as TDocument)
+        );
+        callback?.(data);
+      },
+      (error) => {
+        console.error(
+          `Error in ${this.collectionName} collection subscription:`,
+          error
+        );
+      }
+    );
   }
 
   // ============================================================================
@@ -330,7 +399,7 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
       const docRefs: DocumentReference[] = [];
       const now = Timestamp.now();
 
-      items.forEach(item => {
+      items.forEach((item) => {
         const docRef = doc(this.getCollectionRef());
         const documentData = this.clientToDocument(item);
         const finalData = {
@@ -338,7 +407,7 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
           createdAt: now,
           updatedAt: now,
         };
-        
+
         batch.set(docRef, finalData);
         docRefs.push(docRef);
       });
@@ -363,7 +432,9 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
   /**
    * Update multiple documents in a batch
    */
-  async updateBatch(updates: { id: string; data: Partial<TClient> }[]): Promise<TClient[]> {
+  async updateBatch(
+    updates: { id: string; data: Partial<TClient> }[]
+  ): Promise<TClient[]> {
     try {
       const batch = writeBatch(db);
       const now = Timestamp.now();
@@ -375,7 +446,7 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
           ...documentData,
           updatedAt: now,
         };
-        
+
         batch.update(docRef, finalData as any);
       });
 
@@ -403,7 +474,7 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
     try {
       const batch = writeBatch(db);
 
-      ids.forEach(id => {
+      ids.forEach((id) => {
         const docRef = this.getDocRef(id);
         batch.delete(docRef);
       });
@@ -423,20 +494,26 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
     if (error instanceof FirestoreError) {
       switch (error.code) {
         case 'permission-denied':
-          return new Error('You do not have permission to perform this operation');
+          return new Error(
+            'You do not have permission to perform this operation'
+          );
         case 'not-found':
           return new Error('The requested document was not found');
         case 'already-exists':
           return new Error('A document with this ID already exists');
         case 'failed-precondition':
-          return new Error('The operation failed due to a precondition failure');
+          return new Error(
+            'The operation failed due to a precondition failure'
+          );
         case 'unavailable':
           return new Error('The service is temporarily unavailable');
         default:
           return new Error(`Firestore error: ${error.message}`);
       }
     }
-    
-    return error instanceof Error ? error : new Error('An unknown error occurred');
+
+    return error instanceof Error
+      ? error
+      : new Error('An unknown error occurred');
   }
 }

@@ -78,7 +78,10 @@ export class DashboardService {
   /**
    * Get dashboard data filtered by user role
    */
-  async getDashboardData(userId: string, userRole: 'admin' | 'pastor' | 'member'): Promise<DashboardData> {
+  async getDashboardData(
+    userId: string,
+    userRole: 'admin' | 'pastor' | 'member'
+  ): Promise<DashboardData> {
     switch (userRole) {
       case 'admin':
         return this.getAdminDashboard(userId);
@@ -97,47 +100,48 @@ export class DashboardService {
   private async getAdminDashboard(userId: string): Promise<DashboardData> {
     try {
       console.log('DashboardService: Starting admin dashboard data fetch');
-      
+
       // Add timeout to prevent hanging
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Dashboard data fetch timeout')), 30000); // 30 second timeout
+        setTimeout(
+          () => reject(new Error('Dashboard data fetch timeout')),
+          30000
+        ); // 30 second timeout
       });
 
       const dataPromise = Promise.all([
-        this.membersService.getStatistics().catch(err => {
+        this.membersService.getStatistics().catch((err) => {
           console.error('Members stats error:', err);
           return { total: 0, active: 0, inactive: 0, visitors: 0 };
         }),
-        this.eventsService.getStatistics().catch(err => {
+        this.eventsService.getStatistics().catch((err) => {
           console.error('Events stats error:', err);
           return { upcoming: 0, total: 0 };
         }),
-        this.householdsService.getStatistics().catch(err => {
+        this.householdsService.getStatistics().catch((err) => {
           console.error('Households stats error:', err);
           return { total: 0 };
         }),
-        this.donationsService.getDonationStats(userId, 'admin').catch(err => {
+        this.donationsService.getDonationStats(userId, 'admin').catch((err) => {
           console.error('Donations stats error:', err);
           return { monthlyTotal: 0, totalAmount: 0 };
-        })
+        }),
       ]);
 
-      const [memberStats, eventStats, householdStats, donationStats] = await Promise.race([
-        dataPromise,
-        timeoutPromise
-      ]);
+      const [memberStats, eventStats, householdStats, donationStats] =
+        await Promise.race([dataPromise, timeoutPromise]);
 
       console.log('DashboardService: Statistics fetched successfully');
 
       const [upcomingEvents, recentActivity] = await Promise.all([
-        this.eventsService.getUpcomingEvents(5, false).catch(err => {
+        this.eventsService.getUpcomingEvents(5, false).catch((err) => {
           console.error('Upcoming events error:', err);
           return [];
         }),
-        this.getAdminActivity().catch(err => {
+        this.getAdminActivity().catch((err) => {
           console.error('Admin activity error:', err);
           return [];
-        })
+        }),
       ]);
 
       console.log('DashboardService: Admin dashboard data complete');
@@ -155,7 +159,7 @@ export class DashboardService {
         },
         recentActivity,
         upcomingEvents,
-        quickActions: this.getQuickActions('admin')
+        quickActions: this.getQuickActions('admin'),
       };
     } catch (error) {
       console.error('DashboardService: Error in getAdminDashboard:', error);
@@ -170,7 +174,7 @@ export class DashboardService {
     const [memberStats, eventStats, donationStats] = await Promise.all([
       this.membersService.getStatistics(),
       this.eventsService.getStatistics(),
-      this.donationsService.getDonationStats(userId, 'pastor')
+      this.donationsService.getDonationStats(userId, 'pastor'),
     ]);
 
     const upcomingEvents = await this.eventsService.getUpcomingEvents(5, false);
@@ -187,7 +191,7 @@ export class DashboardService {
       },
       recentActivity,
       upcomingEvents,
-      quickActions: this.getQuickActions('pastor')
+      quickActions: this.getQuickActions('pastor'),
     };
   }
 
@@ -203,12 +207,12 @@ export class DashboardService {
 
     // Get only public events for regular members
     const upcomingEvents = await this.eventsService.getUpcomingEvents(5, true);
-    
+
     // Get personal information and donation stats
     const [personalInfo, donationStats, recentActivity] = await Promise.all([
       this.getMemberPersonalInfo(userId),
       this.donationsService.getDonationStats(userId, 'member'),
-      this.getMemberActivity(userId)
+      this.getMemberActivity(userId),
     ]);
 
     return {
@@ -222,7 +226,7 @@ export class DashboardService {
       recentActivity,
       upcomingEvents,
       personalInfo,
-      quickActions: this.getQuickActions('member')
+      quickActions: this.getQuickActions('member'),
     };
   }
 
@@ -233,14 +237,16 @@ export class DashboardService {
   /**
    * Get member's personal dashboard information
    */
-  private async getMemberPersonalInfo(userId: string): Promise<PersonalDashboardInfo> {
+  private async getMemberPersonalInfo(
+    userId: string
+  ): Promise<PersonalDashboardInfo> {
     const member = await this.membersService.getById(userId);
     if (!member) {
       throw new Error('Member not found');
     }
 
     // Get household information
-    const household = member.householdId 
+    const household = member.householdId
       ? await this.householdsService.getById(member.householdId)
       : null;
 
@@ -249,7 +255,11 @@ export class DashboardService {
     const myRSVPs: any[] = [];
 
     // Get personal donations - SECURE: Only user's own donations
-    const myDonations = await this.donationsService.getDonationsByRole(userId, 'member', userId);
+    const myDonations = await this.donationsService.getDonationsByRole(
+      userId,
+      'member',
+      userId
+    );
 
     // Get volunteer commitments
     // TODO: Implement volunteer service to get user's commitments
@@ -260,7 +270,7 @@ export class DashboardService {
       myRSVPs,
       myDonations,
       householdInfo: household,
-      myVolunteerCommitments
+      myVolunteerCommitments,
     };
   }
 
@@ -284,8 +294,8 @@ export class DashboardService {
         title: 'New Member Registered',
         description: 'John Doe joined the church',
         date: new Date().toISOString(),
-        icon: 'user-plus'
-      }
+        icon: 'user-plus',
+      },
     ];
   }
 
@@ -305,8 +315,8 @@ export class DashboardService {
         title: 'Sunday Service RSVP',
         description: '15 new RSVPs for this Sunday',
         date: new Date().toISOString(),
-        icon: 'calendar'
-      }
+        icon: 'calendar',
+      },
     ];
   }
 
@@ -326,8 +336,8 @@ export class DashboardService {
         title: 'Event RSVP Confirmed',
         description: 'You RSVPd to Sunday Service',
         date: new Date().toISOString(),
-        icon: 'check-circle'
-      }
+        icon: 'check-circle',
+      },
     ];
   }
 
@@ -348,7 +358,7 @@ export class DashboardService {
         route: '/events/new',
         icon: 'plus',
         color: 'blue',
-        allowedRoles: ['admin', 'pastor']
+        allowedRoles: ['admin', 'pastor'],
       },
       {
         id: 'add-member',
@@ -357,7 +367,7 @@ export class DashboardService {
         route: '/members?action=create',
         icon: 'user-plus',
         color: 'green',
-        allowedRoles: ['admin', 'pastor']
+        allowedRoles: ['admin', 'pastor'],
       },
       {
         id: 'record-donation',
@@ -366,7 +376,7 @@ export class DashboardService {
         route: '/donations',
         icon: 'dollar-sign',
         color: 'purple',
-        allowedRoles: ['admin']
+        allowedRoles: ['admin'],
       },
       {
         id: 'manage-roles',
@@ -375,7 +385,7 @@ export class DashboardService {
         route: '/admin/roles',
         icon: 'shield',
         color: 'red',
-        allowedRoles: ['admin']
+        allowedRoles: ['admin'],
       },
       // Member actions
       {
@@ -385,7 +395,7 @@ export class DashboardService {
         route: '/profile',
         icon: 'user',
         color: 'blue',
-        allowedRoles: ['member', 'pastor', 'admin']
+        allowedRoles: ['member', 'pastor', 'admin'],
       },
       {
         id: 'view-events',
@@ -394,7 +404,7 @@ export class DashboardService {
         route: '/events',
         icon: 'calendar',
         color: 'green',
-        allowedRoles: ['member', 'pastor', 'admin']
+        allowedRoles: ['member', 'pastor', 'admin'],
       },
       {
         id: 'my-donations',
@@ -403,12 +413,12 @@ export class DashboardService {
         route: '/donations/my-donations',
         icon: 'heart',
         color: 'purple',
-        allowedRoles: ['member', 'pastor', 'admin']
-      }
+        allowedRoles: ['member', 'pastor', 'admin'],
+      },
     ];
 
     // Filter actions based on role
-    return allActions.filter(action => action.allowedRoles.includes(role));
+    return allActions.filter((action) => action.allowedRoles.includes(role));
   }
 
   // ============================================================================
@@ -418,7 +428,11 @@ export class DashboardService {
   /**
    * Validate that user can access requested data
    */
-  private async validateDataAccess(userId: string, requestedUserId: string, userRole: string): Promise<boolean> {
+  private async validateDataAccess(
+    userId: string,
+    requestedUserId: string,
+    userRole: string
+  ): Promise<boolean> {
     // Admins can access all data
     if (userRole === 'admin') {
       return true;
@@ -440,7 +454,10 @@ export class DashboardService {
   /**
    * Sanitize data based on role permissions
    */
-  private sanitizeDataForRole(data: any, role: 'admin' | 'pastor' | 'member'): any {
+  private sanitizeDataForRole(
+    data: any,
+    role: 'admin' | 'pastor' | 'member'
+  ): any {
     if (role === 'admin') {
       return data; // Admins see everything
     }
@@ -453,14 +470,7 @@ export class DashboardService {
 
     if (role === 'member') {
       // Members only see basic information
-      const { 
-        id, 
-        title, 
-        startTime, 
-        location, 
-        isPublic, 
-        description 
-      } = data;
+      const { id, title, startTime, location, isPublic, description } = data;
       return { id, title, startTime, location, isPublic, description };
     }
 
@@ -474,9 +484,15 @@ export class DashboardService {
   /**
    * Log dashboard data access for audit purposes
    */
-  private async logDataAccess(userId: string, userRole: string, dataType: string): Promise<void> {
+  private async logDataAccess(
+    userId: string,
+    userRole: string,
+    dataType: string
+  ): Promise<void> {
     // TODO: Implement audit logging
-    console.log(`[AUDIT] User ${userId} (${userRole}) accessed ${dataType} dashboard data`);
+    console.log(
+      `[AUDIT] User ${userId} (${userRole}) accessed ${dataType} dashboard data`
+    );
   }
 }
 

@@ -47,14 +47,16 @@ export async function testConnections(): Promise<{
       .from('members')
       .select('id')
       .limit(1);
-    
+
     if (error) {
       errors.push(`Supabase error: ${error.message}`);
     } else {
       supabaseOk = true;
     }
   } catch (error) {
-    errors.push(`Supabase connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    errors.push(
+      `Supabase connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 
   // Test Firebase
@@ -66,7 +68,9 @@ export async function testConnections(): Promise<{
       firebaseOk = result.canRead && result.canWrite;
     }
   } catch (error) {
-    errors.push(`Firebase connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    errors.push(
+      `Firebase connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 
   return { supabase: supabaseOk, firebase: firebaseOk, errors };
@@ -83,13 +87,13 @@ export async function getDataCounts(): Promise<{
   const [membersResult, householdsResult, eventsResult] = await Promise.all([
     supabase.from('members').select('id', { count: 'exact', head: true }),
     supabase.from('households').select('id', { count: 'exact', head: true }),
-    supabase.from('events').select('id', { count: 'exact', head: true })
+    supabase.from('events').select('id', { count: 'exact', head: true }),
   ]);
 
   const supabaseCounts = {
     members: membersResult.count || 0,
     households: householdsResult.count || 0,
-    events: eventsResult.count || 0
+    events: eventsResult.count || 0,
   };
 
   // Get Firebase counts
@@ -125,36 +129,46 @@ async function migrateHouseholds(): Promise<MigrationResult> {
     // Migrate each household
     for (const household of households) {
       try {
-        await firebaseService.households.create({
-          id: household.id.toString(), // Convert UUID to string
-          familyName: household.family_name,
-          address: {
-            line1: household.address_line1 || '',
-            line2: household.address_line2 || '',
-            city: household.city || '',
-            state: household.state || '',
-            postalCode: household.postal_code || '',
-            country: household.country || 'US'
+        await firebaseService.households.create(
+          {
+            id: household.id.toString(), // Convert UUID to string
+            familyName: household.family_name,
+            address: {
+              line1: household.address_line1 || '',
+              line2: household.address_line2 || '',
+              city: household.city || '',
+              state: household.state || '',
+              postalCode: household.postal_code || '',
+              country: household.country || 'US',
+            },
+            primaryContactId: household.primary_contact_id?.toString(),
+            primaryContactName: household.primary_contact_name || undefined,
+            memberIds: [], // Will be populated when migrating members
+            memberCount: 0, // Will be updated when migrating members
+            createdAt: household.created_at,
+            updatedAt: household.updated_at,
           },
-          primaryContactId: household.primary_contact_id?.toString(),
-          primaryContactName: household.primary_contact_name || undefined,
-          memberIds: [], // Will be populated when migrating members
-          memberCount: 0, // Will be updated when migrating members
-          createdAt: household.created_at,
-          updatedAt: household.updated_at
-        }, household.id.toString());
+          household.id.toString()
+        );
 
         result.success++;
         console.log(`✓ Migrated household: ${household.family_name}`);
       } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+        const errorMsg =
+          error instanceof Error ? error.message : 'Unknown error';
         result.errors.push({ id: household.id, error: errorMsg });
-        console.error(`✗ Failed to migrate household ${household.family_name}:`, errorMsg);
+        console.error(
+          `✗ Failed to migrate household ${household.family_name}:`,
+          errorMsg
+        );
       }
     }
   } catch (error) {
     console.error('Error in household migration:', error);
-    result.errors.push({ id: 'general', error: error instanceof Error ? error.message : 'Unknown error' });
+    result.errors.push({
+      id: 'general',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
   }
 
   return result;
@@ -170,10 +184,12 @@ async function migrateMembers(): Promise<MigrationResult> {
     // Fetch all members from Supabase with household info
     const { data: members, error } = await supabase
       .from('members')
-      .select(`
+      .select(
+        `
         *,
         households!inner(family_name)
-      `)
+      `
+      )
       .order('created_at');
 
     if (error) {
@@ -192,7 +208,7 @@ async function migrateMembers(): Promise<MigrationResult> {
       try {
         // Use auth_uid if available, otherwise use member ID
         const documentId = member.auth_uid || member.id.toString();
-        
+
         const memberData = {
           id: member.id.toString(),
           firstName: member.first_name,
@@ -202,14 +218,16 @@ async function migrateMembers(): Promise<MigrationResult> {
           birthdate: member.birthdate || undefined,
           gender: member.gender as 'Male' | 'Female' | undefined,
           role: (member.role as 'admin' | 'pastor' | 'member') || 'member',
-          memberStatus: (member.member_status as 'active' | 'inactive' | 'visitor') || 'active',
+          memberStatus:
+            (member.member_status as 'active' | 'inactive' | 'visitor') ||
+            'active',
           joinedAt: member.joined_at || undefined,
           householdId: member.household_id.toString(),
           householdName: (member.households as any)?.family_name,
           isPrimaryContact: member.is_primary_contact || false,
           fullName: `${member.first_name} ${member.last_name}`,
           createdAt: member.created_at,
-          updatedAt: member.updated_at
+          updatedAt: member.updated_at,
         };
 
         await firebaseService.members.create(memberData, documentId);
@@ -232,14 +250,21 @@ async function migrateMembers(): Promise<MigrationResult> {
         result.success++;
         console.log(`✓ Migrated member: ${memberData.fullName}`);
       } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+        const errorMsg =
+          error instanceof Error ? error.message : 'Unknown error';
         result.errors.push({ id: member.id, error: errorMsg });
-        console.error(`✗ Failed to migrate member ${member.first_name} ${member.last_name}:`, errorMsg);
+        console.error(
+          `✗ Failed to migrate member ${member.first_name} ${member.last_name}:`,
+          errorMsg
+        );
       }
     }
   } catch (error) {
     console.error('Error in member migration:', error);
-    result.errors.push({ id: 'general', error: error instanceof Error ? error.message : 'Unknown error' });
+    result.errors.push({
+      id: 'general',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
   }
 
   return result;
@@ -272,39 +297,46 @@ async function migrateEvents(): Promise<MigrationResult> {
     // Migrate each event
     for (const event of events) {
       try {
-        await firebaseService.events.create({
-          id: event.id.toString(),
-          title: event.title,
-          description: event.description || undefined,
-          startTime: event.start_time,
-          endTime: event.end_time || undefined,
-          location: event.location || undefined,
-          isPublic: event.is_public || false,
-          maxCapacity: event.max_capacity || undefined,
-          registrationDeadline: event.registration_deadline || undefined,
-          createdBy: event.created_by?.toString(),
-          categoryId: event.category_id?.toString(),
-          rsvpStats: {
-            yes: 0,
-            no: 0,
-            maybe: 0,
-            total: 0
+        await firebaseService.events.create(
+          {
+            id: event.id.toString(),
+            title: event.title,
+            description: event.description || undefined,
+            startTime: event.start_time,
+            endTime: event.end_time || undefined,
+            location: event.location || undefined,
+            isPublic: event.is_public || false,
+            maxCapacity: event.max_capacity || undefined,
+            registrationDeadline: event.registration_deadline || undefined,
+            createdBy: event.created_by?.toString(),
+            categoryId: event.category_id?.toString(),
+            rsvpStats: {
+              yes: 0,
+              no: 0,
+              maybe: 0,
+              total: 0,
+            },
+            createdAt: event.created_at,
+            updatedAt: event.updated_at,
           },
-          createdAt: event.created_at,
-          updatedAt: event.updated_at
-        }, event.id.toString());
+          event.id.toString()
+        );
 
         result.success++;
         console.log(`✓ Migrated event: ${event.title}`);
       } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+        const errorMsg =
+          error instanceof Error ? error.message : 'Unknown error';
         result.errors.push({ id: event.id, error: errorMsg });
         console.error(`✗ Failed to migrate event ${event.title}:`, errorMsg);
       }
     }
   } catch (error) {
     console.error('Error in event migration:', error);
-    result.errors.push({ id: 'general', error: error instanceof Error ? error.message : 'Unknown error' });
+    result.errors.push({
+      id: 'general',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
   }
 
   return result;
@@ -332,18 +364,30 @@ export async function runMigration(options?: {
   console.log('1. Testing database connections...');
   const connectionTest = await testConnections();
   if (!connectionTest.supabase || !connectionTest.firebase) {
-    throw new Error(`Connection test failed: ${connectionTest.errors.join(', ')}`);
+    throw new Error(
+      `Connection test failed: ${connectionTest.errors.join(', ')}`
+    );
   }
   console.log('✓ Both databases are accessible\n');
 
   // Show data counts
   console.log('2. Checking data counts...');
   const counts = await getDataCounts();
-  console.log(`Supabase: ${counts.supabase.households} households, ${counts.supabase.members} members, ${counts.supabase.events} events`);
-  console.log(`Firebase: ${counts.firebase.households} households, ${counts.firebase.members} members, ${counts.firebase.events} events\n`);
+  console.log(
+    `Supabase: ${counts.supabase.households} households, ${counts.supabase.members} members, ${counts.supabase.events} events`
+  );
+  console.log(
+    `Firebase: ${counts.firebase.households} households, ${counts.firebase.members} members, ${counts.firebase.events} events\n`
+  );
 
-  if (counts.firebase.members > 0 || counts.firebase.households > 0 || counts.firebase.events > 0) {
-    warnings.push('Firebase already contains data. Migration will add to existing data.');
+  if (
+    counts.firebase.members > 0 ||
+    counts.firebase.households > 0 ||
+    counts.firebase.events > 0
+  ) {
+    warnings.push(
+      'Firebase already contains data. Migration will add to existing data.'
+    );
   }
 
   if (options?.dryRun) {
@@ -353,7 +397,7 @@ export async function runMigration(options?: {
       members: { success: 0, errors: [] },
       events: { success: 0, errors: [] },
       totalDuration: Date.now() - startTime,
-      warnings
+      warnings,
     };
   }
 
@@ -363,36 +407,46 @@ export async function runMigration(options?: {
     members: { success: 0, errors: [] },
     events: { success: 0, errors: [] },
     totalDuration: 0,
-    warnings
+    warnings,
   };
 
   // Migrate households first
   if (!options?.skipHouseholds) {
     console.log('3. Migrating households...');
     results.households = await migrateHouseholds();
-    console.log(`Households: ${results.households.success} migrated, ${results.households.errors.length} errors\n`);
+    console.log(
+      `Households: ${results.households.success} migrated, ${results.households.errors.length} errors\n`
+    );
   }
 
   // Migrate members (depends on households)
   if (!options?.skipMembers) {
     console.log('4. Migrating members...');
     results.members = await migrateMembers();
-    console.log(`Members: ${results.members.success} migrated, ${results.members.errors.length} errors\n`);
+    console.log(
+      `Members: ${results.members.success} migrated, ${results.members.errors.length} errors\n`
+    );
   }
 
   // Migrate events
   if (!options?.skipEvents) {
     console.log('5. Migrating events...');
     results.events = await migrateEvents();
-    console.log(`Events: ${results.events.success} migrated, ${results.events.errors.length} errors\n`);
+    console.log(
+      `Events: ${results.events.success} migrated, ${results.events.errors.length} errors\n`
+    );
   }
 
   results.totalDuration = Date.now() - startTime;
 
   console.log('✅ Migration completed!');
   console.log(`Total time: ${Math.round(results.totalDuration / 1000)}s`);
-  console.log(`Total success: ${results.households.success + results.members.success + results.events.success}`);
-  console.log(`Total errors: ${results.households.errors.length + results.members.errors.length + results.events.errors.length}`);
+  console.log(
+    `Total success: ${results.households.success + results.members.success + results.events.success}`
+  );
+  console.log(
+    `Total errors: ${results.households.errors.length + results.members.errors.length + results.events.errors.length}`
+  );
 
   return results;
 }
@@ -406,35 +460,37 @@ export async function runMigration(options?: {
  */
 export async function clearFirebaseData(): Promise<void> {
   console.log('⚠️  WARNING: This will delete ALL data in Firebase!');
-  
+
   const counts = await firebaseService.getCollectionCounts();
   const totalDocs = counts.members + counts.households + counts.events;
-  
+
   if (totalDocs === 0) {
     console.log('No data to clear.');
     return;
   }
 
-  console.log(`About to delete: ${counts.members} members, ${counts.households} households, ${counts.events} events`);
-  
+  console.log(
+    `About to delete: ${counts.members} members, ${counts.households} households, ${counts.events} events`
+  );
+
   // Delete all members
   const members = await firebaseService.members.getAll();
   if (members.length > 0) {
-    await firebaseService.members.deleteBatch(members.map(m => m.id));
+    await firebaseService.members.deleteBatch(members.map((m) => m.id));
     console.log(`Deleted ${members.length} members`);
   }
 
   // Delete all households
   const households = await firebaseService.households.getAll();
   if (households.length > 0) {
-    await firebaseService.households.deleteBatch(households.map(h => h.id));
+    await firebaseService.households.deleteBatch(households.map((h) => h.id));
     console.log(`Deleted ${households.length} households`);
   }
 
   // Delete all events
   const events = await firebaseService.events.getAll();
   if (events.length > 0) {
-    await firebaseService.events.deleteBatch(events.map(e => e.id));
+    await firebaseService.events.deleteBatch(events.map((e) => e.id));
     console.log(`Deleted ${events.length} events`);
   }
 
@@ -453,21 +509,27 @@ export async function verifyMigration(): Promise<{
   };
 }> {
   console.log('🔍 Verifying migration integrity...');
-  
+
   const counts = await getDataCounts();
   const issues: string[] = [];
 
   // Check if counts match
   if (counts.supabase.households !== counts.firebase.households) {
-    issues.push(`Household count mismatch: Supabase=${counts.supabase.households}, Firebase=${counts.firebase.households}`);
+    issues.push(
+      `Household count mismatch: Supabase=${counts.supabase.households}, Firebase=${counts.firebase.households}`
+    );
   }
 
   if (counts.supabase.members !== counts.firebase.members) {
-    issues.push(`Member count mismatch: Supabase=${counts.supabase.members}, Firebase=${counts.firebase.members}`);
+    issues.push(
+      `Member count mismatch: Supabase=${counts.supabase.members}, Firebase=${counts.firebase.members}`
+    );
   }
 
   if (counts.supabase.events !== counts.firebase.events) {
-    issues.push(`Event count mismatch: Supabase=${counts.supabase.events}, Firebase=${counts.firebase.events}`);
+    issues.push(
+      `Event count mismatch: Supabase=${counts.supabase.events}, Firebase=${counts.firebase.events}`
+    );
   }
 
   // Run Firebase integrity check
@@ -479,13 +541,13 @@ export async function verifyMigration(): Promise<{
   console.log(`Verification ${isValid ? '✅ PASSED' : '❌ FAILED'}`);
   if (issues.length > 0) {
     console.log('Issues found:');
-    issues.forEach(issue => console.log(`  - ${issue}`));
+    issues.forEach((issue) => console.log(`  - ${issue}`));
   }
 
   return {
     isValid,
     issues,
-    summary: counts
+    summary: counts,
   };
 }
 
@@ -495,5 +557,5 @@ export default {
   testConnections,
   getDataCounts,
   clearFirebaseData,
-  verifyMigration
+  verifyMigration,
 };

@@ -11,16 +11,19 @@ interface RoleGuardProps {
   fallbackUrl?: string;
 }
 
-export function RoleGuard({ 
-  children, 
-  allowedRoles, 
-  fallbackUrl = '/dashboard' 
+export function RoleGuard({
+  children,
+  allowedRoles,
+  fallbackUrl = '/dashboard',
 }: RoleGuardProps) {
   const { member, loading } = useAuth();
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" data-testid="loading-container">
+      <div
+        className="min-h-screen flex items-center justify-center"
+        data-testid="loading-container"
+      >
         <LoadingSpinner size="lg" />
       </div>
     );
@@ -34,7 +37,9 @@ export function RoleGuard({
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            Access Denied
+          </h1>
           <p className="text-gray-600 mb-4">
             You don't have permission to access this page.
           </p>

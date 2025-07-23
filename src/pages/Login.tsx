@@ -8,7 +8,7 @@ export default function Login() {
   const [useMagicLink, setUseMagicLink] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
-  
+
   const { signIn, signInWithMagicLink } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -43,11 +43,14 @@ export default function Login() {
             Church Management System
           </p>
         </div>
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Email address
               </label>
               <input
@@ -60,10 +63,13 @@ export default function Login() {
                 placeholder="Enter your email"
               />
             </div>
-            
+
             {!useMagicLink && (
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Password
                 </label>
                 <input
@@ -87,13 +93,18 @@ export default function Login() {
               onChange={(e) => setUseMagicLink(e.target.checked)}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
             />
-            <label htmlFor="magic-link" className="ml-2 block text-sm text-gray-900">
+            <label
+              htmlFor="magic-link"
+              className="ml-2 block text-sm text-gray-900"
+            >
               Use magic link (passwordless)
             </label>
           </div>
 
           {message && (
-            <div className={`text-sm ${message.includes('Error') ? 'text-red-600' : 'text-green-600'}`}>
+            <div
+              className={`text-sm ${message.includes('Error') ? 'text-red-600' : 'text-green-600'}`}
+            >
               {message}
             </div>
           )}
@@ -104,18 +115,28 @@ export default function Login() {
               disabled={loading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
             >
-              {loading ? 'Signing in...' : useMagicLink ? 'Send Magic Link' : 'Sign In'}
+              {loading
+                ? 'Signing in...'
+                : useMagicLink
+                  ? 'Send Magic Link'
+                  : 'Sign In'}
             </button>
           </div>
 
           <div className="text-center space-y-2">
             <div>
-              <Link to="/reset-password" className="text-blue-600 hover:text-blue-500">
+              <Link
+                to="/reset-password"
+                className="text-blue-600 hover:text-blue-500"
+              >
                 Forgot your password?
               </Link>
             </div>
             <div>
-              <Link to="/register" className="text-blue-600 hover:text-blue-500">
+              <Link
+                to="/register"
+                className="text-blue-600 hover:text-blue-500"
+              >
                 Need an account? Register here
               </Link>
             </div>

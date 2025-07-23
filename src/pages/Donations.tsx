@@ -60,13 +60,13 @@ export default function Donations() {
     member: '',
     minAmount: '',
     maxAmount: '',
-    method: ''
+    method: '',
   });
   const [filteredDonations, setFilteredDonations] = useState<Donation[]>([]);
   const [totalStats, setTotalStats] = useState({
     totalAmount: 0,
     totalCount: 0,
-    averageAmount: 0
+    averageAmount: 0,
   });
   const [formData, setFormData] = useState<DonationFormData>({
     member_id: '',
@@ -85,9 +85,12 @@ export default function Donations() {
   useEffect(() => {
     // Filter members based on search
     if (searchMember.length > 0) {
-      const filtered = members.filter(member =>
-        `${member.first_name} ${member.last_name}`.toLowerCase().includes(searchMember.toLowerCase()) ||
-        member.email.toLowerCase().includes(searchMember.toLowerCase())
+      const filtered = members.filter(
+        (member) =>
+          `${member.first_name} ${member.last_name}`
+            .toLowerCase()
+            .includes(searchMember.toLowerCase()) ||
+          member.email.toLowerCase().includes(searchMember.toLowerCase())
       );
       setFilteredMembers(filtered.slice(0, 10)); // Limit to 10 results
     } else {
@@ -101,39 +104,39 @@ export default function Donations() {
 
     // Date range filter
     if (filters.startDate) {
-      filtered = filtered.filter(d => d.donation_date >= filters.startDate);
+      filtered = filtered.filter((d) => d.donation_date >= filters.startDate);
     }
     if (filters.endDate) {
-      filtered = filtered.filter(d => d.donation_date <= filters.endDate);
+      filtered = filtered.filter((d) => d.donation_date <= filters.endDate);
     }
 
     // Category filter
     if (filters.category) {
-      filtered = filtered.filter(d => d.category_id === filters.category);
+      filtered = filtered.filter((d) => d.category_id === filters.category);
     }
 
     // Member filter
     if (filters.member) {
       if (filters.member === 'anonymous') {
-        filtered = filtered.filter(d => d.member_id === null);
+        filtered = filtered.filter((d) => d.member_id === null);
       } else {
-        filtered = filtered.filter(d => d.member_id === filters.member);
+        filtered = filtered.filter((d) => d.member_id === filters.member);
       }
     }
 
     // Amount range filter
     if (filters.minAmount) {
       const minAmount = parseFloat(filters.minAmount);
-      filtered = filtered.filter(d => d.amount >= minAmount);
+      filtered = filtered.filter((d) => d.amount >= minAmount);
     }
     if (filters.maxAmount) {
       const maxAmount = parseFloat(filters.maxAmount);
-      filtered = filtered.filter(d => d.amount <= maxAmount);
+      filtered = filtered.filter((d) => d.amount <= maxAmount);
     }
 
     // Method filter
     if (filters.method) {
-      filtered = filtered.filter(d => d.method === filters.method);
+      filtered = filtered.filter((d) => d.method === filters.method);
     }
 
     setFilteredDonations(filtered);
@@ -146,7 +149,7 @@ export default function Donations() {
     setTotalStats({
       totalAmount,
       totalCount,
-      averageAmount
+      averageAmount,
     });
   }, [donations, filters]);
 
@@ -176,7 +179,10 @@ export default function Donations() {
       // Fetch recent donations
       await fetchDonations();
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Failed to load data', 'error');
+      showToast(
+        err instanceof Error ? err.message : 'Failed to load data',
+        'error'
+      );
     } finally {
       setLoading(false);
     }
@@ -186,18 +192,23 @@ export default function Donations() {
     try {
       const { data, error } = await supabase
         .from('donations')
-        .select(`
+        .select(
+          `
           *,
           category:donation_categories(name, description),
           member:members(first_name, last_name, email)
-        `)
+        `
+        )
         .order('donation_date', { ascending: false })
         .limit(50);
 
       if (error) throw error;
       setDonations(data || []);
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Failed to load donations', 'error');
+      showToast(
+        err instanceof Error ? err.message : 'Failed to load donations',
+        'error'
+      );
     }
   };
 
@@ -209,7 +220,10 @@ export default function Donations() {
       return;
     }
 
-    if (isNaN(parseFloat(formData.amount)) || parseFloat(formData.amount) <= 0) {
+    if (
+      isNaN(parseFloat(formData.amount)) ||
+      parseFloat(formData.amount) <= 0
+    ) {
       showToast('Please enter a valid amount', 'error');
       return;
     }
@@ -227,14 +241,12 @@ export default function Donations() {
         note: formData.note || null,
       };
 
-      const { error } = await supabase
-        .from('donations')
-        .insert(donationData);
+      const { error } = await supabase.from('donations').insert(donationData);
 
       if (error) throw error;
 
       showToast('Donation recorded successfully', 'success');
-      
+
       // Reset form
       setFormData({
         member_id: '',
@@ -247,18 +259,21 @@ export default function Donations() {
       });
       setSearchMember('');
       setShowForm(false);
-      
+
       // Refresh donations list
       await fetchDonations();
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Failed to record donation', 'error');
+      showToast(
+        err instanceof Error ? err.message : 'Failed to record donation',
+        'error'
+      );
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleMemberSelect = (member: Member) => {
-    setFormData(prev => ({ ...prev, member_id: member.id }));
+    setFormData((prev) => ({ ...prev, member_id: member.id }));
     setSearchMember(`${member.first_name} ${member.last_name}`);
     setFilteredMembers([]);
   };
@@ -266,7 +281,7 @@ export default function Donations() {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD'
+      currency: 'USD',
     }).format(amount);
   };
 
@@ -274,7 +289,7 @@ export default function Donations() {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 
@@ -286,7 +301,7 @@ export default function Donations() {
       member: '',
       minAmount: '',
       maxAmount: '',
-      method: ''
+      method: '',
     });
   };
 
@@ -296,18 +311,30 @@ export default function Donations() {
       return;
     }
 
-    const headers = ['Date', 'Member', 'Category', 'Amount', 'Method', 'Source/Reference', 'Note'];
+    const headers = [
+      'Date',
+      'Member',
+      'Category',
+      'Amount',
+      'Method',
+      'Source/Reference',
+      'Note',
+    ];
     const csvData = [
       headers.join(','),
-      ...filteredDonations.map(donation => [
-        donation.donation_date,
-        donation.member ? `"${donation.member.first_name} ${donation.member.last_name}"` : 'Anonymous',
-        `"${donation.category?.name || 'Unknown'}"`,
-        donation.amount,
-        donation.method || '',
-        `"${donation.source_label || ''}"`,
-        `"${donation.note || ''}"`
-      ].join(','))
+      ...filteredDonations.map((donation) =>
+        [
+          donation.donation_date,
+          donation.member
+            ? `"${donation.member.first_name} ${donation.member.last_name}"`
+            : 'Anonymous',
+          `"${donation.category?.name || 'Unknown'}"`,
+          donation.amount,
+          donation.method || '',
+          `"${donation.source_label || ''}"`,
+          `"${donation.note || ''}"`,
+        ].join(',')
+      ),
     ].join('\n');
 
     const blob = new Blob([csvData], { type: 'text/csv' });
@@ -319,7 +346,7 @@ export default function Donations() {
     a.click();
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
-    
+
     showToast('Donations exported successfully', 'success');
   };
 
@@ -370,8 +397,12 @@ export default function Donations() {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Total Amount</dt>
-                  <dd className="text-lg font-medium text-gray-900">{formatCurrency(totalStats.totalAmount)}</dd>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Total Amount
+                  </dt>
+                  <dd className="text-lg font-medium text-gray-900">
+                    {formatCurrency(totalStats.totalAmount)}
+                  </dd>
                 </dl>
               </div>
             </div>
@@ -388,8 +419,12 @@ export default function Donations() {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Total Donations</dt>
-                  <dd className="text-lg font-medium text-gray-900">{totalStats.totalCount}</dd>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Total Donations
+                  </dt>
+                  <dd className="text-lg font-medium text-gray-900">
+                    {totalStats.totalCount}
+                  </dd>
                 </dl>
               </div>
             </div>
@@ -406,8 +441,12 @@ export default function Donations() {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Average Amount</dt>
-                  <dd className="text-lg font-medium text-gray-900">{formatCurrency(totalStats.averageAmount)}</dd>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Average Amount
+                  </dt>
+                  <dd className="text-lg font-medium text-gray-900">
+                    {formatCurrency(totalStats.averageAmount)}
+                  </dd>
                 </dl>
               </div>
             </div>
@@ -427,39 +466,51 @@ export default function Donations() {
               Clear All Filters
             </button>
           </div>
-          
+
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {/* Date Range */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">Start Date</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Start Date
+              </label>
               <input
                 type="date"
                 value={filters.startDate}
-                onChange={(e) => setFilters(prev => ({ ...prev, startDate: e.target.value }))}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, startDate: e.target.value }))
+                }
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">End Date</label>
+              <label className="block text-sm font-medium text-gray-700">
+                End Date
+              </label>
               <input
                 type="date"
                 value={filters.endDate}
-                onChange={(e) => setFilters(prev => ({ ...prev, endDate: e.target.value }))}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, endDate: e.target.value }))
+                }
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
               />
             </div>
 
             {/* Category Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">Category</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Category
+              </label>
               <select
                 value={filters.category}
-                onChange={(e) => setFilters(prev => ({ ...prev, category: e.target.value }))}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, category: e.target.value }))
+                }
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
               >
                 <option value="">All Categories</option>
-                {categories.map(category => (
+                {categories.map((category) => (
                   <option key={category.id} value={category.id}>
                     {category.name}
                   </option>
@@ -469,15 +520,19 @@ export default function Donations() {
 
             {/* Member Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">Member</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Member
+              </label>
               <select
                 value={filters.member}
-                onChange={(e) => setFilters(prev => ({ ...prev, member: e.target.value }))}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, member: e.target.value }))
+                }
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
               >
                 <option value="">All Members</option>
                 <option value="anonymous">Anonymous Only</option>
-                {members.map(member => (
+                {members.map((member) => (
                   <option key={member.id} value={member.id}>
                     {member.first_name} {member.last_name}
                   </option>
@@ -487,26 +542,34 @@ export default function Donations() {
 
             {/* Amount Range */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">Min Amount</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Min Amount
+              </label>
               <input
                 type="number"
                 step="0.01"
                 min="0"
                 value={filters.minAmount}
-                onChange={(e) => setFilters(prev => ({ ...prev, minAmount: e.target.value }))}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, minAmount: e.target.value }))
+                }
                 placeholder="0.00"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700">Max Amount</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Max Amount
+              </label>
               <input
                 type="number"
                 step="0.01"
                 min="0"
                 value={filters.maxAmount}
-                onChange={(e) => setFilters(prev => ({ ...prev, maxAmount: e.target.value }))}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, maxAmount: e.target.value }))
+                }
                 placeholder="0.00"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
               />
@@ -514,10 +577,14 @@ export default function Donations() {
 
             {/* Method Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700">Payment Method</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Payment Method
+              </label>
               <select
                 value={filters.method}
-                onChange={(e) => setFilters(prev => ({ ...prev, method: e.target.value }))}
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, method: e.target.value }))
+                }
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
               >
                 <option value="">All Methods</option>
@@ -536,12 +603,15 @@ export default function Donations() {
       {showForm && (
         <div className="bg-white shadow rounded-lg p-6">
           <h2 className="text-lg font-semibold mb-4">Record New Donation</h2>
-          
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {/* Member Search */}
               <div>
-                <label htmlFor="member" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="member"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Member (optional for anonymous donations)
                 </label>
                 <div className="relative">
@@ -554,15 +624,19 @@ export default function Donations() {
                   />
                   {filteredMembers.length > 0 && (
                     <div className="absolute z-10 mt-1 w-full bg-white shadow-lg rounded-md border border-gray-200 max-h-60 overflow-auto">
-                      {filteredMembers.map(member => (
+                      {filteredMembers.map((member) => (
                         <button
                           key={member.id}
                           type="button"
                           onClick={() => handleMemberSelect(member)}
                           className="w-full text-left px-4 py-2 hover:bg-gray-50 focus:bg-gray-50 focus:outline-none"
                         >
-                          <div className="font-medium">{member.first_name} {member.last_name}</div>
-                          <div className="text-sm text-gray-500">{member.email}</div>
+                          <div className="font-medium">
+                            {member.first_name} {member.last_name}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {member.email}
+                          </div>
                         </button>
                       ))}
                     </div>
@@ -572,17 +646,25 @@ export default function Donations() {
 
               {/* Category */}
               <div>
-                <label htmlFor="category" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="category"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Category *
                 </label>
                 <select
                   value={formData.category_id}
-                  onChange={(e) => setFormData(prev => ({ ...prev, category_id: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      category_id: e.target.value,
+                    }))
+                  }
                   required
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                 >
                   <option value="">Select a category</option>
-                  {categories.map(category => (
+                  {categories.map((category) => (
                     <option key={category.id} value={category.id}>
                       {category.name}
                     </option>
@@ -592,7 +674,10 @@ export default function Donations() {
 
               {/* Amount */}
               <div>
-                <label htmlFor="amount" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="amount"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Amount *
                 </label>
                 <div className="relative mt-1">
@@ -604,7 +689,12 @@ export default function Donations() {
                     step="0.01"
                     min="0"
                     value={formData.amount}
-                    onChange={(e) => setFormData(prev => ({ ...prev, amount: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        amount: e.target.value,
+                      }))
+                    }
                     required
                     className="pl-7 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                     placeholder="0.00"
@@ -614,13 +704,21 @@ export default function Donations() {
 
               {/* Date */}
               <div>
-                <label htmlFor="date" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="date"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Donation Date *
                 </label>
                 <input
                   type="date"
                   value={formData.donation_date}
-                  onChange={(e) => setFormData(prev => ({ ...prev, donation_date: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      donation_date: e.target.value,
+                    }))
+                  }
                   required
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                 />
@@ -628,12 +726,17 @@ export default function Donations() {
 
               {/* Method */}
               <div>
-                <label htmlFor="method" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="method"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Payment Method
                 </label>
                 <select
                   value={formData.method}
-                  onChange={(e) => setFormData(prev => ({ ...prev, method: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, method: e.target.value }))
+                  }
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                 >
                   <option value="cash">Cash</option>
@@ -646,13 +749,21 @@ export default function Donations() {
 
               {/* Source Label */}
               <div>
-                <label htmlFor="source" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="source"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Source/Reference
                 </label>
                 <input
                   type="text"
                   value={formData.source_label}
-                  onChange={(e) => setFormData(prev => ({ ...prev, source_label: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      source_label: e.target.value,
+                    }))
+                  }
                   placeholder="Check #, transaction ID, etc."
                   className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                 />
@@ -661,12 +772,17 @@ export default function Donations() {
 
             {/* Note */}
             <div>
-              <label htmlFor="note" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="note"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Note
               </label>
               <textarea
                 value={formData.note}
-                onChange={(e) => setFormData(prev => ({ ...prev, note: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, note: e.target.value }))
+                }
                 rows={3}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                 placeholder="Any additional notes..."
@@ -698,11 +814,12 @@ export default function Donations() {
       <div className="bg-white shadow rounded-lg">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold">
-            Donations History {filteredDonations.length !== donations.length && 
+            Donations History{' '}
+            {filteredDonations.length !== donations.length &&
               `(${filteredDonations.length} of ${donations.length})`}
           </h2>
         </div>
-        
+
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -730,8 +847,13 @@ export default function Donations() {
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredDonations.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
-                    {donations.length === 0 ? 'No donations recorded yet' : 'No donations match the current filters'}
+                  <td
+                    colSpan={6}
+                    className="px-6 py-4 text-center text-gray-500"
+                  >
+                    {donations.length === 0
+                      ? 'No donations recorded yet'
+                      : 'No donations match the current filters'}
                   </td>
                 </tr>
               ) : (
@@ -741,10 +863,11 @@ export default function Donations() {
                       {formatDate(donation.donation_date)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {donation.member ? 
-                        `${donation.member.first_name} ${donation.member.last_name}` : 
+                      {donation.member ? (
+                        `${donation.member.first_name} ${donation.member.last_name}`
+                      ) : (
                         <span className="text-gray-500 italic">Anonymous</span>
-                      }
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       {donation.category?.name || 'Unknown'}

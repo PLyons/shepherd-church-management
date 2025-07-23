@@ -76,7 +76,11 @@ export class RolesService {
   ): Promise<void> {
     // SECURITY: Only admins can assign roles
     if (requestingUserRole !== 'admin') {
-      await this.logUnauthorizedAccess(requestingUserId, 'assign_role', targetMemberId);
+      await this.logUnauthorizedAccess(
+        requestingUserId,
+        'assign_role',
+        targetMemberId
+      );
       throw new Error('Access denied: Only administrators can assign roles');
     }
 
@@ -86,13 +90,15 @@ export class RolesService {
     }
 
     if (!reason || reason.trim().length < 10) {
-      throw new Error('A detailed reason is required for role changes (minimum 10 characters)');
+      throw new Error(
+        'A detailed reason is required for role changes (minimum 10 characters)'
+      );
     }
 
     // Get target member and requesting user info
     const [targetMember, requestingUser] = await Promise.all([
       this.membersService.getById(targetMemberId),
-      this.membersService.getById(requestingUserId)
+      this.membersService.getById(requestingUserId),
     ]);
 
     if (!targetMember) {
@@ -106,8 +112,14 @@ export class RolesService {
     const oldRole = targetMember.role || null;
 
     // Don't allow changing your own admin role (prevents lockout)
-    if (targetMemberId === requestingUserId && oldRole === 'admin' && newRole !== 'admin') {
-      throw new Error('Administrators cannot remove their own admin role to prevent system lockout');
+    if (
+      targetMemberId === requestingUserId &&
+      oldRole === 'admin' &&
+      newRole !== 'admin'
+    ) {
+      throw new Error(
+        'Administrators cannot remove their own admin role to prevent system lockout'
+      );
     }
 
     // Update the member's role
@@ -127,7 +139,9 @@ export class RolesService {
       sessionInfo
     );
 
-    console.log(`[SECURITY] Role changed: ${targetMember.email} from ${oldRole || 'none'} to ${newRole} by ${requestingUser.email}`);
+    console.log(
+      `[SECURITY] Role changed: ${targetMember.email} from ${oldRole || 'none'} to ${newRole} by ${requestingUser.email}`
+    );
   }
 
   /**
@@ -150,7 +164,9 @@ export class RolesService {
     // SECURITY: Only admins can bulk assign roles
     if (requestingUserRole !== 'admin') {
       await this.logUnauthorizedAccess(requestingUserId, 'bulk_assign_roles');
-      throw new Error('Access denied: Only administrators can perform bulk role assignments');
+      throw new Error(
+        'Access denied: Only administrators can perform bulk role assignments'
+      );
     }
 
     if (!assignments || assignments.length === 0) {
@@ -158,11 +174,17 @@ export class RolesService {
     }
 
     if (assignments.length > 50) {
-      throw new Error('Bulk assignment limited to 50 users at a time for security');
+      throw new Error(
+        'Bulk assignment limited to 50 users at a time for security'
+      );
     }
 
     // Process each assignment individually to maintain audit trail
-    const results: Array<{ memberId: string; success: boolean; error?: string }> = [];
+    const results: Array<{
+      memberId: string;
+      success: boolean;
+      error?: string;
+    }> = [];
 
     for (const assignment of assignments) {
       try {
@@ -176,16 +198,18 @@ export class RolesService {
         );
         results.push({ memberId: assignment.memberId, success: true });
       } catch (error) {
-        results.push({ 
-          memberId: assignment.memberId, 
-          success: false, 
-          error: error instanceof Error ? error.message : 'Unknown error'
+        results.push({
+          memberId: assignment.memberId,
+          success: false,
+          error: error instanceof Error ? error.message : 'Unknown error',
         });
       }
     }
 
     // Log bulk operation completion
-    console.log(`[SECURITY] Bulk role assignment completed: ${results.filter(r => r.success).length}/${results.length} successful`);
+    console.log(
+      `[SECURITY] Bulk role assignment completed: ${results.filter((r) => r.success).length}/${results.length} successful`
+    );
   }
 
   // ============================================================================
@@ -197,33 +221,36 @@ export class RolesService {
    */
   async getRoleSummary(): Promise<RoleSummary> {
     const allMembers = await this.membersService.getAll();
-    
-    const roleCounts = allMembers.reduce((counts, member) => {
-      const role = member.role || 'unassigned';
-      switch (role) {
-        case 'admin':
-          counts.adminCount++;
-          break;
-        case 'pastor':
-          counts.pastorCount++;
-          break;
-        case 'member':
-          counts.memberCount++;
-          break;
-        default:
-          counts.unassignedCount++;
+
+    const roleCounts = allMembers.reduce(
+      (counts, member) => {
+        const role = member.role || 'unassigned';
+        switch (role) {
+          case 'admin':
+            counts.adminCount++;
+            break;
+          case 'pastor':
+            counts.pastorCount++;
+            break;
+          case 'member':
+            counts.memberCount++;
+            break;
+          default:
+            counts.unassignedCount++;
+        }
+        return counts;
+      },
+      {
+        adminCount: 0,
+        pastorCount: 0,
+        memberCount: 0,
+        unassignedCount: 0,
       }
-      return counts;
-    }, {
-      adminCount: 0,
-      pastorCount: 0,
-      memberCount: 0,
-      unassignedCount: 0
-    });
+    );
 
     return {
       ...roleCounts,
-      totalUsers: allMembers.length
+      totalUsers: allMembers.length,
     };
   }
 
@@ -232,7 +259,7 @@ export class RolesService {
    */
   async getUnassignedMembers(): Promise<any[]> {
     const allMembers = await this.membersService.getAll();
-    return allMembers.filter(member => !member.role || member.role === '');
+    return allMembers.filter((member) => !member.role || member.role === '');
   }
 
   /**
@@ -240,7 +267,7 @@ export class RolesService {
    */
   async getMembersByRole(role: 'admin' | 'pastor' | 'member'): Promise<any[]> {
     const allMembers = await this.membersService.getAll();
-    return allMembers.filter(member => member.role === role);
+    return allMembers.filter((member) => member.role === role);
   }
 
   /**
@@ -279,9 +306,11 @@ export class RolesService {
     if (newRole !== 'admin') {
       const adminCount = (await this.getMembersByRole('admin')).length;
       const targetMember = await this.membersService.getById(targetMemberId);
-      
+
       if (targetMember?.role === 'admin' && adminCount <= 1) {
-        throw new Error('Cannot remove the last administrator. At least one admin must remain.');
+        throw new Error(
+          'Cannot remove the last administrator. At least one admin must remain.'
+        );
       }
     }
 
@@ -295,10 +324,13 @@ export class RolesService {
   /**
    * Update member role in database
    */
-  private async updateMemberRole(memberId: string, newRole: 'admin' | 'pastor' | 'member'): Promise<void> {
-    await this.membersService.update(memberId, { 
+  private async updateMemberRole(
+    memberId: string,
+    newRole: 'admin' | 'pastor' | 'member'
+  ): Promise<void> {
+    await this.membersService.update(memberId, {
       role: newRole,
-      roleUpdatedAt: new Date().toISOString()
+      roleUpdatedAt: new Date().toISOString(),
     });
   }
 
@@ -309,7 +341,9 @@ export class RolesService {
   /**
    * Log role change to secure audit trail
    */
-  private async logRoleChange(auditData: Omit<RoleChangeAuditLog, 'id'>): Promise<void> {
+  private async logRoleChange(
+    auditData: Omit<RoleChangeAuditLog, 'id'>
+  ): Promise<void> {
     try {
       // TODO: Implement secure audit log collection
       // This should write to a separate, admin-only collection that cannot be modified
@@ -321,7 +355,7 @@ export class RolesService {
         newRole: auditData.newRole,
         changedBy: auditData.changedByName,
         reason: auditData.reason,
-        securityLevel: 'HIGH'
+        securityLevel: 'HIGH',
       });
 
       // In production, this would write to Firestore audit collection
@@ -353,13 +387,13 @@ export class RolesService {
     } catch (error) {
       console.error('Failed to log unauthorized access attempt:', error);
     }
-    
+
     console.warn('[SECURITY VIOLATION]', {
       timestamp: new Date().toISOString(),
       userId,
       attemptedAction,
       targetResource,
-      result: 'DENIED'
+      result: 'DENIED',
     });
   }
 
@@ -372,12 +406,12 @@ export class RolesService {
    */
   async initializeDefaultAdmin(adminEmail: string): Promise<void> {
     const adminCount = (await this.getMembersByRole('admin')).length;
-    
+
     if (adminCount === 0) {
       // Find the member by email and make them admin
       const allMembers = await this.membersService.getAll();
-      const targetMember = allMembers.find(member => 
-        member.email.toLowerCase() === adminEmail.toLowerCase()
+      const targetMember = allMembers.find(
+        (member) => member.email.toLowerCase() === adminEmail.toLowerCase()
       );
 
       if (!targetMember) {
@@ -385,7 +419,7 @@ export class RolesService {
       }
 
       await this.updateMemberRole(targetMember.id, 'admin');
-      
+
       // Log this critical system setup action
       await this.logRoleChange({
         targetMemberId: targetMember.id,
@@ -396,7 +430,7 @@ export class RolesService {
         changedBy: 'SYSTEM',
         changedByName: 'System Setup',
         changedAt: new Date().toISOString(),
-        reason: 'Initial admin setup - no existing administrators found'
+        reason: 'Initial admin setup - no existing administrators found',
       });
 
       console.log(`[SYSTEM] Initial admin created: ${adminEmail}`);
@@ -406,7 +440,10 @@ export class RolesService {
   /**
    * Check if user has specific role
    */
-  async userHasRole(userId: string, requiredRole: 'admin' | 'pastor' | 'member'): Promise<boolean> {
+  async userHasRole(
+    userId: string,
+    requiredRole: 'admin' | 'pastor' | 'member'
+  ): Promise<boolean> {
     const user = await this.membersService.getById(userId);
     return user?.role === requiredRole;
   }
@@ -414,7 +451,10 @@ export class RolesService {
   /**
    * Check if user has any of the specified roles
    */
-  async userHasAnyRole(userId: string, allowedRoles: ('admin' | 'pastor' | 'member')[]): Promise<boolean> {
+  async userHasAnyRole(
+    userId: string,
+    allowedRoles: ('admin' | 'pastor' | 'member')[]
+  ): Promise<boolean> {
     const user = await this.membersService.getById(userId);
     return allowedRoles.includes(user?.role as any);
   }

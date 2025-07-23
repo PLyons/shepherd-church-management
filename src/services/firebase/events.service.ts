@@ -1,8 +1,8 @@
-import { 
-  collection, 
-  doc, 
-  updateDoc, 
-  writeBatch, 
+import {
+  collection,
+  doc,
+  updateDoc,
+  writeBatch,
   Timestamp,
   query,
   where,
@@ -10,28 +10,28 @@ import {
   getDocs,
   onSnapshot,
   setDoc,
-  getDoc
+  getDoc,
 } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { BaseFirestoreService } from './base.service';
-import { 
-  Event, 
-  EventDocument, 
+import {
+  Event,
+  EventDocument,
   EventRSVP,
   EventRSVPDocument,
   EventAttendance,
   EventAttendanceDocument,
-  COLLECTIONS, 
+  COLLECTIONS,
   SUBCOLLECTIONS,
-  QueryOptions 
+  QueryOptions,
 } from '../../types/firestore';
-import { 
-  eventDocumentToEvent, 
+import {
+  eventDocumentToEvent,
   eventToEventDocument,
   eventRSVPDocumentToEventRSVP,
   eventRSVPToEventRSVPDocument,
   eventAttendanceDocumentToEventAttendance,
-  eventAttendanceToEventAttendanceDocument
+  eventAttendanceToEventAttendanceDocument,
 } from '../../utils/firestore-converters';
 
 // ============================================================================
@@ -68,25 +68,41 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
       ...options,
       where: [
         ...(options?.where || []),
-        { field: 'isPublic', operator: '==', value: true }
-      ]
+        { field: 'isPublic', operator: '==', value: true },
+      ],
     });
   }
 
   /**
    * Get events by date range
    */
-  async getEventsByDateRange(startDate: Date, endDate: Date, isPublicOnly = false): Promise<Event[]> {
+  async getEventsByDateRange(
+    startDate: Date,
+    endDate: Date,
+    isPublicOnly = false
+  ): Promise<Event[]> {
     const queryOptions: QueryOptions = {
       where: [
-        { field: 'startTime', operator: '>=', value: Timestamp.fromDate(startDate) },
-        { field: 'startTime', operator: '<=', value: Timestamp.fromDate(endDate) }
+        {
+          field: 'startTime',
+          operator: '>=',
+          value: Timestamp.fromDate(startDate),
+        },
+        {
+          field: 'startTime',
+          operator: '<=',
+          value: Timestamp.fromDate(endDate),
+        },
       ],
-      orderBy: { field: 'startTime', direction: 'asc' }
+      orderBy: { field: 'startTime', direction: 'asc' },
     };
 
     if (isPublicOnly) {
-      queryOptions.where!.push({ field: 'isPublic', operator: '==', value: true });
+      queryOptions.where!.push({
+        field: 'isPublic',
+        operator: '==',
+        value: true,
+      });
     }
 
     return this.getAll(queryOptions);
@@ -100,11 +116,15 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
     const queryOptions: QueryOptions = {
       where: [{ field: 'startTime', operator: '>=', value: now }],
       orderBy: { field: 'startTime', direction: 'asc' },
-      limit
+      limit,
     };
 
     if (isPublicOnly) {
-      queryOptions.where!.push({ field: 'isPublic', operator: '==', value: true });
+      queryOptions.where!.push({
+        field: 'isPublic',
+        operator: '==',
+        value: true,
+      });
     }
 
     return this.getAll(queryOptions);
@@ -118,11 +138,15 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
     const queryOptions: QueryOptions = {
       where: [{ field: 'startTime', operator: '<', value: now }],
       orderBy: { field: 'startTime', direction: 'desc' },
-      limit
+      limit,
     };
 
     if (isPublicOnly) {
-      queryOptions.where!.push({ field: 'isPublic', operator: '==', value: true });
+      queryOptions.where!.push({
+        field: 'isPublic',
+        operator: '==',
+        value: true,
+      });
     }
 
     return this.getAll(queryOptions);
@@ -138,16 +162,23 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
   /**
    * Search events by title or description
    */
-  async searchEvents(searchTerm: string, isPublicOnly = false): Promise<Event[]> {
+  async searchEvents(
+    searchTerm: string,
+    isPublicOnly = false
+  ): Promise<Event[]> {
     // Get events based on visibility
-    const events = isPublicOnly ? await this.getPublicEvents() : await this.getAll();
-    
+    const events = isPublicOnly
+      ? await this.getPublicEvents()
+      : await this.getAll();
+
     // Filter by search term
     const searchLower = searchTerm.toLowerCase();
-    return events.filter(event => 
-      event.title.toLowerCase().includes(searchLower) ||
-      (event.description && event.description.toLowerCase().includes(searchLower)) ||
-      (event.location && event.location.toLowerCase().includes(searchLower))
+    return events.filter(
+      (event) =>
+        event.title.toLowerCase().includes(searchLower) ||
+        (event.description &&
+          event.description.toLowerCase().includes(searchLower)) ||
+        (event.location && event.location.toLowerCase().includes(searchLower))
     );
   }
 
@@ -160,10 +191,15 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
    */
   async getEventRSVPs(eventId: string): Promise<EventRSVP[]> {
     try {
-      const rsvpsRef = collection(db, COLLECTIONS.EVENTS, eventId, SUBCOLLECTIONS.EVENT_RSVPS);
+      const rsvpsRef = collection(
+        db,
+        COLLECTIONS.EVENTS,
+        eventId,
+        SUBCOLLECTIONS.EVENT_RSVPS
+      );
       const querySnapshot = await getDocs(rsvpsRef);
-      
-      return querySnapshot.docs.map(doc => 
+
+      return querySnapshot.docs.map((doc) =>
         eventRSVPDocumentToEventRSVP(doc.id, doc.data() as EventRSVPDocument)
       );
     } catch (error) {
@@ -175,21 +211,31 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
   /**
    * Add or update RSVP for an event
    */
-  async updateRSVP(eventId: string, memberId: string, rsvpData: Partial<EventRSVP>): Promise<EventRSVP> {
+  async updateRSVP(
+    eventId: string,
+    memberId: string,
+    rsvpData: Partial<EventRSVP>
+  ): Promise<EventRSVP> {
     try {
       const batch = writeBatch(db);
 
       // Update/create RSVP document
-      const rsvpRef = doc(db, COLLECTIONS.EVENTS, eventId, SUBCOLLECTIONS.EVENT_RSVPS, memberId);
+      const rsvpRef = doc(
+        db,
+        COLLECTIONS.EVENTS,
+        eventId,
+        SUBCOLLECTIONS.EVENT_RSVPS,
+        memberId
+      );
       const rsvpDocumentData = eventRSVPToEventRSVPDocument({
         ...rsvpData,
         memberId,
-        respondedAt: new Date().toISOString()
+        respondedAt: new Date().toISOString(),
       });
-      
+
       batch.set(rsvpRef, {
         ...rsvpDocumentData,
-        respondedAt: Timestamp.now()
+        respondedAt: Timestamp.now(),
       });
 
       // Update event RSVP statistics
@@ -199,7 +245,10 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
 
       // Return the created/updated RSVP
       const updatedRSVP = await getDoc(rsvpRef);
-      return eventRSVPDocumentToEventRSVP(updatedRSVP.id, updatedRSVP.data() as EventRSVPDocument);
+      return eventRSVPDocumentToEventRSVP(
+        updatedRSVP.id,
+        updatedRSVP.data() as EventRSVPDocument
+      );
     } catch (error) {
       console.error('Error updating RSVP:', error);
       throw this.handleFirestoreError(error);
@@ -211,9 +260,15 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
    */
   async removeRSVP(eventId: string, memberId: string): Promise<void> {
     try {
-      const rsvpRef = doc(db, COLLECTIONS.EVENTS, eventId, SUBCOLLECTIONS.EVENT_RSVPS, memberId);
+      const rsvpRef = doc(
+        db,
+        COLLECTIONS.EVENTS,
+        eventId,
+        SUBCOLLECTIONS.EVENT_RSVPS,
+        memberId
+      );
       await updateDoc(rsvpRef, { response: 'no' });
-      
+
       // Update event RSVP statistics
       await this.updateEventRSVPStats(eventId);
     } catch (error) {
@@ -225,16 +280,28 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
   /**
    * Get member's RSVP for an event
    */
-  async getMemberRSVP(eventId: string, memberId: string): Promise<EventRSVP | null> {
+  async getMemberRSVP(
+    eventId: string,
+    memberId: string
+  ): Promise<EventRSVP | null> {
     try {
-      const rsvpRef = doc(db, COLLECTIONS.EVENTS, eventId, SUBCOLLECTIONS.EVENT_RSVPS, memberId);
+      const rsvpRef = doc(
+        db,
+        COLLECTIONS.EVENTS,
+        eventId,
+        SUBCOLLECTIONS.EVENT_RSVPS,
+        memberId
+      );
       const rsvpSnap = await getDoc(rsvpRef);
-      
+
       if (!rsvpSnap.exists()) {
         return null;
       }
-      
-      return eventRSVPDocumentToEventRSVP(rsvpSnap.id, rsvpSnap.data() as EventRSVPDocument);
+
+      return eventRSVPDocumentToEventRSVP(
+        rsvpSnap.id,
+        rsvpSnap.data() as EventRSVPDocument
+      );
     } catch (error) {
       console.error('Error getting member RSVP:', error);
       throw this.handleFirestoreError(error);
@@ -246,18 +313,18 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
    */
   private async updateEventRSVPStats(eventId: string): Promise<void> {
     const rsvps = await this.getEventRSVPs(eventId);
-    
+
     const stats = {
-      yes: rsvps.filter(r => r.response === 'yes').length,
-      no: rsvps.filter(r => r.response === 'no').length,
-      maybe: rsvps.filter(r => r.response === 'maybe').length,
-      total: rsvps.length
+      yes: rsvps.filter((r) => r.response === 'yes').length,
+      no: rsvps.filter((r) => r.response === 'no').length,
+      maybe: rsvps.filter((r) => r.response === 'maybe').length,
+      total: rsvps.length,
     };
 
     const eventRef = this.getDocRef(eventId);
     await updateDoc(eventRef, {
       rsvpStats: stats,
-      updatedAt: Timestamp.now()
+      updatedAt: Timestamp.now(),
     });
   }
 
@@ -270,11 +337,19 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
    */
   async getEventAttendance(eventId: string): Promise<EventAttendance[]> {
     try {
-      const attendanceRef = collection(db, COLLECTIONS.EVENTS, eventId, SUBCOLLECTIONS.EVENT_ATTENDANCE);
+      const attendanceRef = collection(
+        db,
+        COLLECTIONS.EVENTS,
+        eventId,
+        SUBCOLLECTIONS.EVENT_ATTENDANCE
+      );
       const querySnapshot = await getDocs(attendanceRef);
-      
-      return querySnapshot.docs.map(doc => 
-        eventAttendanceDocumentToEventAttendance(doc.id, doc.data() as EventAttendanceDocument)
+
+      return querySnapshot.docs.map((doc) =>
+        eventAttendanceDocumentToEventAttendance(
+          doc.id,
+          doc.data() as EventAttendanceDocument
+        )
       );
     } catch (error) {
       console.error('Error getting event attendance:', error);
@@ -285,23 +360,38 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
   /**
    * Mark member attendance for an event
    */
-  async markAttendance(eventId: string, memberId: string, attendanceData: Partial<EventAttendance>): Promise<EventAttendance> {
+  async markAttendance(
+    eventId: string,
+    memberId: string,
+    attendanceData: Partial<EventAttendance>
+  ): Promise<EventAttendance> {
     try {
-      const attendanceRef = doc(db, COLLECTIONS.EVENTS, eventId, SUBCOLLECTIONS.EVENT_ATTENDANCE, memberId);
+      const attendanceRef = doc(
+        db,
+        COLLECTIONS.EVENTS,
+        eventId,
+        SUBCOLLECTIONS.EVENT_ATTENDANCE,
+        memberId
+      );
       const attendanceDocumentData = eventAttendanceToEventAttendanceDocument({
         ...attendanceData,
         memberId,
-        checkedInAt: attendanceData.attended ? new Date().toISOString() : undefined
+        checkedInAt: attendanceData.attended
+          ? new Date().toISOString()
+          : undefined,
       });
-      
+
       await setDoc(attendanceRef, {
         ...attendanceDocumentData,
-        checkedInAt: attendanceData.attended ? Timestamp.now() : undefined
+        checkedInAt: attendanceData.attended ? Timestamp.now() : undefined,
       });
 
       // Return the created/updated attendance
       const updatedAttendance = await getDoc(attendanceRef);
-      return eventAttendanceDocumentToEventAttendance(updatedAttendance.id, updatedAttendance.data() as EventAttendanceDocument);
+      return eventAttendanceDocumentToEventAttendance(
+        updatedAttendance.id,
+        updatedAttendance.data() as EventAttendanceDocument
+      );
     } catch (error) {
       console.error('Error marking attendance:', error);
       throw this.handleFirestoreError(error);
@@ -311,16 +401,28 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
   /**
    * Get member's attendance for an event
    */
-  async getMemberAttendance(eventId: string, memberId: string): Promise<EventAttendance | null> {
+  async getMemberAttendance(
+    eventId: string,
+    memberId: string
+  ): Promise<EventAttendance | null> {
     try {
-      const attendanceRef = doc(db, COLLECTIONS.EVENTS, eventId, SUBCOLLECTIONS.EVENT_ATTENDANCE, memberId);
+      const attendanceRef = doc(
+        db,
+        COLLECTIONS.EVENTS,
+        eventId,
+        SUBCOLLECTIONS.EVENT_ATTENDANCE,
+        memberId
+      );
       const attendanceSnap = await getDoc(attendanceRef);
-      
+
       if (!attendanceSnap.exists()) {
         return null;
       }
-      
-      return eventAttendanceDocumentToEventAttendance(attendanceSnap.id, attendanceSnap.data() as EventAttendanceDocument);
+
+      return eventAttendanceDocumentToEventAttendance(
+        attendanceSnap.id,
+        attendanceSnap.data() as EventAttendanceDocument
+      );
     } catch (error) {
       console.error('Error getting member attendance:', error);
       throw this.handleFirestoreError(error);
@@ -330,10 +432,13 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
   /**
    * Bulk mark attendance from RSVP list
    */
-  async bulkMarkAttendanceFromRSVPs(eventId: string, checkedInBy: string): Promise<{ marked: number, errors: string[] }> {
+  async bulkMarkAttendanceFromRSVPs(
+    eventId: string,
+    checkedInBy: string
+  ): Promise<{ marked: number; errors: string[] }> {
     const rsvps = await this.getEventRSVPs(eventId);
-    const yesRSVPs = rsvps.filter(rsvp => rsvp.response === 'yes');
-    
+    const yesRSVPs = rsvps.filter((rsvp) => rsvp.response === 'yes');
+
     let marked = 0;
     const errors: string[] = [];
 
@@ -343,11 +448,13 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
           memberId: rsvp.memberId,
           memberName: rsvp.memberName,
           attended: true,
-          checkedInBy
+          checkedInBy,
         });
         marked++;
       } catch (error) {
-        errors.push(`Failed to mark attendance for ${rsvp.memberName}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        errors.push(
+          `Failed to mark attendance for ${rsvp.memberName}: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
       }
     }
 
@@ -361,27 +468,36 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
   /**
    * Get events for a calendar view
    */
-  async getCalendarEvents(year: number, month: number, isPublicOnly = false): Promise<Event[]> {
+  async getCalendarEvents(
+    year: number,
+    month: number,
+    isPublicOnly = false
+  ): Promise<Event[]> {
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0, 23, 59, 59);
-    
+
     return this.getEventsByDateRange(startDate, endDate, isPublicOnly);
   }
 
   /**
    * Check for scheduling conflicts
    */
-  async checkForConflicts(startTime: Date, endTime: Date, excludeEventId?: string): Promise<Event[]> {
+  async checkForConflicts(
+    startTime: Date,
+    endTime: Date,
+    excludeEventId?: string
+  ): Promise<Event[]> {
     const conflicts = await this.getEventsByDateRange(
       new Date(startTime.getTime() - 60 * 60 * 1000), // 1 hour before
-      new Date(endTime.getTime() + 60 * 60 * 1000)    // 1 hour after
+      new Date(endTime.getTime() + 60 * 60 * 1000) // 1 hour after
     );
 
-    return conflicts.filter(event => 
-      event.id !== excludeEventId && 
-      event.endTime && 
-      new Date(event.startTime) < endTime && 
-      new Date(event.endTime) > startTime
+    return conflicts.filter(
+      (event) =>
+        event.id !== excludeEventId &&
+        event.endTime &&
+        new Date(event.startTime) < endTime &&
+        new Date(event.endTime) > startTime
     );
   }
 
@@ -407,34 +523,60 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
     const thisMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
     // Use count queries for better performance
-    const [total, publicCount, upcomingCount, pastCount, thisMonthCount] = await Promise.all([
-      this.count(),
-      this.count({ where: [{ field: 'isPublic', operator: '==', value: true }] }),
-      this.count({ where: [{ field: 'startTime', operator: '>=', value: now.toISOString() }] }),
-      this.count({ where: [{ field: 'startTime', operator: '<', value: now.toISOString() }] }),
-      this.count({
-        where: [
-          { field: 'startTime', operator: '>=', value: thisMonthStart.toISOString() },
-          { field: 'startTime', operator: '<=', value: thisMonthEnd.toISOString() }
-        ]
-      })
-    ]);
+    const [total, publicCount, upcomingCount, pastCount, thisMonthCount] =
+      await Promise.all([
+        this.count(),
+        this.count({
+          where: [{ field: 'isPublic', operator: '==', value: true }],
+        }),
+        this.count({
+          where: [
+            { field: 'startTime', operator: '>=', value: now.toISOString() },
+          ],
+        }),
+        this.count({
+          where: [
+            { field: 'startTime', operator: '<', value: now.toISOString() },
+          ],
+        }),
+        this.count({
+          where: [
+            {
+              field: 'startTime',
+              operator: '>=',
+              value: thisMonthStart.toISOString(),
+            },
+            {
+              field: 'startTime',
+              operator: '<=',
+              value: thisMonthEnd.toISOString(),
+            },
+          ],
+        }),
+      ]);
 
     // For averages, we'll need to fetch a sample of events
     // Get a small sample of recent events for RSVP average
-    const recentEvents = await this.getAll({ limit: 50, orderBy: { field: 'startTime', direction: 'desc' } });
-    const totalRSVPs = recentEvents.reduce((sum, e) => sum + e.rsvpStats.total, 0);
-    const averageRSVPs = recentEvents.length > 0 ? totalRSVPs / recentEvents.length : 0;
+    const recentEvents = await this.getAll({
+      limit: 50,
+      orderBy: { field: 'startTime', direction: 'desc' },
+    });
+    const totalRSVPs = recentEvents.reduce(
+      (sum, e) => sum + e.rsvpStats.total,
+      0
+    );
+    const averageRSVPs =
+      recentEvents.length > 0 ? totalRSVPs / recentEvents.length : 0;
 
     // Calculate average attendance from recent past events
     const recentPastEvents = await this.getPastEvents(20);
     let totalAttendance = 0;
     let eventsWithAttendance = 0;
-    
+
     for (const event of recentPastEvents) {
       try {
         const attendance = await this.getEventAttendance(event.id);
-        const attendedCount = attendance.filter(a => a.attended).length;
+        const attendedCount = attendance.filter((a) => a.attended).length;
         totalAttendance += attendedCount;
         eventsWithAttendance++;
       } catch (error) {
@@ -442,7 +584,8 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
         continue;
       }
     }
-    const averageAttendance = eventsWithAttendance > 0 ? totalAttendance / eventsWithAttendance : 0;
+    const averageAttendance =
+      eventsWithAttendance > 0 ? totalAttendance / eventsWithAttendance : 0;
 
     return {
       total,
@@ -464,13 +607,13 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
    * Subscribe to upcoming events
    */
   subscribeToUpcomingEvents(
-    isPublicOnly = false, 
-    limit = 10, 
+    isPublicOnly = false,
+    limit = 10,
     callback?: (events: Event[]) => void
   ): () => void {
     const constraints = [
       where('startTime', '>=', Timestamp.now()),
-      orderBy('startTime', 'asc')
+      orderBy('startTime', 'asc'),
     ];
 
     if (isPublicOnly) {
@@ -484,7 +627,7 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
     const q = query(this.getCollectionRef(), ...constraints);
 
     return onSnapshot(q, (querySnapshot) => {
-      const events = querySnapshot.docs.map(doc => 
+      const events = querySnapshot.docs.map((doc) =>
         this.documentToClient(doc.id, doc.data() as EventDocument)
       );
       callback?.(events);
@@ -494,11 +637,19 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
   /**
    * Subscribe to event RSVPs
    */
-  subscribeToEventRSVPs(eventId: string, callback: (rsvps: EventRSVP[]) => void): () => void {
-    const rsvpsRef = collection(db, COLLECTIONS.EVENTS, eventId, SUBCOLLECTIONS.EVENT_RSVPS);
-    
+  subscribeToEventRSVPs(
+    eventId: string,
+    callback: (rsvps: EventRSVP[]) => void
+  ): () => void {
+    const rsvpsRef = collection(
+      db,
+      COLLECTIONS.EVENTS,
+      eventId,
+      SUBCOLLECTIONS.EVENT_RSVPS
+    );
+
     return onSnapshot(rsvpsRef, (querySnapshot) => {
-      const rsvps = querySnapshot.docs.map(doc => 
+      const rsvps = querySnapshot.docs.map((doc) =>
         eventRSVPDocumentToEventRSVP(doc.id, doc.data() as EventRSVPDocument)
       );
       callback(rsvps);
@@ -508,12 +659,23 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
   /**
    * Subscribe to event attendance
    */
-  subscribeToEventAttendance(eventId: string, callback: (attendance: EventAttendance[]) => void): () => void {
-    const attendanceRef = collection(db, COLLECTIONS.EVENTS, eventId, SUBCOLLECTIONS.EVENT_ATTENDANCE);
-    
+  subscribeToEventAttendance(
+    eventId: string,
+    callback: (attendance: EventAttendance[]) => void
+  ): () => void {
+    const attendanceRef = collection(
+      db,
+      COLLECTIONS.EVENTS,
+      eventId,
+      SUBCOLLECTIONS.EVENT_ATTENDANCE
+    );
+
     return onSnapshot(attendanceRef, (querySnapshot) => {
-      const attendance = querySnapshot.docs.map(doc => 
-        eventAttendanceDocumentToEventAttendance(doc.id, doc.data() as EventAttendanceDocument)
+      const attendance = querySnapshot.docs.map((doc) =>
+        eventAttendanceDocumentToEventAttendance(
+          doc.id,
+          doc.data() as EventAttendanceDocument
+        )
       );
       callback(attendance);
     });

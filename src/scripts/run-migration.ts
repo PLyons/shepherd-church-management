@@ -18,7 +18,10 @@ if (typeof globalThis.fetch === 'undefined') {
 }
 
 // Debug environment loading
-console.log('Environment loading result:', result.error ? result.error : 'Success');
+console.log(
+  'Environment loading result:',
+  result.error ? result.error : 'Success'
+);
 console.log('Supabase URL found:', !!process.env.VITE_SUPABASE_URL);
 console.log('Firebase API Key found:', !!process.env.VITE_FIREBASE_API_KEY);
 
@@ -66,25 +69,40 @@ NOTES:
 
 // Main execution
 async function main() {
-  if (!command || command === 'help' || command === '--help' || command === '-h') {
+  if (
+    !command ||
+    command === 'help' ||
+    command === '--help' ||
+    command === '-h'
+  ) {
     showHelp();
     return;
   }
 
   // Now import the migration functions after env is loaded
-  const { runMigration, testConnections, getDataCounts, clearFirebaseData, verifyMigration } = await import('./migrate-to-firebase');
+  const {
+    runMigration,
+    testConnections,
+    getDataCounts,
+    clearFirebaseData,
+    verifyMigration,
+  } = await import('./migrate-to-firebase');
 
   try {
     switch (command) {
       case 'test':
         console.log('🔍 Testing database connections...\n');
         const testResult = await testConnections();
-        console.log(`Supabase: ${testResult.supabase ? '✅ Connected' : '❌ Failed'}`);
-        console.log(`Firebase: ${testResult.firebase ? '✅ Connected' : '❌ Failed'}`);
-        
+        console.log(
+          `Supabase: ${testResult.supabase ? '✅ Connected' : '❌ Failed'}`
+        );
+        console.log(
+          `Firebase: ${testResult.firebase ? '✅ Connected' : '❌ Failed'}`
+        );
+
         if (testResult.errors.length > 0) {
           console.log('\nErrors:');
-          testResult.errors.forEach(error => console.log(`  - ${error}`));
+          testResult.errors.forEach((error) => console.log(`  - ${error}`));
           process.exit(1);
         }
         break;
@@ -107,7 +125,7 @@ async function main() {
           dryRun: args.includes('--dry-run'),
           skipHouseholds: args.includes('--skip-households'),
           skipMembers: args.includes('--skip-members'),
-          skipEvents: args.includes('--skip-events')
+          skipEvents: args.includes('--skip-events'),
         };
 
         if (options.dryRun) {
@@ -115,29 +133,41 @@ async function main() {
         }
 
         const result = await runMigration(options);
-        
+
         console.log('\n📋 MIGRATION SUMMARY:');
-        console.log(`Households: ${result.households.success} migrated, ${result.households.errors.length} errors`);
-        console.log(`Members:    ${result.members.success} migrated, ${result.members.errors.length} errors`);
-        console.log(`Events:     ${result.events.success} migrated, ${result.events.errors.length} errors`);
+        console.log(
+          `Households: ${result.households.success} migrated, ${result.households.errors.length} errors`
+        );
+        console.log(
+          `Members:    ${result.members.success} migrated, ${result.members.errors.length} errors`
+        );
+        console.log(
+          `Events:     ${result.events.success} migrated, ${result.events.errors.length} errors`
+        );
         console.log(`Duration:   ${Math.round(result.totalDuration / 1000)}s`);
 
         if (result.warnings.length > 0) {
           console.log('\n⚠️  WARNINGS:');
-          result.warnings.forEach(warning => console.log(`  - ${warning}`));
+          result.warnings.forEach((warning) => console.log(`  - ${warning}`));
         }
 
         // Show errors if any
-        const allErrors = [...result.households.errors, ...result.members.errors, ...result.events.errors];
+        const allErrors = [
+          ...result.households.errors,
+          ...result.members.errors,
+          ...result.events.errors,
+        ];
         if (allErrors.length > 0) {
           console.log('\n❌ ERRORS:');
-          allErrors.forEach(error => console.log(`  - ID ${error.id}: ${error.error}`));
+          allErrors.forEach((error) =>
+            console.log(`  - ID ${error.id}: ${error.error}`)
+          );
         }
         break;
 
       case 'verify':
         const verifyResult = await verifyMigration();
-        
+
         if (verifyResult.isValid) {
           console.log('\n✅ Migration verification PASSED');
         } else {
@@ -151,7 +181,9 @@ async function main() {
         const confirmClear = process.env.CONFIRM_CLEAR === 'yes';
         if (!confirmClear) {
           console.log('⚠️  WARNING: This will delete ALL Firebase data!');
-          console.log('To confirm, run: CONFIRM_CLEAR=yes npm run migrate clear');
+          console.log(
+            'To confirm, run: CONFIRM_CLEAR=yes npm run migrate clear'
+          );
           process.exit(1);
         }
 
@@ -163,9 +195,11 @@ async function main() {
         showHelp();
         process.exit(1);
     }
-
   } catch (error) {
-    console.error('\n❌ Migration failed:', error instanceof Error ? error.message : error);
+    console.error(
+      '\n❌ Migration failed:',
+      error instanceof Error ? error.message : error
+    );
     process.exit(1);
   }
 }

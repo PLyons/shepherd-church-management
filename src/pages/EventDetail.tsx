@@ -23,7 +23,9 @@ export default function EventDetail() {
   const { showToast } = useToast();
   const [event, setEvent] = useState<Event | null>(null);
   const [attendees, setAttendees] = useState<AttendanceRecord[]>([]);
-  const [myAttendance, setMyAttendance] = useState<AttendanceRecord | null>(null);
+  const [myAttendance, setMyAttendance] = useState<AttendanceRecord | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,10 +46,10 @@ export default function EventDetail() {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Fetch event details
       const eventData = await eventsService.getById(id);
-      
+
       if (!eventData) {
         throw new Error('Event not found');
       }
@@ -68,7 +70,9 @@ export default function EventDetail() {
       setMyAttendance(null);
     } catch (err) {
       console.error('Event details error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to fetch event details');
+      setError(
+        err instanceof Error ? err.message : 'Failed to fetch event details'
+      );
     } finally {
       setLoading(false);
     }
@@ -82,7 +86,10 @@ export default function EventDetail() {
 
     // TODO: Implement RSVP functionality with Firebase
     // This requires creating an attendance service for Firebase
-    showToast('RSVP functionality will be available in the next update', 'info');
+    showToast(
+      'RSVP functionality will be available in the next update',
+      'info'
+    );
   };
 
   const handleDelete = async () => {
@@ -96,7 +103,10 @@ export default function EventDetail() {
       showToast('Event deleted successfully', 'success');
       navigate('/events');
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Failed to delete event', 'error');
+      showToast(
+        err instanceof Error ? err.message : 'Failed to delete event',
+        'error'
+      );
     } finally {
       setUpdating(false);
     }
@@ -112,7 +122,7 @@ export default function EventDetail() {
       day: 'numeric',
       hour: 'numeric',
       minute: '2-digit',
-      hour12: true
+      hour12: true,
     });
   };
 
@@ -120,28 +130,28 @@ export default function EventDetail() {
     if (!start) return 'Date/Time TBD';
     const startDate = new Date(start);
     const startStr = formatDateTime(start);
-    
+
     if (!end) return startStr;
-    
+
     const endDate = new Date(end);
     const endStr = endDate.toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
-      hour12: true
+      hour12: true,
     });
-    
+
     // If same day, just show time range
     if (startDate.toDateString() === endDate.toDateString()) {
       return `${startStr} - ${endStr}`;
     }
-    
+
     // Different days, show full range
     return `${startStr} - ${formatDateTime(end)}`;
   };
 
   const getRSVPCounts = () => {
     const counts = { Attending: 0, Absent: 0, Tentative: 0 };
-    attendees.forEach(a => {
+    attendees.forEach((a) => {
       if (a.status && counts.hasOwnProperty(a.status)) {
         counts[a.status]++;
       }
@@ -215,27 +225,29 @@ export default function EventDetail() {
       {/* Event Details */}
       <div className="bg-white shadow rounded-lg p-6">
         <h2 className="text-lg font-semibold mb-4">Event Details</h2>
-        
+
         <div className="space-y-3">
           <div>
             <span className="text-gray-600">Date & Time:</span>
-            <p className="font-medium">{formatDateRange(event.startTime, event.endTime)}</p>
+            <p className="font-medium">
+              {formatDateRange(event.startTime, event.endTime)}
+            </p>
           </div>
-          
+
           {event.location && (
             <div>
               <span className="text-gray-600">Location:</span>
               <p className="font-medium">{event.location}</p>
             </div>
           )}
-          
+
           {event.description && (
             <div>
               <span className="text-gray-600">Description:</span>
               <p className="mt-1 whitespace-pre-wrap">{event.description}</p>
             </div>
           )}
-          
+
           {event.createdBy && (
             <div>
               <span className="text-gray-600">Created by:</span>
@@ -249,7 +261,7 @@ export default function EventDetail() {
       {user && member && (
         <div className="bg-white shadow rounded-lg p-6">
           <h2 className="text-lg font-semibold mb-4">RSVP</h2>
-          
+
           <div className="flex gap-3">
             <button
               onClick={() => handleRSVP('Attending')}
@@ -289,44 +301,49 @@ export default function EventDetail() {
       )}
 
       {/* Attendees List (for admins/pastors) */}
-      {(memberRole === 'admin' || memberRole === 'pastor') && attendees.length > 0 && (
-        <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-semibold mb-4">RSVPs ({attendees.length})</h2>
-          
-          <div className="space-y-2">
-            {attendees.map(attendance => (
-              <div
-                key={attendance.id}
-                className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
-              >
-                <div>
-                  <span className="font-medium">
-                    Member {attendance.memberId.slice(0, 8)}
-                  </span>
-                </div>
-                <div className="flex items-center gap-3">
-                  {attendance.status && (
-                    <span className={`px-2 py-1 text-xs font-medium rounded ${
-                      attendance.status === 'Attending'
-                        ? 'bg-green-100 text-green-800'
-                        : attendance.status === 'Tentative'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {attendance.status}
+      {(memberRole === 'admin' || memberRole === 'pastor') &&
+        attendees.length > 0 && (
+          <div className="bg-white shadow rounded-lg p-6">
+            <h2 className="text-lg font-semibold mb-4">
+              RSVPs ({attendees.length})
+            </h2>
+
+            <div className="space-y-2">
+              {attendees.map((attendance) => (
+                <div
+                  key={attendance.id}
+                  className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
+                >
+                  <div>
+                    <span className="font-medium">
+                      Member {attendance.memberId.slice(0, 8)}
                     </span>
-                  )}
-                  {attendance.note && (
-                    <span className="text-xs text-gray-500 italic">
-                      "{attendance.note}"
-                    </span>
-                  )}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {attendance.status && (
+                      <span
+                        className={`px-2 py-1 text-xs font-medium rounded ${
+                          attendance.status === 'Attending'
+                            ? 'bg-green-100 text-green-800'
+                            : attendance.status === 'Tentative'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : 'bg-red-100 text-red-800'
+                        }`}
+                      >
+                        {attendance.status}
+                      </span>
+                    )}
+                    {attendance.note && (
+                      <span className="text-xs text-gray-500 italic">
+                        "{attendance.note}"
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      )}
+        )}
     </div>
   );
 }

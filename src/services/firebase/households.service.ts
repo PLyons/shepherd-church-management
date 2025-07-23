@@ -1,15 +1,33 @@
-import { doc, updateDoc, writeBatch, Timestamp, arrayUnion, arrayRemove } from 'firebase/firestore';
+import {
+  doc,
+  updateDoc,
+  writeBatch,
+  Timestamp,
+  arrayUnion,
+  arrayRemove,
+} from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { BaseFirestoreService } from './base.service';
-import { Household, HouseholdDocument, COLLECTIONS, QueryOptions } from '../../types/firestore';
-import { householdDocumentToHousehold, householdToHouseholdDocument } from '../../utils/firestore-converters';
+import {
+  Household,
+  HouseholdDocument,
+  COLLECTIONS,
+  QueryOptions,
+} from '../../types/firestore';
+import {
+  householdDocumentToHousehold,
+  householdToHouseholdDocument,
+} from '../../utils/firestore-converters';
 
 // ============================================================================
 // HOUSEHOLDS SERVICE
 // ============================================================================
 // Handles all CRUD operations for household documents
 
-export class HouseholdsService extends BaseFirestoreService<HouseholdDocument, Household> {
+export class HouseholdsService extends BaseFirestoreService<
+  HouseholdDocument,
+  Household
+> {
   constructor() {
     super(COLLECTIONS.HOUSEHOLDS);
   }
@@ -18,12 +36,202 @@ export class HouseholdsService extends BaseFirestoreService<HouseholdDocument, H
   // ABSTRACT METHOD IMPLEMENTATIONS
   // ============================================================================
 
-  protected documentToClient(id: string, document: HouseholdDocument): Household {
+  protected documentToClient(
+    id: string,
+    document: HouseholdDocument
+  ): Household {
     return householdDocumentToHousehold(id, document);
   }
 
-  protected clientToDocument(client: Partial<Household>): Partial<HouseholdDocument> {
+  protected clientToDocument(
+    client: Partial<Household>
+  ): Partial<HouseholdDocument> {
     return householdToHouseholdDocument(client);
+  }
+
+  // ============================================================================
+  // STANDARDIZED HOUSEHOLD CREATION
+  // ============================================================================
+
+  /**
+   * Normalize family name for uniqueness checks
+   */
+  private normalizeFamilyName(familyName: string): string {
+    return familyName.toLowerCase().trim();
+  }
+
+  /**
+   * Check if a normalized family name already exists
+   */
+  async isNormalizedNameTaken(normalizedName: string): Promise<boolean> {
+    console.log('Checking if normalized name is taken:', normalizedName);
+    try {
+      const existing = await this.getWhere(
+        'normalizedName',
+        '==',
+        normalizedName
+      );
+      console.log(
+        'Found existing households with this normalized name:',
+        existing.length
+      );
+      return existing.length > 0;
+    } catch (error) {
+      console.error('Error checking normalized name:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get households by normalized name
+   */
+  async getByNormalizedName(normalizedName: string): Promise<Household[]> {
+    return this.getWhere('normalizedName', '==', normalizedName);
+  }
+
+  /**
+   * Create household with validation and standardization
+   */
+  async createWithValidation(
+    householdData: Partial<Household> & { familyName: string },
+    createdByUserId: string,
+    requireApproval: boolean = true
+  ): Promise<Household> {
+    console.log('HouseholdsService.createWithValidation called with:', {
+      householdData,
+      createdByUserId,
+      requireApproval,
+    });
+
+    const normalizedName = this.normalizeFamilyName(householdData.familyName);
+    console.log('Normalized name:', normalizedName);
+
+    // Check for duplicates
+    console.log('Checking for duplicates...');
+    const isDuplicate = await this.isNormalizedNameTaken(normalizedName);
+    console.log('Is duplicate?', isDuplicate);
+
+    if (isDuplicate) {
+      throw new Error(
+        `A household with the name "${householdData.familyName}" already exists`
+      );
+    }
+
+    // Create standardized household data
+    const standardizedData: Partial<Household> = {
+      ...householdData,
+      normalizedName,
+      status: requireApproval ? 'pending' : 'approved',
+      createdBy: createdByUserId,
+      memberIds: householdData.memberIds || [],
+      memberCount: householdData.memberCount || 0,
+    };
+
+    console.log('Standardized data to create:', standardizedData);
+    console.log('About to call this.create()...');
+
+    try {
+      const result = await this.create(standardizedData);
+      console.log('Successfully created household:', result);
+      return result;
+    } catch (error) {
+      console.error('Error in createWithValidation:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Search households with fuzzy matching on family names
+   */
+  async searchWithFuzzyMatching(
+    searchTerm: string,
+    options?: {
+      limit?: number;
+      includeNormalized?: boolean;
+      statusFilter?: 'approved' | 'pending' | 'all';
+    }
+  ): Promise<Household[]> {
+    const limit = options?.limit || 50;
+    const statusFilter = options?.statusFilter || 'approved';
+
+    // Get households based on status filter
+    let queryOptions: any = { limit };
+    if (statusFilter !== 'all') {
+      queryOptions.where = [
+        { field: 'status', operator: '==', value: statusFilter },
+      ];
+    }
+
+    const allHouseholds = await this.getAll(queryOptions);
+
+    // Filter by search term (fuzzy matching will be applied in the component)
+    const searchLower = searchTerm.toLowerCase();
+    return allHouseholds.filter((household) => {
+      const familyNameMatch = household.familyName
+        .toLowerCase()
+        .includes(searchLower);
+      const normalizedMatch =
+        options?.includeNormalized &&
+        household.normalizedName &&
+        household.normalizedName.includes(searchLower);
+
+      return familyNameMatch || normalizedMatch;
+    });
+  }
+
+  /**
+   * Get pending households for admin approval
+   */
+  async getPendingHouseholds(): Promise<Household[]> {
+    return this.getWhere('status', '==', 'pending');
+  }
+
+  /**
+   * Approve a pending household
+   */
+  async approveHousehold(householdId: string): Promise<void> {
+    await this.update(householdId, {
+      status: 'approved' as const,
+      updatedAt: new Date().toISOString(),
+    });
+  }
+
+  /**
+   * Reject a pending household
+   */
+  async rejectHousehold(householdId: string): Promise<void> {
+    await this.delete(householdId);
+  }
+
+  /**
+   * Merge duplicate households
+   */
+  async mergeHouseholds(
+    primaryHouseholdId: string,
+    duplicateHouseholdIds: string[]
+  ): Promise<void> {
+    const primaryHousehold = await this.getById(primaryHouseholdId);
+    if (!primaryHousehold) {
+      throw new Error('Primary household not found');
+    }
+
+    // Collect all member IDs from duplicate households
+    const allMemberIds = new Set(primaryHousehold.memberIds || []);
+
+    for (const duplicateId of duplicateHouseholdIds) {
+      const duplicate = await this.getById(duplicateId);
+      if (duplicate) {
+        duplicate.memberIds?.forEach((memberId) => allMemberIds.add(memberId));
+        await this.delete(duplicateId);
+      }
+    }
+
+    // Update primary household with all members
+    await this.update(primaryHouseholdId, {
+      memberIds: Array.from(allMemberIds),
+      memberCount: allMemberIds.size,
+      updatedAt: new Date().toISOString(),
+    });
   }
 
   // ============================================================================
@@ -40,18 +248,26 @@ export class HouseholdsService extends BaseFirestoreService<HouseholdDocument, H
   /**
    * Search households by family name or address
    */
-  async search(searchTerm: string, options?: QueryOptions): Promise<Household[]> {
+  async search(
+    searchTerm: string,
+    options?: QueryOptions
+  ): Promise<Household[]> {
     // Get all households first (Firestore doesn't support full-text search natively)
     const allHouseholds = await this.getAll(options);
-    
+
     // Filter by search term
     const searchLower = searchTerm.toLowerCase();
-    return allHouseholds.filter(household => 
-      household.familyName.toLowerCase().includes(searchLower) ||
-      (household.address?.line1 && household.address.line1.toLowerCase().includes(searchLower)) ||
-      (household.address?.city && household.address.city.toLowerCase().includes(searchLower)) ||
-      (household.address?.state && household.address.state.toLowerCase().includes(searchLower)) ||
-      (household.primaryContactName && household.primaryContactName.toLowerCase().includes(searchLower))
+    return allHouseholds.filter(
+      (household) =>
+        household.familyName.toLowerCase().includes(searchLower) ||
+        (household.address?.line1 &&
+          household.address.line1.toLowerCase().includes(searchLower)) ||
+        (household.address?.city &&
+          household.address.city.toLowerCase().includes(searchLower)) ||
+        (household.address?.state &&
+          household.address.state.toLowerCase().includes(searchLower)) ||
+        (household.primaryContactName &&
+          household.primaryContactName.toLowerCase().includes(searchLower))
     );
   }
 
@@ -70,21 +286,33 @@ export class HouseholdsService extends BaseFirestoreService<HouseholdDocument, H
       where: [],
       limit: options?.limit || 50,
       orderBy: {
-        field: options?.orderBy === 'name' ? 'familyName' : 
-               options?.orderBy === 'memberCount' ? 'memberCount' :
-               options?.orderBy === 'city' ? 'address.city' :
-               'familyName',
-        direction: options?.orderDirection || 'asc'
-      }
+        field:
+          options?.orderBy === 'name'
+            ? 'familyName'
+            : options?.orderBy === 'memberCount'
+              ? 'memberCount'
+              : options?.orderBy === 'city'
+                ? 'address.city'
+                : 'familyName',
+        direction: options?.orderDirection || 'asc',
+      },
     };
 
     // Add filters
     if (options?.city) {
-      queryOptions.where!.push({ field: 'address.city', operator: '==', value: options.city });
+      queryOptions.where!.push({
+        field: 'address.city',
+        operator: '==',
+        value: options.city,
+      });
     }
-    
+
     if (options?.state) {
-      queryOptions.where!.push({ field: 'address.state', operator: '==', value: options.state });
+      queryOptions.where!.push({
+        field: 'address.state',
+        operator: '==',
+        value: options.state,
+      });
     }
 
     let results = await this.getAll(queryOptions);
@@ -92,10 +320,13 @@ export class HouseholdsService extends BaseFirestoreService<HouseholdDocument, H
     // Apply search filter if provided
     if (options?.search) {
       const searchLower = options.search.toLowerCase();
-      results = results.filter(household => 
-        household.familyName.toLowerCase().includes(searchLower) ||
-        (household.address?.line1 && household.address.line1.toLowerCase().includes(searchLower)) ||
-        (household.primaryContactName && household.primaryContactName.toLowerCase().includes(searchLower))
+      results = results.filter(
+        (household) =>
+          household.familyName.toLowerCase().includes(searchLower) ||
+          (household.address?.line1 &&
+            household.address.line1.toLowerCase().includes(searchLower)) ||
+          (household.primaryContactName &&
+            household.primaryContactName.toLowerCase().includes(searchLower))
       );
     }
 
@@ -109,12 +340,15 @@ export class HouseholdsService extends BaseFirestoreService<HouseholdDocument, H
   /**
    * Add a member to a household
    */
-  async addMemberToHousehold(householdId: string, memberId: string): Promise<void> {
+  async addMemberToHousehold(
+    householdId: string,
+    memberId: string
+  ): Promise<void> {
     const householdRef = doc(db, COLLECTIONS.HOUSEHOLDS, householdId);
-    
+
     await updateDoc(householdRef, {
       memberIds: arrayUnion(memberId),
-      memberCount: await this.getMemberCount(householdId) + 1,
+      memberCount: (await this.getMemberCount(householdId)) + 1,
       updatedAt: Timestamp.now(),
     });
   }
@@ -122,7 +356,10 @@ export class HouseholdsService extends BaseFirestoreService<HouseholdDocument, H
   /**
    * Remove a member from a household
    */
-  async removeMemberFromHousehold(householdId: string, memberId: string): Promise<void> {
+  async removeMemberFromHousehold(
+    householdId: string,
+    memberId: string
+  ): Promise<void> {
     const household = await this.getById(householdId);
     if (!household) {
       throw new Error('Household not found');
@@ -147,9 +384,13 @@ export class HouseholdsService extends BaseFirestoreService<HouseholdDocument, H
   /**
    * Set primary contact for a household
    */
-  async setPrimaryContact(householdId: string, memberId: string, memberName: string): Promise<void> {
+  async setPrimaryContact(
+    householdId: string,
+    memberId: string,
+    memberName: string
+  ): Promise<void> {
     const householdRef = doc(db, COLLECTIONS.HOUSEHOLDS, householdId);
-    
+
     await updateDoc(householdRef, {
       primaryContactId: memberId,
       primaryContactName: memberName,
@@ -162,7 +403,7 @@ export class HouseholdsService extends BaseFirestoreService<HouseholdDocument, H
    */
   async removePrimaryContact(householdId: string): Promise<void> {
     const householdRef = doc(db, COLLECTIONS.HOUSEHOLDS, householdId);
-    
+
     await updateDoc(householdRef, {
       primaryContactId: null,
       primaryContactName: null,
@@ -184,7 +425,7 @@ export class HouseholdsService extends BaseFirestoreService<HouseholdDocument, H
   async updateMemberCount(householdId: string): Promise<void> {
     const memberCount = await this.getMemberCount(householdId);
     const householdRef = doc(db, COLLECTIONS.HOUSEHOLDS, householdId);
-    
+
     await updateDoc(householdRef, {
       memberCount,
       updatedAt: Timestamp.now(),
@@ -198,9 +439,12 @@ export class HouseholdsService extends BaseFirestoreService<HouseholdDocument, H
   /**
    * Import households from CSV or other sources
    */
-  async importHouseholds(householdsData: Partial<Household>[]): Promise<{ success: Household[], errors: { data: Partial<Household>, error: string }[] }> {
+  async importHouseholds(householdsData: Partial<Household>[]): Promise<{
+    success: Household[];
+    errors: { data: Partial<Household>; error: string }[];
+  }> {
     const success: Household[] = [];
-    const errors: { data: Partial<Household>, error: string }[] = [];
+    const errors: { data: Partial<Household>; error: string }[] = [];
 
     for (const householdData of householdsData) {
       try {
@@ -208,17 +452,19 @@ export class HouseholdsService extends BaseFirestoreService<HouseholdDocument, H
         if (!householdData.familyName) {
           errors.push({
             data: householdData,
-            error: 'Missing required field: familyName'
+            error: 'Missing required field: familyName',
           });
           continue;
         }
 
         // Check for duplicate family name (optional - you might allow duplicates)
-        const existingHouseholds = await this.getByFamilyName(householdData.familyName);
+        const existingHouseholds = await this.getByFamilyName(
+          householdData.familyName
+        );
         if (existingHouseholds.length > 0) {
           errors.push({
             data: householdData,
-            error: `Household with family name "${householdData.familyName}" already exists`
+            error: `Household with family name "${householdData.familyName}" already exists`,
           });
           continue;
         }
@@ -233,7 +479,7 @@ export class HouseholdsService extends BaseFirestoreService<HouseholdDocument, H
       } catch (error) {
         errors.push({
           data: householdData,
-          error: error instanceof Error ? error.message : 'Unknown error'
+          error: error instanceof Error ? error.message : 'Unknown error',
         });
       }
     }
@@ -250,8 +496,8 @@ export class HouseholdsService extends BaseFirestoreService<HouseholdDocument, H
     state?: string;
   }): Promise<any[]> {
     const households = await this.getHouseholdDirectory(options);
-    
-    return households.map(household => ({
+
+    return households.map((household) => ({
       id: household.id,
       familyName: household.familyName,
       addressLine1: household.address?.line1 || '',
@@ -298,13 +544,13 @@ export class HouseholdsService extends BaseFirestoreService<HouseholdDocument, H
   async getUniqueCities(): Promise<string[]> {
     const households = await this.getAll();
     const cities = new Set<string>();
-    
-    households.forEach(household => {
+
+    households.forEach((household) => {
       if (household.address?.city) {
         cities.add(household.address.city);
       }
     });
-    
+
     return Array.from(cities).sort();
   }
 
@@ -314,13 +560,13 @@ export class HouseholdsService extends BaseFirestoreService<HouseholdDocument, H
   async getUniqueStates(): Promise<string[]> {
     const households = await this.getAll();
     const states = new Set<string>();
-    
-    households.forEach(household => {
+
+    households.forEach((household) => {
       if (household.address?.state) {
         states.add(household.address.state);
       }
     });
-    
+
     return Array.from(states).sort();
   }
 
@@ -343,7 +589,9 @@ export class HouseholdsService extends BaseFirestoreService<HouseholdDocument, H
     // Use count for better performance for basic stats
     const [total, withPrimaryContact] = await Promise.all([
       this.count(),
-      this.count({ where: [{ field: 'primaryContactId', operator: '!=', value: null }] })
+      this.count({
+        where: [{ field: 'primaryContactId', operator: '!=', value: null }],
+      }),
     ]);
 
     const withoutPrimaryContact = total - withPrimaryContact;
@@ -351,12 +599,19 @@ export class HouseholdsService extends BaseFirestoreService<HouseholdDocument, H
     // For detailed stats that require data aggregation, we'll need to fetch household data
     // But we can limit this to essential fields and use a reasonable limit
     const households = await this.getAll({ limit: 1000 }); // Reasonable limit for stats calculation
-    
-    const totalMembers = households.reduce((sum, h) => sum + (h.memberCount || 0), 0);
+
+    const totalMembers = households.reduce(
+      (sum, h) => sum + (h.memberCount || 0),
+      0
+    );
     const averageMemberCount = total > 0 ? totalMembers / total : 0;
-    
-    const uniqueCities = new Set(households.map(h => h.address?.city).filter(Boolean));
-    const uniqueStates = new Set(households.map(h => h.address?.state).filter(Boolean));
+
+    const uniqueCities = new Set(
+      households.map((h) => h.address?.city).filter(Boolean)
+    );
+    const uniqueStates = new Set(
+      households.map((h) => h.address?.state).filter(Boolean)
+    );
 
     return {
       total,
@@ -376,7 +631,10 @@ export class HouseholdsService extends BaseFirestoreService<HouseholdDocument, H
   /**
    * Cleanup households with no members
    */
-  async cleanupEmptyHouseholds(): Promise<{ removed: string[], errors: string[] }> {
+  async cleanupEmptyHouseholds(): Promise<{
+    removed: string[];
+    errors: string[];
+  }> {
     const households = await this.getAll();
     const removed: string[] = [];
     const errors: string[] = [];
@@ -387,7 +645,9 @@ export class HouseholdsService extends BaseFirestoreService<HouseholdDocument, H
           await this.delete(household.id);
           removed.push(household.id);
         } catch (error) {
-          errors.push(`Failed to remove household ${household.id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          errors.push(
+            `Failed to remove household ${household.id}: ${error instanceof Error ? error.message : 'Unknown error'}`
+          );
         }
       }
     }
@@ -398,7 +658,10 @@ export class HouseholdsService extends BaseFirestoreService<HouseholdDocument, H
   /**
    * Recalculate all household member counts
    */
-  async recalculateAllMemberCounts(): Promise<{ updated: number, errors: string[] }> {
+  async recalculateAllMemberCounts(): Promise<{
+    updated: number;
+    errors: string[];
+  }> {
     const households = await this.getAll();
     let updated = 0;
     const errors: string[] = [];
@@ -408,7 +671,9 @@ export class HouseholdsService extends BaseFirestoreService<HouseholdDocument, H
         await this.updateMemberCount(household.id);
         updated++;
       } catch (error) {
-        errors.push(`Failed to update household ${household.id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        errors.push(
+          `Failed to update household ${household.id}: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
       }
     }
 
@@ -437,11 +702,19 @@ export class HouseholdsService extends BaseFirestoreService<HouseholdDocument, H
     };
 
     if (options?.city) {
-      queryOptions.where!.push({ field: 'address.city', operator: '==', value: options.city });
+      queryOptions.where!.push({
+        field: 'address.city',
+        operator: '==',
+        value: options.city,
+      });
     }
-    
+
     if (options?.state) {
-      queryOptions.where!.push({ field: 'address.state', operator: '==', value: options.state });
+      queryOptions.where!.push({
+        field: 'address.state',
+        operator: '==',
+        value: options.state,
+      });
     }
 
     return this.subscribeToCollection(queryOptions, callback);

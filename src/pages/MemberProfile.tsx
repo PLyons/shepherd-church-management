@@ -2,19 +2,21 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Member, MemberEvent } from '../types';
 import { useAuth } from '../hooks/useUnifiedAuth';
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  Calendar, 
-  Home, 
-  Shield, 
-  Edit, 
-  Save, 
+import { membersService, householdsService } from '../services/firebase';
+import {
+  User,
+  Mail,
+  Phone,
+  Calendar,
+  Home,
+  Shield,
+  Edit,
+  Save,
   X,
   ArrowLeft,
   Clock,
-  MapPin
+  MapPin,
+  Trash2,
 } from 'lucide-react';
 
 export default function MemberProfile() {
@@ -35,48 +37,62 @@ export default function MemberProfile() {
 
   const fetchMemberData = async () => {
     if (!id) return;
-    
+
     setLoading(true);
     try {
-      const { data: memberData, error: memberError } = await supabase
-        .from('members')
-        .select(`
-          *,
-          household:households!household_id (
-            id,
-            family_name,
-            address_line1,
-            address_line2,
-            city,
-            state,
-            postal_code,
-            country
-          )
-        `)
-        .eq('id', id)
-        .single();
+      // Get member data
+      const memberData = await membersService.getById(id);
+      if (!memberData) {
+        throw new Error('Member not found');
+      }
 
-      if (memberError) throw memberError;
+      // Get household data if member has householdId
+      let householdData = null;
+      if (memberData.householdId) {
+        try {
+          householdData = await householdsService.getById(
+            memberData.householdId
+          );
+        } catch (error) {
+          console.warn('Could not fetch household data:', error);
+        }
+      }
 
-      const { data: eventsData, error: eventsError } = await supabase
-        .from('member_events')
-        .select('*')
-        .eq('member_id', id)
-        .order('event_date', { ascending: false });
+      // Combine member and household data
+      const enrichedMember = {
+        ...memberData,
+        household: householdData
+          ? {
+              id: householdData.id,
+              family_name: householdData.familyName,
+              address_line1: householdData.addressLine1,
+              address_line2: householdData.addressLine2,
+              city: householdData.city,
+              state: householdData.state,
+              postal_code: householdData.postalCode,
+              country: householdData.country,
+            }
+          : null,
+      };
 
-      if (eventsError) throw eventsError;
-
-      setMember(memberData);
-      setMemberEvents(eventsData || []);
-      setFormData(memberData);
+      setMember(enrichedMember);
+      setMemberEvents([]); // TODO: Implement member events in Firebase
+      setFormData(enrichedMember);
     } catch (error) {
       console.error('Error fetching member data:', error);
+      setMember(null);
     } finally {
       setLoading(false);
     }
   };
 
-  const canEdit = currentMember?.role === 'admin' || currentMember?.role === 'pastor' || currentMember?.id === id;
+  const canEdit =
+    currentMember?.role === 'admin' ||
+    currentMember?.role === 'pastor' ||
+    currentMember?.id === id;
+
+  const canDelete =
+    currentMember?.role === 'admin' || currentMember?.role === 'pastor';
 
   const handleEdit = () => {
     setEditing(true);
@@ -86,32 +102,49 @@ export default function MemberProfile() {
     if (!id || !formData) return;
 
     try {
-      const { error } = await supabase
-        .from('members')
-        .update({
-          first_name: formData.first_name,
-          last_name: formData.last_name,
-          email: formData.email,
-          phone: formData.phone,
-          birthdate: formData.birthdate,
-          gender: formData.gender,
-          member_status: formData.member_status,
-          role: formData.role
-        })
-        .eq('id', id);
+      const updateData = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phone: formData.phone,
+        birthdate: formData.birthdate,
+        gender: formData.gender,
+        memberStatus: formData.memberStatus,
+        role: formData.role,
+      };
 
-      if (error) throw error;
+      await membersService.update(id, updateData);
 
-      setMember({ ...member!, ...formData });
+      // Refresh member data
+      await fetchMemberData();
       setEditing(false);
     } catch (error) {
       console.error('Error updating member:', error);
+      alert(error instanceof Error ? error.message : 'Failed to update member');
     }
   };
 
   const handleCancel = () => {
     setFormData(member || {});
     setEditing(false);
+  };
+
+  const handleDelete = async () => {
+    if (!id || !member) return;
+
+    const confirmDelete = window.confirm(
+      `Are you sure you want to delete ${member.firstName} ${member.lastName}? This action cannot be undone.`
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+      await membersService.delete(id);
+      navigate('/members');
+    } catch (error) {
+      console.error('Error deleting member:', error);
+      alert(error instanceof Error ? error.message : 'Failed to delete member');
+    }
   };
 
   const getRoleColor = (role: string) => {
@@ -142,7 +175,7 @@ export default function MemberProfile() {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 
@@ -158,9 +191,12 @@ export default function MemberProfile() {
     return (
       <div className="text-center py-12">
         <User className="mx-auto h-12 w-12 text-gray-400" />
-        <h3 className="mt-2 text-sm font-medium text-gray-900">Member not found</h3>
+        <h3 className="mt-2 text-sm font-medium text-gray-900">
+          Member not found
+        </h3>
         <p className="mt-1 text-sm text-gray-500">
-          The member you're looking for doesn't exist or you don't have permission to view it.
+          The member you're looking for doesn't exist or you don't have
+          permission to view it.
         </p>
         <Link
           to="/members"
@@ -184,17 +220,28 @@ export default function MemberProfile() {
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">
-            {member.first_name} {member.last_name}
+            {member.firstName} {member.lastName}
           </h1>
         </div>
         {canEdit && !editing && (
-          <button
-            onClick={handleEdit}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
-          >
-            <Edit className="h-4 w-4 mr-2" />
-            Edit Profile
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={handleEdit}
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+            >
+              <Edit className="h-4 w-4 mr-2" />
+              Edit Profile
+            </button>
+            {canDelete && (
+              <button
+                onClick={handleDelete}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
+              </button>
+            )}
+          </div>
         )}
         {editing && (
           <div className="flex gap-2">
@@ -219,7 +266,9 @@ export default function MemberProfile() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <div className="bg-white shadow-sm rounded-lg p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Personal Information</h2>
+            <h2 className="text-lg font-medium text-gray-900 mb-4">
+              Personal Information
+            </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -228,14 +277,16 @@ export default function MemberProfile() {
                 {editing ? (
                   <input
                     type="text"
-                    value={formData.first_name || ''}
-                    onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
+                    value={formData.firstName || ''}
+                    onChange={(e) =>
+                      setFormData({ ...formData, firstName: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 ) : (
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-900">{member.first_name}</span>
+                    <span className="text-gray-900">{member.firstName}</span>
                   </div>
                 )}
               </div>
@@ -247,14 +298,16 @@ export default function MemberProfile() {
                 {editing ? (
                   <input
                     type="text"
-                    value={formData.last_name || ''}
-                    onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
+                    value={formData.lastName || ''}
+                    onChange={(e) =>
+                      setFormData({ ...formData, lastName: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 ) : (
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-900">{member.last_name}</span>
+                    <span className="text-gray-900">{member.lastName}</span>
                   </div>
                 )}
               </div>
@@ -267,7 +320,9 @@ export default function MemberProfile() {
                   <input
                     type="email"
                     value={formData.email || ''}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 ) : (
@@ -286,13 +341,17 @@ export default function MemberProfile() {
                   <input
                     type="tel"
                     value={formData.phone || ''}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, phone: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 ) : (
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-900">{member.phone || 'Not provided'}</span>
+                    <span className="text-gray-900">
+                      {member.phone || 'Not provided'}
+                    </span>
                   </div>
                 )}
               </div>
@@ -305,14 +364,18 @@ export default function MemberProfile() {
                   <input
                     type="date"
                     value={formData.birthdate || ''}
-                    onChange={(e) => setFormData({ ...formData, birthdate: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, birthdate: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 ) : (
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-gray-400" />
                     <span className="text-gray-900">
-                      {member.birthdate ? formatDate(member.birthdate) : 'Not provided'}
+                      {member.birthdate
+                        ? formatDate(member.birthdate)
+                        : 'Not provided'}
                     </span>
                   </div>
                 )}
@@ -325,7 +388,12 @@ export default function MemberProfile() {
                 {editing ? (
                   <select
                     value={formData.gender || ''}
-                    onChange={(e) => setFormData({ ...formData, gender: e.target.value as 'Male' | 'Female' })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        gender: e.target.value as 'Male' | 'Female',
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="">Select gender</option>
@@ -333,7 +401,9 @@ export default function MemberProfile() {
                     <option value="Female">Female</option>
                   </select>
                 ) : (
-                  <span className="text-gray-900">{member.gender || 'Not specified'}</span>
+                  <span className="text-gray-900">
+                    {member.gender || 'Not specified'}
+                  </span>
                 )}
               </div>
             </div>
@@ -341,20 +411,31 @@ export default function MemberProfile() {
 
           {memberEvents.length > 0 && (
             <div className="bg-white shadow-sm rounded-lg p-6 mt-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Life Events</h2>
+              <h2 className="text-lg font-medium text-gray-900 mb-4">
+                Life Events
+              </h2>
               <div className="space-y-3">
                 {memberEvents.map((event) => (
-                  <div key={event.id} className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg">
+                  <div
+                    key={event.id}
+                    className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg"
+                  >
                     <div className="flex-shrink-0">
                       <Calendar className="h-5 w-5 text-gray-400" />
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-gray-900 capitalize">{event.event_type}</span>
-                        <span className="text-sm text-gray-500">{formatDate(event.event_date)}</span>
+                        <span className="font-medium text-gray-900 capitalize">
+                          {event.event_type}
+                        </span>
+                        <span className="text-sm text-gray-500">
+                          {formatDate(event.event_date)}
+                        </span>
                       </div>
                       {event.description && (
-                        <p className="text-sm text-gray-600 mt-1">{event.description}</p>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {event.description}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -366,7 +447,9 @@ export default function MemberProfile() {
 
         <div className="space-y-6">
           <div className="bg-white shadow-sm rounded-lg p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Member Details</h2>
+            <h2 className="text-lg font-medium text-gray-900 mb-4">
+              Member Details
+            </h2>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -374,8 +457,16 @@ export default function MemberProfile() {
                 </label>
                 {editing ? (
                   <select
-                    value={formData.member_status || ''}
-                    onChange={(e) => setFormData({ ...formData, member_status: e.target.value as 'active' | 'inactive' | 'visitor' })}
+                    value={formData.memberStatus || ''}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        memberStatus: e.target.value as
+                          | 'active'
+                          | 'inactive'
+                          | 'visitor',
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="active">Active</option>
@@ -383,8 +474,10 @@ export default function MemberProfile() {
                     <option value="visitor">Visitor</option>
                   </select>
                 ) : (
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(member.member_status)}`}>
-                    {member.member_status}
+                  <span
+                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(member.memberStatus)}`}
+                  >
+                    {member.memberStatus}
                   </span>
                 )}
               </div>
@@ -393,10 +486,17 @@ export default function MemberProfile() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Role
                 </label>
-                {editing && (currentMember?.role === 'admin' || currentMember?.role === 'pastor') ? (
+                {editing &&
+                (currentMember?.role === 'admin' ||
+                  currentMember?.role === 'pastor') ? (
                   <select
                     value={formData.role || ''}
-                    onChange={(e) => setFormData({ ...formData, role: e.target.value as 'admin' | 'pastor' | 'member' })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        role: e.target.value as 'admin' | 'pastor' | 'member',
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   >
                     <option value="member">Member</option>
@@ -406,7 +506,9 @@ export default function MemberProfile() {
                 ) : (
                   <div className="flex items-center gap-2">
                     <Shield className="h-4 w-4 text-gray-400" />
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(member.role)}`}>
+                    <span
+                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(member.role)}`}
+                    >
                       {member.role}
                     </span>
                   </div>
@@ -419,7 +521,11 @@ export default function MemberProfile() {
                 </label>
                 <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-gray-400" />
-                  <span className="text-gray-900">{formatDate(member.joined_at)}</span>
+                  <span className="text-gray-900">
+                    {member.joinedAt
+                      ? formatDate(member.joinedAt)
+                      : 'Not available'}
+                  </span>
                 </div>
               </div>
             </div>
@@ -427,7 +533,9 @@ export default function MemberProfile() {
 
           {member.household && (
             <div className="bg-white shadow-sm rounded-lg p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">Household Information</h2>
+              <h2 className="text-lg font-medium text-gray-900 mb-4">
+                Household Information
+              </h2>
               <div className="space-y-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -444,7 +552,9 @@ export default function MemberProfile() {
                   </div>
                 </div>
 
-                {(member.household.address_line1 || member.household.city || member.household.state) && (
+                {(member.household.address_line1 ||
+                  member.household.city ||
+                  member.household.state) && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Address
@@ -452,16 +562,26 @@ export default function MemberProfile() {
                     <div className="flex items-start gap-2">
                       <MapPin className="h-4 w-4 text-gray-400 mt-1" />
                       <div className="text-gray-900">
-                        {member.household.address_line1 && <div>{member.household.address_line1}</div>}
-                        {member.household.address_line2 && <div>{member.household.address_line2}</div>}
-                        {(member.household.city || member.household.state || member.household.postal_code) && (
+                        {member.household.address_line1 && (
+                          <div>{member.household.address_line1}</div>
+                        )}
+                        {member.household.address_line2 && (
+                          <div>{member.household.address_line2}</div>
+                        )}
+                        {(member.household.city ||
+                          member.household.state ||
+                          member.household.postal_code) && (
                           <div>
-                            {member.household.city && `${member.household.city}, `}
-                            {member.household.state && `${member.household.state} `}
+                            {member.household.city &&
+                              `${member.household.city}, `}
+                            {member.household.state &&
+                              `${member.household.state} `}
                             {member.household.postal_code}
                           </div>
                         )}
-                        {member.household.country && <div>{member.household.country}</div>}
+                        {member.household.country && (
+                          <div>{member.household.country}</div>
+                        )}
                       </div>
                     </div>
                   </div>

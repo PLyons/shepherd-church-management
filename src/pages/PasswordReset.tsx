@@ -18,16 +18,18 @@ export default function PasswordReset() {
 
     try {
       console.log('Attempting password reset for:', email);
-      
+
       await resetPassword(email);
-      
+
       // Store a flag to indicate password reset was requested
       localStorage.setItem('password_reset_requested', 'true');
-      setMessage('Password reset email sent! Check your inbox for instructions.');
+      setMessage(
+        'Password reset email sent! Check your inbox for instructions.'
+      );
       setIsSuccess(true);
     } catch (err: any) {
       console.error('Password reset error:', err);
-      
+
       // Handle specific Firebase error codes
       if (err.code === 'auth/user-not-found') {
         setMessage('No account found with this email address.');
@@ -50,14 +52,18 @@ export default function PasswordReset() {
             Reset your password
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Enter your email address and we'll send you a link to reset your password.
+            Enter your email address and we'll send you a link to reset your
+            password.
           </p>
         </div>
-        
+
         {!isSuccess ? (
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Email address
               </label>
               <input
@@ -72,7 +78,9 @@ export default function PasswordReset() {
             </div>
 
             {message && (
-              <div className={`text-sm ${isSuccess ? 'text-green-600' : 'text-red-600'}`}>
+              <div
+                className={`text-sm ${isSuccess ? 'text-green-600' : 'text-red-600'}`}
+              >
                 {message}
               </div>
             )}
@@ -103,11 +111,9 @@ export default function PasswordReset() {
         ) : (
           <div className="mt-8 space-y-6">
             <div className="bg-green-50 border border-green-200 rounded-md p-4">
-              <div className="text-sm text-green-700">
-                {message}
-              </div>
+              <div className="text-sm text-green-700">{message}</div>
             </div>
-            
+
             <div className="text-center">
               <Link
                 to="/login"

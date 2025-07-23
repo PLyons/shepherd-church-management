@@ -24,30 +24,35 @@ export default function Events() {
     try {
       setLoading(true);
       console.log('📅 Fetching events from Firebase...');
-      
+
       // Get all events (Firebase security rules will filter based on auth)
       const allEvents = await eventsService.getAll();
       console.log('📅 Firebase returned events:', allEvents);
-      
+
       // Filter for public events if user is not authenticated or is a visitor
-      const filteredEvents = (!user || memberRole === 'visitor') 
-        ? allEvents.filter(event => event.isPublic)
-        : allEvents;
-      
+      const filteredEvents =
+        !user || memberRole === 'visitor'
+          ? allEvents.filter((event) => event.isPublic)
+          : allEvents;
+
       // Sort by start time
       const sortedEvents = filteredEvents.sort((a, b) => {
         if (!a.startTime) return 1;
         if (!b.startTime) return -1;
-        return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+        return (
+          new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+        );
       });
-      
+
       console.log('📅 Final filtered events:', sortedEvents);
       console.log('📅 Current date for comparison:', new Date());
       console.log('📅 Event dates:');
       sortedEvents.forEach((event, idx) => {
-        console.log(`  ${idx}: ${event.title} - startTime: ${event.startTime} (${event.startTime ? new Date(event.startTime) : 'No date'})`);
+        console.log(
+          `  ${idx}: ${event.title} - startTime: ${event.startTime} (${event.startTime ? new Date(event.startTime) : 'No date'})`
+        );
       });
-      
+
       setEvents(sortedEvents);
     } catch (err) {
       console.error('📅 Error fetching events:', err);
@@ -58,7 +63,7 @@ export default function Events() {
   };
 
   const getEventsForDate = (date: Date) => {
-    return events.filter(event => {
+    return events.filter((event) => {
       if (!event.startTime) return false;
       const eventDate = new Date(event.startTime);
       return (
@@ -83,17 +88,16 @@ export default function Events() {
     return null;
   };
 
-  const selectedDateEvents = selectedDate instanceof Date 
-    ? getEventsForDate(selectedDate)
-    : [];
+  const selectedDateEvents =
+    selectedDate instanceof Date ? getEventsForDate(selectedDate) : [];
 
   const formatTime = (timeString: string | null) => {
     if (!timeString) return '';
     const date = new Date(timeString);
-    return date.toLocaleTimeString('en-US', { 
-      hour: 'numeric', 
+    return date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
       minute: '2-digit',
-      hour12: true 
+      hour12: true,
     });
   };
 
@@ -152,20 +156,20 @@ export default function Events() {
           <div className="bg-white shadow rounded-lg p-6">
             <h2 className="text-lg font-semibold mb-4">
               {selectedDate instanceof Date
-                ? selectedDate.toLocaleDateString('en-US', { 
+                ? selectedDate.toLocaleDateString('en-US', {
                     weekday: 'long',
                     year: 'numeric',
                     month: 'long',
-                    day: 'numeric'
+                    day: 'numeric',
                   })
                 : 'Select a date'}
             </h2>
-            
+
             {selectedDateEvents.length === 0 ? (
               <p className="text-gray-500">No events scheduled</p>
             ) : (
               <div className="space-y-3">
-                {selectedDateEvents.map(event => (
+                {selectedDateEvents.map((event) => (
                   <Link
                     key={event.id}
                     to={`/events/${event.id}`}
@@ -195,20 +199,26 @@ export default function Events() {
 
       {/* Upcoming Events List */}
       <div className="bg-white shadow rounded-lg p-6">
-        <h2 className="text-xl font-semibold mb-4">All Events (Temporarily showing all)</h2>
+        <h2 className="text-xl font-semibold mb-4">
+          All Events (Temporarily showing all)
+        </h2>
         <div className="space-y-4">
           {events
-            .filter(event => {
+            .filter((event) => {
               const hasStartTime = !!event.startTime;
-              const eventDate = event.startTime ? new Date(event.startTime) : null;
+              const eventDate = event.startTime
+                ? new Date(event.startTime)
+                : null;
               const now = new Date();
               const isUpcoming = eventDate ? eventDate >= now : false;
-              console.log(`🔍 Event ${event.title}: hasStartTime=${hasStartTime}, eventDate=${eventDate}, now=${now}, isUpcoming=${isUpcoming}`);
+              console.log(
+                `🔍 Event ${event.title}: hasStartTime=${hasStartTime}, eventDate=${eventDate}, now=${now}, isUpcoming=${isUpcoming}`
+              );
               // Temporarily show all events, not just upcoming ones
               return hasStartTime;
             })
             .slice(0, 10)
-            .map(event => (
+            .map((event) => (
               <Link
                 key={event.id}
                 to={`/events/${event.id}`}
@@ -224,12 +234,18 @@ export default function Events() {
                     )}
                     <div className="mt-2 space-y-1">
                       <p className="text-sm text-gray-600">
-                        📅 {event.startTime ? new Date(event.startTime).toLocaleDateString('en-US', {
-                          weekday: 'long',
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        }) : 'Date TBD'}
+                        📅{' '}
+                        {event.startTime
+                          ? new Date(event.startTime).toLocaleDateString(
+                              'en-US',
+                              {
+                                weekday: 'long',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                              }
+                            )
+                          : 'Date TBD'}
                       </p>
                       <p className="text-sm text-gray-600">
                         🕐 {formatDateRange(event.startTime, event.endTime)}

@@ -11,13 +11,13 @@ export function Layout() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navigation */}
-      <Navigation 
+      <Navigation
         onMobileMenuToggle={() => setMobileMenuOpen(true)}
         userRole={member?.role || 'member'}
       />
 
       {/* Mobile menu */}
-      <MobileMenu 
+      <MobileMenu
         open={mobileMenuOpen}
         onClose={() => setMobileMenuOpen(false)}
         userRole={member?.role || 'member'}

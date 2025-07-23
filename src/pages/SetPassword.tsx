@@ -9,10 +9,10 @@ export default function SetPassword() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [isSuccess, setIsSuccess] = useState(false);
-  
+
   const navigate = useNavigate();
   const { confirmPasswordReset } = useAuth();
-  
+
   // Check authentication on mount
   useEffect(() => {
     const checkAuth = async () => {
@@ -20,13 +20,13 @@ export default function SetPassword() {
       const urlParams = new URLSearchParams(window.location.search);
       const mode = urlParams.get('mode');
       const oobCode = urlParams.get('oobCode');
-      
+
       console.log('Password reset check:', {
         mode,
         hasOobCode: !!oobCode,
-        url: window.location.href
+        url: window.location.href,
       });
-      
+
       // If not a password reset flow, redirect to login
       if (mode !== 'resetPassword' || !oobCode) {
         console.log('Invalid password reset parameters, redirecting to login');
@@ -57,32 +57,36 @@ export default function SetPassword() {
 
     try {
       console.log('Attempting to update password with Firebase...');
-      
+
       // Get the oobCode from URL parameters
       const urlParams = new URLSearchParams(window.location.search);
       const oobCode = urlParams.get('oobCode');
-      
+
       if (!oobCode) {
-        setMessage('Invalid password reset link. Please request a new password reset.');
+        setMessage(
+          'Invalid password reset link. Please request a new password reset.'
+        );
         setIsSuccess(false);
         setLoading(false);
         return;
       }
-      
+
       // Use the confirmPasswordReset method from useAuth hook
       await confirmPasswordReset(oobCode, password);
-      
+
       setMessage('Password updated successfully! Redirecting to login...');
       setIsSuccess(true);
-      
+
       // Redirect to login after 2 seconds
       setTimeout(() => {
         navigate('/login');
       }, 2000);
-      
     } catch (err: any) {
       console.error('Error updating password:', err);
-      setMessage(err.message || 'Failed to update password. Please try again or request a new password reset.');
+      setMessage(
+        err.message ||
+          'Failed to update password. Please try again or request a new password reset.'
+      );
       setIsSuccess(false);
       setLoading(false);
     }
@@ -99,11 +103,14 @@ export default function SetPassword() {
             Enter your new password below
           </p>
         </div>
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700"
+              >
                 New Password
               </label>
               <input
@@ -119,7 +126,10 @@ export default function SetPassword() {
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Confirm Password
               </label>
               <input
@@ -136,7 +146,9 @@ export default function SetPassword() {
           </div>
 
           {message && (
-            <div className={`text-sm ${isSuccess ? 'text-green-600' : 'text-red-600'}`}>
+            <div
+              className={`text-sm ${isSuccess ? 'text-green-600' : 'text-red-600'}`}
+            >
               {message}
             </div>
           )}

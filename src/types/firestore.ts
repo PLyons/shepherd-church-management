@@ -18,20 +18,20 @@ export interface MemberDocument {
   phone?: string;
   birthdate?: Timestamp;
   gender?: 'Male' | 'Female';
-  
+
   // Church Information
   role: 'admin' | 'pastor' | 'member';
   memberStatus: 'active' | 'inactive' | 'visitor';
   joinedAt?: Timestamp;
-  
+
   // Household Relationship
   householdId: string; // Reference to household document ID
   isPrimaryContact: boolean;
-  
+
   // Metadata
   createdAt: Timestamp;
   updatedAt: Timestamp;
-  
+
   // Denormalized Data (for query optimization)
   householdName?: string; // From household.familyName
   fullName: string; // Computed: firstName + lastName
@@ -55,7 +55,7 @@ export interface Member {
   updatedAt: string; // ISO string
   householdName?: string;
   fullName: string;
-  
+
   // Optional populated data
   household?: Household;
 }
@@ -76,18 +76,23 @@ export interface AddressData {
 export interface HouseholdDocument {
   // Basic Information
   familyName: string;
-  
+
+  // Standardization fields
+  normalizedName?: string; // Lowercase, trimmed version for uniqueness checks
+  status?: 'pending' | 'approved'; // Admin approval status
+  createdBy?: string; // UID of the member who created this household
+
   // Address Information
   address: AddressData;
-  
+
   // Primary Contact
   primaryContactId?: string; // Reference to member document ID
   primaryContactName?: string; // Denormalized for display
-  
+
   // Member Management
   memberIds: string[]; // Array of member document IDs
   memberCount: number; // Computed for statistics
-  
+
   // Metadata
   createdAt: Timestamp;
   updatedAt: Timestamp;
@@ -103,7 +108,7 @@ export interface Household {
   memberCount: number;
   createdAt: string; // ISO string
   updatedAt: string; // ISO string
-  
+
   // Optional populated data
   members?: Member[];
 }
@@ -124,21 +129,21 @@ export interface EventDocument {
   title: string;
   description?: string;
   location?: string;
-  
+
   // Timing
   startTime: Timestamp;
   endTime?: Timestamp;
-  
+
   // Visibility
   isPublic: boolean;
-  
+
   // Creator Information
   createdBy: string; // Member document ID
   createdByName: string; // Denormalized for display
-  
+
   // RSVP Statistics (denormalized for performance)
   rsvpStats: RSVPStats;
-  
+
   // Metadata
   createdAt: Timestamp;
   updatedAt: Timestamp;
@@ -203,18 +208,18 @@ export interface DonationDocument {
   // Donor Information (nullable for anonymous)
   memberId?: string;
   memberName?: string; // Denormalized for reports
-  
+
   // Donation Details
   amount: number;
   donationDate: Timestamp;
   method?: string; // 'cash', 'check', 'credit', 'bank-transfer'
   sourceLabel?: string;
   note?: string;
-  
+
   // Category
   categoryId: string;
   categoryName: string; // Denormalized for reporting
-  
+
   // Metadata
   createdAt: Timestamp;
   createdBy: string; // Admin/Pastor member ID
@@ -233,7 +238,7 @@ export interface Donation {
   categoryName: string;
   createdAt: string; // ISO string
   createdBy: string;
-  
+
   // Optional populated data
   member?: Member;
   category?: DonationCategory;
@@ -243,12 +248,12 @@ export interface DonationCategoryDocument {
   name: string;
   description?: string;
   isActive: boolean;
-  
+
   // Statistics (computed/updated via Cloud Functions)
   totalAmount: number;
   donationCount: number;
   lastDonationDate?: Timestamp;
-  
+
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
@@ -289,21 +294,21 @@ export interface SermonDocument {
   speakerName: string;
   datePreached: Timestamp;
   notes?: string;
-  
+
   // Scripture References
   scriptureReferences?: ScriptureReference[];
-  
+
   // Media Files
   mediaFiles: MediaFiles;
-  
+
   // Creator Information
   createdBy: string;
   createdByName: string; // Denormalized
-  
+
   // Metadata
   createdAt: Timestamp;
   updatedAt: Timestamp;
-  
+
   // Search Optimization
   searchTerms: string[]; // Generated from title, speaker, scripture
 }
@@ -331,11 +336,11 @@ export interface VolunteerRoleDocument {
   name: string;
   description?: string;
   isActive: boolean;
-  
+
   // Statistics
   totalSlots: number; // Computed
   filledSlots: number; // Computed
-  
+
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
@@ -356,19 +361,19 @@ export interface VolunteerSlotDocument {
   eventId: string;
   eventTitle: string; // Denormalized
   eventStartTime: Timestamp; // Denormalized
-  
+
   // Role Reference
   roleId: string;
   roleName: string; // Denormalized
-  
+
   // Assignment
   assignedTo?: string; // Member ID
   assignedToName?: string; // Denormalized
   status: 'Open' | 'Filled' | 'Cancelled';
-  
+
   // Notes
   note?: string;
-  
+
   // Metadata
   createdAt: Timestamp;
   updatedAt: Timestamp;
@@ -387,7 +392,7 @@ export interface VolunteerSlot {
   note?: string;
   createdAt: string; // ISO string
   updatedAt: string; // ISO string
-  
+
   // Optional populated data
   event?: Event;
   role?: VolunteerRole;
@@ -401,12 +406,12 @@ export interface VolunteerSlot {
 export interface MemberEventDocument {
   memberId: string;
   memberName: string; // Denormalized
-  
+
   eventType: 'baptism' | 'marriage' | 'death' | 'membership' | 'other';
   eventDate: Timestamp;
   description?: string;
   notes?: string;
-  
+
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
@@ -421,7 +426,7 @@ export interface MemberEvent {
   notes?: string;
   createdAt: string; // ISO string
   updatedAt: string; // ISO string;
-  
+
   // Optional populated data
   member?: Member;
 }
@@ -454,7 +459,17 @@ export interface QueryOptions {
   };
   where?: {
     field: string;
-    operator: '==' | '!=' | '<' | '<=' | '>' | '>=' | 'in' | 'not-in' | 'array-contains' | 'array-contains-any';
+    operator:
+      | '=='
+      | '!='
+      | '<'
+      | '<='
+      | '>'
+      | '>='
+      | 'in'
+      | 'not-in'
+      | 'array-contains'
+      | 'array-contains-any';
     value: any;
   }[];
   startAfter?: any;

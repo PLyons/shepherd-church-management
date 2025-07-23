@@ -1,5 +1,13 @@
 import { BaseFirestoreService } from './base.service';
-import { collection, addDoc, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
+import {
+  collection,
+  addDoc,
+  query,
+  where,
+  orderBy,
+  limit,
+  getDocs,
+} from 'firebase/firestore';
 
 // ============================================================================
 // SECURE AUDIT LOGGING SERVICE
@@ -27,38 +35,38 @@ export interface AuditLogEntry {
   metadata?: Record<string, any>;
 }
 
-export type AuditAction = 
+export type AuditAction =
   // Authentication actions
-  | 'user_login' 
-  | 'user_logout' 
-  | 'password_reset' 
+  | 'user_login'
+  | 'user_logout'
+  | 'password_reset'
   | 'failed_login'
   // Role management actions
-  | 'role_assigned' 
-  | 'role_removed' 
-  | 'permission_granted' 
+  | 'role_assigned'
+  | 'role_removed'
+  | 'permission_granted'
   | 'permission_revoked'
   | 'unauthorized_role_access'
   // Financial data access
-  | 'donation_viewed' 
-  | 'donation_created' 
-  | 'donation_updated' 
+  | 'donation_viewed'
+  | 'donation_created'
+  | 'donation_updated'
   | 'donation_deleted'
   | 'financial_report_accessed'
   | 'unauthorized_financial_access'
   // Data access
-  | 'member_data_accessed' 
-  | 'sensitive_data_exported' 
+  | 'member_data_accessed'
+  | 'sensitive_data_exported'
   | 'bulk_data_access'
   | 'unauthorized_data_access'
   // System administration
-  | 'admin_settings_changed' 
+  | 'admin_settings_changed'
   | 'system_configuration_modified'
-  | 'backup_performed' 
+  | 'backup_performed'
   | 'data_migration'
   // Security events
-  | 'security_breach_detected' 
-  | 'suspicious_activity' 
+  | 'security_breach_detected'
+  | 'suspicious_activity'
   | 'account_locked'
   | 'data_integrity_check';
 
@@ -107,7 +115,7 @@ export class AuditService extends BaseFirestoreService<AuditLogEntry> {
   ): Promise<string> {
     const timestamp = new Date().toISOString();
     const riskLevel = this.determineRiskLevel(action, targetResource);
-    
+
     const auditEntry: Omit<AuditLogEntry, 'id'> = {
       timestamp,
       userId,
@@ -125,12 +133,12 @@ export class AuditService extends BaseFirestoreService<AuditLogEntry> {
       result: options.result || 'SUCCESS',
       errorMessage: options.errorMessage,
       riskLevel,
-      metadata: options.metadata
+      metadata: options.metadata,
     };
 
     try {
       const auditId = await this.create(auditEntry);
-      
+
       // For critical actions, also log to console for immediate visibility
       if (riskLevel === 'CRITICAL' || riskLevel === 'HIGH') {
         console.log(`[SECURITY AUDIT ${riskLevel}]`, {
@@ -140,7 +148,7 @@ export class AuditService extends BaseFirestoreService<AuditLogEntry> {
           action,
           targetResource,
           result: auditEntry.result,
-          riskLevel
+          riskLevel,
         });
       }
 
@@ -151,9 +159,9 @@ export class AuditService extends BaseFirestoreService<AuditLogEntry> {
         userId,
         action,
         targetResource,
-        details: this.sanitizeDetails(details, true) // More aggressive sanitization for error logs
+        details: this.sanitizeDetails(details, true), // More aggressive sanitization for error logs
       });
-      
+
       // In production, this should trigger alerts as audit logging failure is critical
       throw new Error('Failed to create audit log entry');
     }
@@ -192,12 +200,12 @@ export class AuditService extends BaseFirestoreService<AuditLogEntry> {
         oldRole,
         newRole,
         reason,
-        changeType: oldRole ? 'role_change' : 'initial_assignment'
+        changeType: oldRole ? 'role_change' : 'initial_assignment',
       },
       {
         targetResourceId: targetUserId,
         targetResourceName: targetName,
-        ...sessionInfo
+        ...sessionInfo,
       }
     );
   }
@@ -210,7 +218,12 @@ export class AuditService extends BaseFirestoreService<AuditLogEntry> {
     userEmail: string,
     userName: string,
     userRole: string,
-    action: 'donation_viewed' | 'donation_created' | 'donation_updated' | 'donation_deleted' | 'financial_report_accessed',
+    action:
+      | 'donation_viewed'
+      | 'donation_created'
+      | 'donation_updated'
+      | 'donation_deleted'
+      | 'financial_report_accessed',
     donationDetails: {
       donationId?: string;
       amount?: number;
@@ -235,12 +248,14 @@ export class AuditService extends BaseFirestoreService<AuditLogEntry> {
         donationId: donationDetails.donationId,
         amount: donationDetails.amount ? '[REDACTED]' : undefined, // Don't log actual amounts
         donorId: donationDetails.donorId,
-        sensitiveDataAccess: true
+        sensitiveDataAccess: true,
       },
       {
         targetResourceId: donationDetails.donationId,
-        targetResourceName: donationDetails.donationId ? `Donation ${donationDetails.donationId}` : 'Financial Reports',
-        ...sessionInfo
+        targetResourceName: donationDetails.donationId
+          ? `Donation ${donationDetails.donationId}`
+          : 'Financial Reports',
+        ...sessionInfo,
       }
     );
   }
@@ -272,11 +287,11 @@ export class AuditService extends BaseFirestoreService<AuditLogEntry> {
       {
         attemptedAction,
         denialReason: reason,
-        securityViolation: true
+        securityViolation: true,
       },
       {
         result: 'DENIED',
-        ...sessionInfo
+        ...sessionInfo,
       }
     );
   }
@@ -321,14 +336,19 @@ export class AuditService extends BaseFirestoreService<AuditLogEntry> {
       auditQuery = query(auditQuery, where('action', '==', options.action));
     }
     if (options.riskLevel) {
-      auditQuery = query(auditQuery, where('riskLevel', '==', options.riskLevel));
+      auditQuery = query(
+        auditQuery,
+        where('riskLevel', '==', options.riskLevel)
+      );
     }
     if (options.result) {
       auditQuery = query(auditQuery, where('result', '==', options.result));
     }
 
     const snapshot = await getDocs(auditQuery);
-    const logs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AuditLogEntry));
+    const logs = snapshot.docs.map(
+      (doc) => ({ id: doc.id, ...doc.data() }) as AuditLogEntry
+    );
 
     // Log this access to audit logs (meta-logging)
     await this.logAction(
@@ -341,7 +361,7 @@ export class AuditService extends BaseFirestoreService<AuditLogEntry> {
       {
         queryOptions: options,
         resultCount: logs.length,
-        auditLogAccess: true
+        auditLogAccess: true,
       }
     );
 
@@ -351,9 +371,14 @@ export class AuditService extends BaseFirestoreService<AuditLogEntry> {
   /**
    * Get security violations (High and Critical risk events)
    */
-  async getSecurityViolations(requestingUserId: string, requestingUserRole: string): Promise<AuditLogEntry[]> {
+  async getSecurityViolations(
+    requestingUserId: string,
+    requestingUserRole: string
+  ): Promise<AuditLogEntry[]> {
     if (requestingUserRole !== 'admin') {
-      throw new Error('Access denied: Only administrators can view security violations');
+      throw new Error(
+        'Access denied: Only administrators can view security violations'
+      );
     }
 
     const violationsQuery = query(
@@ -364,7 +389,9 @@ export class AuditService extends BaseFirestoreService<AuditLogEntry> {
     );
 
     const snapshot = await getDocs(violationsQuery);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AuditLogEntry));
+    return snapshot.docs.map(
+      (doc) => ({ id: doc.id, ...doc.data() }) as AuditLogEntry
+    );
   }
 
   // ============================================================================
@@ -374,7 +401,10 @@ export class AuditService extends BaseFirestoreService<AuditLogEntry> {
   /**
    * Get audit statistics for admin dashboard
    */
-  async getAuditStatistics(requestingUserId: string, requestingUserRole: string): Promise<{
+  async getAuditStatistics(
+    requestingUserId: string,
+    requestingUserRole: string
+  ): Promise<{
     totalLogs: number;
     criticalEvents: number;
     failedActions: number;
@@ -382,7 +412,9 @@ export class AuditService extends BaseFirestoreService<AuditLogEntry> {
     topActions: Array<{ action: string; count: number }>;
   }> {
     if (requestingUserRole !== 'admin') {
-      throw new Error('Access denied: Only administrators can view audit statistics');
+      throw new Error(
+        'Access denied: Only administrators can view audit statistics'
+      );
     }
 
     // This would typically be implemented with aggregation queries
@@ -392,7 +424,7 @@ export class AuditService extends BaseFirestoreService<AuditLogEntry> {
       criticalEvents: 0,
       failedActions: 0,
       recentViolations: 0,
-      topActions: []
+      topActions: [],
     };
   }
 
@@ -403,39 +435,48 @@ export class AuditService extends BaseFirestoreService<AuditLogEntry> {
   /**
    * Determine risk level based on action and target resource
    */
-  private determineRiskLevel(action: AuditAction, targetResource: string): 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' {
+  private determineRiskLevel(
+    action: AuditAction,
+    targetResource: string
+  ): 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL' {
     // Critical risk actions
-    if ([
-      'role_assigned',
-      'permission_granted', 
-      'admin_settings_changed',
-      'security_breach_detected',
-      'system_configuration_modified'
-    ].includes(action)) {
+    if (
+      [
+        'role_assigned',
+        'permission_granted',
+        'admin_settings_changed',
+        'security_breach_detected',
+        'system_configuration_modified',
+      ].includes(action)
+    ) {
       return 'CRITICAL';
     }
 
     // High risk actions
-    if ([
-      'unauthorized_role_access',
-      'unauthorized_financial_access',
-      'unauthorized_data_access',
-      'donation_deleted',
-      'bulk_data_access',
-      'failed_login',
-      'account_locked'
-    ].includes(action)) {
+    if (
+      [
+        'unauthorized_role_access',
+        'unauthorized_financial_access',
+        'unauthorized_data_access',
+        'donation_deleted',
+        'bulk_data_access',
+        'failed_login',
+        'account_locked',
+      ].includes(action)
+    ) {
       return 'HIGH';
     }
 
     // Medium risk actions
-    if ([
-      'donation_created',
-      'donation_updated',
-      'financial_report_accessed',
-      'sensitive_data_exported',
-      'member_data_accessed'
-    ].includes(action)) {
+    if (
+      [
+        'donation_created',
+        'donation_updated',
+        'financial_report_accessed',
+        'sensitive_data_exported',
+        'member_data_accessed',
+      ].includes(action)
+    ) {
       return 'MEDIUM';
     }
 
@@ -446,23 +487,26 @@ export class AuditService extends BaseFirestoreService<AuditLogEntry> {
   /**
    * Sanitize sensitive details before logging
    */
-  private sanitizeDetails(details: Record<string, any>, aggressive = false): Record<string, any> {
+  private sanitizeDetails(
+    details: Record<string, any>,
+    aggressive = false
+  ): Record<string, any> {
     const sensitiveKeys = [
-      'password', 
-      'token', 
-      'secret', 
-      'key', 
-      'ssn', 
+      'password',
+      'token',
+      'secret',
+      'key',
+      'ssn',
       'creditCard',
       'bankAccount',
-      'amount' // Don't log specific donation amounts
+      'amount', // Don't log specific donation amounts
     ];
 
     const sanitized = { ...details };
 
-    Object.keys(sanitized).forEach(key => {
+    Object.keys(sanitized).forEach((key) => {
       const lowerKey = key.toLowerCase();
-      if (sensitiveKeys.some(sensitive => lowerKey.includes(sensitive))) {
+      if (sensitiveKeys.some((sensitive) => lowerKey.includes(sensitive))) {
         sanitized[key] = aggressive ? '[REDACTED]' : '[SENSITIVE_DATA_REMOVED]';
       }
     });
@@ -478,20 +522,25 @@ export class AuditService extends BaseFirestoreService<AuditLogEntry> {
    * Verify audit log integrity (check for tampering)
    * This would typically include cryptographic verification in production
    */
-  async verifyIntegrity(requestingUserId: string, requestingUserRole: string): Promise<{
+  async verifyIntegrity(
+    requestingUserId: string,
+    requestingUserRole: string
+  ): Promise<{
     isValid: boolean;
     issues: string[];
     lastVerified: string;
   }> {
     if (requestingUserRole !== 'admin') {
-      throw new Error('Access denied: Only administrators can verify audit integrity');
+      throw new Error(
+        'Access denied: Only administrators can verify audit integrity'
+      );
     }
 
     // Log this integrity check
     await this.logAction(
       requestingUserId,
       'Admin User',
-      'Admin User', 
+      'Admin User',
       'admin',
       'data_integrity_check',
       'audit_logs',
@@ -502,7 +551,7 @@ export class AuditService extends BaseFirestoreService<AuditLogEntry> {
     return {
       isValid: true,
       issues: [],
-      lastVerified: new Date().toISOString()
+      lastVerified: new Date().toISOString(),
     };
   }
 }

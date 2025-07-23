@@ -8,7 +8,7 @@ export default function Register() {
   const navigate = useNavigate();
   const { signUp } = useAuth();
   const { addToast } = useToast();
-  
+
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -17,25 +17,25 @@ export default function Register() {
     firstName: '',
     lastName: '',
     phone: '',
-    householdName: ''
+    householdName: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validation
     if (formData.password !== formData.confirmPassword) {
       addToast('Passwords do not match', 'error');
       return;
     }
-    
+
     if (formData.password.length < 6) {
       addToast('Password must be at least 6 characters', 'error');
       return;
     }
 
     setLoading(true);
-    
+
     try {
       // Create member data for Firestore
       const memberData = {
@@ -44,17 +44,23 @@ export default function Register() {
         phone: formData.phone || undefined,
         household_id: '', // Will be created separately
       };
-      
+
       await signUp(formData.email, formData.password, memberData);
-      
-      addToast('Account created successfully! Please check your email to verify your account.', 'success');
+
+      addToast(
+        'Account created successfully! Please check your email to verify your account.',
+        'success'
+      );
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Registration error:', error);
       if (error.code === 'auth/email-already-in-use') {
         addToast('This email is already registered', 'error');
       } else if (error.code === 'auth/weak-password') {
-        addToast('Password is too weak. Please use a stronger password.', 'error');
+        addToast(
+          'Password is too weak. Please use a stronger password.',
+          'error'
+        );
       } else {
         addToast(error.message || 'Failed to create account', 'error');
       }
@@ -66,7 +72,7 @@ export default function Register() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
@@ -82,18 +88,24 @@ export default function Register() {
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Or{' '}
-            <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
+            <Link
+              to="/login"
+              className="font-medium text-blue-600 hover:text-blue-500"
+            >
               sign in to your existing account
             </Link>
           </p>
         </div>
-        
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             {/* Name Fields */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="firstName"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   First Name
                 </label>
                 <div className="mt-1 relative">
@@ -112,9 +124,12 @@ export default function Register() {
                   />
                 </div>
               </div>
-              
+
               <div>
-                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="lastName"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Last Name
                 </label>
                 <div className="mt-1 relative">
@@ -137,7 +152,10 @@ export default function Register() {
 
             {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Email Address
               </label>
               <div className="mt-1 relative">
@@ -160,7 +178,10 @@ export default function Register() {
 
             {/* Phone Field (Optional) */}
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="phone"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Phone Number (Optional)
               </label>
               <div className="mt-1 relative">
@@ -181,7 +202,10 @@ export default function Register() {
 
             {/* Household Name (Optional) */}
             <div>
-              <label htmlFor="householdName" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="householdName"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Household Name (Optional)
               </label>
               <div className="mt-1 relative">
@@ -202,7 +226,10 @@ export default function Register() {
 
             {/* Password Fields */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Password
               </label>
               <div className="mt-1 relative">
@@ -221,11 +248,16 @@ export default function Register() {
                   placeholder="••••••••"
                 />
               </div>
-              <p className="mt-1 text-xs text-gray-500">Must be at least 6 characters</p>
+              <p className="mt-1 text-xs text-gray-500">
+                Must be at least 6 characters
+              </p>
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="confirmPassword"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Confirm Password
               </label>
               <div className="mt-1 relative">
@@ -255,9 +287,25 @@ export default function Register() {
             >
               {loading ? (
                 <span className="flex items-center">
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                   Creating Account...
                 </span>
@@ -270,11 +318,17 @@ export default function Register() {
           <div className="text-sm text-center">
             <span className="text-gray-600">
               By creating an account, you agree to our{' '}
-              <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
+              <a
+                href="#"
+                className="font-medium text-blue-600 hover:text-blue-500"
+              >
                 Terms of Service
               </a>{' '}
               and{' '}
-              <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
+              <a
+                href="#"
+                className="font-medium text-blue-600 hover:text-blue-500"
+              >
                 Privacy Policy
               </a>
             </span>

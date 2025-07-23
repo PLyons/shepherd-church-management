@@ -3,10 +3,10 @@ export const USER_ROLES = {
   ADMIN: 'admin',
   PASTOR: 'pastor',
   MEMBER: 'member',
-  VISITOR: 'visitor'
+  VISITOR: 'visitor',
 } as const;
 
-export type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES];
+export type UserRole = (typeof USER_ROLES)[keyof typeof USER_ROLES];
 
 // Member Event Types
 export const MEMBER_EVENT_TYPES = {
@@ -16,10 +16,11 @@ export const MEMBER_EVENT_TYPES = {
   TRANSFERRED_OUT: 'transferred_out',
   DECEASED: 'deceased',
   INACTIVE: 'inactive',
-  REACTIVATED: 'reactivated'
+  REACTIVATED: 'reactivated',
 } as const;
 
-export type MemberEventType = typeof MEMBER_EVENT_TYPES[keyof typeof MEMBER_EVENT_TYPES];
+export type MemberEventType =
+  (typeof MEMBER_EVENT_TYPES)[keyof typeof MEMBER_EVENT_TYPES];
 
 // Event Types
 export const EVENT_TYPES = {
@@ -29,10 +30,10 @@ export const EVENT_TYPES = {
   YOUTH: 'youth',
   SOCIAL: 'social',
   OUTREACH: 'outreach',
-  SPECIAL: 'special'
+  SPECIAL: 'special',
 } as const;
 
-export type EventType = typeof EVENT_TYPES[keyof typeof EVENT_TYPES];
+export type EventType = (typeof EVENT_TYPES)[keyof typeof EVENT_TYPES];
 
 // Donation Types
 export const DONATION_TYPES = {
@@ -41,19 +42,20 @@ export const DONATION_TYPES = {
   BUILDING_FUND: 'building_fund',
   MISSIONS: 'missions',
   BENEVOLENCE: 'benevolence',
-  OTHER: 'other'
+  OTHER: 'other',
 } as const;
 
-export type DonationType = typeof DONATION_TYPES[keyof typeof DONATION_TYPES];
+export type DonationType = (typeof DONATION_TYPES)[keyof typeof DONATION_TYPES];
 
 // Volunteer Status
 export const VOLUNTEER_STATUS = {
   ACTIVE: 'active',
   INACTIVE: 'inactive',
-  ON_LEAVE: 'on_leave'
+  ON_LEAVE: 'on_leave',
 } as const;
 
-export type VolunteerStatus = typeof VOLUNTEER_STATUS[keyof typeof VOLUNTEER_STATUS];
+export type VolunteerStatus =
+  (typeof VOLUNTEER_STATUS)[keyof typeof VOLUNTEER_STATUS];
 
 // Schema name
 export const SCHEMA_NAME = 'churchops';
@@ -62,7 +64,7 @@ export const SCHEMA_NAME = 'churchops';
 export const STORAGE_BUCKETS = {
   SERMONS: 'sermons',
   DOCUMENTS: 'documents',
-  IMAGES: 'images'
+  IMAGES: 'images',
 } as const;
 
 // Date formats

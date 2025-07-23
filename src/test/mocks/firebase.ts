@@ -1,4 +1,4 @@
-import { vi } from 'vitest'
+import { vi } from 'vitest';
 
 // Mock Firebase App
 export const mockFirebaseApp = {
@@ -7,7 +7,7 @@ export const mockFirebaseApp = {
     projectId: 'test-project',
     apiKey: 'test-api-key',
   },
-}
+};
 
 // Mock Firestore Document Reference
 export const createMockDocRef = (path: string) => ({
@@ -19,20 +19,22 @@ export const createMockDocRef = (path: string) => ({
   update: vi.fn(),
   delete: vi.fn(),
   onSnapshot: vi.fn(),
-})
+});
 
 // Mock Firestore Collection Reference
 export const createMockCollectionRef = (path: string) => ({
   id: path.split('/').pop(),
   path,
-  doc: vi.fn((id?: string) => createMockDocRef(`${path}/${id || 'generated-id'}`)),
+  doc: vi.fn((id?: string) =>
+    createMockDocRef(`${path}/${id || 'generated-id'}`)
+  ),
   add: vi.fn(),
   get: vi.fn(),
   where: vi.fn(),
   orderBy: vi.fn(),
   limit: vi.fn(),
   onSnapshot: vi.fn(),
-})
+});
 
 // Mock Firestore Query
 export const createMockQuery = () => ({
@@ -41,25 +43,28 @@ export const createMockQuery = () => ({
   limit: vi.fn().mockReturnThis(),
   get: vi.fn(),
   onSnapshot: vi.fn(),
-})
+});
 
 // Mock Firestore Snapshot
-export const createMockDocSnapshot = (data: any = {}, exists: boolean = true) => ({
+export const createMockDocSnapshot = (
+  data: any = {},
+  exists: boolean = true
+) => ({
   id: 'test-doc-id',
   exists: () => exists,
-  data: () => exists ? data : undefined,
+  data: () => (exists ? data : undefined),
   get: (field: string) => data[field],
   ref: createMockDocRef('test-collection/test-doc-id'),
-})
+});
 
 export const createMockQuerySnapshot = (docs: any[] = []) => ({
   size: docs.length,
   empty: docs.length === 0,
   docs: docs.map((data, index) => createMockDocSnapshot(data, true)),
   forEach: (callback: (doc: any) => void) => {
-    docs.forEach((data, index) => callback(createMockDocSnapshot(data, true)))
+    docs.forEach((data, index) => callback(createMockDocSnapshot(data, true)));
   },
-})
+});
 
 // Mock Firebase Auth User
 export const createMockAuthUser = (overrides: any = {}) => ({
@@ -83,7 +88,7 @@ export const createMockAuthUser = (overrides: any = {}) => ({
   reload: vi.fn(),
   toJSON: vi.fn(),
   ...overrides,
-})
+});
 
 // Mock Firebase Auth
 export const mockFirebaseAuth = {
@@ -98,7 +103,7 @@ export const mockFirebaseAuth = {
   createUserWithEmailAndPassword: vi.fn(),
   updatePassword: vi.fn(),
   updateProfile: vi.fn(),
-}
+};
 
 // Mock Firestore
 export const mockFirestore = {
@@ -113,7 +118,7 @@ export const mockFirestore = {
   })),
   enableNetwork: vi.fn(),
   disableNetwork: vi.fn(),
-}
+};
 
 // Mock Firebase Storage
 export const mockFirebaseStorage = {
@@ -127,24 +132,24 @@ export const mockFirebaseStorage = {
     updateMetadata: vi.fn(),
     listAll: vi.fn(),
   })),
-}
+};
 
 // Mock Timestamp
 export const mockTimestamp = {
-  now: vi.fn(() => ({ 
-    seconds: Math.floor(Date.now() / 1000), 
+  now: vi.fn(() => ({
+    seconds: Math.floor(Date.now() / 1000),
     nanoseconds: 0,
     toDate: () => new Date(),
   })),
-  fromDate: vi.fn((date: Date) => ({ 
-    seconds: Math.floor(date.getTime() / 1000), 
+  fromDate: vi.fn((date: Date) => ({
+    seconds: Math.floor(date.getTime() / 1000),
     nanoseconds: 0,
     toDate: () => date,
   })),
-}
+};
 
 // Reset all mocks
 export const resetFirebaseMocks = () => {
-  vi.clearAllMocks()
-  mockFirebaseAuth.currentUser = null
-}
+  vi.clearAllMocks();
+  mockFirebaseAuth.currentUser = null;
+};
