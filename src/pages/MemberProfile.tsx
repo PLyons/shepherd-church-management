@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
 import { Member, MemberEvent } from '../types';
 import { useAuth } from '../hooks/useUnifiedAuth';
 import { 

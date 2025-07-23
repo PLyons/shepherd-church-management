@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 
 export default function AuthCallback() {
@@ -12,63 +11,43 @@ export default function AuthCallback() {
   useEffect(() => {
     console.log('AuthCallback component mounted!');
     console.log('Current URL:', window.location.href);
-    console.log('Hash:', window.location.hash);
     console.log('Search params:', window.location.search);
-    
-    // Don't do quick redirect for password reset - we need to establish session first
-    // The full handleAuthCallback will handle the redirect after session is set
     
     const handleAuthCallback = async () => {
       try {
-        // Parse the URL hash for tokens (Supabase returns them in the fragment)
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const type = hashParams.get('type');
-        const error_description = hashParams.get('error_description');
+        // Parse URL search parameters for Firebase auth actions
+        const mode = searchParams.get('mode');
+        const oobCode = searchParams.get('oobCode');
+        const continueUrl = searchParams.get('continueUrl');
         
-        // Check if Supabase already handled the session
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        console.log('Checking for existing session:', { 
-          hasSession: !!session,
-          type,
-          user: session?.user?.email 
-        });
-        
-        // Debug logging
         console.log('AuthCallback Debug:', {
-          hash: window.location.hash,
-          hashParams: Object.fromEntries(hashParams),
-          searchParams: Object.fromEntries(searchParams),
-          type,
-          session: session ? 'present' : 'missing'
+          mode,
+          oobCode: !!oobCode,
+          continueUrl
         });
         
-        if (error_description) {
-          setError(decodeURIComponent(error_description.replace(/\+/g, ' ')));
-          setLoading(false);
-          return;
-        }
-
-        // If we have a session and it's a password reset, redirect to set-password
-        if (session && type === 'recovery') {
-          console.log('Password reset flow detected with session, redirecting to /set-password');
-          localStorage.removeItem('password_reset_requested');
-          navigate('/set-password', { replace: true });
-          return;
-        }
-
-        // If we have a session but no recovery type, go to dashboard
-        if (session && !type) {
-          console.log('Regular auth flow, redirecting to /dashboard');
-          navigate('/dashboard', { replace: true });
-          return;
-        }
-        
-        // If no session was found, show error
-        if (!session) {
-          console.log('No session found after Supabase processing');
-          setError('Authentication failed - no session created');
-          setLoading(false);
+        // Handle different Firebase auth modes
+        switch (mode) {
+          case 'resetPassword':
+            console.log('Password reset flow detected, redirecting to /set-password');
+            navigate(`/set-password?mode=${mode}&oobCode=${oobCode}`, { replace: true });
+            return;
+          
+          case 'verifyEmail':
+            console.log('Email verification flow detected');
+            // For now, just redirect to login with a message
+            navigate('/login?message=Email verification completed', { replace: true });
+            return;
+            
+          case 'signIn':
+            console.log('Sign-in flow detected, redirecting to dashboard');
+            navigate('/dashboard', { replace: true });
+            return;
+            
+          default:
+            console.log('Unknown or no mode, redirecting to login');
+            navigate('/login', { replace: true });
+            return;
         }
       } catch (err) {
         console.error('Auth callback error:', err);

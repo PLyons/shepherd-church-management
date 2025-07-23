@@ -12,8 +12,8 @@ The Authentication & User Management module is the foundation of the Shepherd Ch
 - **User Profile Management**: Basic profile information and preferences
 
 ### Security Features
-- **Supabase Authentication**: Industry-standard auth provider
-- **Row Level Security (RLS)**: Database-level access control
+- **Firebase Authentication**: Industry-standard auth provider
+- **Firestore Security Rules**: Database-level access control
 - **Role-Based Permissions**: Feature access based on user role
 - **Secure Session Management**: Automatic session handling
 
@@ -48,7 +48,7 @@ The Authentication & User Management module is the foundation of the Shepherd Ch
 - Dashboard displays user-appropriate content
 
 **Test Data**:
-- Valid email: `admin@test.com`
+- Valid email: `john.smith@email.com`
 - Invalid email: `nonexistent@test.com`
 - Malformed email: `invalid-email-format`
 
@@ -139,7 +139,7 @@ The Authentication & User Management module is the foundation of the Shepherd Ch
 - No access denied errors
 
 **Test Data**:
-- Admin credentials: `admin@test.com` / `password123`
+- Admin credentials: `john.smith@email.com` (use password reset to set password)
 
 **Pass Criteria**: Admin role has full system access without restrictions
 
@@ -184,7 +184,7 @@ The Authentication & User Management module is the foundation of the Shepherd Ch
 - Ministry workflow functions properly
 
 **Test Data**:
-- Pastor credentials: `pastor@test.com` / `password123`
+- Pastor credentials: `michael.johnson@email.com` (use password reset to set password)
 
 **Pass Criteria**: Pastor role has ministry access without admin privileges
 
@@ -230,7 +230,7 @@ The Authentication & User Management module is the foundation of the Shepherd Ch
 - Self-service features work properly
 
 **Test Data**:
-- Member credentials: `member@test.com` / `password123`
+- Member credentials: `sarah.smith@email.com` (use password reset to set password)
 
 **Pass Criteria**: Member role has community access without administrative privileges
 

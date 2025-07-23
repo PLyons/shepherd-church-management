@@ -24,7 +24,6 @@
     "security:check": "npm audit --audit-level=moderate"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.39.0",
     "date-fns": "^3.0.0",
     "firebase": "^12.0.0",
     "lucide-react": "^0.294.0",

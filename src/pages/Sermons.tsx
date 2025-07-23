@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useUnifiedAuth';
 import { useToast } from '../contexts/ToastContext';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
@@ -76,13 +75,10 @@ export default function Sermons() {
   const fetchSermons = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('sermons')
-        .select(`
-          *,
-          created_by_member:members!created_by(first_name, last_name)
-        `)
-        .order('date_preached', { ascending: false });
+      // TODO: Replace with Firebase Firestore query
+      // Temporarily disabled during Firebase migration
+      const data = [];
+      const error = null;
 
       if (error) throw error;
       
@@ -101,51 +97,9 @@ export default function Sermons() {
 
   const uploadFile = async (file: File): Promise<string | null> => {
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `sermons/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('media')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
-
-      if (uploadError) {
-        // If bucket doesn't exist, create it
-        if (uploadError.message.includes('The resource was not found')) {
-          const { error: bucketError } = await supabase.storage
-            .createBucket('media', {
-              public: true,
-              allowedMimeTypes: ['audio/*', 'video/*'],
-              fileSizeLimit: 52428800 // 50MB
-            });
-
-          if (bucketError && !bucketError.message.includes('already exists')) {
-            throw bucketError;
-          }
-
-          // Retry upload after creating bucket
-          const { error: retryError } = await supabase.storage
-            .from('media')
-            .upload(filePath, file, {
-              cacheControl: '3600',
-              upsert: false
-            });
-
-          if (retryError) throw retryError;
-        } else {
-          throw uploadError;
-        }
-      }
-
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('media')
-        .getPublicUrl(filePath);
-
-      return publicUrl;
+      // TODO: Implement Firebase Storage upload
+      // For now, file upload is disabled during Firebase migration
+      throw new Error('File upload temporarily disabled - Firebase Storage implementation needed');
     } catch (err) {
       console.error('Upload error:', err);
       throw err;
@@ -183,11 +137,9 @@ export default function Sermons() {
         created_by: user?.id,
       };
 
-      const { error } = await supabase
-        .from('sermons')
-        .insert(sermonData);
-
-      if (error) throw error;
+      // TODO: Replace with Firebase Firestore insert
+      // Temporarily disabled during Firebase migration
+      throw new Error('Sermon creation temporarily disabled - Firebase Firestore implementation needed');
 
       setUploadProgress(100);
       showToast('Sermon uploaded successfully', 'success');

@@ -1,5 +1,7 @@
 # Beta Testing Master Checklist
 
+> ⚠️ **IMPORTANT**: Several features are NOT yet implemented in Firebase. Sections marked with ⚠️ should be SKIPPED. See [CURRENT-IMPLEMENTATION-STATUS.md](./CURRENT-IMPLEMENTATION-STATUS.md) for details.
+
 ## Overview
 This checklist ensures comprehensive testing coverage of the Shepherd Church Management System. Check off items as completed and note any issues or concerns in the notes section.
 
@@ -16,8 +18,8 @@ This checklist ensures comprehensive testing coverage of the Shepherd Church Man
 - [ ] **Test Data Verification**
   - [ ] Sample members visible (14 test members)
   - [ ] Sample households accessible (6 households)
-  - [ ] Sample events displayed
-  - [ ] Test donations present
+  - [ ] Sample events displayed (3 events)
+  - [ ] ~~Test donations present~~ (NOT IMPLEMENTED)
   - **Notes:** _____________________
 
 - [ ] **Browser Compatibility Check**
@@ -189,7 +191,7 @@ This checklist ensures comprehensive testing coverage of the Shepherd Church Man
   - [ ] Event deletion works
   - **Issues Found:** _____________________
 
-## Donation Management (Admin/Pastor Only)
+## Donation Management (Admin/Pastor Only) ⚠️ NOT YET IMPLEMENTED IN FIREBASE - SKIP THIS SECTION
 
 ### Donation Entry
 - [ ] **Donation Recording**
@@ -221,7 +223,7 @@ This checklist ensures comprehensive testing coverage of the Shepherd Church Man
   - [ ] Donor reports accessible
   - **Issues Found:** _____________________
 
-## Sermon Management
+## Sermon Management ⚠️ NOT YET IMPLEMENTED IN FIREBASE - SKIP THIS SECTION
 
 ### Sermon Archive
 - [ ] **Public Sermon Library**
@@ -253,7 +255,7 @@ This checklist ensures comprehensive testing coverage of the Shepherd Church Man
   - [ ] Scripture references save
   - **Issues Found:** _____________________
 
-## Volunteer Management
+## Volunteer Management ⚠️ NOT YET IMPLEMENTED IN FIREBASE - SKIP THIS SECTION
 
 ### Volunteer Opportunities
 - [ ] **Volunteer List**

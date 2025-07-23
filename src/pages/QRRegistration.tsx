@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
 import { useToast } from '../contexts/ToastContext';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { QrCode, UserPlus, CheckCircle, AlertCircle } from 'lucide-react';

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useUnifiedAuth';
-import { supabase } from '../lib/supabase';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 
 export default function SetPassword() {
@@ -12,29 +11,30 @@ export default function SetPassword() {
   const [isSuccess, setIsSuccess] = useState(false);
   
   const navigate = useNavigate();
-  const { updatePassword } = useAuth();
+  const { confirmPasswordReset } = useAuth();
   
-  // Check session on mount
+  // Check authentication on mount
   useEffect(() => {
-    const checkSession = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      console.log('Session check in SetPassword:', {
-        hasSession: !!session,
-        sessionError: error,
-        user: session?.user?.email,
+    const checkAuth = async () => {
+      // Check URL parameters for password reset flow
+      const urlParams = new URLSearchParams(window.location.search);
+      const mode = urlParams.get('mode');
+      const oobCode = urlParams.get('oobCode');
+      
+      console.log('Password reset check:', {
+        mode,
+        hasOobCode: !!oobCode,
         url: window.location.href
       });
       
-      // Check if we still have hash params (session might not be established yet)
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      const hasTokens = hashParams.get('access_token') || hashParams.get('refresh_token');
-      console.log('Hash params check:', {
-        hasTokens,
-        type: hashParams.get('type')
-      });
+      // If not a password reset flow, redirect to login
+      if (mode !== 'resetPassword' || !oobCode) {
+        console.log('Invalid password reset parameters, redirecting to login');
+        navigate('/login');
+      }
     };
-    checkSession();
-  }, []);
+    checkAuth();
+  }, [navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,53 +56,33 @@ export default function SetPassword() {
     }
 
     try {
-      console.log('Attempting to update password...');
+      console.log('Attempting to update password with Firebase...');
       
-      // First check if we have a session
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      // Get the oobCode from URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const oobCode = urlParams.get('oobCode');
       
-      if (!session) {
-        console.error('No session found - cannot update password');
-        setMessage('Auth session missing! Please request a new password reset.');
+      if (!oobCode) {
+        setMessage('Invalid password reset link. Please request a new password reset.');
         setIsSuccess(false);
         setLoading(false);
-        
-        // Redirect to login after 3 seconds
-        setTimeout(() => {
-          window.location.href = '/login';
-        }, 3000);
         return;
       }
       
-      console.log('Session found, attempting password update for:', session.user.email);
+      // Use the confirmPasswordReset method from useAuth hook
+      await confirmPasswordReset(oobCode, password);
       
-      // Since Supabase is hanging, let's show a message and redirect
-      console.log('Due to Supabase service issues, assuming password update will complete');
-      
-      // Show success message immediately
-      setMessage('Password reset initiated! For safety, please try logging in with your new password.');
+      setMessage('Password updated successfully! Redirecting to login...');
       setIsSuccess(true);
       
-      // Try the update in the background (don't await)
-      supabase.auth.updateUser({ password }).then(
-        ({ data, error }) => {
-          console.log('Background update completed:', { data, error });
-        }
-      ).catch(err => {
-        console.log('Background update error:', err);
-      });
-      
-      // Redirect after 3 seconds
+      // Redirect to login after 2 seconds
       setTimeout(() => {
-        console.log('Redirecting to login page');
-        // Use window.location for a hard redirect
-        window.location.href = '/login';
-      }, 3000);
+        navigate('/login');
+      }, 2000);
       
-      // Don't set loading to false here - let the redirect happen
     } catch (err: any) {
-      console.error('Unexpected error updating password:', err);
-      setMessage(err.message || 'An unexpected error occurred');
+      console.error('Error updating password:', err);
+      setMessage(err.message || 'Failed to update password. Please try again or request a new password reset.');
       setIsSuccess(false);
       setLoading(false);
     }

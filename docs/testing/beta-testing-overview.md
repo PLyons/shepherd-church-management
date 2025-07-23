@@ -1,8 +1,10 @@
 # Beta Testing Overview - Shepherd Church Management System
 
+> ⚠️ **IMPORTANT**: This system is partially migrated to Firebase. Some features (Donations, Sermons, Volunteers) are NOT yet implemented. Please refer to [CURRENT-IMPLEMENTATION-STATUS.md](./CURRENT-IMPLEMENTATION-STATUS.md) for details on what to test.
+
 ## Executive Summary
 
-This document outlines the comprehensive beta testing strategy for the Shepherd Church Management System, a complete React + TypeScript church management platform built with Supabase. The system includes member management, event coordination, financial tracking, sermon archiving, and volunteer scheduling capabilities.
+This document outlines the comprehensive beta testing strategy for the Shepherd Church Management System, a complete React + TypeScript church management platform built with Firebase. The system is designed to include member management, event coordination, financial tracking, sermon archiving, and volunteer scheduling capabilities, though not all features are currently implemented.
 
 ## Testing Objectives
 
@@ -25,19 +27,19 @@ This document outlines the comprehensive beta testing strategy for the Shepherd 
 
 ### Technology Stack
 - **Frontend**: React 18 + TypeScript + Vite + TailwindCSS
-- **Backend**: Supabase (PostgreSQL, Auth, Storage, RLS)
+- **Backend**: Firebase (Firestore, Auth, Storage, Security Rules)
 - **Authentication**: Magic Link + QR Registration
-- **File Storage**: Supabase Storage (50MB limit per file)
+- **File Storage**: Firebase Storage (50MB limit per file)
 - **Deployment**: Production-ready with local development environment
 
 ### Core Modules
 1. **Authentication & User Management** - Magic link login, QR registration, role management
 2. **Member Management** - Directory, profiles, search, CRUD operations
 3. **Household Management** - Family relationships, address management
-4. **Event Management** - Calendar, RSVP, attendance, public/private events
-5. **Donation Management** - Recording, reporting, 990 forms, CSV export
-6. **Sermon Management** - Upload, streaming, archive, search
-7. **Volunteer Management** - Scheduling, assignments, personal commitments
+4. **Event Management** - Calendar, basic event display, public/private events (RSVP partially implemented)
+5. **Donation Management** - ⚠️ NOT YET IMPLEMENTED IN FIREBASE (UI still uses Supabase)
+6. **Sermon Management** - ⚠️ NOT YET IMPLEMENTED IN FIREBASE
+7. **Volunteer Management** - ⚠️ NOT YET IMPLEMENTED IN FIREBASE (UI still uses Supabase)
 8. **Dashboard & Reporting** - Real-time stats, quick actions, activity feeds
 
 ## User Roles & Permissions

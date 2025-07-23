@@ -94,6 +94,206 @@ Beta testing framework is in `docs/testing/`:
 
 For unit tests, check for test files alongside components (`.test.ts` or `.spec.ts` files).
 
+## Serena Integration - Advanced AI Coding Assistant
+
+Serena is an advanced coding agent toolkit that has been installed in this project to enhance AI-powered development capabilities. It provides semantic code analysis, intelligent symbol navigation, and powerful editing tools using Language Server Protocol (LSP).
+
+### Serena Overview
+
+**Location**: `serena/` directory  
+**Purpose**: Provides AI agents with IDE-level capabilities for semantic code understanding and editing  
+**Key Advantage**: Uses Language Server Protocol for precise, symbol-based code operations vs text-based approaches
+
+### Quick Start Commands
+
+```bash
+# Navigate to Serena directory
+cd serena
+
+# Activate Serena environment 
+export PATH="$HOME/.local/bin:$PATH" && source .venv/bin/activate
+
+# Start MCP server for Claude Code integration
+uv run serena-mcp-server
+
+# Start MCP server in SSE mode (HTTP-based)
+uv run serena-mcp-server --transport sse --port 9999
+
+# List all available tools
+cd scripts && python print_tool_overview.py
+
+# Index a project for faster performance
+uv run serena project index /path/to/project
+```
+
+### Core Capabilities
+
+**1. Semantic Code Analysis**
+- Symbol-level understanding using LSP
+- Cross-reference finding and navigation
+- Intelligent code completion and suggestions
+- Multi-language support (Python, TypeScript, Go, Rust, Java, C#, PHP, etc.)
+
+**2. Advanced Code Editing**
+- Symbol-based insertions and replacements
+- Line-level precise editing
+- Regex-based find/replace operations
+- Maintains code structure and formatting
+
+**3. Project Management**
+- Intelligent project onboarding and analysis
+- Memory persistence across sessions
+- Configuration management per project
+- Integration with version control systems
+
+**4. AI Agent Integration**
+- Model Context Protocol (MCP) server for Claude integration
+- Agno framework support for any LLM
+- Tool-based architecture for easy extension
+- Context and mode switching for different workflows
+
+### Key Tools Available
+
+**File & Project Operations:**
+- `activate_project` - Activate project by name/path
+- `list_dir` - Directory listing with recursion
+- `create_text_file` - Create/overwrite files
+- `read_file` - Read file contents
+- `find_file` - Find files by patterns
+- `search_for_pattern` - Project-wide pattern search
+
+**Symbol & Code Analysis:**
+- `find_symbol` - Global symbol search with filtering
+- `get_symbols_overview` - Top-level symbols in files/directories
+- `find_referencing_symbols` - Find symbol references
+- `replace_symbol_body` - Replace complete symbol definitions
+
+**Code Editing:**
+- `insert_at_line` - Insert content at specific lines
+- `insert_before_symbol`/`insert_after_symbol` - Symbol-relative insertions
+- `replace_lines` - Replace line ranges with new content
+- `replace_regex` - Regex-based replacements
+- `delete_lines` - Delete line ranges
+
+**Memory & Knowledge Management:**
+- `write_memory` - Store project knowledge
+- `read_memory` - Retrieve stored knowledge
+- `list_memories` - Show available memories
+- `delete_memory` - Remove memories
+- `onboarding` - Automated project analysis
+
+**Workflow & Meta Operations:**
+- `execute_shell_command` - Run shell commands
+- `switch_modes` - Change operational modes
+- `get_current_config` - Show current configuration
+- `restart_language_server` - Restart LSP server
+- `summarize_changes` - Generate change summaries
+
+### Configuration System
+
+**Contexts** (Environment types):
+- `desktop-app` - For Claude Desktop integration (default)
+- `agent` - For autonomous agent operation  
+- `ide-assistant` - For IDE integration (VSCode, Cursor, etc.)
+
+**Modes** (Operational patterns):
+- `interactive` - Conversational workflow
+- `editing` - Direct code modification focus
+- `planning` - Analysis and planning emphasis
+- `one-shot` - Single-response tasks
+- `onboarding` - Project setup and learning
+
+**Configuration Hierarchy** (highest precedence first):
+1. Command-line arguments
+2. Project-specific `.serena/project.yml`
+3. User config `~/.serena/serena_config.yml`
+4. Active contexts and modes
+
+### Integration Patterns
+
+**With Claude Code:**
+```bash
+# Add Serena to Claude Code from project directory
+claude mcp add serena -- uvx --from git+https://github.com/oraios/serena serena-mcp-server --context ide-assistant --project $(pwd)
+
+# Load instructions in Claude Code session
+/mcp__serena__initial_instructions
+```
+
+**With Other MCP Clients:**
+Configure MCP client to run:
+```bash
+uvx --from git+https://github.com/oraios/serena serena-mcp-server --context ide-assistant
+```
+
+**For Multi-Language Projects:**
+Serena automatically detects and configures appropriate language servers for:
+- **Python** (Pyright)
+- **TypeScript/JavaScript** (TSServer) 
+- **Go** (gopls)
+- **Rust** (rust-analyzer)
+- **Java** (Eclipse JDT)
+- **C#** (OmniSharp/C# LSP)
+- **PHP** (Intelephense)
+- **C/C++** (clangd)
+- **Elixir** (NextLS)
+- **Clojure** (clojure-lsp)
+- **Terraform** (terraform-ls)
+
+### Best Practices
+
+**Project Setup:**
+1. Start from clean git state for change tracking
+2. Enable appropriate git autocrlf settings on Windows
+3. Ensure good test coverage for verification
+4. Structure code with clear modularity
+
+**Workflow Optimization:**
+1. Use onboarding for new projects to create memories
+2. Switch modes based on task type (planning vs editing)
+3. Leverage memory system for complex, multi-session work
+4. Use symbol-based operations over line-based when possible
+
+**Performance Tips:**
+1. Index large projects using `uv run serena project index`
+2. Use context filtering to limit tool scope
+3. Be frugal with token usage - avoid reading unnecessary symbols
+4. Restart language servers if performance degrades
+
+### Troubleshooting
+
+**Common Issues:**
+- Language server crashes → Use `restart_language_server` tool
+- Hanging processes → Use web dashboard to shut down cleanly  
+- Symbol not found → Check if project is properly indexed
+- Performance issues → Try reindexing or restarting language servers
+
+**Debug Resources:**
+- Web dashboard: `http://localhost:24282/dashboard/`
+- Log levels configurable in `serena_config.yml`
+- LSP communication tracing available
+- Tool execution timeouts configurable
+
+### Advanced Features
+
+**Memory System:**
+- Markdown-based storage in `.serena/memories/`
+- Project-specific knowledge persistence
+- Contextual retrieval based on relevance
+- Manual and automated memory creation
+
+**Dashboard & Monitoring:**
+- Real-time web dashboard for session monitoring
+- Tool usage statistics and performance metrics
+- Log viewing and session management
+- Process control and cleanup
+
+**Extension Points:**
+- Custom contexts and modes via YAML configuration
+- Tool framework for adding new capabilities
+- Integration with external agent frameworks
+- Language server adapter pattern for new languages
+
 ## PRP Task Format
 
 Each task file follows the **PRP structure**: Purpose, Requirements, Procedure

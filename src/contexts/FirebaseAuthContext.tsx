@@ -11,7 +11,8 @@ import {
   signInWithEmailLink,
   updatePassword as firebaseUpdatePassword,
   EmailAuthProvider,
-  reauthenticateWithCredential
+  reauthenticateWithCredential,
+  confirmPasswordReset
 } from 'firebase/auth';
 import { auth, db } from '../lib/firebase';
 import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
@@ -27,6 +28,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
   updatePassword: (currentPassword: string, newPassword: string) => Promise<void>;
+  confirmPasswordReset: (oobCode: string, newPassword: string) => Promise<void>;
   updateMember: (updates: Partial<Member>) => Promise<void>;
 }
 
@@ -156,6 +158,10 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
     await firebaseUpdatePassword(user, newPassword);
   };
 
+  const confirmPasswordResetWithCode = async (oobCode: string, newPassword: string) => {
+    await confirmPasswordReset(auth, oobCode, newPassword);
+  };
+
   const updateMember = async (updates: Partial<Member>) => {
     if (!user) {
       throw new Error('No authenticated user');
@@ -183,6 +189,7 @@ export function FirebaseAuthProvider({ children }: { children: React.ReactNode }
     signOut: logout,
     resetPassword,
     updatePassword,
+    confirmPasswordReset: confirmPasswordResetWithCode,
     updateMember
   };
 

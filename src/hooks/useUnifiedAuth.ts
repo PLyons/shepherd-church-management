@@ -1,12 +1,7 @@
-import { useAuth as useSupabaseAuth } from '../contexts/AuthContext';
 import { useAuth as useFirebaseAuth } from '../contexts/FirebaseAuthContext';
-import { isFirebaseEnabled } from '../config/features';
 
 // This hook provides a unified interface for authentication
-// regardless of whether we're using Supabase or Firebase
+// Since we've fully migrated to Firebase, this now just returns Firebase auth
 export const useAuth = () => {
-  if (isFirebaseEnabled()) {
-    return useFirebaseAuth();
-  }
-  return useSupabaseAuth();
+  return useFirebaseAuth();
 };

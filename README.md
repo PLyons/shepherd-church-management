@@ -1,6 +1,6 @@
 # Shepherd Church Management System
 
-A comprehensive React + TypeScript church management system built with Vite and Supabase.
+A comprehensive React + TypeScript church management system built with Vite and Firebase.
 
 ## Features
 
@@ -14,20 +14,20 @@ A comprehensive React + TypeScript church management system built with Vite and 
 
 - **Frontend**: React 18 + TypeScript + Vite
 - **Styling**: TailwindCSS
-- **Backend**: Supabase (PostgreSQL, Auth, Storage)
+- **Backend**: Firebase (Firestore, Auth, Storage)
 - **Routing**: React Router v6
 - **Forms**: React Hook Form
 - **Icons**: Lucide React
+- **Testing**: Vitest + React Testing Library + MSW
 
 ## Getting Started
 
 ### Prerequisites
 - Node.js 18+
-- Supabase account (free tier)
+- Firebase account (free tier)
+- Git
 
 ### Quick Start
-
-#### Option A: Local Development (Recommended)
 
 1. **Clone Repository**
    ```bash
@@ -38,64 +38,59 @@ A comprehensive React + TypeScript church management system built with Vite and 
 2. **Install Dependencies**
    ```bash
    npm install
-   npm install -g @supabase/cli
    ```
 
-3. **Start Local Development**
+3. **Configure Firebase**
+   - Create a Firebase project at https://console.firebase.google.com
+   - Enable Authentication (Email/Password and Email Link)
+   - Enable Firestore Database
+   - Enable Storage
+   - Copy `.env.example` to `.env.local` and add your Firebase config (optional - defaults are provided)
+
+4. **Start Development Server**
    ```bash
-   # Copy local development environment
-   cp .env.local.development .env.local
-   
-   # Start Supabase local stack
-   supabase start
-   
-   # Start React development server
    npm run dev
    ```
 
-4. **Access Services**
+5. **Access Application**
    - **App**: http://localhost:5173
-   - **Database**: http://localhost:54323 (Supabase Studio)
-   - **Login**: admin@test.com / password123
-
-#### Option B: Hosted Development
-
-1. **Configure Environment**
-   - Copy `.env.local.hosted-backup` to `.env.local`
-   - Uses hosted Supabase instance
-
-2. **Start Development Server**
-   ```bash
-   npm run dev
-   ```
+   - **Firebase Console**: https://console.firebase.google.com
+   - **Default Admin**: Set up using `npm run setup-admin`
 
 ### Database Setup
 
-#### Local Development
-- **Automatic**: Database schema and seed data applied automatically with `supabase start`
-- **Reset**: Use `supabase db reset` for fresh database with test data
-- **Studio**: Access database at http://localhost:54323
+#### Firebase Setup
+1. **Initialize Firestore**
+   - Firebase automatically creates collections on first use
+   - Security rules are defined in `firestore.rules`
 
-#### Hosted Development
-- Schema deployed to hosted Supabase instance
-- Access via https://app.supabase.com/project/aroglkyqegrxbphbfwgj
-- Manual seed data required
+2. **Seed Data**
+   ```bash
+   # Seed test data into Firebase
+   npm run seed:firebase
+   ```
+
+3. **Create Admin User**
+   ```bash
+   # Set up initial admin user
+   npm run setup-admin
+   ```
 
 ### Current Status
 
 **✅ Phase 1 Complete:** Environment Setup
 - React + TypeScript + Vite configured
 - Component structure scaffolded
-- Supabase connection established
+- Firebase connection established
 
 **✅ Phase 2 Complete:** Database Schema  
-- 10 core tables created with relationships
+- 10 core collections created with relationships
 - Households, members, events, donations, volunteers
-- All tables accessible via Supabase Dashboard
+- All collections accessible via Firebase Console
 
 **✅ Phase 3 Complete:** Authentication & Security
-- Email and Magic Link authentication enabled
-- Row Level Security (RLS) policies configured
+- Email/Password and Email Link authentication enabled
+- Firebase Security Rules configured
 - AuthContext and route protection implemented
 - Role-based access control (admin, pastor, member)
 
@@ -105,14 +100,13 @@ A comprehensive React + TypeScript church management system built with Vite and 
 - React Router with authentication protection
 - Mobile-friendly layout and navigation
 
-**✅ Phase 5 Complete:** Member Profiles + Local Development
+**✅ Phase 5 Complete:** Member Profiles
 - Member directory with search and pagination implemented
 - Individual member profile pages with editing capabilities
 - Household profile system with member relationships
 - Member creation form with role-based access control
-- **Docker-based local development environment setup**
-- **Automated database seeding with 14 test members**
-- **Local vs hosted development workflow established**
+- **Firebase integration with real-time updates**
+- **Automated database seeding with test members**
 - All member management features tested and functional
 
 **✅ Phase 6 Complete:** Event Management
@@ -124,14 +118,14 @@ A comprehensive React + TypeScript church management system built with Vite and 
 **✅ Phase 7 Complete:** Donations System
 - **Donation entry form with member search and autocomplete**
 - **Advanced donation filtering by date, category, member, amount, and method**
-- **990-style tax-compliant annual financial reporting**
+- **Tax-compliant annual financial reporting**
 - **CSV export functionality for donation history**
 - **Role-based access control for donor visibility**
 - **Anonymous donation support**
 - **Real-time statistics and reporting dashboards**
 
 **✅ Phase 8 Complete:** Sermons Module
-- **Sermon upload form with Supabase Storage integration**
+- **Sermon upload form with Firebase Storage integration**
 - **Support for audio and video files up to 50MB**
 - **Public sermon library with search and filtering**
 - **Collapsible sermon notes and scripture references**
@@ -159,6 +153,15 @@ A comprehensive React + TypeScript church management system built with Vite and 
 ## 🎉 **PROJECT COMPLETE!**
 
 The Shepherd Church Management System is now fully implemented with all core features and advanced functionality. The system provides a complete digital solution for modern church operations including member management, event coordination, financial tracking, sermon archiving, and volunteer coordination.
+
+### 🔄 **Firebase Migration Complete**
+
+The project has been successfully migrated from Supabase to Firebase, providing:
+- **Real-time data synchronization** across all clients
+- **Offline support** with Firebase's built-in caching
+- **Scalable NoSQL database** with Firestore
+- **Integrated authentication** with multiple sign-in methods
+- **Secure file storage** for sermons and documents
 
 ### ✅ **BETA TESTING FRAMEWORK READY**
 
@@ -191,16 +194,25 @@ The Shepherd Church Management System is now fully implemented with all core fea
 - `npm run lint` - Run ESLint
 - `npm run format` - Format code with Prettier
 - `npm run preview` - Preview production build
+- `npm run test` - Run test suite
+- `npm run test:coverage` - Run tests with coverage report
+- `npm run seed:firebase` - Seed Firebase with test data
+- `npm run setup-admin` - Create initial admin user
+- `npm run typecheck` - Run TypeScript type checking
 
 ## Project Structure
 
 - `src/components/` - Reusable UI components organized by feature
 - `src/pages/` - Top-level page components
-- `src/services/` - API service functions
+- `src/services/` - Service layer with Firebase implementations
+  - `src/services/firebase/` - Firebase-specific service implementations
 - `src/types/` - TypeScript type definitions
+  - `firestore.ts` - Firestore schema types
+  - `index.ts` - Core domain models
 - `src/hooks/` - Custom React hooks
 - `src/contexts/` - React contexts for global state
-- `supabase/` - Database migrations and functions
+- `src/lib/` - External library configurations (Firebase)
+- `src/test/` - Testing utilities and mocks
 - `docs/` - Project documentation and guides
   - `docs/testing/` - **Beta testing framework and documentation**
     - `beta-testing-overview.md` - Complete testing methodology
@@ -210,6 +222,8 @@ The Shepherd Church Management System is now fully implemented with all core fea
     - `github/` - GitHub Issues integration templates
     - `logging/` - Issue logging and feedback collection
 - `tasks/` - Implementation task files organized by phase
+- `firestore.rules` - Firebase Security Rules
+- `.serena/` - Serena AI coding assistant configuration
 
 ## Beta Testing Documentation
 
