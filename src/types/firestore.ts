@@ -496,3 +496,25 @@ export const SUBCOLLECTIONS = {
   EVENT_RSVPS: 'rsvps',
   EVENT_ATTENDANCE: 'attendance',
 } as const;
+
+// ============================================================================
+// PAGINATION TYPES
+// ============================================================================
+
+export interface PaginatedResult<T> {
+  data: T[];
+  totalCount: number;
+  currentPage: number;
+  totalPages: number;
+  pageSize: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+export interface PaginationOptions {
+  page?: number;
+  limit?: number;
+  search?: string;
+  orderBy?: string;
+  orderDirection?: 'asc' | 'desc';
+}

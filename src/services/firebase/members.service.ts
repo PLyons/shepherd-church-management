@@ -205,6 +205,146 @@ export class MembersService extends BaseFirestoreService<
     }));
   }
 
+  /**
+   * Get paginated member directory with proper pagination support
+   */
+  async getMemberDirectoryPaginated(options?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: 'active' | 'inactive' | 'visitor';
+    role?: 'admin' | 'pastor' | 'member';
+    householdId?: string;
+    orderBy?: 'name' | 'email' | 'status' | 'role';
+    orderDirection?: 'asc' | 'desc';
+  }): Promise<{
+    data: Member[];
+    totalCount: number;
+    currentPage: number;
+    totalPages: number;
+    pageSize: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  }> {
+    const page = options?.page || 1;
+    const limit = options?.limit || 10;
+
+    // Build where conditions
+    const whereConditions: {
+      field: string;
+      operator: any;
+      value: any;
+    }[] = [];
+
+    // Add filters
+    if (options?.status) {
+      whereConditions.push({
+        field: 'memberStatus',
+        operator: '==',
+        value: options.status,
+      });
+    }
+
+    if (options?.role) {
+      whereConditions.push({
+        field: 'role',
+        operator: '==',
+        value: options.role,
+      });
+    }
+
+    if (options?.householdId) {
+      whereConditions.push({
+        field: 'householdId',
+        operator: '==',
+        value: options.householdId,
+      });
+    }
+
+    // Build order by
+    const orderBy = {
+      field:
+        options?.orderBy === 'name'
+          ? 'fullName'
+          : options?.orderBy || 'fullName',
+      direction: (options?.orderDirection || 'asc') as 'asc' | 'desc',
+    };
+
+    // For search, we need to handle it differently since Firestore doesn't support
+    // text search natively. We'll get all matching records and filter client-side
+    // then paginate the results
+    if (options?.search) {
+      // Get all matching records for search
+      const searchResults = await this.getMemberDirectory({
+        search: options.search,
+        status: options?.status,
+        role: options?.role,
+        householdId: options?.householdId,
+        orderBy: options?.orderBy,
+        orderDirection: options?.orderDirection,
+        limit: 1000, // Reasonable upper limit for search
+      });
+
+      // Calculate pagination on client side for search results
+      const totalCount = searchResults.length;
+      const totalPages = Math.ceil(totalCount / limit);
+      const startIndex = (page - 1) * limit;
+      const endIndex = startIndex + limit;
+      const data = searchResults.slice(startIndex, endIndex);
+
+      return {
+        data,
+        totalCount,
+        currentPage: page,
+        totalPages,
+        pageSize: limit,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      };
+    }
+
+    // Use server-side pagination for non-search queries
+    const result = await this.getPaginated({
+      page,
+      limit,
+      where: whereConditions,
+      orderBy,
+    });
+
+    // Populate household names for the current page
+    const householdIds = [
+      ...new Set(result.data.map((m) => m.householdId).filter(Boolean)),
+    ];
+    const householdMap = new Map<string, string>();
+
+    if (householdIds.length > 0) {
+      try {
+        const households = await Promise.all(
+          householdIds.map((id) => this.householdsService.getById(id))
+        );
+
+        households.forEach((household, index) => {
+          if (household) {
+            householdMap.set(householdIds[index], household.familyName);
+          }
+        });
+      } catch (error) {
+        console.error('Error fetching household names:', error);
+      }
+    }
+
+    // Enrich data with household names
+    const enrichedData = result.data.map((member) => ({
+      ...member,
+      householdName: householdMap.get(member.householdId) || undefined,
+    }));
+
+    return {
+      ...result,
+      data: enrichedData,
+    };
+  }
+
   // ============================================================================
   // HOUSEHOLD RELATIONSHIP MANAGEMENT
   // ============================================================================

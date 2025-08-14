@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { firebaseService } from '../services/firebase';
 import { Member } from '../types';
 import { useAuth } from '../hooks/useUnifiedAuth';
-import { Search, User, Users, Eye, Plus, Trash2 } from 'lucide-react';
+import { Search, User, Users, Eye, Plus, Trash2, X } from 'lucide-react';
 import { MemberForm } from '../components/members/MemberForm';
 
 export default function Members() {
@@ -11,6 +11,7 @@ export default function Members() {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeSearchTerm, setActiveSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [showForm, setShowForm] = useState(false);
@@ -18,36 +19,30 @@ export default function Members() {
 
   useEffect(() => {
     fetchMembers();
-  }, [currentPage, searchTerm]);
+  }, [currentPage, activeSearchTerm]);
 
   const fetchMembers = async () => {
-    console.log('Fetching members with options:', { searchTerm, itemsPerPage });
+    console.log('Fetching members with pagination:', { 
+      activeSearchTerm, 
+      currentPage, 
+      itemsPerPage 
+    });
     setLoading(true);
     try {
-      // Use Firebase service to get member directory
+      // Use Firebase service to get paginated member directory
       const options = {
-        search: searchTerm || undefined,
-        limit: Math.max(itemsPerPage, 50), // Increase limit to catch more members
+        page: currentPage,
+        limit: itemsPerPage,
+        search: activeSearchTerm || undefined,
         orderBy: 'name' as const,
         orderDirection: 'asc' as const,
       };
 
-      const data = await firebaseService.members.getMemberDirectory(options);
-      console.log('Fetched members:', data.length, 'members');
-      console.log(
-        'Members data:',
-        data.map((m) => ({
-          name: `${m.firstName} ${m.lastName}`,
-          email: m.email,
-          household: m.householdName,
-        }))
-      );
+      const result = await firebaseService.members.getMemberDirectoryPaginated(options);
+      console.log('Fetched paginated members:', result);
 
-      setMembers(data);
-
-      // For now, set total count to the length of returned data
-      // In a production app, you'd implement proper pagination with counts
-      setTotalCount(data.length);
+      setMembers(result.data);
+      setTotalCount(result.totalCount);
     } catch (error) {
       console.error('Error fetching members:', error);
     } finally {
@@ -55,12 +50,21 @@ export default function Members() {
     }
   };
 
+  // Show pagination if there are multiple pages
   const totalPages = Math.ceil(totalCount / itemsPerPage);
+  const showPagination = totalPages > 1;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    setActiveSearchTerm(searchTerm.trim());
     setCurrentPage(1);
-    fetchMembers();
+    // fetchMembers will be called by useEffect when activeSearchTerm or currentPage changes
+  };
+
+  const handleClearSearch = () => {
+    setSearchTerm('');
+    setActiveSearchTerm('');
+    setCurrentPage(1);
   };
 
   const handleAddMember = async (newMember: Member) => {
@@ -137,7 +141,7 @@ export default function Members() {
         </h1>
         <div className="flex items-center gap-4">
           <div className="text-sm text-gray-600">
-            {totalCount} total members
+            {activeSearchTerm ? `${totalCount} results` : `${totalCount} total members`}
           </div>
           {canAddMembers && (
             <>
@@ -159,24 +163,52 @@ export default function Members() {
         </div>
       </div>
 
-      <form onSubmit={handleSearch} className="flex gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search by name or email..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
-        <button
-          type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-        >
-          Search
-        </button>
-      </form>
+      <div className="space-y-2">
+        <form onSubmit={handleSearch} className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search by name or email..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch(e)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+          <button
+            type="submit"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
+            Search
+          </button>
+          {activeSearchTerm && (
+            <button
+              type="button"
+              onClick={handleClearSearch}
+              className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 flex items-center gap-2"
+            >
+              <X className="h-4 w-4" />
+              Clear
+            </button>
+          )}
+        </form>
+        
+        {activeSearchTerm && (
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <span>Showing results for:</span>
+            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md font-medium">
+              "{activeSearchTerm}"
+            </span>
+            <button
+              onClick={handleClearSearch}
+              className="text-blue-600 hover:text-blue-800 underline"
+            >
+              Clear filter
+            </button>
+          </div>
+        )}
+      </div>
 
       <div className="bg-white shadow-sm rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
@@ -280,7 +312,7 @@ export default function Members() {
               No members found
             </h3>
             <p className="mt-1 text-sm text-gray-500">
-              {searchTerm
+              {activeSearchTerm
                 ? 'Try adjusting your search terms.'
                 : 'No members have been added yet.'}
             </p>
@@ -288,12 +320,12 @@ export default function Members() {
         )}
       </div>
 
-      {totalPages > 1 && (
+      {showPagination && (
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <button
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
+              disabled={currentPage === 1 || loading}
               className="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Previous
@@ -305,7 +337,7 @@ export default function Members() {
               onClick={() =>
                 setCurrentPage(Math.min(totalPages, currentPage + 1))
               }
-              disabled={currentPage === totalPages}
+              disabled={currentPage === totalPages || loading}
               className="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next

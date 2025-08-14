@@ -304,6 +304,154 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
     }
   }
 
+  /**
+   * Get paginated results with total count
+   */
+  async getPaginated(options: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    orderBy?: {
+      field: string;
+      direction: 'asc' | 'desc';
+    };
+    where?: {
+      field: string;
+      operator: any;
+      value: any;
+    }[];
+  }): Promise<{
+    data: TClient[];
+    totalCount: number;
+    currentPage: number;
+    totalPages: number;
+    pageSize: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  }> {
+    const page = options.page || 1;
+    const pageLimit = options.limit || 10;
+    const offset = (page - 1) * pageLimit;
+
+    console.log(`BaseService.getPaginated: ${this.collectionName}, page=${page}, limit=${pageLimit}, offset=${offset}`);
+
+    try {
+      // Get total count first
+      const countOptions = {
+        where: options.where,
+      };
+      const totalCount = await this.count(countOptions);
+      console.log(`BaseService.getPaginated: totalCount=${totalCount}`);
+
+      // If no data or page is beyond available data, return empty
+      if (totalCount === 0 || offset >= totalCount) {
+        return {
+          data: [],
+          totalCount,
+          currentPage: page,
+          totalPages: Math.ceil(totalCount / pageLimit),
+          pageSize: pageLimit,
+          hasNextPage: false,
+          hasPreviousPage: page > 1,
+        };
+      }
+
+      // Build base query constraints (without pagination)
+      const baseConstraints: QueryConstraint[] = [];
+
+      // Add where clauses
+      if (options.where) {
+        options.where.forEach((condition) => {
+          baseConstraints.push(
+            where(condition.field, condition.operator, condition.value)
+          );
+        });
+      }
+
+      // Add ordering (required for consistent pagination)
+      if (options.orderBy) {
+        baseConstraints.push(
+          orderBy(options.orderBy.field, options.orderBy.direction)
+        );
+      } else {
+        // Default ordering by document ID for consistent pagination
+        baseConstraints.push(orderBy('__name__'));
+      }
+
+      let dataQuery: any;
+
+      if (offset === 0) {
+        // First page - simple query with limit
+        dataQuery = query(
+          this.getCollectionRef(),
+          ...baseConstraints,
+          limit(pageLimit)
+        );
+      } else {
+        // Subsequent pages - need to skip offset documents
+        console.log(`BaseService.getPaginated: Skipping ${offset} documents`);
+        
+        // Get all documents up to the start of this page to find the startAfter document
+        const skipQuery = query(
+          this.getCollectionRef(),
+          ...baseConstraints,
+          limit(offset)
+        );
+        
+        const skipSnapshot = await getDocs(skipQuery);
+        console.log(`BaseService.getPaginated: Skip query returned ${skipSnapshot.docs.length} docs`);
+        
+        if (skipSnapshot.docs.length < offset) {
+          // Not enough documents to reach this page
+          return {
+            data: [],
+            totalCount,
+            currentPage: page,
+            totalPages: Math.ceil(totalCount / pageLimit),
+            pageSize: pageLimit,
+            hasNextPage: false,
+            hasPreviousPage: page > 1,
+          };
+        }
+
+        // Start after the last document in the skip set
+        const lastSkipDoc = skipSnapshot.docs[skipSnapshot.docs.length - 1];
+        dataQuery = query(
+          this.getCollectionRef(),
+          ...baseConstraints,
+          startAfter(lastSkipDoc),
+          limit(pageLimit)
+        );
+      }
+
+      // Execute the data query
+      const querySnapshot = await getDocs(dataQuery);
+      console.log(`BaseService.getPaginated: Data query returned ${querySnapshot.docs.length} docs`);
+      
+      const data = querySnapshot.docs.map((doc) =>
+        this.documentToClient(doc.id, doc.data() as TDocument)
+      );
+
+      const totalPages = Math.ceil(totalCount / pageLimit);
+
+      const result = {
+        data,
+        totalCount,
+        currentPage: page,
+        totalPages,
+        pageSize: pageLimit,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      };
+
+      console.log(`BaseService.getPaginated: Returning result:`, result);
+      return result;
+    } catch (error) {
+      console.error(`Error getting paginated ${this.collectionName} documents:`, error);
+      throw this.handleFirestoreError(error);
+    }
+  }
+
   // ============================================================================
   // REAL-TIME SUBSCRIPTIONS
   // ============================================================================

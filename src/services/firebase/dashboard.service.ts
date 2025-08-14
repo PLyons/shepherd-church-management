@@ -19,14 +19,6 @@ export interface DashboardStats {
   totalMembers?: number;
   activeMembers?: number;
   totalHouseholds?: number;
-  upcomingEvents?: number;
-  thisWeekEvents?: number;
-  myUpcomingCommitments?: number;
-  // Financial stats (role-restricted)
-  monthlyDonations?: number;
-  totalDonations?: number;
-  myDonations?: number;
-  myDonationsThisYear?: number;
 }
 
 export interface ActivityItem {
@@ -39,11 +31,7 @@ export interface ActivityItem {
 }
 
 export interface PersonalDashboardInfo {
-  upcomingEvents: any[];
-  myRSVPs: any[];
-  myDonations: any[];
   householdInfo: any;
-  myVolunteerCommitments: any[];
 }
 
 export interface QuickAction {
@@ -58,15 +46,11 @@ export interface QuickAction {
 
 export class DashboardService {
   private membersService: MembersService;
-  private eventsService: EventsService;
   private householdsService: HouseholdsService;
-  private donationsService: DonationsService;
 
   constructor() {
     this.membersService = new MembersService();
-    this.eventsService = new EventsService();
     this.householdsService = new HouseholdsService();
-    this.donationsService = new DonationsService();
   }
 
   // ============================================================================
@@ -99,48 +83,23 @@ export class DashboardService {
     try {
       console.log('DashboardService: Starting admin dashboard data fetch');
 
-      // Add timeout to prevent hanging
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(
-          () => reject(new Error('Dashboard data fetch timeout')),
-          30000
-        ); // 30 second timeout
-      });
-
-      const dataPromise = Promise.all([
+      const [memberStats, householdStats] = await Promise.all([
         this.membersService.getStatistics().catch((err) => {
           console.error('Members stats error:', err);
           return { total: 0, active: 0, inactive: 0, visitors: 0 };
-        }),
-        this.eventsService.getStatistics().catch((err) => {
-          console.error('Events stats error:', err);
-          return { upcoming: 0, total: 0 };
         }),
         this.householdsService.getStatistics().catch((err) => {
           console.error('Households stats error:', err);
           return { total: 0 };
         }),
-        this.donationsService.getDonationStats(userId, 'admin').catch((err) => {
-          console.error('Donations stats error:', err);
-          return { monthlyTotal: 0, totalAmount: 0 };
-        }),
       ]);
-
-      const [memberStats, eventStats, householdStats, donationStats] =
-        await Promise.race([dataPromise, timeoutPromise]);
 
       console.log('DashboardService: Statistics fetched successfully');
 
-      const [upcomingEvents, recentActivity] = await Promise.all([
-        this.eventsService.getUpcomingEvents(5, false).catch((err) => {
-          console.error('Upcoming events error:', err);
-          return [];
-        }),
-        this.getAdminActivity().catch((err) => {
-          console.error('Admin activity error:', err);
-          return [];
-        }),
-      ]);
+      const recentActivity = await this.getAdminActivity().catch((err) => {
+        console.error('Admin activity error:', err);
+        return [];
+      });
 
       console.log('DashboardService: Admin dashboard data complete');
 
@@ -149,14 +108,9 @@ export class DashboardService {
           totalMembers: memberStats.total,
           activeMembers: memberStats.active,
           totalHouseholds: householdStats.total,
-          upcomingEvents: eventStats.upcoming,
-          thisWeekEvents: eventStats.upcoming, // TODO: Add week filtering
-          // Financial data available for admins
-          monthlyDonations: donationStats.monthlyTotal,
-          totalDonations: donationStats.totalAmount,
         },
         recentActivity,
-        upcomingEvents,
+        upcomingEvents: [],
         quickActions: this.getQuickActions('admin'),
       };
     } catch (error) {
@@ -169,26 +123,21 @@ export class DashboardService {
    * Pastor Dashboard - Pastoral care focus
    */
   private async getPastorDashboard(userId: string): Promise<DashboardData> {
-    const [memberStats, eventStats, donationStats] = await Promise.all([
+    const [memberStats, householdStats] = await Promise.all([
       this.membersService.getStatistics(),
-      this.eventsService.getStatistics(),
-      this.donationsService.getDonationStats(userId, 'pastor'),
+      this.householdsService.getStatistics(),
     ]);
 
-    const upcomingEvents = await this.eventsService.getUpcomingEvents(5, false);
     const recentActivity = await this.getPastorActivity();
 
     return {
       stats: {
         totalMembers: memberStats.total,
         activeMembers: memberStats.active,
-        upcomingEvents: eventStats.upcoming,
-        thisWeekEvents: eventStats.upcoming, // TODO: Add week filtering
-        // Aggregate financial data only - no individual donations
-        monthlyDonations: donationStats.monthlyTotal,
+        totalHouseholds: householdStats.total,
       },
       recentActivity,
-      upcomingEvents,
+      upcomingEvents: [],
       quickActions: this.getQuickActions('pastor'),
     };
   }
@@ -203,26 +152,16 @@ export class DashboardService {
       throw new Error('Member not found');
     }
 
-    // Get only public events for regular members
-    const upcomingEvents = await this.eventsService.getUpcomingEvents(5, true);
-
-    // Get personal information and donation stats
-    const [personalInfo, donationStats, recentActivity] = await Promise.all([
+    // Get personal information and activity
+    const [personalInfo, recentActivity] = await Promise.all([
       this.getMemberPersonalInfo(userId),
-      this.donationsService.getDonationStats(userId, 'member'),
       this.getMemberActivity(userId),
     ]);
 
     return {
-      stats: {
-        upcomingEvents: upcomingEvents.length,
-        myUpcomingCommitments: 0, // TODO: Add when volunteer service is implemented
-        // Personal financial data only - SECURE: Only member's own data
-        myDonations: donationStats.totalAmount,
-        myDonationsThisYear: donationStats.yearToDateTotal,
-      },
+      stats: {},
       recentActivity,
-      upcomingEvents,
+      upcomingEvents: [],
       personalInfo,
       quickActions: this.getQuickActions('member'),
     };
@@ -248,27 +187,8 @@ export class DashboardService {
       ? await this.householdsService.getById(member.householdId)
       : null;
 
-    // Get member's event RSVPs
-    // TODO: Implement RSVP service to get user's RSVPs
-    const myRSVPs: any[] = [];
-
-    // Get personal donations - SECURE: Only user's own donations
-    const myDonations = await this.donationsService.getDonationsByRole(
-      userId,
-      'member',
-      userId
-    );
-
-    // Get volunteer commitments
-    // TODO: Implement volunteer service to get user's commitments
-    const myVolunteerCommitments: any[] = [];
-
     return {
-      upcomingEvents: await this.eventsService.getUpcomingEvents(3, true),
-      myRSVPs,
-      myDonations,
       householdInfo: household,
-      myVolunteerCommitments,
     };
   }
 
@@ -348,16 +268,6 @@ export class DashboardService {
    */
   private getQuickActions(role: 'admin' | 'pastor' | 'member'): QuickAction[] {
     const allActions: QuickAction[] = [
-      // Admin-only actions
-      {
-        id: 'create-event',
-        title: 'Create Event',
-        description: 'Schedule a new church event',
-        route: '/events/new',
-        icon: 'plus',
-        color: 'blue',
-        allowedRoles: ['admin', 'pastor'],
-      },
       {
         id: 'add-member',
         title: 'Add Member',
@@ -368,50 +278,31 @@ export class DashboardService {
         allowedRoles: ['admin', 'pastor'],
       },
       {
-        id: 'record-donation',
-        title: 'Record Donation',
-        description: 'Add a new donation record',
-        route: '/donations',
-        icon: 'dollar-sign',
-        color: 'purple',
-        allowedRoles: ['admin'],
-      },
-      {
         id: 'manage-roles',
         title: 'Manage Roles',
         description: 'Assign user roles and permissions',
-        route: '/admin/roles',
+        route: '/settings',
         icon: 'shield',
         color: 'red',
         allowedRoles: ['admin'],
       },
-      // Member actions
       {
         id: 'update-profile',
         title: 'Update Profile',
         description: 'Update your personal information',
-        route: '/profile',
+        route: '/members/' + (role === 'member' ? 'me' : ''),
         icon: 'user',
         color: 'blue',
         allowedRoles: ['member', 'pastor', 'admin'],
       },
       {
-        id: 'view-events',
-        title: 'Browse Events',
-        description: 'See upcoming church events',
-        route: '/events',
-        icon: 'calendar',
+        id: 'view-households',
+        title: 'View Households',
+        description: 'Manage household information',
+        route: '/households',
+        icon: 'home',
         color: 'green',
-        allowedRoles: ['member', 'pastor', 'admin'],
-      },
-      {
-        id: 'my-donations',
-        title: 'My Donations',
-        description: 'View your donation history',
-        route: '/donations/my-donations',
-        icon: 'heart',
-        color: 'purple',
-        allowedRoles: ['member', 'pastor', 'admin'],
+        allowedRoles: ['admin', 'pastor'],
       },
     ];
 

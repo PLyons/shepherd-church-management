@@ -53,6 +53,11 @@ lerna-debug.log*
 # Misc
 *.pem
 
+# Test credentials and dummy data
+DUMMY_CREDENTIALS.txt
+**/dummy-credentials.*
+**/test-credentials.*
+
 # Serena AI assistant
 serena/
 .serena/
