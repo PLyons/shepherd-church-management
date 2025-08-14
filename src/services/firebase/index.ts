@@ -7,12 +7,10 @@
 export { BaseFirestoreService } from './base.service';
 export { MembersService, membersService } from './members.service';
 export { HouseholdsService, householdsService } from './households.service';
-export { EventsService, eventsService } from './events.service';
 
 // Import classes for FirebaseService constructor
 import { MembersService } from './members.service';
 import { HouseholdsService } from './households.service';
-import { EventsService } from './events.service';
 
 // Service instances for direct use (lazy loading to avoid circular deps)
 export const firebase = {
@@ -21,9 +19,6 @@ export const firebase = {
   },
   get households() {
     return householdsService;
-  },
-  get events() {
-    return eventsService;
   },
 } as const;
 
@@ -35,12 +30,10 @@ export const firebase = {
 export class FirebaseService {
   public readonly members: MembersService;
   public readonly households: HouseholdsService;
-  public readonly events: EventsService;
 
   constructor() {
     this.members = new MembersService();
     this.households = new HouseholdsService();
-    this.events = new EventsService();
   }
 
   // ============================================================================
@@ -203,36 +196,31 @@ export class FirebaseService {
   async getDashboardStats(): Promise<{
     members: any;
     households: any;
-    events: any;
     overview: {
       totalMembers: number;
       totalHouseholds: number;
-      upcomingEvents: number;
-      recentActivity: string[];
+        recentActivity: string[];
     };
   }> {
-    const [memberStats, householdStats, eventStats] = await Promise.all([
+    const [memberStats, householdStats] = await Promise.all([
       this.members.getStatistics(),
       this.households.getStatistics(),
-      this.events.getStatistics(),
     ]);
 
     const overview = {
       totalMembers: memberStats.total,
       totalHouseholds: householdStats.total,
-      upcomingEvents: eventStats.upcoming,
       recentActivity: [
         // Add recent activity items here
         'Recent registrations',
-        'Upcoming events',
-        'Recent RSVPs',
+        'Member activities',
+        'Recent updates',
       ],
     };
 
     return {
       members: memberStats,
       households: householdStats,
-      events: eventStats,
       overview,
     };
   }
@@ -242,40 +230,36 @@ export class FirebaseService {
   // ============================================================================
 
   /**
-   * Global search across members, households, and events
+   * Global search across members and households
    */
   async globalSearch(
     searchTerm: string,
     options?: {
       includeMembers?: boolean;
       includeHouseholds?: boolean;
-      includeEvents?: boolean;
       limit?: number;
     }
   ): Promise<{
     members: any[];
     households: any[];
-    events: any[];
     total: number;
   }> {
     const {
       includeMembers = true,
       includeHouseholds = true,
-      includeEvents = true,
       limit = 20,
     } = options || {};
 
     const [members, households, events] = await Promise.all([
       includeMembers ? this.members.search(searchTerm, { limit }) : [],
       includeHouseholds ? this.households.search(searchTerm, { limit }) : [],
-      includeEvents ? this.events.searchEvents(searchTerm) : [],
+      [],  // events removed
     ]);
 
     return {
       members: members.slice(0, limit),
       households: households.slice(0, limit),
-      events: events.slice(0, limit),
-      total: members.length + households.length + events.length,
+      total: members.length + households.length,
     };
   }
 
@@ -335,15 +319,13 @@ export class FirebaseService {
   async getCollectionCounts(): Promise<{
     members: number;
     households: number;
-    events: number;
   }> {
-    const [members, households, events] = await Promise.all([
+    const [members, households] = await Promise.all([
       this.members.count(),
       this.households.count(),
-      this.events.count(),
     ]);
 
-    return { members, households, events };
+    return { members, households };
   }
 
   // ============================================================================

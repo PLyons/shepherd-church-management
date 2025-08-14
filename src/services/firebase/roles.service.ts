@@ -1,6 +1,5 @@
 import { BaseFirestoreService } from './base.service';
 import { MembersService } from './members.service';
-import { auditService } from './audit.service';
 import { doc, updateDoc, collection, addDoc } from 'firebase/firestore';
 
 // ============================================================================

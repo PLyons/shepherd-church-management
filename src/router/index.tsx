@@ -11,14 +11,6 @@ import Members from '../pages/Members';
 import MemberProfile from '../pages/MemberProfile';
 import Households from '../pages/Households';
 import HouseholdProfile from '../pages/HouseholdProfile';
-import Events from '../pages/Events';
-import EventDetail from '../pages/EventDetail';
-import EventForm from '../pages/EventForm';
-import Donations from '../pages/Donations';
-import Reports from '../pages/Reports';
-import Sermons from '../pages/Sermons';
-import Volunteers from '../pages/Volunteers';
-import MyVolunteering from '../pages/MyVolunteering';
 import Settings from '../pages/Settings';
 import QRRegistration from '../pages/QRRegistration';
 import AuthCallback from '../pages/AuthCallback';
@@ -79,58 +71,6 @@ export const router = createBrowserRouter(
               <HouseholdProfile />
             </RoleGuard>
           ),
-        },
-        {
-          path: 'events',
-          element: <Events />,
-        },
-        {
-          path: 'events/new',
-          element: (
-            <RoleGuard allowedRoles={['admin', 'pastor']}>
-              <EventForm />
-            </RoleGuard>
-          ),
-        },
-        {
-          path: 'events/:id',
-          element: <EventDetail />,
-        },
-        {
-          path: 'events/:id/edit',
-          element: (
-            <RoleGuard allowedRoles={['admin', 'pastor']}>
-              <EventForm />
-            </RoleGuard>
-          ),
-        },
-        {
-          path: 'donations',
-          element: (
-            <RoleGuard allowedRoles={['admin', 'pastor']}>
-              <Donations />
-            </RoleGuard>
-          ),
-        },
-        {
-          path: 'reports',
-          element: (
-            <RoleGuard allowedRoles={['admin', 'pastor']}>
-              <Reports />
-            </RoleGuard>
-          ),
-        },
-        {
-          path: 'sermons',
-          element: <Sermons />,
-        },
-        {
-          path: 'volunteers',
-          element: <Volunteers />,
-        },
-        {
-          path: 'my-volunteering',
-          element: <MyVolunteering />,
         },
         {
           path: 'settings',

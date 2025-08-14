@@ -20,20 +20,6 @@ const navigationItems = [
     href: '/households',
     roles: ['admin', 'pastor', 'member'],
   },
-  { name: 'Events', href: '/events', roles: ['admin', 'pastor', 'member'] },
-  { name: 'Donations', href: '/donations', roles: ['admin', 'pastor'] },
-  { name: 'Reports', href: '/reports', roles: ['admin', 'pastor'] },
-  { name: 'Sermons', href: '/sermons', roles: ['admin', 'pastor', 'member'] },
-  {
-    name: 'Volunteers',
-    href: '/volunteers',
-    roles: ['admin', 'pastor', 'member'],
-  },
-  {
-    name: 'My Schedule',
-    href: '/my-volunteering',
-    roles: ['admin', 'pastor', 'member'],
-  },
   { name: 'Settings', href: '/settings', roles: ['admin', 'pastor'] },
 ];
 

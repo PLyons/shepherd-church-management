@@ -9,16 +9,9 @@
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx,json,css,md}\"",
-    "migrate": "tsx src/scripts/run-migration.ts",
-    "seed": "tsx src/scripts/run-seed.ts",
+    "seed": "tsx src/scripts/seed-firebase-data.ts",
     "create-admin": "tsx src/scripts/create-admin-user.ts",
     "setup-admin": "tsx src/scripts/setup-admin.ts",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage",
-    "test:watch": "vitest watch",
-    "test:ci": "vitest run --reporter=verbose",
     "typecheck": "tsc --noEmit",
     "build:staging": "tsc && vite build --mode staging",
     "security:check": "npm audit --audit-level=moderate"
@@ -37,11 +30,6 @@
     "react-router-dom": "^6.20.0"
   },
   "devDependencies": {
-    "@faker-js/faker": "^9.9.0",
-    "@mswjs/data": "^0.16.2",
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.3.0",
-    "@testing-library/user-event": "^14.6.1",
     "@types/node-fetch": "^2.6.12",
     "@types/react": "^18.2.43",
     "@types/react-calendar": "^3.9.0",
@@ -49,22 +37,17 @@
     "@typescript-eslint/eslint-plugin": "^6.14.0",
     "@typescript-eslint/parser": "^6.14.0",
     "@vitejs/plugin-react": "^4.2.1",
-    "@vitest/coverage-v8": "^3.2.4",
-    "@vitest/ui": "^3.2.4",
     "autoprefixer": "^10.4.16",
     "dotenv": "^17.2.0",
     "eslint": "^8.55.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
-    "happy-dom": "^18.0.1",
-    "msw": "^2.10.4",
     "node-fetch": "^3.3.2",
     "postcss": "^8.4.32",
     "prettier": "^3.1.1",
     "tailwindcss": "^3.3.0",
     "tsx": "^4.20.3",
     "typescript": "^5.2.2",
-    "vite": "^5.0.8",
-    "vitest": "^3.2.4"
+    "vite": "^5.0.8"
   }
 }

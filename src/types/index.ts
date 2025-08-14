@@ -1,41 +1,5 @@
 // ============================================================================
-// LEGACY SUPABASE TYPES (for backward compatibility)
-// ============================================================================
-
-export interface SupabaseMember {
-  id: string;
-  household_id: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone?: string;
-  birthdate?: string;
-  gender?: 'Male' | 'Female';
-  role: 'admin' | 'pastor' | 'member';
-  member_status: 'active' | 'inactive' | 'visitor';
-  joined_at: string;
-  created_at: string;
-  updated_at: string;
-  household?: SupabaseHousehold;
-}
-
-export interface SupabaseHousehold {
-  id: string;
-  family_name: string;
-  address_line1?: string;
-  address_line2?: string;
-  city?: string;
-  state?: string;
-  postal_code?: string;
-  country?: string;
-  primary_contact_id?: string;
-  created_at: string;
-  updated_at: string;
-  members?: SupabaseMember[];
-}
-
-// ============================================================================
-// UNIFIED TYPES (work with both Supabase and Firebase)
+// CORE TYPES - FIREBASE-BASED
 // ============================================================================
 
 export interface Member {
@@ -74,10 +38,6 @@ export interface Household {
   id: string;
   familyName: string;
 
-  // Standardization fields
-  normalizedName?: string; // Lowercase, trimmed version for uniqueness checks
-  status?: 'pending' | 'approved'; // Admin approval status
-  createdBy?: string; // UID of the member who created this household
 
   // Address Information (unified structure)
   address?: {
@@ -89,13 +49,6 @@ export interface Household {
     country?: string;
   };
 
-  // Legacy address fields for backward compatibility
-  addressLine1?: string;
-  addressLine2?: string;
-  city?: string;
-  state?: string;
-  postalCode?: string;
-  country?: string;
 
   // Contact Information
   primaryContactId?: string;

@@ -4,64 +4,75 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Shepherd is a comprehensive Church Management System built with React, TypeScript, and Vite. The project is currently migrating from Supabase to Firebase for backend services.
+Shepherd is a Church Management System built with React, TypeScript, and Vite, focusing on core membership management functionality. The project uses Firebase for all backend services.
 
 ## Development Commands
 
 ```bash
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
+# Development
+npm run dev             # Start development server
+npm run build           # Build for production
+npm run build:staging   # Build for staging environment
+npm run preview         # Preview production build
 
 # Code quality checks - ALWAYS run before completing tasks
-npm run lint
-npm run format
+npm run lint            # Run ESLint
+npm run format          # Format with Prettier
+npm run typecheck       # TypeScript type checking
+npm run security:check  # Security audit
+
 
 # Database operations
 npm run migrate         # Run migrations
-npm run seed           # Seed test data
-npm run seed:firebase  # Seed Firebase with test data
+npm run seed            # Seed test data
+npm run create-admin    # Create admin user
+npm run setup-admin     # Setup initial admin
 ```
 
 ## Architecture & Key Patterns
 
 ### Service Layer Architecture
-The codebase uses a service layer pattern with dual backend support during migration:
-- `src/services/` - Main service layer with abstract interfaces
-- `src/services/firebase/` - Firebase-specific implementations
-- Environment variable `VITE_USE_FIREBASE` controls which backend is active
+The codebase uses a Firebase-based service layer pattern:
+- `src/services/firebase/` - Firebase service implementations
+- Core services: members, households, roles
+- All services extend BaseFirestoreService for consistent patterns
 
 ### Component Organization
 Components are organized by feature in `src/components/`:
-- Each feature folder contains related components, hooks, and utilities
-- Common components in `src/components/common/`
+- `members/` - Member management components
+- `households/` - Household management components
+- `auth/` - Authentication and role guards
+- `admin/` - Administrative functions (role management)
+- `dashboard/` - Dashboard views by role
+- `common/` - Shared UI components
 - Page-level components in `src/pages/`
 
 ### Type Definitions
 All TypeScript types are centralized in `src/types/`:
-- `index.ts` - Core domain models (Member, Household, Event, etc.)
-- `api.ts` - API response types
-- `supabase.ts` - Database schema types
+- `index.ts` - Core domain models (Member, Household)
 - `firestore.ts` - Firebase/Firestore schema types
+- Clean, Firebase-focused type definitions
+
+### Data Management Patterns
+- **Firestore Converters**: `src/utils/firestore-converters.ts` - Type-safe Firestore document conversion
+- **Service Layer**: Firebase services with consistent CRUD patterns
+- **Real-time Updates**: Firestore listeners for live data synchronization
+- **Role-based Data Access**: Security enforced at service layer
 
 ### Authentication & Authorization
 The system uses a role-based access control (RBAC) system with three primary roles:
-- `admin` - Full system access including financial data, user management, and system settings
-- `pastor` - Access to member information for pastoral care, event management, and aggregate reports
-- `member` - Limited access to own data, public events, and basic directory information
+- `admin` - Full system access including member management, household management, and system settings
+- `pastor` - Access to member information for pastoral care, household management
+- `member` - Limited access to own data and basic directory information
 
-**Critical Security Principle**: Members should only see their own financial data (donations) and limited information about other members. Full implementation details are documented in the Security & Roles section below.
+**Critical Security Principle**: Members should only see their own data and limited information about other members. Role-based access is enforced at both the component and service level.
 
 ### Context Providers
 Three main contexts manage global state:
 - `AuthContext` - Authentication and user state
 - `ThemeContext` - Dark/light theme
 - `ToastContext` - Toast notifications
+
 
 ## Code Standards
 - Follow **Prettier** formatting defaults
@@ -78,221 +89,56 @@ Three main contexts manage global state:
 - Firebase Security Rules must be enforced for all user data access
 - All database changes must be done via Firebase service layer and Firestore
 
-## Firebase Migration Context
+## Project Status
 
-The project is actively migrating from Supabase to Firebase. When working on features:
-1. Check if the feature has been migrated by looking for Firebase service implementations
-2. New features should be implemented using Firebase services only
-3. Maintain the service abstraction layer to keep components backend-agnostic
+**🎯 CORE FOUNDATION COMPLETE**: Shepherd has been stripped back to focus on core membership management functionality.
 
-## Testing Approach
+**Current Implementation:**
+- Member management with full CRUD operations
+- Household management with family relationships
+- Role-based access control (admin, pastor, member)
+- Firebase Authentication integration
+- Dashboard views by role
+- QR-based member onboarding and magic link authentication
 
-Beta testing framework is in `docs/testing/`:
-- `beta-testing-guide.md` - User testing instructions
-- `test-scenarios.md` - Comprehensive test cases
-- `testing-checklist.md` - Feature verification checklist
+**Features Removed for Reimplementation:**
+- Event management and RSVP system
+- Donation tracking and financial reports
+- Sermon archive and media management
+- Volunteer scheduling system
 
-For unit tests, check for test files alongside components (`.test.ts` or `.spec.ts` files).
+**Current Focus**: Methodical reimplementation of features according to PRD specifications. All development uses Firebase services exclusively.
 
-## Serena Integration - Advanced AI Coding Assistant
 
-Serena is an advanced coding agent toolkit that has been installed in this project to enhance AI-powered development capabilities. It provides semantic code analysis, intelligent symbol navigation, and powerful editing tools using Language Server Protocol (LSP).
+## Serena Integration - AI Coding Assistant
 
-### Serena Overview
+Serena is an advanced coding agent toolkit installed in `serena/` directory that provides semantic code analysis and IDE-level capabilities using Language Server Protocol (LSP).
 
-**Location**: `serena/` directory  
-**Purpose**: Provides AI agents with IDE-level capabilities for semantic code understanding and editing  
-**Key Advantage**: Uses Language Server Protocol for precise, symbol-based code operations vs text-based approaches
-
-### Quick Start Commands
-
+### Key Integration Commands
 ```bash
-# Navigate to Serena directory
-cd serena
-
-# Activate Serena environment 
-export PATH="$HOME/.local/bin:$PATH" && source .venv/bin/activate
-
-# Start MCP server for Claude Code integration
-uv run serena-mcp-server
-
-# Start MCP server in SSE mode (HTTP-based)
-uv run serena-mcp-server --transport sse --port 9999
-
-# List all available tools
-cd scripts && python print_tool_overview.py
-
-# Index a project for faster performance
-uv run serena project index /path/to/project
-```
-
-### Core Capabilities
-
-**1. Semantic Code Analysis**
-- Symbol-level understanding using LSP
-- Cross-reference finding and navigation
-- Intelligent code completion and suggestions
-- Multi-language support (Python, TypeScript, Go, Rust, Java, C#, PHP, etc.)
-
-**2. Advanced Code Editing**
-- Symbol-based insertions and replacements
-- Line-level precise editing
-- Regex-based find/replace operations
-- Maintains code structure and formatting
-
-**3. Project Management**
-- Intelligent project onboarding and analysis
-- Memory persistence across sessions
-- Configuration management per project
-- Integration with version control systems
-
-**4. AI Agent Integration**
-- Model Context Protocol (MCP) server for Claude integration
-- Agno framework support for any LLM
-- Tool-based architecture for easy extension
-- Context and mode switching for different workflows
-
-### Key Tools Available
-
-**File & Project Operations:**
-- `activate_project` - Activate project by name/path
-- `list_dir` - Directory listing with recursion
-- `create_text_file` - Create/overwrite files
-- `read_file` - Read file contents
-- `find_file` - Find files by patterns
-- `search_for_pattern` - Project-wide pattern search
-
-**Symbol & Code Analysis:**
-- `find_symbol` - Global symbol search with filtering
-- `get_symbols_overview` - Top-level symbols in files/directories
-- `find_referencing_symbols` - Find symbol references
-- `replace_symbol_body` - Replace complete symbol definitions
-
-**Code Editing:**
-- `insert_at_line` - Insert content at specific lines
-- `insert_before_symbol`/`insert_after_symbol` - Symbol-relative insertions
-- `replace_lines` - Replace line ranges with new content
-- `replace_regex` - Regex-based replacements
-- `delete_lines` - Delete line ranges
-
-**Memory & Knowledge Management:**
-- `write_memory` - Store project knowledge
-- `read_memory` - Retrieve stored knowledge
-- `list_memories` - Show available memories
-- `delete_memory` - Remove memories
-- `onboarding` - Automated project analysis
-
-**Workflow & Meta Operations:**
-- `execute_shell_command` - Run shell commands
-- `switch_modes` - Change operational modes
-- `get_current_config` - Show current configuration
-- `restart_language_server` - Restart LSP server
-- `summarize_changes` - Generate change summaries
-
-### Configuration System
-
-**Contexts** (Environment types):
-- `desktop-app` - For Claude Desktop integration (default)
-- `agent` - For autonomous agent operation  
-- `ide-assistant` - For IDE integration (VSCode, Cursor, etc.)
-
-**Modes** (Operational patterns):
-- `interactive` - Conversational workflow
-- `editing` - Direct code modification focus
-- `planning` - Analysis and planning emphasis
-- `one-shot` - Single-response tasks
-- `onboarding` - Project setup and learning
-
-**Configuration Hierarchy** (highest precedence first):
-1. Command-line arguments
-2. Project-specific `.serena/project.yml`
-3. User config `~/.serena/serena_config.yml`
-4. Active contexts and modes
-
-### Integration Patterns
-
-**With Claude Code:**
-```bash
-# Add Serena to Claude Code from project directory
+# Add Serena to Claude Code
 claude mcp add serena -- uvx --from git+https://github.com/oraios/serena serena-mcp-server --context ide-assistant --project $(pwd)
 
-# Load instructions in Claude Code session
+# Load Serena instructions in Claude Code session
 /mcp__serena__initial_instructions
+
+# Start MCP server manually
+cd serena && uv run serena-mcp-server
 ```
 
-**With Other MCP Clients:**
-Configure MCP client to run:
-```bash
-uvx --from git+https://github.com/oraios/serena serena-mcp-server --context ide-assistant
-```
+### Primary Capabilities
+- **Semantic Code Analysis**: Symbol-level understanding, cross-reference finding, multi-language LSP support
+- **Advanced Code Editing**: Symbol-based insertions, precise line editing, regex find/replace
+- **Project Management**: Memory persistence, intelligent onboarding, configuration management
+- **AI Agent Integration**: MCP server for Claude integration, context/mode switching
 
-**For Multi-Language Projects:**
-Serena automatically detects and configures appropriate language servers for:
-- **Python** (Pyright)
-- **TypeScript/JavaScript** (TSServer) 
-- **Go** (gopls)
-- **Rust** (rust-analyzer)
-- **Java** (Eclipse JDT)
-- **C#** (OmniSharp/C# LSP)
-- **PHP** (Intelephense)
-- **C/C++** (clangd)
-- **Elixir** (NextLS)
-- **Clojure** (clojure-lsp)
-- **Terraform** (terraform-ls)
+### Essential Tools
+- `find_symbol`, `get_symbols_overview` - Symbol navigation and analysis
+- `insert_before_symbol`, `replace_symbol_body` - Precise code editing
+- `write_memory`, `read_memory` - Project knowledge persistence
+- `onboarding` - Automated project analysis and setup
 
-### Best Practices
-
-**Project Setup:**
-1. Start from clean git state for change tracking
-2. Enable appropriate git autocrlf settings on Windows
-3. Ensure good test coverage for verification
-4. Structure code with clear modularity
-
-**Workflow Optimization:**
-1. Use onboarding for new projects to create memories
-2. Switch modes based on task type (planning vs editing)
-3. Leverage memory system for complex, multi-session work
-4. Use symbol-based operations over line-based when possible
-
-**Performance Tips:**
-1. Index large projects using `uv run serena project index`
-2. Use context filtering to limit tool scope
-3. Be frugal with token usage - avoid reading unnecessary symbols
-4. Restart language servers if performance degrades
-
-### Troubleshooting
-
-**Common Issues:**
-- Language server crashes → Use `restart_language_server` tool
-- Hanging processes → Use web dashboard to shut down cleanly  
-- Symbol not found → Check if project is properly indexed
-- Performance issues → Try reindexing or restarting language servers
-
-**Debug Resources:**
-- Web dashboard: `http://localhost:24282/dashboard/`
-- Log levels configurable in `serena_config.yml`
-- LSP communication tracing available
-- Tool execution timeouts configurable
-
-### Advanced Features
-
-**Memory System:**
-- Markdown-based storage in `.serena/memories/`
-- Project-specific knowledge persistence
-- Contextual retrieval based on relevance
-- Manual and automated memory creation
-
-**Dashboard & Monitoring:**
-- Real-time web dashboard for session monitoring
-- Tool usage statistics and performance metrics
-- Log viewing and session management
-- Process control and cleanup
-
-**Extension Points:**
-- Custom contexts and modes via YAML configuration
-- Tool framework for adding new capabilities
-- Integration with external agent frameworks
-- Language server adapter pattern for new languages
+**Debug Dashboard**: `http://localhost:24282/dashboard/`
 
 ## PRP Task Format
 
@@ -439,13 +285,24 @@ If you are unsure of assumptions or hit ambiguous scope:
 - Halt implementation until confirmed
 
 ## Key Files to Reference
-- **`/docs/project_tracker.md`** - Current progress, completed tasks, and next steps
-- **`/docs/prd.md`** - Full project requirements and specifications
-- **`/src/lib/firebase.ts`** - Firebase client configuration
-- **`/src/services/firebase/`** - Firebase service layer
-- **`/src/scripts/seed-firebase-data.ts`** - Database seed script with test data
-- **`/firestore.rules`** - Firebase Security Rules
+
+### Core Configuration
+- **`/src/lib/firebase.ts`** - Firebase client configuration and initialization
+- **`/firestore.rules`** - Firebase Security Rules with role-based access control
 - **`.env.example`** - Environment variables template
+
+### Service Layer & Data Management
+- **`/src/services/firebase/members.service.ts`** - Member management service
+- **`/src/services/firebase/households.service.ts`** - Household management service  
+- **`/src/services/firebase/roles.service.ts`** - Role assignment and management
+- **`/src/services/firebase/dashboard.service.ts`** - Dashboard data aggregation
+- **`/src/types/index.ts`** - Core type definitions (Member, Household)
+- **`/src/utils/firestore-converters.ts`** - Type-safe Firestore document conversion
+
+### Documentation & Scripts
+- **`/docs/prd.md`** - Complete project requirements and specifications
+- **`/src/scripts/seed-firebase-data.ts`** - Database seeding with test data
+- **`/src/scripts/setup-admin.ts`** - Initial admin user setup
 
 ## Security & Roles System
 
@@ -535,34 +392,6 @@ interface AuditLog {
 
 **CRITICAL**: Before implementing any dashboard or data access feature, always consider what role should see what data. Default to restricting access rather than allowing it.
 
-## Testing Requirements
-
-### Test Coverage Standards
-The project uses Vitest for comprehensive testing with the following coverage requirements:
-- **Minimum 50% coverage** for all new code
-- **Target 80% coverage** for critical services and components
-- **100% coverage** for authentication and authorization logic
-
-### Testing Infrastructure
-- **Vitest** as test runner with React Testing Library for component testing
-- **Mock Service Worker (MSW)** for API mocking
-- **Firebase mocks** for all Firestore operations
-- **Comprehensive test utilities** in `src/test/` folder
-
-### Critical Testing Areas
-1. **Service layer tests** - Firebase services with CRUD operations, filtering, and error handling
-2. **Authentication tests** - Auth guards, role checks, and permission validation
-3. **Component tests** - Forms, guards, and data display components
-4. **Integration tests** - End-to-end user workflows
-
-### Test Commands
-```bash
-npm test                    # Run all tests
-npm run test:coverage      # Run tests with coverage report
-npm run test:watch         # Run tests in watch mode
-```
-
-**IMPORTANT**: All tests must pass before marking any task as completed. Run `npm test` before committing changes.
 
 ## Output Expectations
 

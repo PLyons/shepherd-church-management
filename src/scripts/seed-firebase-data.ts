@@ -390,27 +390,8 @@ export async function seedMembers(householdIds: string[]): Promise<string[]> {
 export async function seedEvents(
   createdByMemberId?: string
 ): Promise<string[]> {
-  console.log('📅 Creating test events...');
-  const eventIds: string[] = [];
-
-  for (let i = 0; i < TEST_EVENTS.length; i++) {
-    const eventData = TEST_EVENTS[i];
-    try {
-      const event = await firebaseService.events.create({
-        ...eventData,
-        createdBy: createdByMemberId,
-        rsvpStats: { yes: 0, no: 0, maybe: 0, total: 0 },
-      });
-
-      eventIds.push(event.id);
-      console.log(`✓ Created event: ${event.title} (${event.id})`);
-    } catch (error) {
-      console.error(`✗ Failed to create event ${eventData.title}:`, error);
-      throw error;
-    }
-  }
-
-  return eventIds;
+  console.log('📅 Skipping event seeding (events feature removed)...');
+  return [];
 }
 
 // ============================================================================
@@ -472,11 +453,7 @@ export async function seedFirebaseData(options?: {
           console.log(`   Cleared ${households.length} existing households`);
         }
 
-        if (counts.events > 0) {
-          const events = await firebaseService.events.getAll();
-          await firebaseService.events.deleteBatch(events.map((e) => e.id));
-          console.log(`   Cleared ${events.length} existing events`);
-        }
+        // Event clearing skipped (events feature removed)
       } else {
         console.log('   No existing data to clear');
       }

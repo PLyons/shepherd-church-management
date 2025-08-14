@@ -8,23 +8,25 @@ To address these challenges, this project aims to build a web-based application 
 
 ## Requirements
 
-### Must Have
+### Currently Implemented (Core Foundation)
 - Member directory with:
   - Individual profiles
   - Household and family relationships
-  - Important life events: dedication, baptism, marriage, birthdays, anniversaries, deaths, funerals
+  - Search and filtering capabilities
+- Role-based access (admin, pastor, member)
+- Secure cloud-hosted web application with Firebase
+- Authentication system with magic links and QR registration
+- Admin dashboard with member statistics
+
+### Should Have (Planned for Reimplementation)
+- Member life events tracking (dedication, baptism, marriage, birthdays, anniversaries, deaths, funerals)
 - Donation tracking with reporting/export
 - Event calendar with RSVP/attendance tracking
-- Admin dashboard with simple analytics (e.g., attendance trends, giving totals)
-- Role-based access (admin, pastor, member)
-- Secure cloud-hosted web application
-
-### Should Have
 - Volunteer scheduling
 - Email and SMS notification system
 - Sermon archive (file uploads, notes)
 - Integration with payment processors (e.g., Stripe, PayPal)
-- Mobile-friendly/responsive UI
+- Mobile-friendly/responsive UI (partially implemented)
 - Financial data reporting suitable for Form 990 or equivalent nonprofit regulatory filings
 
 ### Could Have
@@ -48,10 +50,11 @@ To address these challenges, this project aims to build a web-based application 
 | Layer       | Technology              | Justification                                        |
 |-------------|--------------------------|------------------------------------------------------|
 | Frontend    | React (via Vite)         | Fast, modern UI development                          |
-| Backend     | Supabase (Postgres + API + Auth) | Free-tier friendly, integrated auth & storage |
-| Auth        | Supabase Auth            | Secure login with email or social options            |
-| Storage     | Supabase Storage         | For sermon files and attachments                     |
-| Hosting     | Vercel + Supabase        | Free-tier deployment and database                    |
+| Backend     | Firebase                 | Authentication, Firestore database, file storage    |
+| Database    | Cloud Firestore         | NoSQL with real-time updates and security rules     |
+| Auth        | Firebase Auth            | Secure login with email links and social options    |
+| Storage     | Firebase Storage         | For future sermon files and attachments             |
+| Hosting     | Vercel + Firebase        | Free-tier deployment and cloud services             |
 | Payments    | Stripe / PayPal          | For tracked donations                                |
 
 ## Implementation

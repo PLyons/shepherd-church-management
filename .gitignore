@@ -49,9 +49,6 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Testing
-coverage/
-.nyc_output
 
 # Misc
 *.pem

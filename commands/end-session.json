@@ -1,0 +1,7 @@
+{
+    "name": "end-session",
+    "description": "Run the end-of-session workflow checklist",
+    "parameters": [],
+    "prompt": "Please help me execute the end-of-session checklist described in end-session.md. It includes:\n\n1. Update project_tracker.md:\n   - Mark completion status of today's tasks\n   - Adjust progress percentages\n   - Add any blockers or notes\n   - Refresh 'Current Status & Next Steps'\n\n2. Check git status:\n   - Run `git status` to list changed files\n   - Stage changes: `git add -A`\n   - Commit with a summary of what was done today, in-progress status, and next steps\n\n3. Push changes to remote\n\n4. Provide a session summary for the user with:\n   - What was completed\n   - Current progress\n   - Notes for next session\n   - Confirmation that everything is committed and pushed\n\nAlso remind me to shut down any running servers."
+  }
+  
