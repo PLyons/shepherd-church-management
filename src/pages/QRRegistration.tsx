@@ -3,34 +3,9 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useToast } from '../contexts/ToastContext';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { QrCode, UserPlus, CheckCircle, AlertCircle } from 'lucide-react';
-
-type RegistrationToken = {
-  id: string;
-  token: string;
-  household_id: string | null;
-  created_by: string;
-  expires_at: string;
-  used_at: string | null;
-  max_uses: number;
-  current_uses: number;
-  is_active: boolean;
-};
-
-type RegistrationFormData = {
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
-  birthdate: string;
-  gender: 'Male' | 'Female' | '';
-  join_household: boolean;
-  household_name: string;
-  address_line1: string;
-  city: string;
-  state: string;
-  postal_code: string;
-  country: string;
-};
+import { registrationTokensService } from '../services/firebase/registration-tokens.service';
+import { publicRegistrationService } from '../services/firebase/public-registration.service';
+import { RegistrationToken, RegistrationFormData, TokenValidationResult } from '../types/registration';
 
 export default function QRRegistration() {
   const [searchParams] = useSearchParams();
@@ -40,19 +15,21 @@ export default function QRRegistration() {
   const [submitting, setSubmitting] = useState(false);
   const [token, setToken] = useState<RegistrationToken | null>(null);
   const [formData, setFormData] = useState<RegistrationFormData>({
-    first_name: '',
-    last_name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     phone: '',
     birthdate: '',
     gender: '',
-    join_household: false,
-    household_name: '',
-    address_line1: '',
-    city: '',
-    state: '',
-    postal_code: '',
-    country: 'USA',
+    memberStatus: 'visitor',
+    address: {
+      line1: '',
+      line2: '',
+      city: '',
+      state: '',
+      postalCode: '',
+      country: 'USA',
+    },
   });
 
   const tokenParam = searchParams.get('token');
@@ -69,31 +46,14 @@ export default function QRRegistration() {
     try {
       setLoading(true);
 
-      const { data, error } = await supabase
-        .from('registration_tokens')
-        .select('*')
-        .eq('token', tokenValue)
-        .eq('is_active', true)
-        .single();
+      const result: TokenValidationResult = await registrationTokensService.validateToken(tokenValue);
 
-      if (error) {
-        showToast('Invalid or expired registration link', 'error');
+      if (!result.isValid) {
+        showToast(result.error || 'Invalid registration link', 'error');
         return;
       }
 
-      // Check if token is expired
-      if (new Date(data.expires_at) < new Date()) {
-        showToast('Registration link has expired', 'error');
-        return;
-      }
-
-      // Check if token has reached max uses
-      if (data.current_uses >= data.max_uses) {
-        showToast('Registration link has reached maximum uses', 'error');
-        return;
-      }
-
-      setToken(data);
+      setToken(result.token!);
     } catch (err) {
       showToast('Error validating registration link', 'error');
     } finally {
@@ -109,7 +69,7 @@ export default function QRRegistration() {
       return;
     }
 
-    if (!formData.first_name || !formData.last_name || !formData.email) {
+    if (!formData.firstName || !formData.lastName) {
       showToast('Please fill in all required fields', 'error');
       return;
     }
@@ -117,75 +77,32 @@ export default function QRRegistration() {
     try {
       setSubmitting(true);
 
-      let householdId = token.household_id;
-
-      // Create new household if not joining existing one
-      if (!formData.join_household || !householdId) {
-        const { data: householdData, error: householdError } = await supabase
-          .from('households')
-          .insert({
-            family_name:
-              formData.household_name || `${formData.last_name} Family`,
-            address_line1: formData.address_line1,
-            city: formData.city,
-            state: formData.state,
-            postal_code: formData.postal_code,
-            country: formData.country,
-          })
-          .select()
-          .single();
-
-        if (householdError) throw householdError;
-        householdId = householdData.id;
-      }
-
-      // Create member record
-      const memberData = {
-        household_id: householdId,
-        first_name: formData.first_name,
-        last_name: formData.last_name,
-        email: formData.email,
-        phone: formData.phone || null,
-        birthdate: formData.birthdate || null,
-        gender: formData.gender || null,
-        role: 'member',
-        member_status: 'visitor', // Start as visitor, can be upgraded later
-        joined_at: new Date().toISOString().split('T')[0],
+      // Get client IP and user agent for tracking
+      const metadata = {
+        ipAddress: undefined, // Would need server-side implementation to get real IP
+        userAgent: navigator.userAgent,
       };
 
-      const { data: memberResult, error: memberError } = await supabase
-        .from('members')
-        .insert(memberData)
-        .select()
-        .single();
-
-      if (memberError) throw memberError;
-
-      // Update household primary contact if this is the first member
-      if (!token.household_id || !formData.join_household) {
-        await supabase
-          .from('households')
-          .update({ primary_contact_id: memberResult.id })
-          .eq('id', householdId);
-      }
-
-      // Update token usage
-      await supabase
-        .from('registration_tokens')
-        .update({
-          current_uses: token.current_uses + 1,
-          used_at: new Date().toISOString(),
-        })
-        .eq('id', token.id);
-
-      showToast(
-        'Registration completed successfully! Welcome to our church!',
-        'success'
+      // Submit registration
+      const result = await publicRegistrationService.submitRegistration(
+        token.id,
+        formData,
+        metadata
       );
 
-      // Redirect to a welcome page or login
+      if (!result.success) {
+        showToast(result.error || 'Registration failed', 'error');
+        return;
+      }
+
+      // Increment token usage
+      await registrationTokensService.incrementUsage(token.id);
+
+      showToast(result.message, 'success');
+
+      // Redirect to a welcome page
       setTimeout(() => {
-        navigate('/login?message=registration_complete');
+        navigate('/?message=registration_complete');
       }, 2000);
     } catch (err) {
       showToast(
@@ -277,11 +194,11 @@ export default function QRRegistration() {
                   <input
                     type="text"
                     required
-                    value={formData.first_name}
+                    value={formData.firstName}
                     onChange={(e) =>
                       setFormData((prev) => ({
                         ...prev,
-                        first_name: e.target.value,
+                        firstName: e.target.value,
                       }))
                     }
                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -298,11 +215,11 @@ export default function QRRegistration() {
                   <input
                     type="text"
                     required
-                    value={formData.last_name}
+                    value={formData.lastName}
                     onChange={(e) =>
                       setFormData((prev) => ({
                         ...prev,
-                        last_name: e.target.value,
+                        lastName: e.target.value,
                       }))
                     }
                     className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -394,142 +311,179 @@ export default function QRRegistration() {
               </div>
             </div>
 
-            {/* Household Information */}
+            {/* Member Status */}
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Household Information
+                Member Status
               </h3>
-
-              {token.household_id && (
-                <div className="mb-4">
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-gray-700">
+                  Are you a member or visitor?
+                </label>
+                <div className="mt-2 space-y-2">
                   <label className="flex items-center">
                     <input
-                      type="checkbox"
-                      checked={formData.join_household}
+                      type="radio"
+                      name="memberStatus"
+                      value="member"
+                      checked={formData.memberStatus === 'member'}
                       onChange={(e) =>
                         setFormData((prev) => ({
                           ...prev,
-                          join_household: e.target.checked,
+                          memberStatus: e.target.value as 'member' | 'visitor',
                         }))
                       }
-                      className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                      className="text-blue-600 focus:ring-blue-500"
                     />
                     <span className="ml-2 text-sm text-gray-700">
-                      Join existing household (recommended if you live with the
-                      person who invited you)
+                      Member - I am already a member of this church
+                    </span>
+                  </label>
+                  <label className="flex items-center">
+                    <input
+                      type="radio"
+                      name="memberStatus"
+                      value="visitor"
+                      checked={formData.memberStatus === 'visitor'}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          memberStatus: e.target.value as 'member' | 'visitor',
+                        }))
+                      }
+                      className="text-blue-600 focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">
+                      Visitor - I am visiting this church
                     </span>
                   </label>
                 </div>
-              )}
+              </div>
+            </div>
 
-              {(!formData.join_household || !token.household_id) && (
-                <>
-                  <div className="mb-4">
+            {/* Address Information */}
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Address Information (Optional)
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <label
+                    htmlFor="address"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Street Address
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.address.line1}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        address: {
+                          ...prev.address,
+                          line1: e.target.value,
+                        },
+                      }))
+                    }
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="address2"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Apartment, suite, etc.
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.address.line2}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        address: {
+                          ...prev.address,
+                          line2: e.target.value,
+                        },
+                      }))
+                    }
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
                     <label
-                      htmlFor="household_name"
+                      htmlFor="city"
                       className="block text-sm font-medium text-gray-700"
                     >
-                      Household Name
+                      City
                     </label>
                     <input
                       type="text"
-                      value={formData.household_name}
+                      value={formData.address.city}
                       onChange={(e) =>
                         setFormData((prev) => ({
                           ...prev,
-                          household_name: e.target.value,
+                          address: {
+                            ...prev.address,
+                            city: e.target.value,
+                          },
                         }))
                       }
-                      placeholder={`${formData.last_name} Family`}
                       className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     />
                   </div>
 
-                  <div className="space-y-4">
-                    <div>
-                      <label
-                        htmlFor="address"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Address
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.address_line1}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            address_line1: e.target.value,
-                          }))
-                        }
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label
-                          htmlFor="city"
-                          className="block text-sm font-medium text-gray-700"
-                        >
-                          City
-                        </label>
-                        <input
-                          type="text"
-                          value={formData.city}
-                          onChange={(e) =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              city: e.target.value,
-                            }))
-                          }
-                          className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        />
-                      </div>
-
-                      <div>
-                        <label
-                          htmlFor="state"
-                          className="block text-sm font-medium text-gray-700"
-                        >
-                          State
-                        </label>
-                        <input
-                          type="text"
-                          value={formData.state}
-                          onChange={(e) =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              state: e.target.value,
-                            }))
-                          }
-                          className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label
-                        htmlFor="postal_code"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Postal Code
-                      </label>
-                      <input
-                        type="text"
-                        value={formData.postal_code}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            postal_code: e.target.value,
-                          }))
-                        }
-                        className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      />
-                    </div>
+                  <div>
+                    <label
+                      htmlFor="state"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      State
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.address.state}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          address: {
+                            ...prev.address,
+                            state: e.target.value,
+                          },
+                        }))
+                      }
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    />
                   </div>
-                </>
-              )}
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="postal_code"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Postal Code
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.address.postalCode}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        address: {
+                          ...prev.address,
+                          postalCode: e.target.value,
+                        },
+                      }))
+                    }
+                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  />
+                </div>
+              </div>
             </div>
 
             <div>

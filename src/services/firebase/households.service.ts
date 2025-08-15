@@ -155,7 +155,7 @@ export class HouseholdsService extends BaseFirestoreService<
     const statusFilter = options?.statusFilter || 'approved';
 
     // Get households based on status filter
-    let queryOptions: any = { limit };
+    const queryOptions: any = { limit };
     if (statusFilter !== 'all') {
       queryOptions.where = [
         { field: 'status', operator: '==', value: statusFilter },

@@ -400,6 +400,63 @@ export interface VolunteerSlot {
 }
 
 // ============================================================================
+// REGISTRATION TYPES - QR SELF-REGISTRATION SYSTEM
+// ============================================================================
+
+export interface RegistrationTokenDocument {
+  token: string; // Unique, URL-safe token
+  createdBy: string; // Admin/pastor member ID
+  createdAt: Timestamp;
+  expiresAt?: Timestamp; // Optional expiration
+  maxUses: number; // -1 for unlimited
+  currentUses: number;
+  isActive: boolean;
+  metadata: {
+    purpose: string; // e.g., "Sunday Service", "Youth Event"
+    notes?: string;
+    eventDate?: Timestamp;
+    location?: string;
+  };
+}
+
+export interface PendingRegistrationDocument {
+  tokenId: string; // Reference to registration_tokens document ID
+  
+  // Personal Information
+  firstName: string;
+  lastName: string;
+  email?: string;
+  phone?: string;
+  birthdate?: Timestamp;
+  gender?: 'Male' | 'Female' | '';
+  
+  // Address Information
+  address?: {
+    line1?: string;
+    line2?: string;
+    city?: string;
+    state?: string;
+    postalCode?: string;
+    country?: string;
+  };
+  
+  // Status
+  memberStatus: 'member' | 'visitor';
+  
+  // Metadata
+  submittedAt: Timestamp;
+  ipAddress?: string;
+  userAgent?: string;
+  
+  // Approval Status
+  approvalStatus: 'pending' | 'approved' | 'rejected';
+  approvedBy?: string; // Admin/pastor member ID
+  approvedAt?: Timestamp;
+  rejectionReason?: string;
+  memberId?: string; // Reference to created member if approved
+}
+
+// ============================================================================
 // MEMBER EVENT TYPES
 // ============================================================================
 

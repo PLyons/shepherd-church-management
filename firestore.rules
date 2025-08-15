@@ -57,6 +57,23 @@ service cloud.firestore {
       allow write: if isAdminOrPastor();
     }
     
+    // Registration Tokens collection - QR Self-Registration System
+    match /registration_tokens/{tokenId} {
+      // Anyone can read tokens (needed for public validation)
+      allow read: if true;
+      
+      // Only admins/pastors can create/update/delete tokens
+      allow write: if isAdminOrPastor();
+    }
+    
+    // Pending Registrations collection - QR Self-Registration System
+    match /pending_registrations/{registrationId} {
+      // Anyone can create registrations (unauthenticated public access)
+      allow create: if true;
+      
+      // Only admins/pastors can read/update/delete registrations
+      allow read, update, delete: if isAdminOrPastor();
+    }
     
     // Default rule - deny everything else
     match /{document=**} {

@@ -13,6 +13,7 @@ import Households from '../pages/Households';
 import HouseholdProfile from '../pages/HouseholdProfile';
 import Settings from '../pages/Settings';
 import QRRegistration from '../pages/QRRegistration';
+import RegistrationTokens from '../pages/admin/RegistrationTokens';
 import AuthCallback from '../pages/AuthCallback';
 import PasswordReset from '../pages/PasswordReset';
 import SetPassword from '../pages/SetPassword';
@@ -69,6 +70,14 @@ export const router = createBrowserRouter(
           element: (
             <RoleGuard allowedRoles={['admin', 'pastor']}>
               <HouseholdProfile />
+            </RoleGuard>
+          ),
+        },
+        {
+          path: 'admin/registration-tokens',
+          element: (
+            <RoleGuard allowedRoles={['admin', 'pastor']}>
+              <RegistrationTokens />
             </RoleGuard>
           ),
         },

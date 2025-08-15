@@ -21,6 +21,7 @@ const navigationItems = [
     href: '/households',
     roles: ['admin', 'pastor', 'member'],
   },
+  { name: 'Registration', href: '/admin/registration-tokens', roles: ['admin', 'pastor'] },
   { name: 'Settings', href: '/settings', roles: ['admin', 'pastor'] },
 ];
 
@@ -71,7 +72,7 @@ export function MobileMenu({ open, onClose, userRole }: MobileMenuProps) {
               <User className="h-5 w-5 text-gray-400" />
               <div>
                 <p className="text-sm font-medium text-gray-900">
-                  {member?.first_name} {member?.last_name}
+                  {member?.firstName} {member?.lastName}
                 </p>
                 <p className="text-xs text-gray-500 capitalize">
                   {member?.role}

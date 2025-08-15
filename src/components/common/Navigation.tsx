@@ -20,6 +20,7 @@ const navigationItems = [
     href: '/households',
     roles: ['admin', 'pastor', 'member'],
   },
+  { name: 'Registration', href: '/admin/registration-tokens', roles: ['admin', 'pastor'] },
   { name: 'Settings', href: '/settings', roles: ['admin', 'pastor'] },
 ];
 
@@ -75,7 +76,7 @@ export function Navigation({ onMobileMenuToggle, userRole }: NavigationProps) {
               <div className="flex items-center space-x-2 text-sm text-gray-700">
                 <User className="h-4 w-4" />
                 <span>
-                  {member?.first_name} {member?.last_name}
+                  {member?.firstName} {member?.lastName}
                 </span>
                 <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full capitalize">
                   {member?.role}
