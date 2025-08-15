@@ -167,21 +167,21 @@ class PublicRegistrationService extends BaseFirestoreService<PendingRegistration
   /**
    * Clean and validate address data
    */
-  private cleanAddress(address: Record<string, unknown>): Record<string, unknown> | undefined {
+  private cleanAddress(address: Record<string, string>): Record<string, string> | undefined {
     if (!address) return undefined;
 
     const cleaned = {
-      line1: address.line1 ? address.line1.trim() : undefined,
-      line2: address.line2 ? address.line2.trim() : undefined,
-      city: address.city ? address.city.trim() : undefined,
-      state: address.state ? address.state.trim() : undefined,
-      postalCode: address.postalCode ? address.postalCode.trim() : undefined,
-      country: address.country ? address.country.trim() : 'USA',
+      line1: address.line1 ? String(address.line1).trim() : undefined,
+      line2: address.line2 ? String(address.line2).trim() : undefined,
+      city: address.city ? String(address.city).trim() : undefined,
+      state: address.state ? String(address.state).trim() : undefined,
+      postalCode: address.postalCode ? String(address.postalCode).trim() : undefined,
+      country: address.country ? String(address.country).trim() : 'USA',
     };
 
     // Return undefined if no meaningful address data
     const hasData = Object.values(cleaned).some(value => value && value !== 'USA');
-    return hasData ? cleaned : undefined;
+    return hasData ? cleaned as Record<string, string> : undefined;
   }
 
   // ============================================================================
