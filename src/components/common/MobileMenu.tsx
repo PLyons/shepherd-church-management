@@ -1,12 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { X, LogOut, User } from 'lucide-react';
+import { X, LogOut, User, ChevronDown, ChevronRight } from 'lucide-react';
 import { useAuth } from '../../hooks/useUnifiedAuth';
 
 interface MobileMenuProps {
   open: boolean;
   onClose: () => void;
   userRole: 'admin' | 'pastor' | 'member';
+}
+
+interface NavigationItem {
+  name: string;
+  href: string;
+  roles: ('admin' | 'pastor' | 'member')[];
+  submenu?: { name: string; href: string }[];
 }
 
 const navigationItems = [
@@ -21,13 +28,22 @@ const navigationItems = [
     href: '/households',
     roles: ['admin', 'pastor', 'member'],
   },
-  { name: 'Registration', href: '/admin/registration-tokens', roles: ['admin', 'pastor'] },
+  { 
+    name: 'Registration', 
+    href: '/admin/registration-tokens', 
+    roles: ['admin', 'pastor'],
+    submenu: [
+      { name: 'QR Tokens', href: '/admin/registration-tokens' },
+      { name: 'Pending Registrations', href: '/admin/pending-registrations' },
+    ]
+  },
   { name: 'Settings', href: '/settings', roles: ['admin', 'pastor'] },
 ];
 
 export function MobileMenu({ open, onClose, userRole }: MobileMenuProps) {
   const location = useLocation();
   const { member, signOut } = useAuth();
+  const [expandedItem, setExpandedItem] = useState<string | null>(null);
 
   const visibleItems = navigationItems.filter((item) =>
     item.roles.includes(userRole)
@@ -36,6 +52,10 @@ export function MobileMenu({ open, onClose, userRole }: MobileMenuProps) {
   const handleSignOut = async () => {
     await signOut();
     onClose();
+  };
+
+  const isSubMenuActive = (submenu?: { name: string; href: string }[]) => {
+    return submenu?.some(subItem => location.pathname === subItem.href) || false;
   };
 
   if (!open) return null;
@@ -84,21 +104,65 @@ export function MobileMenu({ open, onClose, userRole }: MobileMenuProps) {
           {/* Navigation items */}
           <nav className="flex-1 px-4 py-4 space-y-1">
             {visibleItems.map((item) => {
-              const isActive = location.pathname === item.href;
-              return (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  onClick={onClose}
-                  className={`block px-3 py-2 rounded-md text-base font-medium ${
-                    isActive
-                      ? 'bg-blue-50 text-blue-700'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                  }`}
-                >
-                  {item.name}
-                </Link>
-              );
+              const isActive = location.pathname === item.href || isSubMenuActive(item.submenu);
+              const hasSubmenu = item.submenu && item.submenu.length > 0;
+              const isExpanded = expandedItem === item.name;
+              
+              if (hasSubmenu) {
+                return (
+                  <div key={item.name}>
+                    <button
+                      onClick={() => setExpandedItem(isExpanded ? null : item.name)}
+                      className={`flex items-center justify-between w-full px-3 py-2 rounded-md text-base font-medium ${
+                        isActive
+                          ? 'bg-blue-50 text-blue-700'
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      }`}
+                    >
+                      <span>{item.name}</span>
+                      {isExpanded ? (
+                        <ChevronDown className="h-4 w-4" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4" />
+                      )}
+                    </button>
+                    
+                    {isExpanded && (
+                      <div className="ml-4 mt-1 space-y-1">
+                        {item.submenu!.map((subItem) => (
+                          <Link
+                            key={subItem.name}
+                            to={subItem.href}
+                            onClick={onClose}
+                            className={`block px-3 py-2 rounded-md text-sm font-medium ${
+                              location.pathname === subItem.href
+                                ? 'bg-blue-50 text-blue-700'
+                                : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                            }`}
+                          >
+                            {subItem.name}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              } else {
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    onClick={onClose}
+                    className={`block px-3 py-2 rounded-md text-base font-medium ${
+                      isActive
+                        ? 'bg-blue-50 text-blue-700'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    }`}
+                  >
+                    {item.name}
+                  </Link>
+                );
+              }
             })}
           </nav>
 

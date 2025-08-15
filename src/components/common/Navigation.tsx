@@ -1,11 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, LogOut, User } from 'lucide-react';
+import { Menu, LogOut, User, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../hooks/useUnifiedAuth';
 
 interface NavigationProps {
   onMobileMenuToggle: () => void;
   userRole: 'admin' | 'pastor' | 'member';
+}
+
+interface NavigationItem {
+  name: string;
+  href: string;
+  roles: ('admin' | 'pastor' | 'member')[];
+  submenu?: { name: string; href: string }[];
 }
 
 const navigationItems = [
@@ -20,13 +27,22 @@ const navigationItems = [
     href: '/households',
     roles: ['admin', 'pastor', 'member'],
   },
-  { name: 'Registration', href: '/admin/registration-tokens', roles: ['admin', 'pastor'] },
+  { 
+    name: 'Registration', 
+    href: '/admin/registration-tokens', 
+    roles: ['admin', 'pastor'],
+    submenu: [
+      { name: 'QR Tokens', href: '/admin/registration-tokens' },
+      { name: 'Pending Registrations', href: '/admin/pending-registrations' },
+    ]
+  },
   { name: 'Settings', href: '/settings', roles: ['admin', 'pastor'] },
 ];
 
 export function Navigation({ onMobileMenuToggle, userRole }: NavigationProps) {
   const location = useLocation();
   const { member, signOut } = useAuth();
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   const visibleItems = navigationItems.filter((item) =>
     item.roles.includes(userRole)
@@ -34,6 +50,10 @@ export function Navigation({ onMobileMenuToggle, userRole }: NavigationProps) {
 
   const handleSignOut = async () => {
     await signOut();
+  };
+
+  const isSubMenuActive = (submenu?: { name: string; href: string }[]) => {
+    return submenu?.some(subItem => location.pathname === subItem.href) || false;
   };
 
   return (
@@ -51,20 +71,59 @@ export function Navigation({ onMobileMenuToggle, userRole }: NavigationProps) {
             {/* Desktop navigation */}
             <div className="hidden md:ml-8 md:flex md:space-x-8">
               {visibleItems.map((item) => {
-                const isActive = location.pathname === item.href;
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 ${
-                      isActive
-                        ? 'border-blue-500 text-gray-900'
-                        : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                    }`}
-                  >
-                    {item.name}
-                  </Link>
-                );
+                const isActive = location.pathname === item.href || isSubMenuActive(item.submenu);
+                const hasSubmenu = item.submenu && item.submenu.length > 0;
+                
+                if (hasSubmenu) {
+                  return (
+                    <div key={item.name} className="relative">
+                      <button
+                        onClick={() => setOpenDropdown(openDropdown === item.name ? null : item.name)}
+                        className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 ${
+                          isActive
+                            ? 'border-blue-500 text-gray-900'
+                            : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                        }`}
+                      >
+                        {item.name}
+                        <ChevronDown className="ml-1 h-4 w-4" />
+                      </button>
+                      
+                      {openDropdown === item.name && (
+                        <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">
+                          {item.submenu!.map((subItem) => (
+                            <Link
+                              key={subItem.name}
+                              to={subItem.href}
+                              onClick={() => setOpenDropdown(null)}
+                              className={`block px-4 py-2 text-sm hover:bg-gray-50 ${ 
+                                location.pathname === subItem.href
+                                  ? 'text-blue-600 bg-blue-50'
+                                  : 'text-gray-700'
+                              }`}
+                            >
+                              {subItem.name}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                } else {
+                  return (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 ${
+                        isActive
+                          ? 'border-blue-500 text-gray-900'
+                          : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                      }`}
+                    >
+                      {item.name}
+                    </Link>
+                  );
+                }
               })}
             </div>
           </div>
