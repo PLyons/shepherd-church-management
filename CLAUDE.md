@@ -110,35 +110,137 @@ Three main contexts manage global state:
 **Current Focus**: Methodical reimplementation of features according to PRD specifications. All development uses Firebase services exclusively.
 
 
-## Serena Integration - AI Coding Assistant
+## MCP Servers Integration
 
+This project uses multiple Model Context Protocol (MCP) servers to enhance Claude Code's capabilities. All servers are automatically configured and should be running when working on this project.
+
+### Current MCP Servers
+
+#### 1. Serena - AI Coding Assistant
 Serena is an advanced coding agent toolkit installed in `serena/` directory that provides semantic code analysis and IDE-level capabilities using Language Server Protocol (LSP).
 
-### Key Integration Commands
+**Configuration:**
 ```bash
 # Add Serena to Claude Code
 claude mcp add serena -- uvx --from git+https://github.com/oraios/serena serena-mcp-server --context ide-assistant --project $(pwd)
-
-# Load Serena instructions in Claude Code session
-/mcp__serena__initial_instructions
-
-# Start MCP server manually
-cd serena && uv run serena-mcp-server
 ```
 
-### Primary Capabilities
+**Primary Capabilities:**
 - **Semantic Code Analysis**: Symbol-level understanding, cross-reference finding, multi-language LSP support
 - **Advanced Code Editing**: Symbol-based insertions, precise line editing, regex find/replace
 - **Project Management**: Memory persistence, intelligent onboarding, configuration management
 - **AI Agent Integration**: MCP server for Claude integration, context/mode switching
 
-### Essential Tools
+**Essential Tools:**
 - `find_symbol`, `get_symbols_overview` - Symbol navigation and analysis
 - `insert_before_symbol`, `replace_symbol_body` - Precise code editing
 - `write_memory`, `read_memory` - Project knowledge persistence
 - `onboarding` - Automated project analysis and setup
 
 **Debug Dashboard**: `http://localhost:24282/dashboard/`
+
+#### 2. Firebase MCP Server
+Provides direct integration with Firebase services for database operations, authentication management, and security rule validation.
+
+**Configuration:**
+```bash
+# Automatically configured via Firebase CLI
+npx -y firebase-tools@latest experimental:mcp
+```
+
+**Primary Capabilities:**
+- **Firestore Operations**: Document CRUD, collection queries, security rule validation
+- **Authentication Management**: User management, custom claims, SMS region policies
+- **Storage Operations**: File management, download URLs
+- **Cloud Messaging**: Push notification sending
+- **Remote Config**: Template management and publishing
+- **Real-time Database**: Data operations and rules validation
+
+**Key Tools:**
+- `mcp__firebase__firestore_*` - Firestore database operations
+- `mcp__firebase__auth_*` - Authentication and user management
+- `mcp__firebase__storage_*` - Storage operations
+- `mcp__firebase__messaging_*` - Push notifications
+
+#### 3. Semgrep MCP Server
+Static analysis security scanner that identifies vulnerabilities, bugs, and code quality issues across multiple programming languages.
+
+**Configuration:**
+```bash
+# Automatically configured via uvx
+uvx --isolated --with fastmcp==2.9.* semgrep-mcp
+```
+
+**Primary Capabilities:**
+- **Security Scanning**: OWASP Top 10, security anti-patterns, injection vulnerabilities
+- **Code Quality**: Best practices, performance issues, maintainability concerns
+- **Multi-language Support**: JavaScript/TypeScript, Python, Java, Go, and more
+- **Custom Rules**: Project-specific rule configuration and validation
+
+**Key Tools:**
+- `mcp__semgrep__semgrep_scan` - Run security and quality scans
+- `mcp__semgrep__start_scan` - Initiate scans with progress tracking
+- `mcp__semgrep__get_scan_results` - Retrieve scan findings
+- `mcp__semgrep__get_supported_languages` - Check language support
+
+#### 4. Context7 MCP Server
+Provides up-to-date code documentation and examples by fetching current library information and best practices directly into the AI's context.
+
+**Configuration:**
+```bash
+# Add Context7 to Claude Code (local server)
+claude mcp add context7 -- npx -y @upstash/context7-mcp
+
+# Alternative: Remote server connection
+claude mcp add --transport http context7 https://mcp.context7.com/mcp
+```
+
+**Primary Capabilities:**
+- **Current Documentation**: Fetches up-to-date library documentation and API references
+- **Code Examples**: Provides version-specific, working code examples
+- **Best Practices**: Retrieves current coding patterns and recommended approaches
+- **Library Information**: Real-time access to package information, changelogs, and updates
+- **Framework Support**: Covers popular frameworks like React, Vue, Angular, Node.js, and more
+
+**Usage:**
+- Add "use context7" to prompts when needing current documentation
+- Automatically fetches the most recent library information
+- Helps avoid outdated or deprecated code patterns
+- Provides context-aware examples for the specific versions being used
+
+**Benefits:**
+- Eliminates outdated documentation issues
+- Provides real-time library information
+- Ensures code examples match current best practices
+- Reduces errors from deprecated API usage
+
+### MCP Server Management
+
+**Check all server status:**
+```bash
+claude mcp list
+```
+
+**Debug server connections:**
+```bash
+claude --debug mcp list
+```
+
+**Add/remove servers:**
+```bash
+claude mcp add <name> -- <command>
+claude mcp remove <name>
+```
+
+### Integration Best Practices
+
+1. **Security-First Development**: Use Semgrep for continuous security scanning
+2. **Database Operations**: Prefer Firebase MCP tools over direct Firebase CLI for consistency
+3. **Code Analysis**: Use Serena for semantic understanding before making large changes
+4. **Current Documentation**: Use Context7 when implementing new features or updating dependencies
+5. **Error Handling**: All MCP tools include proper error handling and validation
+6. **Performance**: Batch operations when possible using parallel tool calls
+7. **Development Workflow**: Context7 → Serena → Implementation → Semgrep → Firebase deployment
 
 ## PRP Task Format
 
