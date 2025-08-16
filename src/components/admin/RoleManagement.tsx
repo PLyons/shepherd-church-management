@@ -38,12 +38,10 @@ export function RoleManagement() {
   const loadRoleData = useCallback(async () => {
     try {
       setLoading(true);
-      const [summary, unassigned] = await Promise.all(
-        [
-          rolesService.getRoleSummary(),
-          rolesService.getUnassignedMembers(),
-        ]
-      );
+      const [summary, unassigned] = await Promise.all([
+        rolesService.getRoleSummary(),
+        rolesService.getUnassignedMembers(),
+      ]);
 
       setRoleSummary(summary);
       setUnassignedMembers(unassigned);
@@ -122,7 +120,6 @@ export function RoleManagement() {
       setAssignmentLoading(false);
     }
   };
-
 
   if (loading) {
     return (
@@ -338,7 +335,11 @@ export function RoleManagement() {
                         </label>
                         <select
                           value={newRole}
-                          onChange={(e) => setNewRole(e.target.value as 'admin' | 'pastor' | 'member')}
+                          onChange={(e) =>
+                            setNewRole(
+                              e.target.value as 'admin' | 'pastor' | 'member'
+                            )
+                          }
                           className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         >
                           <option value="member">

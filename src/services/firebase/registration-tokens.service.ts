@@ -1,11 +1,25 @@
 // import { Timestamp } from 'firebase/firestore'; // Not used in this service
 import { BaseFirestoreService } from './base.service';
 import { RegistrationTokenDocument } from '../../types/firestore';
-import { RegistrationToken, RegistrationStats, TokenValidationResult } from '../../types/registration';
-import { generateUniqueToken, createRegistrationUrl } from '../../utils/token-generator';
-import { timestampToString, stringToTimestamp, removeUndefined } from '../../utils/firestore-converters';
+import {
+  RegistrationToken,
+  RegistrationStats,
+  TokenValidationResult,
+} from '../../types/registration';
+import {
+  generateUniqueToken,
+  createRegistrationUrl,
+} from '../../utils/token-generator';
+import {
+  timestampToString,
+  stringToTimestamp,
+  removeUndefined,
+} from '../../utils/firestore-converters';
 
-class RegistrationTokensService extends BaseFirestoreService<RegistrationTokenDocument, RegistrationToken> {
+class RegistrationTokensService extends BaseFirestoreService<
+  RegistrationTokenDocument,
+  RegistrationToken
+> {
   constructor() {
     super('registration_tokens');
   }
@@ -14,7 +28,10 @@ class RegistrationTokensService extends BaseFirestoreService<RegistrationTokenDo
   // DOCUMENT CONVERSION METHODS
   // ============================================================================
 
-  protected documentToClient(id: string, document: RegistrationTokenDocument): RegistrationToken {
+  protected documentToClient(
+    id: string,
+    document: RegistrationTokenDocument
+  ): RegistrationToken {
     return {
       id,
       token: document.token,
@@ -33,23 +50,34 @@ class RegistrationTokensService extends BaseFirestoreService<RegistrationTokenDo
     };
   }
 
-  protected clientToDocument(client: Partial<RegistrationToken>): Partial<RegistrationTokenDocument> {
+  protected clientToDocument(
+    client: Partial<RegistrationToken>
+  ): Partial<RegistrationTokenDocument> {
     const document: Partial<RegistrationTokenDocument> = {};
-    
+
     if (client.token !== undefined) document.token = client.token;
     if (client.createdBy !== undefined) document.createdBy = client.createdBy;
-    if (client.createdAt !== undefined) document.createdAt = stringToTimestamp(client.createdAt);
-    if (client.expiresAt !== undefined) document.expiresAt = stringToTimestamp(client.expiresAt);
+    if (client.createdAt !== undefined)
+      document.createdAt = stringToTimestamp(client.createdAt);
+    if (client.expiresAt !== undefined)
+      document.expiresAt = stringToTimestamp(client.expiresAt);
     if (client.maxUses !== undefined) document.maxUses = client.maxUses;
-    if (client.currentUses !== undefined) document.currentUses = client.currentUses;
+    if (client.currentUses !== undefined)
+      document.currentUses = client.currentUses;
     if (client.isActive !== undefined) document.isActive = client.isActive;
 
     if (client.metadata) {
       document.metadata = {};
-      if (client.metadata.purpose !== undefined) document.metadata.purpose = client.metadata.purpose;
-      if (client.metadata.notes !== undefined) document.metadata.notes = client.metadata.notes;
-      if (client.metadata.eventDate !== undefined) document.metadata.eventDate = stringToTimestamp(client.metadata.eventDate);
-      if (client.metadata.location !== undefined) document.metadata.location = client.metadata.location;
+      if (client.metadata.purpose !== undefined)
+        document.metadata.purpose = client.metadata.purpose;
+      if (client.metadata.notes !== undefined)
+        document.metadata.notes = client.metadata.notes;
+      if (client.metadata.eventDate !== undefined)
+        document.metadata.eventDate = stringToTimestamp(
+          client.metadata.eventDate
+        );
+      if (client.metadata.location !== undefined)
+        document.metadata.location = client.metadata.location;
     }
 
     return document;
@@ -87,7 +115,7 @@ class RegistrationTokensService extends BaseFirestoreService<RegistrationTokenDo
   }): Promise<RegistrationToken> {
     try {
       const token = await this.generateToken();
-      
+
       const registrationToken: Partial<RegistrationToken> = {
         token,
         createdBy: tokenData.createdBy,
@@ -131,7 +159,7 @@ class RegistrationTokensService extends BaseFirestoreService<RegistrationTokenDo
   async validateToken(token: string): Promise<TokenValidationResult> {
     try {
       const tokens = await this.getWhere('token', '==', token);
-      
+
       if (tokens.length === 0) {
         return {
           isValid: false,
@@ -150,7 +178,10 @@ class RegistrationTokensService extends BaseFirestoreService<RegistrationTokenDo
       }
 
       // Check if token is expired
-      if (registrationToken.expiresAt && new Date(registrationToken.expiresAt) < new Date()) {
+      if (
+        registrationToken.expiresAt &&
+        new Date(registrationToken.expiresAt) < new Date()
+      ) {
         return {
           isValid: false,
           error: 'Token has expired',
@@ -158,7 +189,10 @@ class RegistrationTokensService extends BaseFirestoreService<RegistrationTokenDo
       }
 
       // Check if token has reached max uses
-      if (registrationToken.maxUses > 0 && registrationToken.currentUses >= registrationToken.maxUses) {
+      if (
+        registrationToken.maxUses > 0 &&
+        registrationToken.currentUses >= registrationToken.maxUses
+      ) {
         return {
           isValid: false,
           error: 'Token has reached maximum uses',
@@ -192,7 +226,9 @@ class RegistrationTokensService extends BaseFirestoreService<RegistrationTokenDo
         currentUses: token.currentUses + 1,
       });
 
-      console.log(`Token usage incremented: ${tokenId} (${token.currentUses + 1})`);
+      console.log(
+        `Token usage incremented: ${tokenId} (${token.currentUses + 1})`
+      );
     } catch (error) {
       console.error('Error incrementing token usage:', error);
       throw error;
@@ -235,11 +271,11 @@ class RegistrationTokensService extends BaseFirestoreService<RegistrationTokenDo
     try {
       // Get all tokens
       const allTokens = await this.getAll();
-      const activeTokens = allTokens.filter(token => token.isActive);
+      const activeTokens = allTokens.filter((token) => token.isActive);
 
       // Note: In a real implementation, you would also query pending_registrations
       // For now, we'll return basic token statistics
-      const registrationsByToken = allTokens.map(token => ({
+      const registrationsByToken = allTokens.map((token) => ({
         tokenId: token.id,
         purpose: token.metadata.purpose,
         registrationCount: token.currentUses,
@@ -248,7 +284,10 @@ class RegistrationTokensService extends BaseFirestoreService<RegistrationTokenDo
       return {
         totalTokens: allTokens.length,
         activeTokens: activeTokens.length,
-        totalRegistrations: allTokens.reduce((sum, token) => sum + token.currentUses, 0),
+        totalRegistrations: allTokens.reduce(
+          (sum, token) => sum + token.currentUses,
+          0
+        ),
         pendingApprovals: 0, // Will be implemented when we add pending registrations service
         approvedRegistrations: 0, // Will be implemented when we add pending registrations service
         rejectedRegistrations: 0, // Will be implemented when we add pending registrations service
@@ -274,9 +313,9 @@ class RegistrationTokensService extends BaseFirestoreService<RegistrationTokenDo
     try {
       const allTokens = await this.getAll();
       const now = new Date();
-      
-      return allTokens.filter(token => 
-        token.expiresAt && new Date(token.expiresAt) < now
+
+      return allTokens.filter(
+        (token) => token.expiresAt && new Date(token.expiresAt) < now
       );
     } catch (error) {
       console.error('Error getting expired tokens:', error);

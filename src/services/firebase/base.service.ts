@@ -334,7 +334,9 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
     const pageLimit = options.limit || 10;
     const offset = (page - 1) * pageLimit;
 
-    console.log(`BaseService.getPaginated: ${this.collectionName}, page=${page}, limit=${pageLimit}, offset=${offset}`);
+    console.log(
+      `BaseService.getPaginated: ${this.collectionName}, page=${page}, limit=${pageLimit}, offset=${offset}`
+    );
 
     try {
       // Get total count first
@@ -391,17 +393,19 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
       } else {
         // Subsequent pages - need to skip offset documents
         console.log(`BaseService.getPaginated: Skipping ${offset} documents`);
-        
+
         // Get all documents up to the start of this page to find the startAfter document
         const skipQuery = query(
           this.getCollectionRef(),
           ...baseConstraints,
           limit(offset)
         );
-        
+
         const skipSnapshot = await getDocs(skipQuery);
-        console.log(`BaseService.getPaginated: Skip query returned ${skipSnapshot.docs.length} docs`);
-        
+        console.log(
+          `BaseService.getPaginated: Skip query returned ${skipSnapshot.docs.length} docs`
+        );
+
         if (skipSnapshot.docs.length < offset) {
           // Not enough documents to reach this page
           return {
@@ -427,8 +431,10 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
 
       // Execute the data query
       const querySnapshot = await getDocs(dataQuery);
-      console.log(`BaseService.getPaginated: Data query returned ${querySnapshot.docs.length} docs`);
-      
+      console.log(
+        `BaseService.getPaginated: Data query returned ${querySnapshot.docs.length} docs`
+      );
+
       const data = querySnapshot.docs.map((doc) =>
         this.documentToClient(doc.id, doc.data() as TDocument)
       );
@@ -448,7 +454,10 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
       console.log(`BaseService.getPaginated: Returning result:`, result);
       return result;
     } catch (error) {
-      console.error(`Error getting paginated ${this.collectionName} documents:`, error);
+      console.error(
+        `Error getting paginated ${this.collectionName} documents:`,
+        error
+      );
       throw this.handleFirestoreError(error);
     }
   }

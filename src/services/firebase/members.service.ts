@@ -1,7 +1,4 @@
-import {
-  Timestamp,
-  WhereFilterOp,
-} from 'firebase/firestore';
+import { Timestamp, WhereFilterOp } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { BaseFirestoreService } from './base.service';
 import {

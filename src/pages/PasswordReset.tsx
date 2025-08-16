@@ -31,7 +31,11 @@ export default function PasswordReset() {
       console.error('Password reset error:', err);
 
       // Handle specific Firebase error codes
-      if (err instanceof Error && 'code' in err && err.code === 'auth/user-not-found') {
+      if (
+        err instanceof Error &&
+        'code' in err &&
+        err.code === 'auth/user-not-found'
+      ) {
         setMessage('No account found with this email address.');
       } else if (err.code === 'auth/invalid-email') {
         setMessage('Please enter a valid email address.');

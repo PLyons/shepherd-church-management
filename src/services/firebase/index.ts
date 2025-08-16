@@ -276,7 +276,7 @@ export class FirebaseService {
     const [members, households, events] = await Promise.all([
       includeMembers ? this.members.search(searchTerm, { limit }) : [],
       includeHouseholds ? this.households.search(searchTerm, { limit }) : [],
-      [],  // events removed
+      [], // events removed
     ]);
 
     return {
@@ -358,7 +358,9 @@ export class FirebaseService {
   /**
    * Subscribe to dashboard updates
    */
-  subscribeToDashboard(callback: (stats: DashboardStatistics) => void): () => void {
+  subscribeToDashboard(
+    callback: (stats: DashboardStatistics) => void
+  ): () => void {
     // For now, just subscribe to member changes
     // In a full implementation, you'd combine multiple subscriptions
     return this.members.subscribeToMemberDirectory({}, async () => {

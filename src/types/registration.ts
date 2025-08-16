@@ -24,7 +24,7 @@ export interface RegistrationToken {
 export interface PendingRegistration {
   id: string;
   tokenId: string; // Reference to registration_tokens
-  
+
   // Personal Information
   firstName: string;
   lastName: string;
@@ -32,7 +32,7 @@ export interface PendingRegistration {
   phone?: string;
   birthdate?: string; // ISO string
   gender?: 'Male' | 'Female' | '';
-  
+
   // Address Information
   address?: {
     line1?: string;
@@ -42,15 +42,15 @@ export interface PendingRegistration {
     postalCode?: string;
     country?: string;
   };
-  
+
   // Status
   memberStatus: 'member' | 'visitor';
-  
+
   // Metadata
   submittedAt: string; // ISO string
   ipAddress?: string;
   userAgent?: string;
-  
+
   // Approval Status
   approvalStatus: 'pending' | 'approved' | 'rejected';
   approvedBy?: string; // Admin/pastor member ID

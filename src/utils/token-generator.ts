@@ -12,7 +12,7 @@ export function generateSecureToken(length: number = 32): string {
   // Use crypto.getRandomValues for secure random generation
   const array = new Uint8Array(length);
   crypto.getRandomValues(array);
-  
+
   // Convert to base64url (URL-safe base64)
   return btoa(String.fromCharCode(...array))
     .replace(/\+/g, '-')
@@ -31,8 +31,8 @@ export function generateQRToken(length: number = 16): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   const array = new Uint8Array(length);
   crypto.getRandomValues(array);
-  
-  return Array.from(array, byte => chars[byte % chars.length]).join('');
+
+  return Array.from(array, (byte) => chars[byte % chars.length]).join('');
 }
 
 /**
@@ -59,12 +59,12 @@ export async function generateUniqueToken(
   for (let i = 0; i < maxRetries; i++) {
     const token = generateQRToken();
     const isUnique = await checkUniqueness(token);
-    
+
     if (isUnique) {
       return token;
     }
   }
-  
+
   throw new Error('Failed to generate unique token after maximum retries');
 }
 
@@ -75,6 +75,7 @@ export async function generateUniqueToken(
  * @returns Complete registration URL
  */
 export function createRegistrationUrl(token: string, baseUrl?: string): string {
-  const base = baseUrl || (typeof window !== 'undefined' ? window.location.origin : '');
+  const base =
+    baseUrl || (typeof window !== 'undefined' ? window.location.origin : '');
   return `${base}/register/qr?token=${encodeURIComponent(token)}`;
 }

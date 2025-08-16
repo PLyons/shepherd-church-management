@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Plus, 
-  QrCode, 
-  Download, 
-  Eye, 
-  EyeOff, 
-  Calendar, 
-  Users, 
+import {
+  Plus,
+  QrCode,
+  Download,
+  Eye,
+  EyeOff,
+  Calendar,
+  Users,
   Hash,
   Printer,
   Copy,
   ExternalLink,
-  BarChart3
+  BarChart3,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useUnifiedAuth';
 import { useToast } from '../../contexts/ToastContext';
@@ -28,7 +28,9 @@ export default function RegistrationTokens() {
   const [tokens, setTokens] = useState<RegistrationToken[]>([]);
   const [stats, setStats] = useState<RegistrationStats | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [selectedToken, setSelectedToken] = useState<RegistrationToken | null>(null);
+  const [selectedToken, setSelectedToken] = useState<RegistrationToken | null>(
+    null
+  );
   const [showQRCode, setShowQRCode] = useState<string | null>(null);
 
   useEffect(() => {
@@ -40,9 +42,9 @@ export default function RegistrationTokens() {
       setLoading(true);
       const [tokensData, statsData] = await Promise.all([
         registrationTokensService.getAll({
-          orderBy: { field: 'createdAt', direction: 'desc' }
+          orderBy: { field: 'createdAt', direction: 'desc' },
         }),
-        registrationTokensService.getRegistrationStats()
+        registrationTokensService.getRegistrationStats(),
       ]);
       setTokens(tokensData);
       setStats(statsData);
@@ -99,7 +101,7 @@ export default function RegistrationTokens() {
     if (!printWindow) return;
 
     const url = registrationTokensService.createRegistrationUrl(token.token);
-    
+
     printWindow.document.write(`
       <html>
         <head>
@@ -144,9 +146,9 @@ export default function RegistrationTokens() {
 
     // Note: In a real implementation, we'd need to generate the QR code here
     // For now, we'll show a placeholder
-    printWindow.document.getElementById('qr-code')!.innerHTML = 
+    printWindow.document.getElementById('qr-code')!.innerHTML =
       `<div style="width: 200px; height: 200px; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center;">QR Code for ${url}</div>`;
-    
+
     printWindow.document.close();
     printWindow.print();
   };
@@ -157,12 +159,13 @@ export default function RegistrationTokens() {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
   const getTokenStatus = (token: RegistrationToken) => {
-    if (!token.isActive) return { text: 'Inactive', color: 'text-gray-500 bg-gray-100' };
+    if (!token.isActive)
+      return { text: 'Inactive', color: 'text-gray-500 bg-gray-100' };
     if (token.expiresAt && new Date(token.expiresAt) < new Date()) {
       return { text: 'Expired', color: 'text-red-700 bg-red-100' };
     }
@@ -187,7 +190,9 @@ export default function RegistrationTokens() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Registration Tokens</h1>
+              <h1 className="text-3xl font-bold text-gray-900">
+                Registration Tokens
+              </h1>
               <p className="text-gray-600 mt-2">
                 Generate and manage QR codes for visitor registration
               </p>
@@ -212,7 +217,9 @@ export default function RegistrationTokens() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm text-gray-600">Total Tokens</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.totalTokens}</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {stats.totalTokens}
+                  </p>
                 </div>
               </div>
             </div>
@@ -224,7 +231,9 @@ export default function RegistrationTokens() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm text-gray-600">Active Tokens</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.activeTokens}</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {stats.activeTokens}
+                  </p>
                 </div>
               </div>
             </div>
@@ -236,7 +245,9 @@ export default function RegistrationTokens() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm text-gray-600">Total Registrations</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.totalRegistrations}</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {stats.totalRegistrations}
+                  </p>
                 </div>
               </div>
             </div>
@@ -248,7 +259,9 @@ export default function RegistrationTokens() {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm text-gray-600">Pending Approvals</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.pendingApprovals}</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {stats.pendingApprovals}
+                  </p>
                 </div>
               </div>
             </div>
@@ -258,13 +271,17 @@ export default function RegistrationTokens() {
         {/* Tokens Table */}
         <div className="bg-white shadow rounded-lg overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">Registration Tokens</h2>
+            <h2 className="text-lg font-medium text-gray-900">
+              Registration Tokens
+            </h2>
           </div>
-          
+
           {tokens.length === 0 ? (
             <div className="p-8 text-center">
               <QrCode className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">No registration tokens created yet</p>
+              <p className="text-gray-500">
+                No registration tokens created yet
+              </p>
               <button
                 onClick={() => setShowCreateForm(true)}
                 className="mt-4 text-blue-600 hover:text-blue-500 font-medium"
@@ -317,7 +334,9 @@ export default function RegistrationTokens() {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${status.color}`}>
+                          <span
+                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${status.color}`}
+                          >
                             {status.text}
                           </span>
                         </td>
@@ -398,10 +417,7 @@ export default function RegistrationTokens() {
 
       {/* QR Code Display Modal */}
       {showQRCode && (
-        <QRCodeDisplay
-          token={showQRCode}
-          onClose={() => setShowQRCode(null)}
-        />
+        <QRCodeDisplay token={showQRCode} onClose={() => setShowQRCode(null)} />
       )}
     </div>
   );

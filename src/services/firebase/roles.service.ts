@@ -263,7 +263,9 @@ export class RolesService {
   /**
    * Get members by role
    */
-  async getMembersByRole(role: 'admin' | 'pastor' | 'member'): Promise<Member[]> {
+  async getMembersByRole(
+    role: 'admin' | 'pastor' | 'member'
+  ): Promise<Member[]> {
     const allMembers = await this.membersService.getAll();
     return allMembers.filter((member) => member.role === role);
   }

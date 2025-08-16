@@ -22,10 +22,10 @@ export default function Members() {
   }, [currentPage, activeSearchTerm]);
 
   const fetchMembers = async () => {
-    console.log('Fetching members with pagination:', { 
-      activeSearchTerm, 
-      currentPage, 
-      itemsPerPage 
+    console.log('Fetching members with pagination:', {
+      activeSearchTerm,
+      currentPage,
+      itemsPerPage,
     });
     setLoading(true);
     try {
@@ -38,7 +38,8 @@ export default function Members() {
         orderDirection: 'asc' as const,
       };
 
-      const result = await firebaseService.members.getMemberDirectoryPaginated(options);
+      const result =
+        await firebaseService.members.getMemberDirectoryPaginated(options);
       console.log('Fetched paginated members:', result);
 
       setMembers(result.data);
@@ -141,7 +142,9 @@ export default function Members() {
         </h1>
         <div className="flex items-center gap-4">
           <div className="text-sm text-gray-600">
-            {activeSearchTerm ? `${totalCount} results` : `${totalCount} total members`}
+            {activeSearchTerm
+              ? `${totalCount} results`
+              : `${totalCount} total members`}
           </div>
           {canAddMembers && (
             <>
@@ -193,7 +196,7 @@ export default function Members() {
             </button>
           )}
         </form>
-        
+
         {activeSearchTerm && (
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <span>Showing results for:</span>

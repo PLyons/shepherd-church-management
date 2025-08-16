@@ -8,7 +8,6 @@ interface NavigationProps {
   userRole: 'admin' | 'pastor' | 'member';
 }
 
-
 const navigationItems = [
   {
     name: 'Dashboard',
@@ -21,14 +20,15 @@ const navigationItems = [
     href: '/households',
     roles: ['admin', 'pastor', 'member'],
   },
-  { 
-    name: 'Registration', 
-    href: '/admin/registration-tokens', 
+  {
+    name: 'Registration',
+    href: '/admin/registration-tokens',
     roles: ['admin', 'pastor'],
     submenu: [
       { name: 'QR Tokens', href: '/admin/registration-tokens' },
       { name: 'Pending Registrations', href: '/admin/pending-registrations' },
-    ]
+      { name: 'Analytics', href: '/admin/registration-analytics' },
+    ],
   },
   { name: 'Settings', href: '/settings', roles: ['admin', 'pastor'] },
 ];
@@ -47,7 +47,9 @@ export function Navigation({ onMobileMenuToggle, userRole }: NavigationProps) {
   };
 
   const isSubMenuActive = (submenu?: { name: string; href: string }[]) => {
-    return submenu?.some(subItem => location.pathname === subItem.href) || false;
+    return (
+      submenu?.some((subItem) => location.pathname === subItem.href) || false
+    );
   };
 
   return (
@@ -65,14 +67,20 @@ export function Navigation({ onMobileMenuToggle, userRole }: NavigationProps) {
             {/* Desktop navigation */}
             <div className="hidden md:ml-8 md:flex md:space-x-8">
               {visibleItems.map((item) => {
-                const isActive = location.pathname === item.href || isSubMenuActive(item.submenu);
+                const isActive =
+                  location.pathname === item.href ||
+                  isSubMenuActive(item.submenu);
                 const hasSubmenu = item.submenu && item.submenu.length > 0;
-                
+
                 if (hasSubmenu) {
                   return (
                     <div key={item.name} className="relative">
                       <button
-                        onClick={() => setOpenDropdown(openDropdown === item.name ? null : item.name)}
+                        onClick={() =>
+                          setOpenDropdown(
+                            openDropdown === item.name ? null : item.name
+                          )
+                        }
                         className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 ${
                           isActive
                             ? 'border-blue-500 text-gray-900'
@@ -82,7 +90,7 @@ export function Navigation({ onMobileMenuToggle, userRole }: NavigationProps) {
                         {item.name}
                         <ChevronDown className="ml-1 h-4 w-4" />
                       </button>
-                      
+
                       {openDropdown === item.name && (
                         <div className="absolute top-full left-0 mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">
                           {item.submenu!.map((subItem) => (
@@ -90,7 +98,7 @@ export function Navigation({ onMobileMenuToggle, userRole }: NavigationProps) {
                               key={subItem.name}
                               to={subItem.href}
                               onClick={() => setOpenDropdown(null)}
-                              className={`block px-4 py-2 text-sm hover:bg-gray-50 ${ 
+                              className={`block px-4 py-2 text-sm hover:bg-gray-50 ${
                                 location.pathname === subItem.href
                                   ? 'text-blue-600 bg-blue-50'
                                   : 'text-gray-700'

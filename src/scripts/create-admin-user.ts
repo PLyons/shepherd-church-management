@@ -152,9 +152,16 @@ async function createAdminUser() {
 
     process.exit(0);
   } catch (error: unknown) {
-    console.error('\n❌ Error creating admin user:', error instanceof Error ? error.message : 'Unknown error');
+    console.error(
+      '\n❌ Error creating admin user:',
+      error instanceof Error ? error.message : 'Unknown error'
+    );
 
-    if (error instanceof Error && 'code' in error && error.code === 'auth/email-already-in-use') {
+    if (
+      error instanceof Error &&
+      'code' in error &&
+      error.code === 'auth/email-already-in-use'
+    ) {
       console.log('\n📝 Note: This email is already registered.');
       console.log(
         'If you need to reset the password, use the password reset feature.'

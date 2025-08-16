@@ -92,7 +92,9 @@ export const getCurrentTimestamp = (): Timestamp => {
 /**
  * Removes undefined values from an object (Firestore doesn't accept undefined)
  */
-export const removeUndefined = <T extends Record<string, unknown>>(obj: T): T => {
+export const removeUndefined = <T extends Record<string, unknown>>(
+  obj: T
+): T => {
   const result = {} as T;
   Object.keys(obj).forEach((key) => {
     if (obj[key] !== undefined) {
@@ -622,12 +624,14 @@ export const registrationTokenToRegistrationTokenDocument = (
     maxUses: token.maxUses !== undefined ? token.maxUses : -1,
     currentUses: token.currentUses !== undefined ? token.currentUses : 0,
     isActive: token.isActive !== undefined ? token.isActive : true,
-    metadata: token.metadata ? {
-      purpose: token.metadata.purpose,
-      notes: token.metadata.notes,
-      eventDate: stringToTimestamp(token.metadata.eventDate),
-      location: token.metadata.location,
-    } : undefined,
+    metadata: token.metadata
+      ? {
+          purpose: token.metadata.purpose,
+          notes: token.metadata.notes,
+          eventDate: stringToTimestamp(token.metadata.eventDate),
+          location: token.metadata.location,
+        }
+      : undefined,
   });
 };
 
@@ -676,7 +680,9 @@ export const pendingRegistrationToPendingRegistrationDocument = (
     gender: registration.gender,
     address: registration.address,
     memberStatus: registration.memberStatus,
-    submittedAt: registration.submittedAt ? stringToTimestamp(registration.submittedAt) : now,
+    submittedAt: registration.submittedAt
+      ? stringToTimestamp(registration.submittedAt)
+      : now,
     ipAddress: registration.ipAddress,
     userAgent: registration.userAgent,
     approvalStatus: registration.approvalStatus || 'pending',

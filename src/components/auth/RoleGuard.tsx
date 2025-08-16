@@ -11,10 +11,7 @@ interface RoleGuardProps {
   fallbackUrl?: string;
 }
 
-export function RoleGuard({
-  children,
-  allowedRoles,
-}: RoleGuardProps) {
+export function RoleGuard({ children, allowedRoles }: RoleGuardProps) {
   const { member, loading } = useAuth();
 
   if (loading) {

@@ -421,7 +421,7 @@ export interface RegistrationTokenDocument {
 
 export interface PendingRegistrationDocument {
   tokenId: string; // Reference to registration_tokens document ID
-  
+
   // Personal Information
   firstName: string;
   lastName: string;
@@ -429,7 +429,7 @@ export interface PendingRegistrationDocument {
   phone?: string;
   birthdate?: Timestamp;
   gender?: 'Male' | 'Female' | '';
-  
+
   // Address Information
   address?: {
     line1?: string;
@@ -439,15 +439,15 @@ export interface PendingRegistrationDocument {
     postalCode?: string;
     country?: string;
   };
-  
+
   // Status
   memberStatus: 'member' | 'visitor';
-  
+
   // Metadata
   submittedAt: Timestamp;
   ipAddress?: string;
   userAgent?: string;
-  
+
   // Approval Status
   approvalStatus: 'pending' | 'approved' | 'rejected';
   approvedBy?: string; // Admin/pastor member ID

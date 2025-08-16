@@ -1,6 +1,7 @@
 import { publicRegistrationService } from './public-registration.service';
 import { membersService } from './members.service';
 import { householdsService } from './households.service';
+import { followUpService } from './follow-up.service';
 import { PendingRegistration } from '../../types/registration';
 import { Member } from '../../types';
 import { generateFullName } from '../../utils/firestore-converters';
@@ -14,7 +15,6 @@ interface HouseholdSuggestion {
 }
 
 class RegistrationApprovalService {
-  
   // ============================================================================
   // APPROVAL WORKFLOW METHODS
   // ============================================================================
@@ -38,18 +38,22 @@ class RegistrationApprovalService {
   }> {
     try {
       // Get the pending registration
-      const registration = await publicRegistrationService.getById(registrationId);
+      const registration =
+        await publicRegistrationService.getById(registrationId);
       if (!registration) {
         return { success: false, error: 'Registration not found' };
       }
 
       if (registration.approvalStatus !== 'pending') {
-        return { success: false, error: 'Registration is not pending approval' };
+        return {
+          success: false,
+          error: 'Registration is not pending approval',
+        };
       }
 
       // Create or assign to household
       let householdId = options?.assignToHouseholdId;
-      
+
       if (!householdId) {
         // Create a new household for this member
         const householdName = `${registration.lastName} Family`;
@@ -78,7 +82,8 @@ class RegistrationApprovalService {
         birthdate: registration.birthdate,
         gender: registration.gender || undefined,
         role: options?.customRole || 'member',
-        memberStatus: registration.memberStatus === 'member' ? 'active' : 'visitor',
+        memberStatus:
+          registration.memberStatus === 'member' ? 'active' : 'visitor',
         householdId: householdId,
         isPrimaryContact: true, // First member in household is primary contact
         joinedAt: new Date().toISOString(),
@@ -95,7 +100,9 @@ class RegistrationApprovalService {
           memberIds: [...household.memberIds, member.id],
           memberCount: household.memberCount + 1,
           primaryContactId: household.primaryContactId || member.id,
-          primaryContactName: household.primaryContactName || generateFullName(member.firstName, member.lastName),
+          primaryContactName:
+            household.primaryContactName ||
+            generateFullName(member.firstName, member.lastName),
         });
       }
 
@@ -108,19 +115,32 @@ class RegistrationApprovalService {
         member.id
       );
 
-      console.log(`Registration ${registrationId} approved, member ${member.id} created`);
+      // Process follow-up actions
+      try {
+        await followUpService.processApprovedRegistration(registration, member);
+        console.log(`Follow-up actions scheduled for member ${member.id}`);
+      } catch (followUpError) {
+        console.error('Error scheduling follow-up actions:', followUpError);
+        // Don't fail the approval if follow-up scheduling fails
+      }
+
+      console.log(
+        `Registration ${registrationId} approved, member ${member.id} created`
+      );
 
       return {
         success: true,
         memberId: member.id,
         householdId: householdId,
       };
-
     } catch (error) {
       console.error('Error approving registration:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to approve registration',
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to approve registration',
       };
     }
   }
@@ -134,13 +154,17 @@ class RegistrationApprovalService {
     reason: string
   ): Promise<{ success: boolean; error?: string }> {
     try {
-      const registration = await publicRegistrationService.getById(registrationId);
+      const registration =
+        await publicRegistrationService.getById(registrationId);
       if (!registration) {
         return { success: false, error: 'Registration not found' };
       }
 
       if (registration.approvalStatus !== 'pending') {
-        return { success: false, error: 'Registration is not pending approval' };
+        return {
+          success: false,
+          error: 'Registration is not pending approval',
+        };
       }
 
       await publicRegistrationService.updateApprovalStatus(
@@ -150,15 +174,19 @@ class RegistrationApprovalService {
         reason
       );
 
-      console.log(`Registration ${registrationId} rejected by ${rejectedBy}: ${reason}`);
+      console.log(
+        `Registration ${registrationId} rejected by ${rejectedBy}: ${reason}`
+      );
 
       return { success: true };
-
     } catch (error) {
       console.error('Error rejecting registration:', error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Failed to reject registration',
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Failed to reject registration',
       };
     }
   }
@@ -182,14 +210,21 @@ class RegistrationApprovalService {
 
     for (const registrationId of registrationIds) {
       try {
-        const result = await this.approveRegistration(registrationId, approvedBy, {
-          customRole: options?.defaultRole,
-        });
+        const result = await this.approveRegistration(
+          registrationId,
+          approvedBy,
+          {
+            customRole: options?.defaultRole,
+          }
+        );
 
         if (result.success) {
           approved.push(registrationId);
         } else {
-          failed.push({ id: registrationId, error: result.error || 'Unknown error' });
+          failed.push({
+            id: registrationId,
+            error: result.error || 'Unknown error',
+          });
         }
       } catch (error) {
         failed.push({
@@ -213,34 +248,51 @@ class RegistrationApprovalService {
   /**
    * Detect potential duplicate members for a registration
    */
-  async detectDuplicateMembers(registration: PendingRegistration): Promise<Member[]> {
+  async detectDuplicateMembers(
+    registration: PendingRegistration
+  ): Promise<Member[]> {
     try {
       const potentialDuplicates: Member[] = [];
 
       // Check by email if provided
       if (registration.email) {
-        const emailMatches = await membersService.getWhere('email', '==', registration.email.toLowerCase());
+        const emailMatches = await membersService.getWhere(
+          'email',
+          '==',
+          registration.email.toLowerCase()
+        );
         potentialDuplicates.push(...emailMatches);
       }
 
       // Check by phone if provided
       if (registration.phone) {
-        const phoneMatches = await membersService.getWhere('phone', '==', registration.phone);
+        const phoneMatches = await membersService.getWhere(
+          'phone',
+          '==',
+          registration.phone
+        );
         potentialDuplicates.push(...phoneMatches);
       }
 
       // Check by full name (approximate matching)
-      const fullName = generateFullName(registration.firstName, registration.lastName);
-      const nameMatches = await membersService.getWhere('fullName', '==', fullName);
+      const fullName = generateFullName(
+        registration.firstName,
+        registration.lastName
+      );
+      const nameMatches = await membersService.getWhere(
+        'fullName',
+        '==',
+        fullName
+      );
       potentialDuplicates.push(...nameMatches);
 
       // Remove actual duplicates from array
-      const uniqueDuplicates = potentialDuplicates.filter((item, index, arr) => 
-        arr.findIndex(dup => dup.id === item.id) === index
+      const uniqueDuplicates = potentialDuplicates.filter(
+        (item, index, arr) =>
+          arr.findIndex((dup) => dup.id === item.id) === index
       );
 
       return uniqueDuplicates;
-
     } catch (error) {
       console.error('Error detecting duplicate members:', error);
       return [];
@@ -250,12 +302,15 @@ class RegistrationApprovalService {
   /**
    * Get registrations that may be duplicates
    */
-  async getRegistrationsWithPotentialDuplicates(): Promise<{
-    registration: PendingRegistration;
-    potentialDuplicates: Member[];
-  }[]> {
+  async getRegistrationsWithPotentialDuplicates(): Promise<
+    {
+      registration: PendingRegistration;
+      potentialDuplicates: Member[];
+    }[]
+  > {
     try {
-      const pendingRegistrations = await publicRegistrationService.getPendingRegistrations();
+      const pendingRegistrations =
+        await publicRegistrationService.getPendingRegistrations();
       const registrationsWithDuplicates = [];
 
       for (const registration of pendingRegistrations) {
@@ -269,9 +324,11 @@ class RegistrationApprovalService {
       }
 
       return registrationsWithDuplicates;
-
     } catch (error) {
-      console.error('Error getting registrations with potential duplicates:', error);
+      console.error(
+        'Error getting registrations with potential duplicates:',
+        error
+      );
       return [];
     }
   }
@@ -283,13 +340,15 @@ class RegistrationApprovalService {
   /**
    * Suggest households for a registration based on last name and address
    */
-  async suggestHouseholds(registration: PendingRegistration): Promise<{
-    id: string;
-    familyName: string;
-    memberCount: number;
-    primaryContactName?: string;
-    matchReason: 'lastName' | 'address' | 'both';
-  }[]> {
+  async suggestHouseholds(registration: PendingRegistration): Promise<
+    {
+      id: string;
+      familyName: string;
+      memberCount: number;
+      primaryContactName?: string;
+      matchReason: 'lastName' | 'address' | 'both';
+    }[]
+  > {
     try {
       const suggestions: HouseholdSuggestion[] = [];
       const allHouseholds = await householdsService.getAll();
@@ -298,8 +357,10 @@ class RegistrationApprovalService {
         let matchReason: 'lastName' | 'address' | 'both' | null = null;
 
         // Check for last name match
-        const lastNameMatch = household.familyName.toLowerCase().includes(registration.lastName.toLowerCase());
-        
+        const lastNameMatch = household.familyName
+          .toLowerCase()
+          .includes(registration.lastName.toLowerCase());
+
         // Check for address match (basic comparison)
         let addressMatch = false;
         if (registration.address && household.address) {
@@ -307,8 +368,8 @@ class RegistrationApprovalService {
           const regState = registration.address.state?.toLowerCase();
           const houseCity = household.address.city?.toLowerCase();
           const houseState = household.address.state?.toLowerCase();
-          
-          addressMatch = (regCity === houseCity) && (regState === houseState);
+
+          addressMatch = regCity === houseCity && regState === houseState;
         }
 
         if (lastNameMatch && addressMatch) {
@@ -332,12 +393,15 @@ class RegistrationApprovalService {
 
       // Sort by relevance (both > lastName > address)
       suggestions.sort((a, b) => {
-        const order: Record<string, number> = { both: 3, lastName: 2, address: 1 };
+        const order: Record<string, number> = {
+          both: 3,
+          lastName: 2,
+          address: 1,
+        };
         return order[b.matchReason] - order[a.matchReason];
       });
 
       return suggestions.slice(0, 5); // Return top 5 suggestions
-
     } catch (error) {
       console.error('Error suggesting households:', error);
       return [];
@@ -361,19 +425,25 @@ class RegistrationApprovalService {
   }> {
     try {
       const stats = await publicRegistrationService.getRegistrationStatistics();
-      const duplicatesData = await this.getRegistrationsWithPotentialDuplicates();
-      
+      const duplicatesData =
+        await this.getRegistrationsWithPotentialDuplicates();
+
       // Calculate recent approvals/rejections (last 7 days)
       const sevenDaysAgo = new Date();
       sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      
-      const recentRegistrations = await publicRegistrationService.getRegistrationsByDateRange(
-        sevenDaysAgo.toISOString(),
-        new Date().toISOString()
-      );
-      
-      const recentApprovals = recentRegistrations.filter(r => r.approvalStatus === 'approved').length;
-      const recentRejections = recentRegistrations.filter(r => r.approvalStatus === 'rejected').length;
+
+      const recentRegistrations =
+        await publicRegistrationService.getRegistrationsByDateRange(
+          sevenDaysAgo.toISOString(),
+          new Date().toISOString()
+        );
+
+      const recentApprovals = recentRegistrations.filter(
+        (r) => r.approvalStatus === 'approved'
+      ).length;
+      const recentRejections = recentRegistrations.filter(
+        (r) => r.approvalStatus === 'rejected'
+      ).length;
 
       return {
         totalPending: stats.pending,
@@ -383,7 +453,6 @@ class RegistrationApprovalService {
         recentApprovals,
         recentRejections,
       };
-
     } catch (error) {
       console.error('Error getting approval statistics:', error);
       return {

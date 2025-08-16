@@ -2,13 +2,31 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useToast } from '../contexts/ToastContext';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
-import { QrCode, UserPlus, CheckCircle, AlertCircle, ChevronRight, ChevronLeft, Heart } from 'lucide-react';
+import {
+  QrCode,
+  UserPlus,
+  CheckCircle,
+  AlertCircle,
+  ChevronRight,
+  ChevronLeft,
+  Heart,
+} from 'lucide-react';
 import { registrationTokensService } from '../services/firebase/registration-tokens.service';
 import { publicRegistrationService } from '../services/firebase/public-registration.service';
-import { RegistrationToken, RegistrationFormData, TokenValidationResult } from '../types/registration';
+import {
+  RegistrationToken,
+  RegistrationFormData,
+  TokenValidationResult,
+} from '../types/registration';
 
 // Form step enumeration
-type FormStep = 'basic' | 'contact' | 'personal' | 'address' | 'status' | 'review';
+type FormStep =
+  | 'basic'
+  | 'contact'
+  | 'personal'
+  | 'address'
+  | 'status'
+  | 'review';
 
 interface FormErrors {
   firstName?: string;
@@ -58,7 +76,7 @@ export default function QRRegistration() {
     { id: 'review', title: 'Review', required: true },
   ];
 
-  const currentStepIndex = steps.findIndex(step => step.id === currentStep);
+  const currentStepIndex = steps.findIndex((step) => step.id === currentStep);
   const isFirstStep = currentStepIndex === 0;
   const isLastStep = currentStepIndex === steps.length - 1;
 
@@ -74,7 +92,8 @@ export default function QRRegistration() {
     try {
       setLoading(true);
 
-      const result: TokenValidationResult = await registrationTokensService.validateToken(tokenValue);
+      const result: TokenValidationResult =
+        await registrationTokensService.validateToken(tokenValue);
 
       if (!result.isValid) {
         showToast(result.error || 'Invalid registration link', 'error');
@@ -94,15 +113,23 @@ export default function QRRegistration() {
     const newErrors: FormErrors = {};
 
     if (step === 'basic') {
-      if (!formData.firstName.trim()) newErrors.firstName = 'First name is required';
-      if (!formData.lastName.trim()) newErrors.lastName = 'Last name is required';
+      if (!formData.firstName.trim())
+        newErrors.firstName = 'First name is required';
+      if (!formData.lastName.trim())
+        newErrors.lastName = 'Last name is required';
     }
 
     if (step === 'contact') {
-      if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      if (
+        formData.email &&
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)
+      ) {
         newErrors.email = 'Please enter a valid email address';
       }
-      if (formData.phone && !/^[\d\s\-\(\)\+\.]{10,}$/.test(formData.phone.replace(/\D/g, ''))) {
+      if (
+        formData.phone &&
+        !/^[\d\s\-\(\)\+\.]{10,}$/.test(formData.phone.replace(/\D/g, ''))
+      ) {
         newErrors.phone = 'Please enter a valid phone number';
       }
     }
@@ -142,10 +169,14 @@ export default function QRRegistration() {
 
   const canProceed = (): boolean => {
     if (currentStep === 'basic') {
-      return formData.firstName.trim() !== '' && formData.lastName.trim() !== '';
+      return (
+        formData.firstName.trim() !== '' && formData.lastName.trim() !== ''
+      );
     }
     if (currentStep === 'review') {
-      return formData.firstName.trim() !== '' && formData.lastName.trim() !== '';
+      return (
+        formData.firstName.trim() !== '' && formData.lastName.trim() !== ''
+      );
     }
     return true;
   };
@@ -197,19 +228,22 @@ export default function QRRegistration() {
   };
 
   // Update form data with validation
-  const updateFormData = (field: keyof RegistrationFormData, value: RegistrationFormData[keyof RegistrationFormData]) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    
+  const updateFormData = (
+    field: keyof RegistrationFormData,
+    value: RegistrationFormData[keyof RegistrationFormData]
+  ) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+
     // Clear error when user starts typing
     if (errors[field as keyof FormErrors]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }));
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
   };
 
   const updateAddress = (field: string, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      address: { ...prev.address, [field]: value }
+      address: { ...prev.address, [field]: value },
     }));
   };
 
@@ -220,7 +254,9 @@ export default function QRRegistration() {
         <div className="flex justify-center">
           <LoadingSpinner />
         </div>
-        <p className="text-center text-gray-600 mt-4">Validating registration link...</p>
+        <p className="text-center text-gray-600 mt-4">
+          Validating registration link...
+        </p>
       </div>
     );
   }
@@ -235,7 +271,8 @@ export default function QRRegistration() {
             QR Registration
           </h2>
           <p className="mt-4 text-gray-600">
-            This page requires a valid registration token. Please scan a QR code provided by the church.
+            This page requires a valid registration token. Please scan a QR code
+            provided by the church.
           </p>
         </div>
       </div>
@@ -252,7 +289,8 @@ export default function QRRegistration() {
             Invalid Registration Link
           </h2>
           <p className="mt-4 text-gray-600">
-            This registration link is invalid, expired, or has been used. Please contact the church office for assistance.
+            This registration link is invalid, expired, or has been used. Please
+            contact the church office for assistance.
           </p>
         </div>
       </div>
@@ -271,7 +309,8 @@ export default function QRRegistration() {
             Welcome to Our Church Family!
           </h2>
           <p className="text-lg text-gray-700 mb-6">
-            Thank you for registering! A church administrator will review your information and get in touch with you soon.
+            Thank you for registering! A church administrator will review your
+            information and get in touch with you soon.
           </p>
           <div className="bg-white rounded-lg p-6 shadow-sm border">
             <h3 className="font-semibold text-gray-900 mb-3">What's Next?</h3>
@@ -294,19 +333,24 @@ export default function QRRegistration() {
 
   // Progressive form renderer
   const renderFormStep = () => {
-    const inputClass = "mt-1 block w-full h-12 border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-base px-4";
-    const labelClass = "block text-sm font-medium text-gray-700 mb-2";
-    const errorClass = "mt-1 text-sm text-red-600";
+    const inputClass =
+      'mt-1 block w-full h-12 border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 text-base px-4';
+    const labelClass = 'block text-sm font-medium text-gray-700 mb-2';
+    const errorClass = 'mt-1 text-sm text-red-600';
 
     switch (currentStep) {
       case 'basic':
         return (
           <div className="space-y-6">
             <div className="text-center mb-8">
-              <h3 className="text-xl font-semibold text-gray-900">Let's start with the basics</h3>
-              <p className="text-gray-600 mt-2">We just need your name to get started</p>
+              <h3 className="text-xl font-semibold text-gray-900">
+                Let's start with the basics
+              </h3>
+              <p className="text-gray-600 mt-2">
+                We just need your name to get started
+              </p>
             </div>
-            
+
             <div>
               <label className={labelClass}>First Name *</label>
               <input
@@ -318,7 +362,9 @@ export default function QRRegistration() {
                 placeholder="Enter your first name"
                 autoFocus
               />
-              {errors.firstName && <p className={errorClass}>{errors.firstName}</p>}
+              {errors.firstName && (
+                <p className={errorClass}>{errors.firstName}</p>
+              )}
             </div>
 
             <div>
@@ -331,7 +377,9 @@ export default function QRRegistration() {
                 className={`${inputClass} ${errors.lastName ? 'border-red-500' : ''}`}
                 placeholder="Enter your last name"
               />
-              {errors.lastName && <p className={errorClass}>{errors.lastName}</p>}
+              {errors.lastName && (
+                <p className={errorClass}>{errors.lastName}</p>
+              )}
             </div>
           </div>
         );
@@ -340,8 +388,12 @@ export default function QRRegistration() {
         return (
           <div className="space-y-6">
             <div className="text-center mb-8">
-              <h3 className="text-xl font-semibold text-gray-900">How can we reach you?</h3>
-              <p className="text-gray-600 mt-2">Contact information helps us stay connected (optional)</p>
+              <h3 className="text-xl font-semibold text-gray-900">
+                How can we reach you?
+              </h3>
+              <p className="text-gray-600 mt-2">
+                Contact information helps us stay connected (optional)
+              </p>
             </div>
 
             <div>
@@ -379,8 +431,12 @@ export default function QRRegistration() {
         return (
           <div className="space-y-6">
             <div className="text-center mb-8">
-              <h3 className="text-xl font-semibold text-gray-900">Tell us a bit about yourself</h3>
-              <p className="text-gray-600 mt-2">This helps us serve you better (optional)</p>
+              <h3 className="text-xl font-semibold text-gray-900">
+                Tell us a bit about yourself
+              </h3>
+              <p className="text-gray-600 mt-2">
+                This helps us serve you better (optional)
+              </p>
             </div>
 
             <div>
@@ -393,7 +449,9 @@ export default function QRRegistration() {
                 className={`${inputClass} ${errors.birthdate ? 'border-red-500' : ''}`}
                 max={new Date().toISOString().split('T')[0]}
               />
-              {errors.birthdate && <p className={errorClass}>{errors.birthdate}</p>}
+              {errors.birthdate && (
+                <p className={errorClass}>{errors.birthdate}</p>
+              )}
             </div>
 
             <div>
@@ -415,8 +473,12 @@ export default function QRRegistration() {
         return (
           <div className="space-y-6">
             <div className="text-center mb-8">
-              <h3 className="text-xl font-semibold text-gray-900">Where are you from?</h3>
-              <p className="text-gray-600 mt-2">Address information is optional but helpful</p>
+              <h3 className="text-xl font-semibold text-gray-900">
+                Where are you from?
+              </h3>
+              <p className="text-gray-600 mt-2">
+                Address information is optional but helpful
+              </p>
             </div>
 
             <div>
@@ -481,15 +543,19 @@ export default function QRRegistration() {
         return (
           <div className="space-y-6">
             <div className="text-center mb-8">
-              <h3 className="text-xl font-semibold text-gray-900">Are you visiting or a member?</h3>
-              <p className="text-gray-600 mt-2">This helps us know how to best welcome you</p>
+              <h3 className="text-xl font-semibold text-gray-900">
+                Are you visiting or a member?
+              </h3>
+              <p className="text-gray-600 mt-2">
+                This helps us know how to best welcome you
+              </p>
             </div>
 
             <div className="space-y-4">
-              <div 
+              <div
                 className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                  formData.memberStatus === 'visitor' 
-                    ? 'border-blue-500 bg-blue-50' 
+                  formData.memberStatus === 'visitor'
+                    ? 'border-blue-500 bg-blue-50'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
                 onClick={() => updateFormData('memberStatus', 'visitor')}
@@ -504,16 +570,20 @@ export default function QRRegistration() {
                     className="h-5 w-5 text-blue-600 focus:ring-blue-500"
                   />
                   <div className="ml-3">
-                    <div className="text-lg font-medium text-gray-900">Visitor</div>
-                    <div className="text-gray-600">I'm visiting this church</div>
+                    <div className="text-lg font-medium text-gray-900">
+                      Visitor
+                    </div>
+                    <div className="text-gray-600">
+                      I'm visiting this church
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div 
+              <div
                 className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                  formData.memberStatus === 'member' 
-                    ? 'border-blue-500 bg-blue-50' 
+                  formData.memberStatus === 'member'
+                    ? 'border-blue-500 bg-blue-50'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
                 onClick={() => updateFormData('memberStatus', 'member')}
@@ -528,8 +598,12 @@ export default function QRRegistration() {
                     className="h-5 w-5 text-blue-600 focus:ring-blue-500"
                   />
                   <div className="ml-3">
-                    <div className="text-lg font-medium text-gray-900">Member</div>
-                    <div className="text-gray-600">I'm already a member of this church</div>
+                    <div className="text-lg font-medium text-gray-900">
+                      Member
+                    </div>
+                    <div className="text-gray-600">
+                      I'm already a member of this church
+                    </div>
                   </div>
                 </div>
               </div>
@@ -541,29 +615,49 @@ export default function QRRegistration() {
         return (
           <div className="space-y-6">
             <div className="text-center mb-8">
-              <h3 className="text-xl font-semibold text-gray-900">Review Your Information</h3>
-              <p className="text-gray-600 mt-2">Please confirm your details before submitting</p>
+              <h3 className="text-xl font-semibold text-gray-900">
+                Review Your Information
+              </h3>
+              <p className="text-gray-600 mt-2">
+                Please confirm your details before submitting
+              </p>
             </div>
 
             <div className="bg-gray-50 rounded-lg p-6 space-y-4">
               <div>
                 <h4 className="font-medium text-gray-900">Basic Information</h4>
-                <p className="text-gray-600">{formData.firstName} {formData.lastName}</p>
+                <p className="text-gray-600">
+                  {formData.firstName} {formData.lastName}
+                </p>
               </div>
 
               {(formData.email || formData.phone) && (
                 <div>
-                  <h4 className="font-medium text-gray-900">Contact Information</h4>
-                  {formData.email && <p className="text-gray-600">{formData.email}</p>}
-                  {formData.phone && <p className="text-gray-600">{formData.phone}</p>}
+                  <h4 className="font-medium text-gray-900">
+                    Contact Information
+                  </h4>
+                  {formData.email && (
+                    <p className="text-gray-600">{formData.email}</p>
+                  )}
+                  {formData.phone && (
+                    <p className="text-gray-600">{formData.phone}</p>
+                  )}
                 </div>
               )}
 
               {(formData.birthdate || formData.gender) && (
                 <div>
-                  <h4 className="font-medium text-gray-900">Personal Information</h4>
-                  {formData.birthdate && <p className="text-gray-600">Born: {new Date(formData.birthdate).toLocaleDateString()}</p>}
-                  {formData.gender && <p className="text-gray-600">Gender: {formData.gender}</p>}
+                  <h4 className="font-medium text-gray-900">
+                    Personal Information
+                  </h4>
+                  {formData.birthdate && (
+                    <p className="text-gray-600">
+                      Born: {new Date(formData.birthdate).toLocaleDateString()}
+                    </p>
+                  )}
+                  {formData.gender && (
+                    <p className="text-gray-600">Gender: {formData.gender}</p>
+                  )}
                 </div>
               )}
 
@@ -572,15 +666,28 @@ export default function QRRegistration() {
                   <h4 className="font-medium text-gray-900">Address</h4>
                   <p className="text-gray-600">
                     {formData.address.line1}
-                    {formData.address.line2 && <><br />{formData.address.line2}</>}
-                    {formData.address.city && <><br />{formData.address.city}, {formData.address.state} {formData.address.postalCode}</>}
+                    {formData.address.line2 && (
+                      <>
+                        <br />
+                        {formData.address.line2}
+                      </>
+                    )}
+                    {formData.address.city && (
+                      <>
+                        <br />
+                        {formData.address.city}, {formData.address.state}{' '}
+                        {formData.address.postalCode}
+                      </>
+                    )}
                   </p>
                 </div>
               )}
 
               <div>
                 <h4 className="font-medium text-gray-900">Status</h4>
-                <p className="text-gray-600 capitalize">{formData.memberStatus}</p>
+                <p className="text-gray-600 capitalize">
+                  {formData.memberStatus}
+                </p>
               </div>
             </div>
           </div>
@@ -602,7 +709,9 @@ export default function QRRegistration() {
               Welcome to Our Church!
             </h1>
             {token.metadata.purpose && (
-              <p className="text-sm text-gray-600 mt-1">{token.metadata.purpose}</p>
+              <p className="text-sm text-gray-600 mt-1">
+                {token.metadata.purpose}
+              </p>
             )}
           </div>
         </div>
@@ -614,7 +723,7 @@ export default function QRRegistration() {
           <div className="flex items-center justify-between">
             {steps.map((step, index) => (
               <div key={step.id} className="flex items-center">
-                <div 
+                <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                     index <= currentStepIndex
                       ? 'bg-blue-600 text-white'
@@ -624,7 +733,7 @@ export default function QRRegistration() {
                   {index + 1}
                 </div>
                 {index < steps.length - 1 && (
-                  <div 
+                  <div
                     className={`w-8 h-1 mx-2 ${
                       index < currentStepIndex ? 'bg-blue-600' : 'bg-gray-200'
                     }`}

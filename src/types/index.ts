@@ -38,7 +38,6 @@ export interface Household {
   id: string;
   familyName: string;
 
-
   // Address Information (unified structure)
   address?: {
     line1?: string;
@@ -48,7 +47,6 @@ export interface Household {
     postalCode?: string;
     country?: string;
   };
-
 
   // Contact Information
   primaryContactId?: string;

@@ -31,20 +31,25 @@ export function TokenManager({ onSubmit, onCancel }: TokenManagerProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validation
     const newErrors: Record<string, string> = {};
-    
+
     if (!formData.purpose.trim()) {
       newErrors.purpose = 'Purpose is required';
     }
 
     if (formData.hasExpiration && !formData.expiresAt) {
-      newErrors.expiresAt = 'Expiration date is required when expiration is enabled';
+      newErrors.expiresAt =
+        'Expiration date is required when expiration is enabled';
     }
 
-    if (formData.hasUsageLimit && (!formData.maxUses || parseInt(formData.maxUses) <= 0)) {
-      newErrors.maxUses = 'Valid usage limit is required when usage limit is enabled';
+    if (
+      formData.hasUsageLimit &&
+      (!formData.maxUses || parseInt(formData.maxUses) <= 0)
+    ) {
+      newErrors.maxUses =
+        'Valid usage limit is required when usage limit is enabled';
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -68,11 +73,11 @@ export function TokenManager({ onSubmit, onCancel }: TokenManagerProps) {
   };
 
   const handleInputChange = (field: string, value: string | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    
+    setFormData((prev) => ({ ...prev, [field]: value }));
+
     // Clear errors when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: '' }));
     }
   };
 
@@ -81,7 +86,9 @@ export function TokenManager({ onSubmit, onCancel }: TokenManagerProps) {
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">Create Registration Token</h2>
+          <h2 className="text-xl font-semibold text-gray-900">
+            Create Registration Token
+          </h2>
           <button
             onClick={onCancel}
             className="text-gray-400 hover:text-gray-600"
@@ -162,14 +169,19 @@ export function TokenManager({ onSubmit, onCancel }: TokenManagerProps) {
                 type="checkbox"
                 id="hasExpiration"
                 checked={formData.hasExpiration}
-                onChange={(e) => handleInputChange('hasExpiration', e.target.checked)}
+                onChange={(e) =>
+                  handleInputChange('hasExpiration', e.target.checked)
+                }
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
-              <label htmlFor="hasExpiration" className="ml-2 text-sm font-medium text-gray-700">
+              <label
+                htmlFor="hasExpiration"
+                className="ml-2 text-sm font-medium text-gray-700"
+              >
                 Set expiration date
               </label>
             </div>
-            
+
             {formData.hasExpiration && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -179,13 +191,17 @@ export function TokenManager({ onSubmit, onCancel }: TokenManagerProps) {
                 <input
                   type="datetime-local"
                   value={formData.expiresAt}
-                  onChange={(e) => handleInputChange('expiresAt', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange('expiresAt', e.target.value)
+                  }
                   className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     errors.expiresAt ? 'border-red-500' : 'border-gray-300'
                   }`}
                 />
                 {errors.expiresAt && (
-                  <p className="text-red-500 text-sm mt-1">{errors.expiresAt}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.expiresAt}
+                  </p>
                 )}
               </div>
             )}
@@ -198,14 +214,19 @@ export function TokenManager({ onSubmit, onCancel }: TokenManagerProps) {
                 type="checkbox"
                 id="hasUsageLimit"
                 checked={formData.hasUsageLimit}
-                onChange={(e) => handleInputChange('hasUsageLimit', e.target.checked)}
+                onChange={(e) =>
+                  handleInputChange('hasUsageLimit', e.target.checked)
+                }
                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
               />
-              <label htmlFor="hasUsageLimit" className="ml-2 text-sm font-medium text-gray-700">
+              <label
+                htmlFor="hasUsageLimit"
+                className="ml-2 text-sm font-medium text-gray-700"
+              >
                 Set usage limit
               </label>
             </div>
-            
+
             {formData.hasUsageLimit && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -226,7 +247,8 @@ export function TokenManager({ onSubmit, onCancel }: TokenManagerProps) {
                   <p className="text-red-500 text-sm mt-1">{errors.maxUses}</p>
                 )}
                 <p className="text-sm text-gray-500 mt-1">
-                  The token will be automatically disabled after this many registrations
+                  The token will be automatically disabled after this many
+                  registrations
                 </p>
               </div>
             )}

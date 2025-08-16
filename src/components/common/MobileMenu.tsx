@@ -9,7 +9,6 @@ interface MobileMenuProps {
   userRole: 'admin' | 'pastor' | 'member';
 }
 
-
 const navigationItems = [
   {
     name: 'Dashboard',
@@ -22,14 +21,15 @@ const navigationItems = [
     href: '/households',
     roles: ['admin', 'pastor', 'member'],
   },
-  { 
-    name: 'Registration', 
-    href: '/admin/registration-tokens', 
+  {
+    name: 'Registration',
+    href: '/admin/registration-tokens',
     roles: ['admin', 'pastor'],
     submenu: [
       { name: 'QR Tokens', href: '/admin/registration-tokens' },
       { name: 'Pending Registrations', href: '/admin/pending-registrations' },
-    ]
+      { name: 'Analytics', href: '/admin/registration-analytics' },
+    ],
   },
   { name: 'Settings', href: '/settings', roles: ['admin', 'pastor'] },
 ];
@@ -49,7 +49,9 @@ export function MobileMenu({ open, onClose, userRole }: MobileMenuProps) {
   };
 
   const isSubMenuActive = (submenu?: { name: string; href: string }[]) => {
-    return submenu?.some(subItem => location.pathname === subItem.href) || false;
+    return (
+      submenu?.some((subItem) => location.pathname === subItem.href) || false
+    );
   };
 
   if (!open) return null;
@@ -98,15 +100,19 @@ export function MobileMenu({ open, onClose, userRole }: MobileMenuProps) {
           {/* Navigation items */}
           <nav className="flex-1 px-4 py-4 space-y-1">
             {visibleItems.map((item) => {
-              const isActive = location.pathname === item.href || isSubMenuActive(item.submenu);
+              const isActive =
+                location.pathname === item.href ||
+                isSubMenuActive(item.submenu);
               const hasSubmenu = item.submenu && item.submenu.length > 0;
               const isExpanded = expandedItem === item.name;
-              
+
               if (hasSubmenu) {
                 return (
                   <div key={item.name}>
                     <button
-                      onClick={() => setExpandedItem(isExpanded ? null : item.name)}
+                      onClick={() =>
+                        setExpandedItem(isExpanded ? null : item.name)
+                      }
                       className={`flex items-center justify-between w-full px-3 py-2 rounded-md text-base font-medium ${
                         isActive
                           ? 'bg-blue-50 text-blue-700'
@@ -120,7 +126,7 @@ export function MobileMenu({ open, onClose, userRole }: MobileMenuProps) {
                         <ChevronRight className="h-4 w-4" />
                       )}
                     </button>
-                    
+
                     {isExpanded && (
                       <div className="ml-4 mt-1 space-y-1">
                         {item.submenu!.map((subItem) => (

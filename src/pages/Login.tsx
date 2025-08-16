@@ -26,7 +26,9 @@ export default function Login() {
       }
     } catch (error: unknown) {
       console.error('Login error:', error);
-      setMessage(`Error: ${error instanceof Error ? error.message : 'Failed to sign in'}`);
+      setMessage(
+        `Error: ${error instanceof Error ? error.message : 'Failed to sign in'}`
+      );
     } finally {
       setLoading(false);
     }

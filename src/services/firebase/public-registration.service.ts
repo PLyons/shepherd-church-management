@@ -1,14 +1,21 @@
 // import { Timestamp } from 'firebase/firestore'; // Not used in this service
 import { BaseFirestoreService } from './base.service';
 import { PendingRegistrationDocument } from '../../types/firestore';
-import { 
-  PendingRegistration, 
-  RegistrationFormData, 
-  RegistrationSubmissionResult 
+import {
+  PendingRegistration,
+  RegistrationFormData,
+  RegistrationSubmissionResult,
 } from '../../types/registration';
-import { timestampToString, stringToTimestamp, removeUndefined } from '../../utils/firestore-converters';
+import {
+  timestampToString,
+  stringToTimestamp,
+  removeUndefined,
+} from '../../utils/firestore-converters';
 
-class PublicRegistrationService extends BaseFirestoreService<PendingRegistrationDocument, PendingRegistration> {
+class PublicRegistrationService extends BaseFirestoreService<
+  PendingRegistrationDocument,
+  PendingRegistration
+> {
   constructor() {
     super('pending_registrations');
   }
@@ -17,7 +24,10 @@ class PublicRegistrationService extends BaseFirestoreService<PendingRegistration
   // DOCUMENT CONVERSION METHODS
   // ============================================================================
 
-  protected documentToClient(id: string, document: PendingRegistrationDocument): PendingRegistration {
+  protected documentToClient(
+    id: string,
+    document: PendingRegistrationDocument
+  ): PendingRegistration {
     return {
       id,
       tokenId: document.tokenId,
@@ -40,7 +50,9 @@ class PublicRegistrationService extends BaseFirestoreService<PendingRegistration
     };
   }
 
-  protected clientToDocument(client: Partial<PendingRegistration>): Partial<PendingRegistrationDocument> {
+  protected clientToDocument(
+    client: Partial<PendingRegistration>
+  ): Partial<PendingRegistrationDocument> {
     const document: Partial<PendingRegistrationDocument> = {
       tokenId: client.tokenId,
       firstName: client.firstName,
@@ -90,7 +102,10 @@ class PublicRegistrationService extends BaseFirestoreService<PendingRegistration
       }
 
       // Check for potential duplicates
-      const duplicates = await this.detectDuplicates(formData.email, formData.phone);
+      const duplicates = await this.detectDuplicates(
+        formData.email,
+        formData.phone
+      );
       if (duplicates.length > 0) {
         console.warn('Potential duplicate registration detected:', duplicates);
         // Note: In production, you might want to handle this differently
@@ -115,20 +130,22 @@ class PublicRegistrationService extends BaseFirestoreService<PendingRegistration
       };
 
       const created = await this.create(registrationData);
-      
+
       console.log('Registration submitted successfully:', created.id);
-      
+
       return {
         success: true,
         registrationId: created.id,
-        message: 'Thank you for registering! A church administrator will review your information.',
+        message:
+          'Thank you for registering! A church administrator will review your information.',
       };
     } catch (error) {
       console.error('Error submitting registration:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Registration failed',
-        message: 'We encountered an error processing your registration. Please try again.',
+        message:
+          'We encountered an error processing your registration. Please try again.',
       };
     }
   }
@@ -136,13 +153,20 @@ class PublicRegistrationService extends BaseFirestoreService<PendingRegistration
   /**
    * Detect potential duplicate registrations
    */
-  async detectDuplicates(email?: string, phone?: string): Promise<PendingRegistration[]> {
+  async detectDuplicates(
+    email?: string,
+    phone?: string
+  ): Promise<PendingRegistration[]> {
     try {
       const duplicates: PendingRegistration[] = [];
 
       // Check by email if provided
       if (email) {
-        const emailMatches = await this.getWhere('email', '==', email.toLowerCase());
+        const emailMatches = await this.getWhere(
+          'email',
+          '==',
+          email.toLowerCase()
+        );
         duplicates.push(...emailMatches);
       }
 
@@ -153,8 +177,9 @@ class PublicRegistrationService extends BaseFirestoreService<PendingRegistration
       }
 
       // Remove duplicates from the array
-      const uniqueDuplicates = duplicates.filter((item, index, arr) => 
-        arr.findIndex(dup => dup.id === item.id) === index
+      const uniqueDuplicates = duplicates.filter(
+        (item, index, arr) =>
+          arr.findIndex((dup) => dup.id === item.id) === index
       );
 
       return uniqueDuplicates;
@@ -167,7 +192,9 @@ class PublicRegistrationService extends BaseFirestoreService<PendingRegistration
   /**
    * Clean and validate address data
    */
-  private cleanAddress(address: Record<string, string>): Record<string, string> | undefined {
+  private cleanAddress(
+    address: Record<string, string>
+  ): Record<string, string> | undefined {
     if (!address) return undefined;
 
     const cleaned = {
@@ -175,13 +202,17 @@ class PublicRegistrationService extends BaseFirestoreService<PendingRegistration
       line2: address.line2 ? String(address.line2).trim() : undefined,
       city: address.city ? String(address.city).trim() : undefined,
       state: address.state ? String(address.state).trim() : undefined,
-      postalCode: address.postalCode ? String(address.postalCode).trim() : undefined,
+      postalCode: address.postalCode
+        ? String(address.postalCode).trim()
+        : undefined,
       country: address.country ? String(address.country).trim() : 'USA',
     };
 
     // Return undefined if no meaningful address data
-    const hasData = Object.values(cleaned).some(value => value && value !== 'USA');
-    return hasData ? cleaned as Record<string, string> : undefined;
+    const hasData = Object.values(cleaned).some(
+      (value) => value && value !== 'USA'
+    );
+    return hasData ? (cleaned as Record<string, string>) : undefined;
   }
 
   // ============================================================================
@@ -198,30 +229,37 @@ class PublicRegistrationService extends BaseFirestoreService<PendingRegistration
   /**
    * Get registrations by status
    */
-  async getRegistrationsByStatus(status: 'pending' | 'approved' | 'rejected'): Promise<PendingRegistration[]> {
+  async getRegistrationsByStatus(
+    status: 'pending' | 'approved' | 'rejected'
+  ): Promise<PendingRegistration[]> {
     return this.getWhere('approvalStatus', '==', status);
   }
 
   /**
    * Get registrations by token
    */
-  async getRegistrationsByToken(tokenId: string): Promise<PendingRegistration[]> {
+  async getRegistrationsByToken(
+    tokenId: string
+  ): Promise<PendingRegistration[]> {
     return this.getWhere('tokenId', '==', tokenId);
   }
 
   /**
    * Get registrations submitted in date range
    */
-  async getRegistrationsByDateRange(startDate: string, endDate: string): Promise<PendingRegistration[]> {
+  async getRegistrationsByDateRange(
+    startDate: string,
+    endDate: string
+  ): Promise<PendingRegistration[]> {
     try {
       const registrations = await this.getAll({
         where: [
           { field: 'submittedAt', operator: '>=', value: new Date(startDate) },
-          { field: 'submittedAt', operator: '<=', value: new Date(endDate) }
+          { field: 'submittedAt', operator: '<=', value: new Date(endDate) },
         ],
-        orderBy: { field: 'submittedAt', direction: 'desc' }
+        orderBy: { field: 'submittedAt', direction: 'desc' },
       });
-      
+
       return registrations;
     } catch (error) {
       console.error('Error getting registrations by date range:', error);
@@ -283,8 +321,10 @@ class PublicRegistrationService extends BaseFirestoreService<PendingRegistration
       ]);
 
       const all = [...pending, ...approved, ...rejected];
-      const memberCount = all.filter(r => r.memberStatus === 'member').length;
-      const visitorCount = all.filter(r => r.memberStatus === 'visitor').length;
+      const memberCount = all.filter((r) => r.memberStatus === 'member').length;
+      const visitorCount = all.filter(
+        (r) => r.memberStatus === 'visitor'
+      ).length;
 
       return {
         total: all.length,
