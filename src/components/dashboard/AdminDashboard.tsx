@@ -24,8 +24,10 @@ import {
   BarChart3,
 } from 'lucide-react';
 
+import type { Member } from '../../types';
+
 interface AdminDashboardProps {
-  member: any;
+  member: Member;
 }
 
 export function AdminDashboard({ member }: AdminDashboardProps) {

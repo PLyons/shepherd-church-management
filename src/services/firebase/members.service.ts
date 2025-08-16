@@ -1,9 +1,6 @@
 import {
-  collection,
-  doc,
-  updateDoc,
-  writeBatch,
   Timestamp,
+  WhereFilterOp,
 } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { BaseFirestoreService } from './base.service';
@@ -232,8 +229,8 @@ export class MembersService extends BaseFirestoreService<
     // Build where conditions
     const whereConditions: {
       field: string;
-      operator: any;
-      value: any;
+      operator: WhereFilterOp;
+      value: string | number | boolean | Timestamp | string[] | number[];
     }[] = [];
 
     // Add filters
@@ -371,7 +368,7 @@ export class MembersService extends BaseFirestoreService<
     batch.update(memberRef, {
       ...memberDocumentData,
       updatedAt: now,
-    } as any);
+    } as Partial<MemberDocument>);
 
     // Handle household changes
     if (data.householdId && data.householdId !== currentMember.householdId) {
@@ -501,7 +498,7 @@ export class MembersService extends BaseFirestoreService<
     role?: 'admin' | 'pastor' | 'member';
     householdId?: string;
     includeHouseholdInfo?: boolean;
-  }): Promise<any[]> {
+  }): Promise<Member[]> {
     const members = await this.getMemberDirectory(options);
 
     return members.map((member) => ({

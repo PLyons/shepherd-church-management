@@ -4,7 +4,7 @@ import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 // Check if we're running in Node.js or browser
-const isNode = typeof window === 'undefined' && typeof global !== 'undefined';
+// const isNode = typeof window === 'undefined' && typeof global !== 'undefined';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {

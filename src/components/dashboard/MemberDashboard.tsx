@@ -18,8 +18,10 @@ import {
   AlertCircle,
 } from 'lucide-react';
 
+import type { Member } from '../../types';
+
 interface MemberDashboardProps {
-  member: any;
+  member: Member;
 }
 
 export function MemberDashboard({ member }: MemberDashboardProps) {

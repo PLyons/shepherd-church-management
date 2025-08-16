@@ -81,10 +81,10 @@ export default function SetPassword() {
       setTimeout(() => {
         navigate('/login');
       }, 2000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error updating password:', err);
       setMessage(
-        err.message ||
+        (err instanceof Error ? err.message : 'Unknown error') ||
           'Failed to update password. Please try again or request a new password reset.'
       );
       setIsSuccess(false);

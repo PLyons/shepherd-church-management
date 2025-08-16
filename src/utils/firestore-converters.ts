@@ -92,7 +92,7 @@ export const getCurrentTimestamp = (): Timestamp => {
 /**
  * Removes undefined values from an object (Firestore doesn't accept undefined)
  */
-export const removeUndefined = <T extends Record<string, any>>(obj: T): T => {
+export const removeUndefined = <T extends Record<string, unknown>>(obj: T): T => {
   const result = {} as T;
   Object.keys(obj).forEach((key) => {
     if (obj[key] !== undefined) {

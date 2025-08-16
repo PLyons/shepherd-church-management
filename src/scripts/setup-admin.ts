@@ -278,10 +278,10 @@ async function setupAdmin() {
 
     rl.close();
     process.exit(0);
-  } catch (error: any) {
-    console.error('\n❌ Error:', error.message);
+  } catch (error: unknown) {
+    console.error('\n❌ Error:', error instanceof Error ? error.message : 'Unknown error');
 
-    if (error.code === 'auth/email-already-in-use') {
+    if (error instanceof Error && 'code' in error && error.code === 'auth/email-already-in-use') {
       console.log(
         '\n💡 Tip: This email is already registered. Use option 2 to promote existing user.'
       );

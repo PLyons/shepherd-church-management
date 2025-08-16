@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useUnifiedAuth';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
-import { Mail, CheckCircle } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 
 export default function PasswordReset() {
   const [email, setEmail] = useState('');
@@ -27,11 +27,11 @@ export default function PasswordReset() {
         'Password reset email sent! Check your inbox for instructions.'
       );
       setIsSuccess(true);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Password reset error:', err);
 
       // Handle specific Firebase error codes
-      if (err.code === 'auth/user-not-found') {
+      if (err instanceof Error && 'code' in err && err.code === 'auth/user-not-found') {
         setMessage('No account found with this email address.');
       } else if (err.code === 'auth/invalid-email') {
         setMessage('Please enter a valid email address.');

@@ -1,6 +1,17 @@
 import { BaseFirestoreService } from './base.service';
 import { MembersService } from './members.service';
 import { HouseholdsService } from './households.service';
+import type { Household } from '../../types';
+
+// Placeholder Event interface for future implementation
+export interface Event {
+  id: string;
+  title: string;
+  description?: string;
+  startDate: string;
+  endDate?: string;
+  status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+}
 
 // ============================================================================
 // ROLE-BASED DASHBOARD SERVICE
@@ -10,7 +21,7 @@ import { HouseholdsService } from './households.service';
 export interface DashboardData {
   stats: DashboardStats;
   recentActivity: ActivityItem[];
-  upcomingEvents: any[];
+  upcomingEvents: Event[];
   personalInfo?: PersonalDashboardInfo;
   quickActions: QuickAction[];
 }
@@ -31,7 +42,7 @@ export interface ActivityItem {
 }
 
 export interface PersonalDashboardInfo {
-  householdInfo: any;
+  householdInfo: Household;
 }
 
 export interface QuickAction {
@@ -344,9 +355,9 @@ export class DashboardService {
    * Sanitize data based on role permissions
    */
   private sanitizeDataForRole(
-    data: any,
+    data: DashboardData,
     role: 'admin' | 'pastor' | 'member'
-  ): any {
+  ): DashboardData {
     if (role === 'admin') {
       return data; // Admins see everything
     }

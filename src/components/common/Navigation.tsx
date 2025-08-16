@@ -8,12 +8,6 @@ interface NavigationProps {
   userRole: 'admin' | 'pastor' | 'member';
 }
 
-interface NavigationItem {
-  name: string;
-  href: string;
-  roles: ('admin' | 'pastor' | 'member')[];
-  submenu?: { name: string; href: string }[];
-}
 
 const navigationItems = [
   {

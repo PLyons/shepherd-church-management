@@ -1,4 +1,4 @@
-import { Timestamp } from 'firebase/firestore';
+import { Timestamp, DocumentSnapshot } from 'firebase/firestore';
 
 // ============================================================================
 // FIRESTORE TYPE DEFINITIONS
@@ -527,9 +527,9 @@ export interface QueryOptions {
       | 'not-in'
       | 'array-contains'
       | 'array-contains-any';
-    value: any;
+    value: string | number | boolean | Timestamp | string[] | number[];
   }[];
-  startAfter?: any;
+  startAfter?: DocumentSnapshot;
 }
 
 // ============================================================================

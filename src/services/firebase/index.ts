@@ -11,8 +11,39 @@ export { HouseholdsService, householdsService } from './households.service';
 // Import classes for FirebaseService constructor
 import { MembersService } from './members.service';
 import { HouseholdsService } from './households.service';
+import type { Member, Household } from '../../types';
 
 // Service instances for direct use (lazy loading to avoid circular deps)
+interface MemberStatistics {
+  total: number;
+  active: number;
+  inactive: number;
+  visitors: number;
+  admins: number;
+  pastors: number;
+  members: number;
+  householdsCount: number;
+}
+
+interface HouseholdStatistics {
+  total: number;
+  withPrimaryContact: number;
+  withoutPrimaryContact: number;
+  averageMemberCount: number;
+  totalMembers: number;
+  citiesCount: number;
+  statesCount: number;
+}
+
+interface DashboardStatistics {
+  members: MemberStatistics;
+  households: HouseholdStatistics;
+  overview: {
+    totalMembers: number;
+    totalHouseholds: number;
+    recentActivity: string[];
+  };
+}
 export const firebase = {
   get members() {
     return membersService;
@@ -74,7 +105,7 @@ export class FirebaseService {
 
     // Firebase Auth UID
     authUID?: string;
-  }): Promise<{ member: any; household: any }> {
+  }): Promise<{ member: Member; household: Household }> {
     try {
       let household;
       let householdId: string;
@@ -193,15 +224,7 @@ export class FirebaseService {
   /**
    * Get dashboard statistics
    */
-  async getDashboardStats(): Promise<{
-    members: any;
-    households: any;
-    overview: {
-      totalMembers: number;
-      totalHouseholds: number;
-        recentActivity: string[];
-    };
-  }> {
+  async getDashboardStats(): Promise<DashboardStatistics> {
     const [memberStats, householdStats] = await Promise.all([
       this.members.getStatistics(),
       this.households.getStatistics(),
@@ -240,8 +263,8 @@ export class FirebaseService {
       limit?: number;
     }
   ): Promise<{
-    members: any[];
-    households: any[];
+    members: Member[];
+    households: Household[];
     total: number;
   }> {
     const {
@@ -335,7 +358,7 @@ export class FirebaseService {
   /**
    * Subscribe to dashboard updates
    */
-  subscribeToDashboard(callback: (stats: any) => void): () => void {
+  subscribeToDashboard(callback: (stats: DashboardStatistics) => void): () => void {
     // For now, just subscribe to member changes
     // In a full implementation, you'd combine multiple subscriptions
     return this.members.subscribeToMemberDirectory({}, async () => {

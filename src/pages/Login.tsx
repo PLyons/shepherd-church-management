@@ -24,9 +24,9 @@ export default function Login() {
         await signIn(email, password);
         // If we get here, sign in was successful and navigation will happen automatically
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login error:', error);
-      setMessage(`Error: ${error.message || 'Failed to sign in'}`);
+      setMessage(`Error: ${error instanceof Error ? error.message : 'Failed to sign in'}`);
     } finally {
       setLoading(false);
     }

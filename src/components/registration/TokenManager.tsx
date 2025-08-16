@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Calendar, Users, Hash, FileText, MapPin } from 'lucide-react';
+import { X, Calendar, Hash, FileText, MapPin } from 'lucide-react';
 
 interface TokenManagerProps {
   onSubmit: (tokenData: {

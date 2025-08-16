@@ -21,8 +21,10 @@ import {
   TrendingUp,
 } from 'lucide-react';
 
+import type { Member } from '../../types';
+
 interface PastorDashboardProps {
-  member: any;
+  member: Member;
 }
 
 export function PastorDashboard({ member }: PastorDashboardProps) {

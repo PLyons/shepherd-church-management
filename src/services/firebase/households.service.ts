@@ -1,7 +1,6 @@
 import {
   doc,
   updateDoc,
-  writeBatch,
   Timestamp,
   arrayUnion,
   arrayRemove,
@@ -155,7 +154,7 @@ export class HouseholdsService extends BaseFirestoreService<
     const statusFilter = options?.statusFilter || 'approved';
 
     // Get households based on status filter
-    const queryOptions: any = { limit };
+    const queryOptions: QueryOptions = { limit };
     if (statusFilter !== 'all') {
       queryOptions.where = [
         { field: 'status', operator: '==', value: statusFilter },
@@ -366,7 +365,7 @@ export class HouseholdsService extends BaseFirestoreService<
     }
 
     const householdRef = doc(db, COLLECTIONS.HOUSEHOLDS, householdId);
-    const updates: any = {
+    const updates: Partial<HouseholdDocument> = {
       memberIds: arrayRemove(memberId),
       memberCount: Math.max(0, household.memberCount - 1),
       updatedAt: Timestamp.now(),
@@ -494,7 +493,7 @@ export class HouseholdsService extends BaseFirestoreService<
     includeMembers?: boolean;
     city?: string;
     state?: string;
-  }): Promise<any[]> {
+  }): Promise<Household[]> {
     const households = await this.getHouseholdDirectory(options);
 
     return households.map((household) => ({

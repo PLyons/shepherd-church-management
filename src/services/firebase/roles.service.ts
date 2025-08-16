@@ -1,6 +1,5 @@
-import { BaseFirestoreService } from './base.service';
 import { MembersService } from './members.service';
-import { doc, updateDoc, collection, addDoc } from 'firebase/firestore';
+import type { Member } from '../../types';
 
 // ============================================================================
 // ROLE ASSIGNMENT SERVICE WITH SECURITY AUDIT TRAIL
@@ -256,7 +255,7 @@ export class RolesService {
   /**
    * Get members without assigned roles
    */
-  async getUnassignedMembers(): Promise<any[]> {
+  async getUnassignedMembers(): Promise<Member[]> {
     const allMembers = await this.membersService.getAll();
     return allMembers.filter((member) => !member.role || member.role === '');
   }
@@ -264,7 +263,7 @@ export class RolesService {
   /**
    * Get members by role
    */
-  async getMembersByRole(role: 'admin' | 'pastor' | 'member'): Promise<any[]> {
+  async getMembersByRole(role: 'admin' | 'pastor' | 'member'): Promise<Member[]> {
     const allMembers = await this.membersService.getAll();
     return allMembers.filter((member) => member.role === role);
   }
@@ -455,7 +454,7 @@ export class RolesService {
     allowedRoles: ('admin' | 'pastor' | 'member')[]
   ): Promise<boolean> {
     const user = await this.membersService.getById(userId);
-    return allowedRoles.includes(user?.role as any);
+    return allowedRoles.includes(user?.role as 'admin' | 'pastor' | 'member');
   }
 }
 

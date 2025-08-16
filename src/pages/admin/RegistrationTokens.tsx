@@ -54,7 +54,17 @@ export default function RegistrationTokens() {
     }
   };
 
-  const handleCreateToken = async (tokenData: any) => {
+  const handleCreateToken = async (tokenData: {
+    createdBy: string;
+    expiresAt?: string;
+    maxUses?: number;
+    metadata: {
+      purpose: string;
+      notes?: string;
+      eventDate?: string;
+      location?: string;
+    };
+  }) => {
     try {
       await registrationTokensService.createRegistrationToken({
         createdBy: user?.uid || '',

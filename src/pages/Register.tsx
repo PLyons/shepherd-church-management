@@ -52,11 +52,11 @@ export default function Register() {
         'success'
       );
       navigate('/dashboard');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Registration error:', error);
-      if (error.code === 'auth/email-already-in-use') {
+      if (error instanceof Error && 'code' in error && error.code === 'auth/email-already-in-use') {
         addToast('This email is already registered', 'error');
-      } else if (error.code === 'auth/weak-password') {
+      } else if (error instanceof Error && 'code' in error && error.code === 'auth/weak-password') {
         addToast(
           'Password is too weak. Please use a stronger password.',
           'error'

@@ -5,6 +5,14 @@ import { PendingRegistration } from '../../types/registration';
 import { Member } from '../../types';
 import { generateFullName } from '../../utils/firestore-converters';
 
+interface HouseholdSuggestion {
+  id: string;
+  familyName: string;
+  memberCount: number;
+  primaryContactName?: string;
+  matchReason: 'lastName' | 'address' | 'both';
+}
+
 class RegistrationApprovalService {
   
   // ============================================================================
@@ -283,7 +291,7 @@ class RegistrationApprovalService {
     matchReason: 'lastName' | 'address' | 'both';
   }[]> {
     try {
-      const suggestions: any[] = [];
+      const suggestions: HouseholdSuggestion[] = [];
       const allHouseholds = await householdsService.getAll();
 
       for (const household of allHouseholds) {

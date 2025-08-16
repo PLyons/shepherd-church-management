@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   rolesService,
   type RoleSummary,
 } from '../../services/firebase/roles.service';
+import type { Member } from '../../types';
 import { useAuth } from '../../hooks/useUnifiedAuth';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import {
@@ -12,8 +13,6 @@ import {
   CheckCircle,
   XCircle,
   UserCheck,
-  Eye,
-  Edit3,
   Crown,
   Heart,
   User,
@@ -23,11 +22,8 @@ export function RoleManagement() {
   const { user, member } = useAuth();
   const [loading, setLoading] = useState(true);
   const [roleSummary, setRoleSummary] = useState<RoleSummary | null>(null);
-  const [unassignedMembers, setUnassignedMembers] = useState<any[]>([]);
-  const [adminMembers, setAdminMembers] = useState<any[]>([]);
-  const [pastorMembers, setPastorMembers] = useState<any[]>([]);
-  const [regularMembers, setRegularMembers] = useState<any[]>([]);
-  const [selectedMember, setSelectedMember] = useState<any | null>(null);
+  const [unassignedMembers, setUnassignedMembers] = useState<Member[]>([]);
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [newRole, setNewRole] = useState<'admin' | 'pastor' | 'member'>(
     'member'
   );
@@ -38,6 +34,32 @@ export function RoleManagement() {
     type: 'success' | 'error';
     message: string;
   } | null>(null);
+
+  const loadRoleData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const [summary, unassigned] = await Promise.all(
+        [
+          rolesService.getRoleSummary(),
+          rolesService.getUnassignedMembers(),
+        ]
+      );
+
+      setRoleSummary(summary);
+      setUnassignedMembers(unassigned);
+    } catch (error) {
+      console.error('Error loading role data:', error);
+      setNotification({ type: 'error', message: 'Failed to load role data' });
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (member && member.role === 'admin') {
+      loadRoleData();
+    }
+  }, [member, loadRoleData]);
 
   // Security check - only admins can access this component
   if (!member || member.role !== 'admin') {
@@ -54,37 +76,7 @@ export function RoleManagement() {
     );
   }
 
-  useEffect(() => {
-    loadRoleData();
-  }, []);
-
-  const loadRoleData = async () => {
-    try {
-      setLoading(true);
-      const [summary, unassigned, admins, pastors, members] = await Promise.all(
-        [
-          rolesService.getRoleSummary(),
-          rolesService.getUnassignedMembers(),
-          rolesService.getMembersByRole('admin'),
-          rolesService.getMembersByRole('pastor'),
-          rolesService.getMembersByRole('member'),
-        ]
-      );
-
-      setRoleSummary(summary);
-      setUnassignedMembers(unassigned);
-      setAdminMembers(admins);
-      setPastorMembers(pastors);
-      setRegularMembers(members);
-    } catch (error) {
-      console.error('Error loading role data:', error);
-      setNotification({ type: 'error', message: 'Failed to load role data' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleAssignRole = (memberToAssign: any) => {
+  const handleAssignRole = (memberToAssign: Member) => {
     setSelectedMember(memberToAssign);
     setNewRole(memberToAssign.role || 'member');
     setReason('');
@@ -131,31 +123,6 @@ export function RoleManagement() {
     }
   };
 
-  const getRoleIcon = (role: string) => {
-    switch (role) {
-      case 'admin':
-        return <Crown className="w-4 h-4 text-red-600" />;
-      case 'pastor':
-        return <Heart className="w-4 h-4 text-purple-600" />;
-      case 'member':
-        return <User className="w-4 h-4 text-blue-600" />;
-      default:
-        return <AlertTriangle className="w-4 h-4 text-gray-400" />;
-    }
-  };
-
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'admin':
-        return 'bg-red-100 text-red-800 border-red-200';
-      case 'pastor':
-        return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'member':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
-  };
 
   if (loading) {
     return (
@@ -371,7 +338,7 @@ export function RoleManagement() {
                         </label>
                         <select
                           value={newRole}
-                          onChange={(e) => setNewRole(e.target.value as any)}
+                          onChange={(e) => setNewRole(e.target.value as 'admin' | 'pastor' | 'member')}
                           className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         >
                           <option value="member">

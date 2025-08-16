@@ -197,7 +197,7 @@ export default function QRRegistration() {
   };
 
   // Update form data with validation
-  const updateFormData = (field: keyof RegistrationFormData, value: any) => {
+  const updateFormData = (field: keyof RegistrationFormData, value: RegistrationFormData[keyof RegistrationFormData]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
     // Clear error when user starts typing

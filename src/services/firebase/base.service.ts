@@ -20,6 +20,7 @@ import {
   QueryConstraint,
   FirestoreError,
   getCountFromServer,
+  WhereFilterOp,
 } from 'firebase/firestore';
 // Use Node.js compatible Firebase config if in Node environment
 const isNode = typeof window === 'undefined' && typeof global !== 'undefined';
@@ -89,7 +90,7 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
       if (customId) {
         // Use custom ID (e.g., Firebase Auth UID for members)
         docRef = this.getDocRef(customId);
-        await setDoc(docRef, finalData as any);
+        await setDoc(docRef, finalData as Partial<TDocument>);
       } else {
         // Auto-generate ID
         docRef = await addDoc(this.getCollectionRef(), finalData);
@@ -148,7 +149,7 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
         updatedAt: Timestamp.now(),
       };
 
-      await updateDoc(docRef, finalData as any);
+      await updateDoc(docRef, finalData as Partial<TDocument>);
 
       // Fetch and return the updated document
       const updatedDoc = await getDoc(docRef);
@@ -244,7 +245,7 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
       | 'not-in'
       | 'array-contains'
       | 'array-contains-any',
-    value: any
+    value: string | number | boolean | Timestamp | string[] | number[]
   ): Promise<TClient[]> {
     return this.getAll({
       where: [{ field, operator, value }],
@@ -256,7 +257,7 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
    */
   async count(options?: QueryOptions): Promise<number> {
     try {
-      const constraints: any[] = [];
+      const constraints: QueryConstraint[] = [];
 
       // Apply where conditions
       if (options?.where && options.where.length > 0) {
@@ -317,8 +318,8 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
     };
     where?: {
       field: string;
-      operator: any;
-      value: any;
+      operator: WhereFilterOp;
+      value: string | number | boolean | Timestamp | string[] | number[];
     }[];
   }): Promise<{
     data: TClient[];
@@ -378,7 +379,7 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
         baseConstraints.push(orderBy('__name__'));
       }
 
-      let dataQuery: any;
+      let dataQuery: Query;
 
       if (offset === 0) {
         // First page - simple query with limit
@@ -595,7 +596,7 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
           updatedAt: now,
         };
 
-        batch.update(docRef, finalData as any);
+        batch.update(docRef, finalData as Partial<TDocument>);
       });
 
       await batch.commit();
@@ -638,7 +639,7 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
   // ERROR HANDLING
   // ============================================================================
 
-  protected handleFirestoreError(error: any): Error {
+  protected handleFirestoreError(error: unknown): Error {
     if (error instanceof FirestoreError) {
       switch (error.code) {
         case 'permission-denied':
