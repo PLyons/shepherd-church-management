@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Member, MemberEvent } from '../types';
 import { useAuth } from '../hooks/useUnifiedAuth';
@@ -11,42 +11,13 @@ import {
   Home,
   Shield,
   Edit,
-  Save,
   X,
   ArrowLeft,
   Clock,
   MapPin,
   Trash2,
 } from 'lucide-react';
-
-// Phone number formatting utilities
-const formatPhoneNumber = (value: string): string => {
-  // Remove all non-digit characters
-  const phoneNumber = value.replace(/\D/g, '');
-
-  // Apply formatting based on length
-  if (phoneNumber.length <= 3) {
-    return phoneNumber;
-  } else if (phoneNumber.length <= 6) {
-    return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
-  } else {
-    return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
-  }
-};
-
-const normalizePhoneForStorage = (value: string): string => {
-  const cleaned = value.replace(/\D/g, '');
-  if (cleaned.length === 10) {
-    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
-  }
-  return cleaned; // Return as-is if not 10 digits
-};
-
-// Email validation
-const isValidEmail = (email: string): boolean => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-};
+import { MemberFormShared } from '../components/members/MemberFormShared';
 
 export default function MemberProfile() {
   const { id } = useParams<{ id: string }>();
@@ -56,20 +27,6 @@ export default function MemberProfile() {
   const [memberEvents, setMemberEvents] = useState<MemberEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
-  const [formData, setFormData] = useState<Partial<Member>>({});
-  const [emailError, setEmailError] = useState<string>('');
-
-  // Refs for birthday date inputs
-  const monthRef = useRef<HTMLInputElement>(null);
-  const dayRef = useRef<HTMLInputElement>(null);
-  const yearRef = useRef<HTMLInputElement>(null);
-
-  // State for individual birthday components
-  const [birthdayComponents, setBirthdayComponents] = useState({
-    month: '',
-    day: '',
-    year: '',
-  });
 
   useEffect(() => {
     if (id) {
@@ -119,25 +76,6 @@ export default function MemberProfile() {
 
       setMember(enrichedMember);
       setMemberEvents([]); // TODO: Implement member events in Firebase
-      
-      // Format phone number for display in form
-      const formattedMember = {
-        ...enrichedMember,
-        phone: enrichedMember.phone ? formatPhoneNumber(enrichedMember.phone) : enrichedMember.phone,
-      };
-      setFormData(formattedMember);
-
-      // Parse birthdate into components if it exists
-      if (enrichedMember.birthdate) {
-        const parts = enrichedMember.birthdate.split('-');
-        if (parts.length === 3) {
-          setBirthdayComponents({
-            month: parts[1],
-            day: parts[2],
-            year: parts[0],
-          });
-        }
-      }
     } catch (error) {
       console.error('Error fetching member data:', error);
       setMember(null);
@@ -156,131 +94,15 @@ export default function MemberProfile() {
 
   const handleEdit = () => {
     setEditing(true);
-    setEmailError('');
   };
 
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhoneNumber(e.target.value);
-    setFormData({ ...formData, phone: formatted });
-  };
-
-  const handlePhoneBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    // Ensure phone number is properly formatted when leaving the field
-    const formatted = formatPhoneNumber(e.target.value);
-    setFormData({ ...formData, phone: formatted });
-  };
-
-  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const email = e.target.value;
-    setFormData({ ...formData, email });
-    
-    // Validate email if not empty
-    if (email && !isValidEmail(email)) {
-      setEmailError('Please enter a valid email address');
-    } else {
-      setEmailError('');
-    }
-  };
-
-  const handleBirthdayChange = (
-    component: 'month' | 'day' | 'year',
-    value: string
-  ) => {
-    const newComponents = { ...birthdayComponents, [component]: value };
-    setBirthdayComponents(newComponents);
-
-    // Update the birthdate in formData
-    if (newComponents.month && newComponents.day && newComponents.year) {
-      const birthdate = `${newComponents.year}-${newComponents.month.padStart(2, '0')}-${newComponents.day.padStart(2, '0')}`;
-      setFormData({ ...formData, birthdate });
-    } else {
-      setFormData({ ...formData, birthdate: '' });
-    }
-
-    // Auto-advance focus with intelligent tabbing
-    if (component === 'month') {
-      const monthNum = parseInt(value);
-      // Move to day field when month is logically complete
-      if ((value.length === 1 && monthNum >= 2 && monthNum <= 9) || 
-          (value.length === 2 && monthNum >= 10 && monthNum <= 12) ||
-          (value.length === 2 && monthNum === 1)) {
-        setTimeout(() => {
-          if (dayRef.current) {
-            dayRef.current.focus();
-          }
-        }, 0);
-      }
-    } else if (component === 'day') {
-      const dayNum = parseInt(value);
-      // Move to year field when day is logically complete
-      if ((value.length === 1 && dayNum >= 4 && dayNum <= 9) || 
-          (value.length === 2 && dayNum >= 10 && dayNum <= 31) ||
-          (value.length === 2 && dayNum >= 1 && dayNum <= 3)) {
-        setTimeout(() => {
-          if (yearRef.current) {
-            yearRef.current.focus();
-          }
-        }, 0);
-      }
-    }
-  };
-
-  const handleSave = async () => {
-    if (!id || !formData) return;
-
-    // Validate email if provided
-    if (formData.email && !isValidEmail(formData.email)) {
-      setEmailError('Please enter a valid email address');
-      return;
-    }
-
-    try {
-      const updateData = {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        phone: formData.phone ? normalizePhoneForStorage(formData.phone) : formData.phone,
-        birthdate: formData.birthdate,
-        gender: formData.gender,
-        memberStatus: formData.memberStatus,
-        role: formData.role,
-      };
-
-      await membersService.update(id, updateData);
-
-      // Refresh member data
-      await fetchMemberData();
-      setEditing(false);
-    } catch (error) {
-      console.error('Error updating member:', error);
-      alert(error instanceof Error ? error.message : 'Failed to update member');
-    }
+  const handleMemberUpdate = async () => {
+    // Refresh member data after update
+    await fetchMemberData();
+    setEditing(false);
   };
 
   const handleCancel = () => {
-    if (member) {
-      // Reset form data with formatted phone and parsed birthdate
-      const formattedMember = {
-        ...member,
-        phone: member.phone ? formatPhoneNumber(member.phone) : member.phone,
-      };
-      setFormData(formattedMember);
-
-      // Reset birthdate components
-      if (member.birthdate) {
-        const parts = member.birthdate.split('-');
-        if (parts.length === 3) {
-          setBirthdayComponents({
-            month: parts[1],
-            day: parts[2],
-            year: parts[0],
-          });
-        }
-      } else {
-        setBirthdayComponents({ month: '', day: '', year: '' });
-      }
-    }
-    setEmailError('');
     setEditing(false);
   };
 
@@ -401,13 +223,6 @@ export default function MemberProfile() {
         {editing && (
           <div className="flex gap-2">
             <button
-              onClick={handleSave}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
-            >
-              <Save className="h-4 w-4 mr-2" />
-              Save
-            </button>
-            <button
               onClick={handleCancel}
               className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
             >
@@ -420,155 +235,74 @@ export default function MemberProfile() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <div className="bg-white shadow-sm rounded-lg p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">
-              Personal Information
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  First Name
-                </label>
-                {editing ? (
-                  <input
-                    type="text"
-                    value={formData.firstName || ''}
-                    onChange={(e) =>
-                      setFormData({ ...formData, firstName: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                ) : (
+          {editing ? (
+            <div className="bg-white shadow-sm rounded-lg p-6">
+              <h2 className="text-lg font-medium text-gray-900 mb-4">
+                Edit Personal Information
+              </h2>
+              <MemberFormShared
+                mode="inline"
+                operation="update"
+                member={member}
+                onSubmit={handleMemberUpdate}
+                onCancel={handleCancel}
+                showHouseholdSelector={false}
+                showRoleSelector={true}
+                className=""
+              />
+            </div>
+          ) : (
+            <div className="bg-white shadow-sm rounded-lg p-6">
+              <h2 className="text-lg font-medium text-gray-900 mb-4">
+                Personal Information
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    First Name
+                  </label>
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-gray-400" />
                     <span className="text-gray-900">{member.firstName}</span>
                   </div>
-                )}
-              </div>
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Last Name
-                </label>
-                {editing ? (
-                  <input
-                    type="text"
-                    value={formData.lastName || ''}
-                    onChange={(e) =>
-                      setFormData({ ...formData, lastName: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                ) : (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Last Name
+                  </label>
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-gray-400" />
                     <span className="text-gray-900">{member.lastName}</span>
                   </div>
-                )}
-              </div>
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email
-                </label>
-                {editing ? (
-                  <div>
-                    <input
-                      type="email"
-                      value={formData.email || ''}
-                      onChange={handleEmailChange}
-                      className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                        emailError ? 'border-red-300' : 'border-gray-300'
-                      }`}
-                    />
-                    {emailError && (
-                      <p className="mt-1 text-sm text-red-600">{emailError}</p>
-                    )}
-                  </div>
-                ) : (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Email
+                  </label>
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-900">{member.email}</span>
+                    <span className="text-gray-900">{member.email || 'Not provided'}</span>
                   </div>
-                )}
-              </div>
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone
-                </label>
-                {editing ? (
-                  <input
-                    type="tel"
-                    value={formData.phone || ''}
-                    onChange={handlePhoneChange}
-                    onBlur={handlePhoneBlur}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder="(555) 123-4567"
-                    maxLength={14}
-                  />
-                ) : (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Phone
+                  </label>
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4 text-gray-400" />
                     <span className="text-gray-900">
                       {member.phone || 'Not provided'}
                     </span>
                   </div>
-                )}
-              </div>
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Birthdate
-                </label>
-                {editing ? (
-                  <div className="flex gap-2">
-                    <input
-                      ref={monthRef}
-                      type="text"
-                      value={birthdayComponents.month}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, '');
-                        if (value.length <= 2 && parseInt(value) <= 12) {
-                          handleBirthdayChange('month', value);
-                        }
-                      }}
-                      className="w-16 px-2 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
-                      placeholder="MM"
-                      maxLength={2}
-                    />
-                    <span className="flex items-center text-gray-400">/</span>
-                    <input
-                      ref={dayRef}
-                      type="text"
-                      value={birthdayComponents.day}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, '');
-                        if (value.length <= 2 && parseInt(value) <= 31) {
-                          handleBirthdayChange('day', value);
-                        }
-                      }}
-                      className="w-16 px-2 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
-                      placeholder="DD"
-                      maxLength={2}
-                    />
-                    <span className="flex items-center text-gray-400">/</span>
-                    <input
-                      ref={yearRef}
-                      type="text"
-                      value={birthdayComponents.year}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, '');
-                        if (value.length <= 4) {
-                          handleBirthdayChange('year', value);
-                        }
-                      }}
-                      className="w-20 px-2 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
-                      placeholder="YYYY"
-                      maxLength={4}
-                    />
-                  </div>
-                ) : (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Birthdate
+                  </label>
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-gray-400" />
                     <span className="text-gray-900">
@@ -577,36 +311,19 @@ export default function MemberProfile() {
                         : 'Not provided'}
                     </span>
                   </div>
-                )}
-              </div>
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Gender
-                </label>
-                {editing ? (
-                  <select
-                    value={formData.gender || ''}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        gender: e.target.value as 'Male' | 'Female',
-                      })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="">Select gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                  </select>
-                ) : (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Gender
+                  </label>
                   <span className="text-gray-900">
                     {member.gender || 'Not specified'}
                   </span>
-                )}
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {memberEvents.length > 0 && (
             <div className="bg-white shadow-sm rounded-lg p-6 mt-6">
@@ -654,64 +371,25 @@ export default function MemberProfile() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Status
                 </label>
-                {editing ? (
-                  <select
-                    value={formData.memberStatus || ''}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        memberStatus: e.target.value as
-                          | 'active'
-                          | 'inactive'
-                          | 'visitor',
-                      })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  >
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                    <option value="visitor">Visitor</option>
-                  </select>
-                ) : (
-                  <span
-                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(member.memberStatus)}`}
-                  >
-                    {member.memberStatus}
-                  </span>
-                )}
+                <span
+                  className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(member.memberStatus)}`}
+                >
+                  {member.memberStatus}
+                </span>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Role
                 </label>
-                {editing &&
-                (currentMember?.role === 'admin' ||
-                  currentMember?.role === 'pastor') ? (
-                  <select
-                    value={formData.role || ''}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        role: e.target.value as 'admin' | 'pastor' | 'member',
-                      })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                <div className="flex items-center gap-2">
+                  <Shield className="h-4 w-4 text-gray-400" />
+                  <span
+                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(member.role)}`}
                   >
-                    <option value="member">Member</option>
-                    <option value="pastor">Pastor</option>
-                    <option value="admin">Admin</option>
-                  </select>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <Shield className="h-4 w-4 text-gray-400" />
-                    <span
-                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(member.role)}`}
-                    >
-                      {member.role}
-                    </span>
-                  </div>
-                )}
+                    {member.role}
+                  </span>
+                </div>
               </div>
 
               <div>

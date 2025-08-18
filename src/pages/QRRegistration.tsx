@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { registrationTokensService } from '../services/firebase/registration-tokens.service';
 import { publicRegistrationService } from '../services/firebase/public-registration.service';
+import { formatPhoneNumber } from '../utils/member-form-utils';
 import {
   RegistrationToken,
   RegistrationFormData,
@@ -144,13 +145,6 @@ export default function QRRegistration() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Phone number formatting
-  const formatPhoneNumber = (value: string): string => {
-    const phone = value.replace(/\D/g, '');
-    if (phone.length <= 3) return phone;
-    if (phone.length <= 6) return `(${phone.slice(0, 3)}) ${phone.slice(3)}`;
-    return `(${phone.slice(0, 3)}) ${phone.slice(3, 6)}-${phone.slice(6, 10)}`;
-  };
 
   // Navigation functions
   const nextStep = () => {

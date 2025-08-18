@@ -15,6 +15,7 @@ import {
   getDocs,
 } from 'firebase/firestore';
 import * as readline from 'readline';
+import { isValidEmail } from '../utils/member-form-utils';
 
 // ============================================================================
 // INTERACTIVE ADMIN SETUP SCRIPT
@@ -32,10 +33,6 @@ function question(query: string): Promise<string> {
   });
 }
 
-function validateEmail(email: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
-}
 
 function validatePassword(password: string): {
   isValid: boolean;
@@ -115,7 +112,7 @@ async function setupAdmin() {
       console.log('\n📋 Promoting Existing User to Admin\n');
 
       const email = await question('Enter the email of the user to promote: ');
-      if (!validateEmail(email)) {
+      if (!isValidEmail(email)) {
         console.error('❌ Invalid email format');
         process.exit(1);
       }
@@ -170,7 +167,7 @@ async function setupAdmin() {
 
       // Get user details
       const email = await question('Admin email address: ');
-      if (!validateEmail(email)) {
+      if (!isValidEmail(email)) {
         console.error('❌ Invalid email format');
         process.exit(1);
       }
