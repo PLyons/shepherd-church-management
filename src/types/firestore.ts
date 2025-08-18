@@ -14,19 +14,19 @@ export interface MemberDocument {
   // Personal Information
   firstName: string;
   lastName: string;
-  email: string;
+  email?: string;
   phone?: string;
   birthdate?: Timestamp;
   gender?: 'Male' | 'Female';
 
   // Church Information
-  role: 'admin' | 'pastor' | 'member';
-  memberStatus: 'active' | 'inactive' | 'visitor';
+  role?: 'admin' | 'pastor' | 'member';
+  memberStatus?: 'active' | 'inactive' | 'visitor';
   joinedAt?: Timestamp;
 
   // Household Relationship
-  householdId: string; // Reference to household document ID
-  isPrimaryContact: boolean;
+  householdId?: string; // Reference to household document ID
+  isPrimaryContact?: boolean;
 
   // Metadata
   createdAt: Timestamp;
@@ -34,7 +34,7 @@ export interface MemberDocument {
 
   // Denormalized Data (for query optimization)
   householdName?: string; // From household.familyName
-  fullName: string; // Computed: firstName + lastName
+  fullName?: string; // Computed: firstName + lastName
 }
 
 // Client-side representation with string dates for compatibility
@@ -42,19 +42,19 @@ export interface Member {
   id: string; // Firebase Auth UID
   firstName: string;
   lastName: string;
-  email: string;
+  email?: string;
   phone?: string;
   birthdate?: string; // ISO string
   gender?: 'Male' | 'Female';
-  role: 'admin' | 'pastor' | 'member';
-  memberStatus: 'active' | 'inactive' | 'visitor';
+  role?: 'admin' | 'pastor' | 'member';
+  memberStatus?: 'active' | 'inactive' | 'visitor';
   joinedAt?: string; // ISO string
-  householdId: string;
-  isPrimaryContact: boolean;
+  householdId?: string;
+  isPrimaryContact?: boolean;
   createdAt: string; // ISO string
   updatedAt: string; // ISO string
   householdName?: string;
-  fullName: string;
+  fullName?: string;
 
   // Optional populated data
   household?: Household;

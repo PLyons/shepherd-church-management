@@ -8,18 +8,18 @@ export interface Member {
   // Personal Information (unified naming)
   firstName: string;
   lastName: string;
-  email: string;
+  email?: string;
   phone?: string;
   birthdate?: string;
   gender?: 'Male' | 'Female';
 
   // Church Information
-  role: 'admin' | 'pastor' | 'member';
-  memberStatus: 'active' | 'inactive' | 'visitor';
+  role?: 'admin' | 'pastor' | 'member';
+  memberStatus?: 'active' | 'inactive' | 'visitor';
   joinedAt?: string;
 
   // Household Relationship
-  householdId: string;
+  householdId?: string;
   isPrimaryContact?: boolean;
 
   // Metadata

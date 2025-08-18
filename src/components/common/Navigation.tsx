@@ -81,7 +81,7 @@ export function Navigation({ onMobileMenuToggle, userRole }: NavigationProps) {
                             openDropdown === item.name ? null : item.name
                           )
                         }
-                        className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 ${
+                        className={`inline-flex items-center px-1 pt-1 pb-1 text-sm font-medium border-b-2 h-16 ${
                           isActive
                             ? 'border-blue-500 text-gray-900'
                             : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
@@ -116,7 +116,7 @@ export function Navigation({ onMobileMenuToggle, userRole }: NavigationProps) {
                     <Link
                       key={item.name}
                       to={item.href}
-                      className={`inline-flex items-center px-1 pt-1 text-sm font-medium border-b-2 ${
+                      className={`inline-flex items-center px-1 pt-1 pb-1 text-sm font-medium border-b-2 h-16 ${
                         isActive
                           ? 'border-blue-500 text-gray-900'
                           : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'

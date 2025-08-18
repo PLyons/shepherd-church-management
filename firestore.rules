@@ -28,9 +28,9 @@ service cloud.firestore {
     }
     
     function isValidMemberData() {
-      return request.resource.data.keys().hasAll(['firstName', 'lastName', 'email', 'role', 'memberStatus']) &&
-             request.resource.data.role in ['admin', 'pastor', 'member'] &&
-             request.resource.data.memberStatus in ['active', 'inactive', 'visitor'];
+      return request.resource.data.keys().hasAll(['firstName', 'lastName']) &&
+             (!('role' in request.resource.data) || request.resource.data.role in ['admin', 'pastor', 'member']) &&
+             (!('memberStatus' in request.resource.data) || request.resource.data.memberStatus in ['active', 'inactive', 'visitor']);
     }
     
     // Members collection

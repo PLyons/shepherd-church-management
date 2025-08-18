@@ -42,7 +42,7 @@ interface MemberFormProps {
 export function MemberForm({ onClose, onSubmit, member }: MemberFormProps) {
   const { member: currentMember } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [selectedHousehold, setSelectedHousehold] = useState<Household | null>(
+  const [, setSelectedHousehold] = useState<Household | null>(
     null
   );
 
@@ -86,15 +86,15 @@ export function MemberForm({ onClose, onSubmit, member }: MemberFormProps) {
       }
 
       setFormData({
-        householdId: member.householdId,
+        householdId: member.householdId || '',
         firstName: member.firstName,
         lastName: member.lastName,
-        email: member.email,
+        email: member.email || '',
         phone: member.phone ? formatPhoneNumber(member.phone) : '',
         birthdate: member.birthdate || '',
         gender: member.gender || '',
-        role: member.role,
-        memberStatus: member.memberStatus,
+        role: member.role || 'member',
+        memberStatus: member.memberStatus || 'active',
       });
 
       setBirthdayComponents({ month, day, year });
@@ -102,6 +102,12 @@ export function MemberForm({ onClose, onSubmit, member }: MemberFormProps) {
   }, [member]);
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setFormData({ ...formData, phone: formatted });
+  };
+
+  const handlePhoneBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    // Ensure phone number is properly formatted when leaving the field
     const formatted = formatPhoneNumber(e.target.value);
     setFormData({ ...formData, phone: formatted });
   };
@@ -121,11 +127,31 @@ export function MemberForm({ onClose, onSubmit, member }: MemberFormProps) {
       setFormData({ ...formData, birthdate: '' });
     }
 
-    // Auto-advance focus
-    if (component === 'month' && value.length === 2 && dayRef.current) {
-      dayRef.current.focus();
-    } else if (component === 'day' && value.length === 2 && yearRef.current) {
-      yearRef.current.focus();
+    // Auto-advance focus with intelligent tabbing
+    if (component === 'month') {
+      const monthNum = parseInt(value);
+      // Move to day field when month is logically complete
+      if ((value.length === 1 && monthNum >= 2 && monthNum <= 9) || 
+          (value.length === 2 && monthNum >= 10 && monthNum <= 12) ||
+          (value.length === 2 && monthNum === 1)) {
+        setTimeout(() => {
+          if (dayRef.current) {
+            dayRef.current.focus();
+          }
+        }, 0);
+      }
+    } else if (component === 'day') {
+      const dayNum = parseInt(value);
+      // Move to year field when day is logically complete
+      if ((value.length === 1 && dayNum >= 4 && dayNum <= 9) || 
+          (value.length === 2 && dayNum >= 10 && dayNum <= 31) ||
+          (value.length === 2 && dayNum >= 1 && dayNum <= 3)) {
+        setTimeout(() => {
+          if (yearRef.current) {
+            yearRef.current.focus();
+          }
+        }, 0);
+      }
     }
   };
 
@@ -172,26 +198,22 @@ export function MemberForm({ onClose, onSubmit, member }: MemberFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.householdId) {
-      alert('Please select or create a family before adding a member.');
-      return;
-    }
+    // Household is now optional - no validation needed
 
     setLoading(true);
 
     try {
       const memberData = {
-        householdId: formData.householdId,
         firstName: formData.firstName,
         lastName: formData.lastName,
-        email: formData.email,
-        phone: formData.phone
-          ? normalizePhoneForStorage(formData.phone)
-          : undefined,
-        birthdate: formData.birthdate || undefined,
-        gender: formData.gender || undefined,
-        role: formData.role,
-        memberStatus: formData.memberStatus,
+        ...(formData.email && { email: formData.email }),
+        ...(formData.phone && { phone: normalizePhoneForStorage(formData.phone) }),
+        ...(formData.birthdate && { birthdate: formData.birthdate }),
+        ...(formData.gender && { gender: formData.gender }),
+        ...(formData.householdId && { householdId: formData.householdId }),
+        // Always include role and memberStatus with defaults if empty
+        role: formData.role || 'member',
+        memberStatus: formData.memberStatus || 'active',
       };
 
       let savedMember: Member;
@@ -273,11 +295,10 @@ export function MemberForm({ onClose, onSubmit, member }: MemberFormProps) {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Email *
+                Email
               </label>
               <input
                 type="email"
-                required
                 value={formData.email}
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
@@ -294,6 +315,7 @@ export function MemberForm({ onClose, onSubmit, member }: MemberFormProps) {
                 type="tel"
                 value={formData.phone}
                 onChange={handlePhoneChange}
+                onBlur={handlePhoneBlur}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="(555) 123-4567"
                 maxLength={14}
@@ -374,7 +396,7 @@ export function MemberForm({ onClose, onSubmit, member }: MemberFormProps) {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Family *
+                Family
               </label>
               <HouseholdSelector
                 value={formData.householdId}
@@ -389,10 +411,9 @@ export function MemberForm({ onClose, onSubmit, member }: MemberFormProps) {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Status *
+                Status
               </label>
               <select
-                required
                 value={formData.memberStatus}
                 onChange={(e) =>
                   setFormData({
@@ -414,10 +435,9 @@ export function MemberForm({ onClose, onSubmit, member }: MemberFormProps) {
             {canEditRole && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Role *
+                  Role
                 </label>
                 <select
-                  required
                   value={formData.role}
                   onChange={(e) =>
                     setFormData({

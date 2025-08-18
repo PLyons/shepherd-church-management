@@ -154,8 +154,8 @@ export const memberToMemberDocument = (
     phone: member.phone,
     birthdate: stringToTimestamp(member.birthdate),
     gender: member.gender,
-    role: member.role,
-    memberStatus: member.memberStatus,
+    role: member.role || 'member', // Default to 'member' if not provided
+    memberStatus: member.memberStatus || 'active', // Default to 'active' if not provided
     joinedAt: stringToTimestamp(member.joinedAt),
     householdId: member.householdId,
     isPrimaryContact: member.isPrimaryContact || false,

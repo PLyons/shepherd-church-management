@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Member, MemberEvent } from '../types';
 import { useAuth } from '../hooks/useUnifiedAuth';
@@ -19,15 +19,57 @@ import {
   Trash2,
 } from 'lucide-react';
 
+// Phone number formatting utilities
+const formatPhoneNumber = (value: string): string => {
+  // Remove all non-digit characters
+  const phoneNumber = value.replace(/\D/g, '');
+
+  // Apply formatting based on length
+  if (phoneNumber.length <= 3) {
+    return phoneNumber;
+  } else if (phoneNumber.length <= 6) {
+    return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3)}`;
+  } else {
+    return `(${phoneNumber.slice(0, 3)}) ${phoneNumber.slice(3, 6)}-${phoneNumber.slice(6, 10)}`;
+  }
+};
+
+const normalizePhoneForStorage = (value: string): string => {
+  const cleaned = value.replace(/\D/g, '');
+  if (cleaned.length === 10) {
+    return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+  }
+  return cleaned; // Return as-is if not 10 digits
+};
+
+// Email validation
+const isValidEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
 export default function MemberProfile() {
   const { id } = useParams<{ id: string }>();
-  const { user, member: currentMember } = useAuth();
+  const { member: currentMember } = useAuth();
   const navigate = useNavigate();
   const [member, setMember] = useState<Member | null>(null);
   const [memberEvents, setMemberEvents] = useState<MemberEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
   const [formData, setFormData] = useState<Partial<Member>>({});
+  const [emailError, setEmailError] = useState<string>('');
+
+  // Refs for birthday date inputs
+  const monthRef = useRef<HTMLInputElement>(null);
+  const dayRef = useRef<HTMLInputElement>(null);
+  const yearRef = useRef<HTMLInputElement>(null);
+
+  // State for individual birthday components
+  const [birthdayComponents, setBirthdayComponents] = useState({
+    month: '',
+    day: '',
+    year: '',
+  });
 
   useEffect(() => {
     if (id) {
@@ -77,7 +119,25 @@ export default function MemberProfile() {
 
       setMember(enrichedMember);
       setMemberEvents([]); // TODO: Implement member events in Firebase
-      setFormData(enrichedMember);
+      
+      // Format phone number for display in form
+      const formattedMember = {
+        ...enrichedMember,
+        phone: enrichedMember.phone ? formatPhoneNumber(enrichedMember.phone) : enrichedMember.phone,
+      };
+      setFormData(formattedMember);
+
+      // Parse birthdate into components if it exists
+      if (enrichedMember.birthdate) {
+        const parts = enrichedMember.birthdate.split('-');
+        if (parts.length === 3) {
+          setBirthdayComponents({
+            month: parts[1],
+            day: parts[2],
+            year: parts[0],
+          });
+        }
+      }
     } catch (error) {
       console.error('Error fetching member data:', error);
       setMember(null);
@@ -96,17 +156,90 @@ export default function MemberProfile() {
 
   const handleEdit = () => {
     setEditing(true);
+    setEmailError('');
+  };
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setFormData({ ...formData, phone: formatted });
+  };
+
+  const handlePhoneBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    // Ensure phone number is properly formatted when leaving the field
+    const formatted = formatPhoneNumber(e.target.value);
+    setFormData({ ...formData, phone: formatted });
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const email = e.target.value;
+    setFormData({ ...formData, email });
+    
+    // Validate email if not empty
+    if (email && !isValidEmail(email)) {
+      setEmailError('Please enter a valid email address');
+    } else {
+      setEmailError('');
+    }
+  };
+
+  const handleBirthdayChange = (
+    component: 'month' | 'day' | 'year',
+    value: string
+  ) => {
+    const newComponents = { ...birthdayComponents, [component]: value };
+    setBirthdayComponents(newComponents);
+
+    // Update the birthdate in formData
+    if (newComponents.month && newComponents.day && newComponents.year) {
+      const birthdate = `${newComponents.year}-${newComponents.month.padStart(2, '0')}-${newComponents.day.padStart(2, '0')}`;
+      setFormData({ ...formData, birthdate });
+    } else {
+      setFormData({ ...formData, birthdate: '' });
+    }
+
+    // Auto-advance focus with intelligent tabbing
+    if (component === 'month') {
+      const monthNum = parseInt(value);
+      // Move to day field when month is logically complete
+      if ((value.length === 1 && monthNum >= 2 && monthNum <= 9) || 
+          (value.length === 2 && monthNum >= 10 && monthNum <= 12) ||
+          (value.length === 2 && monthNum === 1)) {
+        setTimeout(() => {
+          if (dayRef.current) {
+            dayRef.current.focus();
+          }
+        }, 0);
+      }
+    } else if (component === 'day') {
+      const dayNum = parseInt(value);
+      // Move to year field when day is logically complete
+      if ((value.length === 1 && dayNum >= 4 && dayNum <= 9) || 
+          (value.length === 2 && dayNum >= 10 && dayNum <= 31) ||
+          (value.length === 2 && dayNum >= 1 && dayNum <= 3)) {
+        setTimeout(() => {
+          if (yearRef.current) {
+            yearRef.current.focus();
+          }
+        }, 0);
+      }
+    }
   };
 
   const handleSave = async () => {
     if (!id || !formData) return;
+
+    // Validate email if provided
+    if (formData.email && !isValidEmail(formData.email)) {
+      setEmailError('Please enter a valid email address');
+      return;
+    }
 
     try {
       const updateData = {
         firstName: formData.firstName,
         lastName: formData.lastName,
         email: formData.email,
-        phone: formData.phone,
+        phone: formData.phone ? normalizePhoneForStorage(formData.phone) : formData.phone,
         birthdate: formData.birthdate,
         gender: formData.gender,
         memberStatus: formData.memberStatus,
@@ -125,7 +258,29 @@ export default function MemberProfile() {
   };
 
   const handleCancel = () => {
-    setFormData(member || {});
+    if (member) {
+      // Reset form data with formatted phone and parsed birthdate
+      const formattedMember = {
+        ...member,
+        phone: member.phone ? formatPhoneNumber(member.phone) : member.phone,
+      };
+      setFormData(formattedMember);
+
+      // Reset birthdate components
+      if (member.birthdate) {
+        const parts = member.birthdate.split('-');
+        if (parts.length === 3) {
+          setBirthdayComponents({
+            month: parts[1],
+            day: parts[2],
+            year: parts[0],
+          });
+        }
+      } else {
+        setBirthdayComponents({ month: '', day: '', year: '' });
+      }
+    }
+    setEmailError('');
     setEditing(false);
   };
 
@@ -317,14 +472,19 @@ export default function MemberProfile() {
                   Email
                 </label>
                 {editing ? (
-                  <input
-                    type="email"
-                    value={formData.email || ''}
-                    onChange={(e) =>
-                      setFormData({ ...formData, email: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
+                  <div>
+                    <input
+                      type="email"
+                      value={formData.email || ''}
+                      onChange={handleEmailChange}
+                      className={`w-full px-3 py-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                        emailError ? 'border-red-300' : 'border-gray-300'
+                      }`}
+                    />
+                    {emailError && (
+                      <p className="mt-1 text-sm text-red-600">{emailError}</p>
+                    )}
+                  </div>
                 ) : (
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-gray-400" />
@@ -341,10 +501,11 @@ export default function MemberProfile() {
                   <input
                     type="tel"
                     value={formData.phone || ''}
-                    onChange={(e) =>
-                      setFormData({ ...formData, phone: e.target.value })
-                    }
+                    onChange={handlePhoneChange}
+                    onBlur={handlePhoneBlur}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="(555) 123-4567"
+                    maxLength={14}
                   />
                 ) : (
                   <div className="flex items-center gap-2">
@@ -361,14 +522,52 @@ export default function MemberProfile() {
                   Birthdate
                 </label>
                 {editing ? (
-                  <input
-                    type="date"
-                    value={formData.birthdate || ''}
-                    onChange={(e) =>
-                      setFormData({ ...formData, birthdate: e.target.value })
-                    }
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
+                  <div className="flex gap-2">
+                    <input
+                      ref={monthRef}
+                      type="text"
+                      value={birthdayComponents.month}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '');
+                        if (value.length <= 2 && parseInt(value) <= 12) {
+                          handleBirthdayChange('month', value);
+                        }
+                      }}
+                      className="w-16 px-2 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
+                      placeholder="MM"
+                      maxLength={2}
+                    />
+                    <span className="flex items-center text-gray-400">/</span>
+                    <input
+                      ref={dayRef}
+                      type="text"
+                      value={birthdayComponents.day}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '');
+                        if (value.length <= 2 && parseInt(value) <= 31) {
+                          handleBirthdayChange('day', value);
+                        }
+                      }}
+                      className="w-16 px-2 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
+                      placeholder="DD"
+                      maxLength={2}
+                    />
+                    <span className="flex items-center text-gray-400">/</span>
+                    <input
+                      ref={yearRef}
+                      type="text"
+                      value={birthdayComponents.year}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '');
+                        if (value.length <= 4) {
+                          handleBirthdayChange('year', value);
+                        }
+                      }}
+                      className="w-20 px-2 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
+                      placeholder="YYYY"
+                      maxLength={4}
+                    />
+                  </div>
                 ) : (
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-gray-400" />
