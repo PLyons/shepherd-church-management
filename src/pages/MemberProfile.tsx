@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Member, MemberEvent } from '../types';
 import { useAuth } from '../hooks/useUnifiedAuth';
 import { membersService } from '../services/firebase';
+import { formatPhoneForDisplay } from '../utils/member-form-utils';
 import {
   User,
   Mail,
@@ -13,6 +14,8 @@ import {
   ArrowLeft,
   Clock,
   Trash2,
+  MapPin,
+  Heart,
 } from 'lucide-react';
 
 export default function MemberProfile() {
@@ -22,7 +25,6 @@ export default function MemberProfile() {
   const [member, setMember] = useState<Member | null>(null);
   const [memberEvents, setMemberEvents] = useState<MemberEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -61,11 +63,7 @@ export default function MemberProfile() {
     currentMember?.role === 'admin' || currentMember?.role === 'pastor';
 
   const handleEdit = () => {
-    setEditing(true);
-  };
-
-  const handleCancel = () => {
-    setEditing(false);
+    navigate(`/members/edit/${id}`);
   };
 
   const handleDelete = async () => {
@@ -84,6 +82,44 @@ export default function MemberProfile() {
       console.error('Error deleting member:', error);
       alert(error instanceof Error ? error.message : 'Failed to delete member');
     }
+  };
+
+  // Helper function to get primary email from arrays or fallback to deprecated field
+  const getPrimaryEmail = (member: Member) => {
+    if (member.emails && member.emails.length > 0) {
+      const primary = member.emails.find(e => e.primary);
+      return primary?.address || member.emails[0].address;
+    }
+    return member.email || 'Not provided';
+  };
+
+  // Helper function to get primary phone from arrays or fallback to deprecated field
+  const getPrimaryPhone = (member: Member) => {
+    let phoneNumber = '';
+    if (member.phones && member.phones.length > 0) {
+      const primary = member.phones.find(p => p.primary);
+      phoneNumber = primary?.number || member.phones[0].number;
+    } else {
+      phoneNumber = member.phone || '';
+    }
+    return phoneNumber ? formatPhoneForDisplay(phoneNumber) : 'Not provided';
+  };
+
+  // Helper function to get primary address from arrays
+  const getPrimaryAddress = (member: Member) => {
+    if (member.addresses && member.addresses.length > 0) {
+      const primary = member.addresses.find(a => a.primary);
+      const addr = primary || member.addresses[0];
+      const parts = [
+        addr.addressLine1,
+        addr.addressLine2,
+        [addr.city, addr.state].filter(Boolean).join(', '),
+        addr.postalCode,
+        addr.country
+      ].filter(Boolean);
+      return parts.join(' ');
+    }
+    return null;
   };
 
   const getRoleColor = (role: string) => {
@@ -169,7 +205,7 @@ export default function MemberProfile() {
             {member.firstName} {member.lastName}
           </h1>
         </div>
-        {canEdit && !editing && (
+        {canEdit && (
           <div className="flex gap-2">
             <button
               onClick={handleEdit}
@@ -193,30 +229,11 @@ export default function MemberProfile() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          {editing ? (
-            <div className="bg-white shadow-sm rounded-lg p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">
-                Edit Personal Information
-              </h2>
-              {/* MemberFormShared removed - simplified form needed */}
-              <p className="text-gray-500">
-                Edit functionality temporarily disabled during cleanup
-              </p>
-              <div className="flex gap-2">
-                <button
-                  onClick={handleCancel}
-                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="bg-white shadow-sm rounded-lg p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">
-                Personal Information
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-white shadow-sm rounded-lg p-6">
+            <h2 className="text-lg font-medium text-gray-900 mb-4">
+              Personal Information
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     First Name
@@ -244,7 +261,7 @@ export default function MemberProfile() {
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-gray-400" />
                     <span className="text-gray-900">
-                      {member.email || 'Not provided'}
+                      {getPrimaryEmail(member)}
                     </span>
                   </div>
                 </div>
@@ -256,7 +273,7 @@ export default function MemberProfile() {
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4 text-gray-400" />
                     <span className="text-gray-900">
-                      {member.phone || 'Not provided'}
+                      {getPrimaryPhone(member)}
                     </span>
                   </div>
                 </div>
@@ -268,12 +285,40 @@ export default function MemberProfile() {
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-gray-400" />
                     <span className="text-gray-900">
-                      {member.birthdate
-                        ? formatDate(member.birthdate)
+                      {(member.birthDate || member.birthdate)
+                        ? formatDate(member.birthDate || member.birthdate)
                         : 'Not provided'}
                     </span>
                   </div>
                 </div>
+
+                {member.anniversaryDate && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Anniversary Date
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <Heart className="h-4 w-4 text-gray-400" />
+                      <span className="text-gray-900">
+                        {formatDate(member.anniversaryDate)}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {getPrimaryAddress(member) && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Address
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-gray-400" />
+                      <span className="text-gray-900">
+                        {getPrimaryAddress(member)}
+                      </span>
+                    </div>
+                  </div>
+                )}
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -285,7 +330,6 @@ export default function MemberProfile() {
                 </div>
               </div>
             </div>
-          )}
 
           {memberEvents.length > 0 && (
             <div className="bg-white shadow-sm rounded-lg p-6 mt-6">

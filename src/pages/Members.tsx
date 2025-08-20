@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import { firebaseService } from '../services/firebase';
 import { Member } from '../types';
 import { useAuth } from '../hooks/useUnifiedAuth';
+import { formatPhoneForDisplay } from '../utils/member-form-utils';
 import { Search, User, Users, Eye, Plus, Trash2, X } from 'lucide-react';
-import { MemberForm } from '../components/members/MemberForm';
 
 export default function Members() {
   const { member } = useAuth();
@@ -14,7 +14,6 @@ export default function Members() {
   const [activeSearchTerm, setActiveSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  const [showForm, setShowForm] = useState(false);
   const itemsPerPage = 10;
 
   useEffect(() => {
@@ -68,13 +67,6 @@ export default function Members() {
     setCurrentPage(1);
   };
 
-  const handleAddMember = async (newMember: Member) => {
-    console.log('Member added successfully:', newMember);
-    setShowForm(false);
-    setTimeout(async () => {
-      await fetchMembers();
-    }, 500);
-  };
 
   const handleDeleteMember = async (memberId: string, memberName: string) => {
     const confirmDelete = window.confirm(
@@ -132,11 +124,14 @@ export default function Members() {
 
   // Helper function to get primary phone from arrays or fallback to deprecated field
   const getPrimaryPhone = (member: Member) => {
+    let phoneNumber = '';
     if (member.phones && member.phones.length > 0) {
       const primary = member.phones.find(p => p.primary);
-      return primary?.number || member.phones[0].number;
+      phoneNumber = primary?.number || member.phones[0].number;
+    } else {
+      phoneNumber = member.phone || '';
     }
-    return member.phone || 'N/A';
+    return phoneNumber ? formatPhoneForDisplay(phoneNumber) : 'N/A';
   };
 
   if (loading) {
@@ -162,19 +157,12 @@ export default function Members() {
           </div>
           {canAddMembers && (
             <>
-              <button
-                onClick={() => setShowForm(true)}
+              <Link
+                to="/members/new"
                 className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 mr-2"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Add Member
-              </button>
-              <Link
-                to="/members/new"
-                className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 mr-2"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Member (Page)
               </Link>
               <button
                 onClick={() => fetchMembers()}
@@ -375,22 +363,6 @@ export default function Members() {
         </div>
       )}
 
-      {showForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium">Add Member</h3>
-              <button
-                onClick={() => setShowForm(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-            <MemberForm onSuccess={handleAddMember} onCancel={() => setShowForm(false)} />
-          </div>
-        </div>
-      )}
     </div>
   );
 }

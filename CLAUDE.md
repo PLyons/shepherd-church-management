@@ -140,6 +140,23 @@ Three main contexts manage global state:
 - **Smart Contact Display**: Primary email/phone detection with backward compatibility
 - **Data Migration**: Seamless handling of old and new member data formats
 - **Professional Contact Management**: Multiple contact methods per member
+- **UI/UX Refinements**: Fixed duplicate Add Member buttons, restored edit profile routing
+- **Enhanced Data Display**: Address, anniversary date, and phone number formatting improvements
+- **Data Persistence Fixes**: Resolved field mapping issues for dates and enhanced contact arrays
+
+**🔧 Recent Bug Fixes & Improvements (2025-08-20):**
+- **Duplicate UI Elements**: Removed redundant Add Member button from Members directory
+- **Edit Profile Navigation**: Fixed edit profile routing from view to edit form
+- **Address Functionality**: Enhanced address persistence and display in edit mode
+- **Date Field Issues**: Fixed birthdate and anniversary date persistence and display
+- **Phone Number Formatting**: Implemented (xxx) xxx-xxxx display format while storing as digits
+- **Contact Data Display**: Enhanced member profile view to show all enhanced contact arrays
+- **Field Mapping**: Updated Firestore converters for proper snake_case ↔ camelCase conversion
+
+**📋 Architecture Planning (2025-08-20):**
+- **Address Verification System**: Comprehensive PRP document created for real-time address validation
+- **Implementation Strategy**: Multi-provider approach (OpenStreetMap, Google Maps fallback)
+- **Technical Specifications**: Detailed 10-task implementation plan with caching and UI components
 
 **Current Implementation:**
 - Member management with enhanced CRUD operations and arrays
@@ -149,6 +166,8 @@ Three main contexts manage global state:
 - Dashboard views by role
 - QR-based member onboarding and magic link authentication
 - Professional contact management (multiple emails, phones, addresses)
+- Enhanced member profile display with formatted phone numbers
+- Robust field mapping system for Firestore integration
 
 **Features Removed for Reimplementation:**
 - Event management and RSVP system
@@ -156,7 +175,7 @@ Three main contexts manage global state:
 - Sermon archive and media management
 - Volunteer scheduling system
 
-**Next Focus**: Manual testing of Phase 0.1 implementation, then methodical reimplementation of additional features according to PRD specifications.
+**Next Focus**: Address verification implementation following PRP specifications, then methodical reimplementation of additional features according to PRD specifications.
 
 
 ## MCP Servers Integration
@@ -512,6 +531,7 @@ If you are unsure of assumptions or hit ambiguous scope:
 - **`/src/types/index.ts`** - Core type definitions (Member, Household) with enhanced arrays
 - **`/src/utils/firestore-converters.ts`** - Type-safe Firestore document conversion
 - **`/src/utils/firestore-field-mapper.ts`** - Deep field mapping (camelCase ↔ snake_case)
+- **`/src/utils/member-form-utils.ts`** - Member form utilities including phone formatting
 
 ### Enhanced Components (Phase 0.1)
 - **`/src/components/members/MemberFormEnhanced.tsx`** - Advanced member form with arrays
@@ -520,6 +540,7 @@ If you are unsure of assumptions or hit ambiguous scope:
 
 ### Documentation & Testing
 - **`/docs/prd.md`** - Complete project requirements and specifications
+- **`/address-verification-implementation.md`** - Comprehensive PRP for address validation system
 - **`/src/scripts/seed-firebase-data.ts`** - Database seeding with test data
 - **`/src/scripts/setup-admin.ts`** - Initial admin user setup
 - **`/MANUAL-TESTING-GUIDE.md`** - Comprehensive Phase 0.1 testing protocol
