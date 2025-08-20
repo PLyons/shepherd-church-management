@@ -551,6 +551,69 @@ interface AuditLog {
 **CRITICAL**: Before implementing any dashboard or data access feature, always consider what role should see what data. Default to restricting access rather than allowing it.
 
 
+## Documentation Standards & Maintenance
+
+### Documentation Hierarchy
+1. **CLAUDE.md (This File)** - Authoritative technical reference, always kept current
+2. **docs/INDEX.md** - Documentation hub and navigation
+3. **README.md** - Public-facing project overview
+4. **docs/** - Specific technical documentation
+
+### Maintenance Requirements
+- **Update with every feature change** - Documentation must reflect current implementation
+- **Include "Last Updated" dates** - All documentation files should include update timestamps
+- **Archive obsolete content** - Move outdated docs to docs/archive/ rather than deleting
+- **Maintain accuracy** - Never let documentation contradict actual implementation
+- **Cross-reference consistency** - Ensure related documents don't conflict
+
+### Documentation Standards
+```markdown
+# Document Title
+
+**Last Updated:** YYYY-MM-DD
+**Status:** Current | Outdated | Archived
+**Audience:** Developers | Architects | Users | All
+
+## Content with clear sections...
+```
+
+### **CRITICAL: Date Accuracy Protocol**
+
+**⚠️ Mandatory Date Determination Rules:**
+
+1. **ALWAYS use the environment date as authoritative** - The `<env>Today's date: YYYY-MM-DD</env>` block contains the definitive current date
+2. **NEVER use existing documentation dates** to determine what date to use for new documentation
+3. **NEVER assume dates** or extrapolate from other sources
+4. **Flag date gaps** - If environment date is significantly newer than existing documentation, this indicates stale documentation that needs updating
+
+**Historical Error (2025-08-20):**
+During a documentation audit, Claude Code incorrectly used January 20, 2025 for new documentation dates instead of the correct August 20, 2025 from the environment. The error occurred by incorrectly prioritizing existing documentation dates (January 16, 2025) over the authoritative environment date. This created a systematic error across multiple new documentation files that required correction.
+
+**Prevention Protocol:**
+- Environment date = ONLY source for "today's date"
+- Existing doc dates = Historical reference only
+- Large date gaps = Documentation staleness indicator
+- When in doubt = Use environment date
+
+### Key Documentation Files
+- **CLAUDE.md** - This file, the primary technical reference
+- **docs/INDEX.md** - Documentation navigation hub  
+- **README.md** - Project overview for public consumption
+- **docs/deployment.md** - Production deployment guide
+- **docs/current-features.md** - Detailed feature documentation
+
+### Documentation Review Process
+1. **Quarterly Reviews** - Check all documentation for accuracy
+2. **Feature Change Updates** - Update docs with any code changes
+3. **Archive Process** - Move obsolete docs to archive/ with explanation
+4. **Link Validation** - Ensure internal links remain functional
+
+### MCP Server Documentation
+This project uses multiple MCP servers that enhance development capabilities:
+- Document MCP server usage in relevant technical guides
+- Include MCP server capabilities in development workflow documentation
+- Update Serena memory files to reflect current project state
+
 ## Output Expectations
 
 - All files must be saved in correct paths
@@ -558,3 +621,4 @@ interface AuditLog {
 - Avoid creating "sample" code — implement real logic unless specified
 - Be explicit about what was implemented vs. what needs manual steps
 - Highlight any deviations from the original procedure with justification
+- **Update documentation** when implementing features or making architectural changes
