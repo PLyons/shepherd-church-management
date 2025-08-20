@@ -4,22 +4,63 @@
 
 export interface Member {
   id: string;
+  
+  // Name fields
+  prefix?: string;                    // Mr., Mrs., Dr., etc.
   firstName: string;
-  lastName: string;
   middleName?: string;
-  email?: string;
-  phone?: string;
+  lastName: string;
+  suffix?: string;                    // Jr., Sr., III, etc.
+  
+  // Email addresses (array)
+  emails?: {
+    type: 'home' | 'work' | 'other';
+    address: string;
+    primary?: boolean;
+  }[];
+  
+  // Phone numbers (array)
+  phones?: {
+    type: 'mobile' | 'home' | 'work' | 'other';
+    number: string;
+    primary?: boolean;
+    smsOptIn?: boolean;              // Only for mobile type
+  }[];
+  
+  // Physical addresses (array)
+  addresses?: {
+    type: 'home' | 'work' | 'other';
+    addressLine1: string;
+    addressLine2?: string;
+    city: string;
+    state: string;
+    postalCode: string;
+    country?: string;
+    primary?: boolean;
+  }[];
+  
+  // Dates
   birthDate?: Date | any;
   birthdate?: string; // Alternative format for compatibility
   anniversaryDate?: Date | any;
+  
+  // Status fields
   maritalStatus?: 'single' | 'married' | 'widowed' | 'divorced';
   memberStatus: 'active' | 'inactive';
   role: 'admin' | 'pastor' | 'member';
   gender?: 'Male' | 'Female';
   joinedAt?: string;
+  
+  // Metadata
   createdAt?: Date | any;
   updatedAt?: Date | any;
+  
+  // Computed
   fullName?: string;
+  
+  // DEPRECATED - kept for compatibility during migration
+  email?: string;        // Will migrate to emails array
+  phone?: string;        // Will migrate to phones array
 }
 
 export interface Household {
@@ -75,4 +116,9 @@ export interface DashboardData {
   upcomingEvents?: Event[];
   quickActions?: any[];
   personalInfo?: any;
+}
+
+// Form-specific types
+export interface MemberFormData extends Omit<Member, 'id' | 'createdAt' | 'updatedAt' | 'fullName'> {
+  // Form uses same structure as Member but excludes auto-generated fields
 }

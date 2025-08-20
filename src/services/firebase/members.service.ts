@@ -21,6 +21,10 @@ import {
   memberDocumentToMember,
   memberToMemberDocument,
 } from '../../utils/firestore-converters';
+import { 
+  toFirestoreFieldsDeep, 
+  fromFirestoreFieldsDeep 
+} from '../../utils/firestore-field-mapper';
 
 // ============================================================================
 // MEMBERS SERVICE
@@ -341,7 +345,7 @@ export class MembersService extends BaseFirestoreService<
       email: member.email,
       phone: member.phone || '',
       birthdate: member.birthdate || '',
-      gender: member.gender || '',
+      gender: member.gender || undefined,
       role: member.role,
       memberStatus: member.memberStatus,
       joinedAt: member.joinedAt || '',
@@ -464,11 +468,15 @@ export class MembersService extends BaseFirestoreService<
     try {
       console.log('🔧 MembersService.create called with:', memberData);
       
-      // Use the proper converter to transform Member to MemberDocument
-      const memberDocument = memberToMemberDocument(memberData);
-      console.log('🔧 Converted to MemberDocument:', memberDocument);
+      // Use deep field mapper for nested objects (emails, phones, addresses)
+      const firestoreData = toFirestoreFieldsDeep({
+        ...memberData,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+      console.log('🔧 Converted to Firestore format:', firestoreData);
 
-      const docRef = await addDoc(collection(db, 'members'), memberDocument);
+      const docRef = await addDoc(collection(db, 'members'), firestoreData);
       console.log('🔧 Member created with ID:', docRef.id);
       
       // Fetch and return the created member using proper converter
@@ -506,15 +514,13 @@ export class MembersService extends BaseFirestoreService<
       // Remove computed fields and id
       const { fullName, id: _, ...updateData } = updates;
 
-      // Add updated timestamp
-      const dataWithTimestamp = {
+      // Use deep field mapper for nested objects (emails, phones, addresses)
+      const firestoreData = toFirestoreFieldsDeep({
         ...updateData,
         updatedAt: serverTimestamp(),
-      };
+      });
 
-      // Convert camelCase to snake_case for Firestore
-      const firestoreData = toFirestoreFields(dataWithTimestamp);
-
+      console.log('🔧 Update data converted to Firestore format:', firestoreData);
       await updateDoc(doc(db, 'members', id), firestoreData);
       console.log('Member updated:', id);
     } catch (error) {
@@ -528,7 +534,7 @@ export class MembersService extends BaseFirestoreService<
       const querySnapshot = await getDocs(collection(db, 'members'));
 
       return querySnapshot.docs.map((doc) => {
-        const data = fromFirestoreFields<Member>(doc.data());
+        const data = fromFirestoreFieldsDeep<Member>(doc.data());
         return {
           ...data,
           id: doc.id,

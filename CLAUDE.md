@@ -131,15 +131,24 @@ Three main contexts manage global state:
 
 ## Project Status
 
-**🎯 CORE FOUNDATION COMPLETE**: Shepherd has been stripped back to focus on core membership management functionality.
+**🎯 Phase 0.1 ENHANCED MEMBER FORM - COMPLETE**: Advanced member management with professional contact arrays, enhanced forms, and deep field mapping.
+
+**✅ Recently Completed (Phase 0.1 - 2025-08-20):**
+- **Enhanced Member Data Model**: Arrays for emails, phones, addresses with type/primary flags
+- **Advanced Member Form**: Collapsible sections, dynamic arrays, conditional SMS opt-in
+- **Deep Field Mapping**: Automatic camelCase ↔ snake_case conversion for nested data
+- **Smart Contact Display**: Primary email/phone detection with backward compatibility
+- **Data Migration**: Seamless handling of old and new member data formats
+- **Professional Contact Management**: Multiple contact methods per member
 
 **Current Implementation:**
-- Member management with full CRUD operations
-- Household management with family relationships
+- Member management with enhanced CRUD operations and arrays
+- Household management with family relationships  
 - Role-based access control (admin, pastor, member)
 - Firebase Authentication integration
 - Dashboard views by role
 - QR-based member onboarding and magic link authentication
+- Professional contact management (multiple emails, phones, addresses)
 
 **Features Removed for Reimplementation:**
 - Event management and RSVP system
@@ -147,7 +156,7 @@ Three main contexts manage global state:
 - Sermon archive and media management
 - Volunteer scheduling system
 
-**Current Focus**: Methodical reimplementation of features according to PRD specifications. All development uses Firebase services exclusively.
+**Next Focus**: Manual testing of Phase 0.1 implementation, then methodical reimplementation of additional features according to PRD specifications.
 
 
 ## MCP Servers Integration
@@ -254,6 +263,51 @@ claude mcp add --transport http context7 https://mcp.context7.com/mcp
 - Ensures code examples match current best practices
 - Reduces errors from deprecated API usage
 
+#### 5. Playwright MCP Server
+Browser automation and testing framework providing comprehensive end-to-end testing capabilities for web applications.
+
+**Configuration:**
+```bash
+# Automatically configured via Claude Code MCP integration
+# Server provides direct access to Playwright's browser automation tools
+```
+
+**Primary Capabilities:**
+- **Browser Management**: Launch, resize, close browsers with full Chromium/Firefox support
+- **Navigation & Page Control**: URL navigation, page history, accessibility snapshots, screenshots
+- **User Interactions**: Click, type, hover, drag-and-drop, keyboard input, file uploads
+- **Element Targeting**: Human-readable descriptions with exact element references
+- **Advanced Features**: JavaScript execution, console monitoring, network request tracking
+- **Tab Management**: Multi-tab support with tab creation, switching, and closing
+- **Dialog Handling**: Alert, confirm, and prompt dialog management
+- **Wait Conditions**: Wait for text appearance/disappearance or time-based delays
+
+**Key Tools:**
+- `mcp__playwright__browser_navigate` - Navigate to URLs
+- `mcp__playwright__browser_click` - Element interaction and clicking
+- `mcp__playwright__browser_type` - Form input and text entry
+- `mcp__playwright__browser_snapshot` - Accessibility-focused page snapshots
+- `mcp__playwright__browser_evaluate` - JavaScript execution on page/elements
+- `mcp__playwright__browser_network_requests` - Monitor API calls and responses
+- `mcp__playwright__browser_tab_*` - Multi-tab management
+
+**Testing Applications:**
+- **End-to-End Testing**: Complete user workflow validation for Shepherd CMS
+- **Role-based Testing**: Authentication flows for admin/pastor/member roles
+- **Form Validation**: Member registration, donation forms, event RSVPs
+- **Responsive Design**: Cross-device and screen size compatibility testing
+- **API Integration**: Monitor Firebase/Firestore network requests during user actions
+- **Accessibility Testing**: Semantic element validation and screen reader compatibility
+- **Security Testing**: Authentication boundaries and data access validation
+
+**Benefits:**
+- Real browser automation with full JavaScript support
+- Accessibility-first approach for better test reliability
+- Network monitoring for API integration validation
+- Multi-tab support for complex user workflows
+- Element targeting using human-readable descriptions
+- Comprehensive interaction capabilities (clicks, typing, file uploads)
+
 ### MCP Server Management
 
 **Check all server status:**
@@ -278,9 +332,10 @@ claude mcp remove <name>
 2. **Database Operations**: Prefer Firebase MCP tools over direct Firebase CLI for consistency
 3. **Code Analysis**: Use Serena for semantic understanding before making large changes
 4. **Current Documentation**: Use Context7 when implementing new features or updating dependencies
-5. **Error Handling**: All MCP tools include proper error handling and validation
-6. **Performance**: Batch operations when possible using parallel tool calls
-7. **Development Workflow**: Context7 → Serena → Implementation → Semgrep → Firebase deployment
+5. **Testing & Validation**: Use Playwright for end-to-end testing and user workflow validation
+6. **Error Handling**: All MCP tools include proper error handling and validation
+7. **Performance**: Batch operations when possible using parallel tool calls
+8. **Development Workflow**: Context7 → Serena → Implementation → Playwright Testing → Semgrep → Firebase deployment
 
 ## PRP Task Format
 
@@ -450,17 +505,25 @@ If you are unsure of assumptions or hit ambiguous scope:
 - **`.env.example`** - Environment variables template
 
 ### Service Layer & Data Management
-- **`/src/services/firebase/members.service.ts`** - Member management service
+- **`/src/services/firebase/members.service.ts`** - Member management service with deep field mapping
 - **`/src/services/firebase/households.service.ts`** - Household management service  
 - **`/src/services/firebase/roles.service.ts`** - Role assignment and management
 - **`/src/services/firebase/dashboard.service.ts`** - Dashboard data aggregation
-- **`/src/types/index.ts`** - Core type definitions (Member, Household)
+- **`/src/types/index.ts`** - Core type definitions (Member, Household) with enhanced arrays
 - **`/src/utils/firestore-converters.ts`** - Type-safe Firestore document conversion
+- **`/src/utils/firestore-field-mapper.ts`** - Deep field mapping (camelCase ↔ snake_case)
 
-### Documentation & Scripts
+### Enhanced Components (Phase 0.1)
+- **`/src/components/members/MemberFormEnhanced.tsx`** - Advanced member form with arrays
+- **`/src/pages/Members.tsx`** - Enhanced member list with smart contact display
+- **`/src/router/index.tsx`** - Updated routing for enhanced forms
+
+### Documentation & Testing
 - **`/docs/prd.md`** - Complete project requirements and specifications
 - **`/src/scripts/seed-firebase-data.ts`** - Database seeding with test data
 - **`/src/scripts/setup-admin.ts`** - Initial admin user setup
+- **`/MANUAL-TESTING-GUIDE.md`** - Comprehensive Phase 0.1 testing protocol
+- **`/FIRESTORE-DATA-VERIFICATION.md`** - Data format verification and debugging guide
 
 ## Security & Roles System
 

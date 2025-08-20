@@ -60,9 +60,11 @@ Welcome to the Shepherd CMS documentation hub. This index provides quick access 
 - **User Roles:** Detailed in Security Roles Design
 
 ### Member & Household Management
+- **Enhanced Member Forms (Phase 0.1 ✅):** Professional contact management complete
 - **Current Implementation:** [Current Features](current-features.md)
 - **Data Models:** [Firebase Schema](firebase/firestore-schema-design.md)
 - **Service Layer:** Documented in CLAUDE.md
+- **Testing:** [Manual Testing Guide](../MANUAL-TESTING-GUIDE.md) and [Firestore Data Verification](../FIRESTORE-DATA-VERIFICATION.md)
 
 ---
 

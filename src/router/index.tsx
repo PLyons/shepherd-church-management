@@ -9,7 +9,7 @@ import Login from '../pages/Login';
 import Register from '../pages/Register';
 import Members from '../pages/Members';
 import MemberProfile from '../pages/MemberProfile';
-import { MemberForm } from '../components/members/MemberForm';
+import { MemberFormEnhanced } from '../components/members/MemberFormEnhanced';
 import Settings from '../pages/Settings';
 import QRRegistration from '../pages/QRRegistration';
 import RegistrationTokens from '../pages/admin/RegistrationTokens';
@@ -62,10 +62,15 @@ export const router = createBrowserRouter(
           path: 'members/new',
           element: (
             <RoleGuard allowedRoles={['admin', 'pastor']}>
-              <div className="max-w-2xl mx-auto p-6">
-                <h1 className="text-2xl font-bold mb-6">Add New Member</h1>
-                <MemberForm />
-              </div>
+              <MemberFormEnhanced />
+            </RoleGuard>
+          ),
+        },
+        {
+          path: 'members/edit/:id',
+          element: (
+            <RoleGuard allowedRoles={['admin', 'pastor']}>
+              <MemberFormEnhanced />
             </RoleGuard>
           ),
         },

@@ -121,6 +121,24 @@ export default function Members() {
     }
   };
 
+  // Helper function to get primary email from arrays or fallback to deprecated field
+  const getPrimaryEmail = (member: Member) => {
+    if (member.emails && member.emails.length > 0) {
+      const primary = member.emails.find(e => e.primary);
+      return primary?.address || member.emails[0].address;
+    }
+    return member.email || 'N/A';
+  };
+
+  // Helper function to get primary phone from arrays or fallback to deprecated field
+  const getPrimaryPhone = (member: Member) => {
+    if (member.phones && member.phones.length > 0) {
+      const primary = member.phones.find(p => p.primary);
+      return primary?.number || member.phones[0].number;
+    }
+    return member.phone || 'N/A';
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-64">
@@ -228,6 +246,9 @@ export default function Members() {
                   Email
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Phone
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -255,7 +276,12 @@ export default function Members() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      {memberItem.email}
+                      {getPrimaryEmail(memberItem)}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm text-gray-900">
+                      {getPrimaryPhone(memberItem)}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
