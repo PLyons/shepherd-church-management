@@ -1,17 +1,5 @@
-import { BaseFirestoreService } from './base.service';
 import { MembersService } from './members.service';
-import { HouseholdsService } from './households.service';
-import type { Household } from '../../types';
-
-// Placeholder Event interface for future implementation
-export interface Event {
-  id: string;
-  title: string;
-  description?: string;
-  startDate: string;
-  endDate?: string;
-  status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
-}
+import type { Event, DashboardStats as MainDashboardStats } from '../../types';
 
 // ============================================================================
 // ROLE-BASED DASHBOARD SERVICE
@@ -19,17 +7,10 @@ export interface Event {
 // Provides secure, role-based data access for dashboard views
 
 export interface DashboardData {
-  stats: DashboardStats;
+  stats: MainDashboardStats;
   recentActivity: ActivityItem[];
   upcomingEvents: Event[];
-  personalInfo?: PersonalDashboardInfo;
   quickActions: QuickAction[];
-}
-
-export interface DashboardStats {
-  totalMembers?: number;
-  activeMembers?: number;
-  totalHouseholds?: number;
 }
 
 export interface ActivityItem {
@@ -39,10 +20,6 @@ export interface ActivityItem {
   description: string;
   date: string;
   icon?: string;
-}
-
-export interface PersonalDashboardInfo {
-  householdInfo: Household;
 }
 
 export interface QuickAction {
@@ -57,11 +34,9 @@ export interface QuickAction {
 
 export class DashboardService {
   private membersService: MembersService;
-  private householdsService: HouseholdsService;
 
   constructor() {
     this.membersService = new MembersService();
-    this.householdsService = new HouseholdsService();
   }
 
   // ============================================================================
@@ -90,24 +65,18 @@ export class DashboardService {
   /**
    * Admin Dashboard - Full system access
    */
-  private async getAdminDashboard(userId: string): Promise<DashboardData> {
+  private async getAdminDashboard(_userId: string): Promise<DashboardData> {
     try {
       console.log('DashboardService: Starting admin dashboard data fetch');
 
-      const [memberStats, householdStats] = await Promise.all([
-        this.membersService.getStatistics().catch((err) => {
-          console.error('Members stats error:', err);
-          return { total: 0, active: 0, inactive: 0, visitors: 0 };
-        }),
-        this.householdsService.getStatistics().catch((err) => {
-          console.error('Households stats error:', err);
-          return { total: 0 };
-        }),
-      ]);
+      const memberStats = await this.membersService.getStatistics().catch((err: any) => {
+        console.error('Members stats error:', err);
+        return { total: 0, active: 0, inactive: 0, visitors: 0 };
+      });
 
       console.log('DashboardService: Statistics fetched successfully');
 
-      const recentActivity = await this.getAdminActivity().catch((err) => {
+      const recentActivity = await this.getAdminActivity().catch((err: any) => {
         console.error('Admin activity error:', err);
         return [];
       });
@@ -118,7 +87,6 @@ export class DashboardService {
         stats: {
           totalMembers: memberStats.total,
           activeMembers: memberStats.active,
-          totalHouseholds: householdStats.total,
         },
         recentActivity,
         upcomingEvents: [],
@@ -133,11 +101,8 @@ export class DashboardService {
   /**
    * Pastor Dashboard - Pastoral care focus
    */
-  private async getPastorDashboard(userId: string): Promise<DashboardData> {
-    const [memberStats, householdStats] = await Promise.all([
-      this.membersService.getStatistics(),
-      this.householdsService.getStatistics(),
-    ]);
+  private async getPastorDashboard(_userId: string): Promise<DashboardData> {
+    const memberStats = await this.membersService.getStatistics();
 
     const recentActivity = await this.getPastorActivity();
 
@@ -145,7 +110,6 @@ export class DashboardService {
       stats: {
         totalMembers: memberStats.total,
         activeMembers: memberStats.active,
-        totalHouseholds: householdStats.total,
       },
       recentActivity,
       upcomingEvents: [],
@@ -163,43 +127,14 @@ export class DashboardService {
       throw new Error('Member not found');
     }
 
-    // Get personal information and activity
-    const [personalInfo, recentActivity] = await Promise.all([
-      this.getMemberPersonalInfo(userId),
-      this.getMemberActivity(userId),
-    ]);
+    // Get personal activity
+    const recentActivity = await this.getMemberActivity(userId);
 
     return {
       stats: {},
       recentActivity,
       upcomingEvents: [],
-      personalInfo,
       quickActions: this.getQuickActions('member'),
-    };
-  }
-
-  // ============================================================================
-  // PERSONAL INFORMATION (MEMBERS ONLY)
-  // ============================================================================
-
-  /**
-   * Get member's personal dashboard information
-   */
-  private async getMemberPersonalInfo(
-    userId: string
-  ): Promise<PersonalDashboardInfo> {
-    const member = await this.membersService.getById(userId);
-    if (!member) {
-      throw new Error('Member not found');
-    }
-
-    // Get household information
-    const household = member.householdId
-      ? await this.householdsService.getById(member.householdId)
-      : null;
-
-    return {
-      householdInfo: household,
     };
   }
 
@@ -252,12 +187,11 @@ export class DashboardService {
   /**
    * Get recent activity for member users
    */
-  private async getMemberActivity(userId: string): Promise<ActivityItem[]> {
+  private async getMemberActivity(_userId: string): Promise<ActivityItem[]> {
     // TODO: Implement member personal activity feed
     // - Own event RSVPs
     // - Own donations
     // - Volunteer assignments
-    // - Household updates
     return [
       {
         id: '1',
@@ -306,93 +240,10 @@ export class DashboardService {
         color: 'blue',
         allowedRoles: ['member', 'pastor', 'admin'],
       },
-      {
-        id: 'view-households',
-        title: 'View Households',
-        description: 'Manage household information',
-        route: '/households',
-        icon: 'home',
-        color: 'green',
-        allowedRoles: ['admin', 'pastor'],
-      },
     ];
 
     // Filter actions based on role
     return allActions.filter((action) => action.allowedRoles.includes(role));
-  }
-
-  // ============================================================================
-  // DATA VALIDATION AND SECURITY
-  // ============================================================================
-
-  /**
-   * Validate that user can access requested data
-   */
-  private async validateDataAccess(
-    userId: string,
-    requestedUserId: string,
-    userRole: string
-  ): Promise<boolean> {
-    // Admins can access all data
-    if (userRole === 'admin') {
-      return true;
-    }
-
-    // Pastors can access member data for pastoral care
-    if (userRole === 'pastor') {
-      return true; // TODO: Add specific pastoral care access rules
-    }
-
-    // Members can only access their own data
-    if (userRole === 'member') {
-      return userId === requestedUserId;
-    }
-
-    return false;
-  }
-
-  /**
-   * Sanitize data based on role permissions
-   */
-  private sanitizeDataForRole(
-    data: DashboardData,
-    role: 'admin' | 'pastor' | 'member'
-  ): DashboardData {
-    if (role === 'admin') {
-      return data; // Admins see everything
-    }
-
-    if (role === 'pastor') {
-      // Remove sensitive admin-only information
-      const { systemLogs, adminNotes, ...pastoralData } = data;
-      return pastoralData;
-    }
-
-    if (role === 'member') {
-      // Members only see basic information
-      const { id, title, startTime, location, isPublic, description } = data;
-      return { id, title, startTime, location, isPublic, description };
-    }
-
-    return {};
-  }
-
-  // ============================================================================
-  // AUDIT LOGGING
-  // ============================================================================
-
-  /**
-   * Log dashboard data access for audit purposes
-   */
-  private async logDataAccess(
-    userId: string,
-    userRole: string,
-    dataType: string
-  ): Promise<void> {
-    // TODO: Implement audit logging
-    console.log(
-      `[AUDIT] User ${userId} (${userRole}) accessed ${dataType} dashboard data`
-    );
   }
 }
 

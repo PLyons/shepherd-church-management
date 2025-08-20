@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useToast } from '../contexts/ToastContext';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
@@ -129,7 +129,7 @@ export default function QRRegistration() {
       }
       if (
         formData.phone &&
-        !/^[\d\s\-\(\)\+\.]{10,}$/.test(formData.phone.replace(/\D/g, ''))
+        !/^[\d\s\-()+.]{10,}$/.test(formData.phone.replace(/\D/g, ''))
       ) {
         newErrors.phone = 'Please enter a valid phone number';
       }
@@ -144,7 +144,6 @@ export default function QRRegistration() {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
 
   // Navigation functions
   const nextStep = () => {

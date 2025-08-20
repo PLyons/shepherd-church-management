@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import {
   rolesService,
   type RoleSummary,
@@ -6,6 +6,7 @@ import {
 import type { Member } from '../../types';
 import { useAuth } from '../../hooks/useUnifiedAuth';
 import { LoadingSpinner } from '../common/LoadingSpinner';
+import { logger } from '../../utils/logger';
 import {
   Shield,
   Users,
@@ -46,7 +47,7 @@ export function RoleManagement() {
       setRoleSummary(summary);
       setUnassignedMembers(unassigned);
     } catch (error) {
-      console.error('Error loading role data:', error);
+      logger.error('Error loading role data', error);
       setNotification({ type: 'error', message: 'Failed to load role data' });
     } finally {
       setLoading(false);
@@ -82,7 +83,8 @@ export function RoleManagement() {
   };
 
   const submitRoleAssignment = async () => {
-    if (!selectedMember || !user?.id) return;
+    const userId = user?.uid;
+    if (!selectedMember || !userId) return;
 
     if (!reason.trim() || reason.trim().length < 10) {
       setNotification({
@@ -99,7 +101,7 @@ export function RoleManagement() {
         selectedMember.id,
         newRole,
         reason.trim(),
-        user.id,
+        userId,
         'admin'
       );
 

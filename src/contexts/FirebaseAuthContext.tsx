@@ -17,6 +17,7 @@ import {
 import { auth, db } from '../lib/firebase';
 import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
 import { Member } from '../types';
+import { logger } from '../utils/logger';
 
 interface AuthContextType {
   user: User | null;
@@ -59,32 +60,32 @@ export function FirebaseAuthProvider({
       }
       return null;
     } catch (error) {
-      console.error('Error fetching member data:', error);
+      logger.error('Error fetching member data', error);
       return null;
     }
   };
 
   // Listen to auth state changes
   useEffect(() => {
-    console.log('FirebaseAuthContext: Setting up auth state listener');
+    logger.debug('FirebaseAuthContext: Setting up auth state listener');
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      console.log(
-        'FirebaseAuthContext: Auth state changed, user:',
-        user ? user.uid : 'null'
-      );
+      logger.debug('FirebaseAuthContext: Auth state changed', {
+        userId: user?.uid || 'null',
+      });
       setUser(user);
       if (user) {
-        console.log(
-          'FirebaseAuthContext: Fetching member data for user:',
-          user.uid
-        );
+        logger.debug('FirebaseAuthContext: Fetching member data for user', {
+          userId: user.uid,
+        });
         try {
           const memberData = await fetchMemberData(user.uid);
-          console.log('FirebaseAuthContext: Member data fetched:', memberData);
+          logger.debug('FirebaseAuthContext: Member data fetched', {
+            memberData,
+          });
           setMember(memberData);
         } catch (error) {
-          console.error(
-            'FirebaseAuthContext: Error fetching member data:',
+          logger.error(
+            'FirebaseAuthContext: Error fetching member data',
             error
           );
           setMember(null);
@@ -92,7 +93,7 @@ export function FirebaseAuthProvider({
       } else {
         setMember(null);
       }
-      console.log('FirebaseAuthContext: Setting loading to false');
+      logger.debug('FirebaseAuthContext: Setting loading to false');
       setLoading(false);
     });
 
@@ -118,7 +119,7 @@ export function FirebaseAuthProvider({
               window.location.pathname
             );
           } catch (error) {
-            console.error('Error signing in with email link:', error);
+            logger.error('Error signing in with email link', error);
           }
         }
       }
@@ -156,10 +157,10 @@ export function FirebaseAuthProvider({
     const newMemberData: Partial<Member> = {
       email: user.email || email,
       role: 'member',
-      member_status: 'active',
-      joined_at: now.toDate().toISOString(),
-      created_at: now.toDate().toISOString(),
-      updated_at: now.toDate().toISOString(),
+      memberStatus: 'active',
+      joinedAt: now.toDate().toISOString(),
+      createdAt: now.toDate().toISOString(),
+      updatedAt: now.toDate().toISOString(),
       ...memberData,
     };
 

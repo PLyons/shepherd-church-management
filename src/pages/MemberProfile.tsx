@@ -1,23 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Member, MemberEvent } from '../types';
 import { useAuth } from '../hooks/useUnifiedAuth';
-import { membersService, householdsService } from '../services/firebase';
+import { membersService } from '../services/firebase';
 import {
   User,
   Mail,
   Phone,
   Calendar,
-  Home,
   Shield,
   Edit,
-  X,
   ArrowLeft,
   Clock,
-  MapPin,
   Trash2,
 } from 'lucide-react';
-import { MemberFormShared } from '../components/members/MemberFormShared';
 
 export default function MemberProfile() {
   const { id } = useParams<{ id: string }>();
@@ -45,36 +41,8 @@ export default function MemberProfile() {
         throw new Error('Member not found');
       }
 
-      // Get household data if member has householdId
-      let householdData = null;
-      if (memberData.householdId) {
-        try {
-          householdData = await householdsService.getById(
-            memberData.householdId
-          );
-        } catch (error) {
-          console.warn('Could not fetch household data:', error);
-        }
-      }
-
-      // Combine member and household data
-      const enrichedMember = {
-        ...memberData,
-        household: householdData
-          ? {
-              id: householdData.id,
-              family_name: householdData.familyName,
-              address_line1: householdData.addressLine1,
-              address_line2: householdData.addressLine2,
-              city: householdData.city,
-              state: householdData.state,
-              postal_code: householdData.postalCode,
-              country: householdData.country,
-            }
-          : null,
-      };
-
-      setMember(enrichedMember);
+      // For simplified CRUD, just use member data without household complexity
+      setMember(memberData);
       setMemberEvents([]); // TODO: Implement member events in Firebase
     } catch (error) {
       console.error('Error fetching member data:', error);
@@ -94,12 +62,6 @@ export default function MemberProfile() {
 
   const handleEdit = () => {
     setEditing(true);
-  };
-
-  const handleMemberUpdate = async () => {
-    // Refresh member data after update
-    await fetchMemberData();
-    setEditing(false);
   };
 
   const handleCancel = () => {
@@ -149,7 +111,14 @@ export default function MemberProfile() {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    // Parse date in local timezone to avoid off-by-one errors
+    // Split the ISO date string and create date in local timezone
+    const [year, month, day] = dateString
+      .split('-')
+      .map((num) => parseInt(num, 10));
+    const date = new Date(year, month - 1, day); // month is 0-based in Date constructor
+
+    return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
@@ -220,17 +189,6 @@ export default function MemberProfile() {
             )}
           </div>
         )}
-        {editing && (
-          <div className="flex gap-2">
-            <button
-              onClick={handleCancel}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-            >
-              <X className="h-4 w-4 mr-2" />
-              Cancel
-            </button>
-          </div>
-        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -240,16 +198,18 @@ export default function MemberProfile() {
               <h2 className="text-lg font-medium text-gray-900 mb-4">
                 Edit Personal Information
               </h2>
-              <MemberFormShared
-                mode="inline"
-                operation="update"
-                member={member}
-                onSubmit={handleMemberUpdate}
-                onCancel={handleCancel}
-                showHouseholdSelector={false}
-                showRoleSelector={true}
-                className=""
-              />
+              {/* MemberFormShared removed - simplified form needed */}
+              <p className="text-gray-500">
+                Edit functionality temporarily disabled during cleanup
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleCancel}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           ) : (
             <div className="bg-white shadow-sm rounded-lg p-6">
@@ -283,7 +243,9 @@ export default function MemberProfile() {
                   </label>
                   <div className="flex items-center gap-2">
                     <Mail className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-900">{member.email || 'Not provided'}</span>
+                    <span className="text-gray-900">
+                      {member.email || 'Not provided'}
+                    </span>
                   </div>
                 </div>
 
@@ -372,7 +334,7 @@ export default function MemberProfile() {
                   Status
                 </label>
                 <span
-                  className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(member.memberStatus)}`}
+                  className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(member.memberStatus || 'active')}`}
                 >
                   {member.memberStatus}
                 </span>
@@ -385,7 +347,7 @@ export default function MemberProfile() {
                 <div className="flex items-center gap-2">
                   <Shield className="h-4 w-4 text-gray-400" />
                   <span
-                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(member.role)}`}
+                    className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(member.role || 'member')}`}
                   >
                     {member.role}
                   </span>
@@ -408,64 +370,7 @@ export default function MemberProfile() {
             </div>
           </div>
 
-          {member.household && (
-            <div className="bg-white shadow-sm rounded-lg p-6">
-              <h2 className="text-lg font-medium text-gray-900 mb-4">
-                Household Information
-              </h2>
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Family Name
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <Home className="h-4 w-4 text-gray-400" />
-                    <Link
-                      to={`/households/${member.household.id}`}
-                      className="text-blue-600 hover:text-blue-800 font-medium"
-                    >
-                      {member.household.family_name}
-                    </Link>
-                  </div>
-                </div>
-
-                {(member.household.address_line1 ||
-                  member.household.city ||
-                  member.household.state) && (
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Address
-                    </label>
-                    <div className="flex items-start gap-2">
-                      <MapPin className="h-4 w-4 text-gray-400 mt-1" />
-                      <div className="text-gray-900">
-                        {member.household.address_line1 && (
-                          <div>{member.household.address_line1}</div>
-                        )}
-                        {member.household.address_line2 && (
-                          <div>{member.household.address_line2}</div>
-                        )}
-                        {(member.household.city ||
-                          member.household.state ||
-                          member.household.postal_code) && (
-                          <div>
-                            {member.household.city &&
-                              `${member.household.city}, `}
-                            {member.household.state &&
-                              `${member.household.state} `}
-                            {member.household.postal_code}
-                          </div>
-                        )}
-                        {member.household.country && (
-                          <div>{member.household.country}</div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+          {/* Household functionality temporarily removed for simplified CRUD */}
         </div>
       </div>
     </div>

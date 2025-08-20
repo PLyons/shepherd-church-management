@@ -1,5 +1,7 @@
 import { BaseFirestoreService } from './base.service';
-import { PendingRegistration, Member } from '../../types';
+import { Member } from '../../types';
+import { PendingRegistration } from '../../types/registration';
+import { Timestamp } from 'firebase/firestore';
 
 export interface FollowUpAction {
   id: string;
@@ -241,7 +243,7 @@ class FollowUpService extends BaseFirestoreService<
       const actions = await this.getAll({
         where: [
           { field: 'status', operator: '==', value: 'pending' },
-          { field: 'scheduledAt', operator: '<=', value: now },
+          { field: 'scheduledAt', operator: '<=', value: Timestamp.fromDate(now) },
         ],
         orderBy: { field: 'scheduledAt', direction: 'asc' },
       });

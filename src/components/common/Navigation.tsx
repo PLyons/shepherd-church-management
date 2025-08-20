@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, LogOut, User, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../hooks/useUnifiedAuth';
@@ -15,11 +15,6 @@ const navigationItems = [
     roles: ['admin', 'pastor', 'member'],
   },
   { name: 'Members', href: '/members', roles: ['admin', 'pastor', 'member'] },
-  {
-    name: 'Households',
-    href: '/households',
-    roles: ['admin', 'pastor', 'member'],
-  },
   {
     name: 'Registration',
     href: '/admin/registration-tokens',

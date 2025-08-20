@@ -32,21 +32,32 @@ import { RegistrationToken, PendingRegistration } from '../types/registration';
 // ============================================================================
 
 /**
- * Converts a Firestore Timestamp to ISO string
+ * Converts a Firestore Timestamp or date string to ISO string
  */
 export const timestampToString = (
-  timestamp: Timestamp | null | undefined
+  timestamp: Timestamp | string | null | undefined
 ): string | undefined => {
-  if (!timestamp || !timestamp.toDate) {
-    console.warn('Invalid timestamp provided to timestampToString:', timestamp);
+  if (!timestamp) {
     return undefined;
   }
-  try {
-    return timestamp.toDate().toISOString();
-  } catch (error) {
-    console.error('Error converting timestamp to string:', error, timestamp);
-    return undefined;
+
+  // If it's already a string, return it (assuming it's already ISO format)
+  if (typeof timestamp === 'string') {
+    return timestamp;
   }
+
+  // If it's a Firestore Timestamp, convert it
+  if (timestamp && typeof timestamp === 'object' && timestamp.toDate) {
+    try {
+      return timestamp.toDate().toISOString();
+    } catch (error) {
+      console.error('Error converting timestamp to string:', error, timestamp);
+      return undefined;
+    }
+  }
+
+  console.warn('Invalid timestamp provided to timestampToString:', timestamp);
+  return undefined;
 };
 
 /**
@@ -98,6 +109,7 @@ export const removeUndefined = <T extends Record<string, unknown>>(
   const result = {} as T;
   Object.keys(obj).forEach((key) => {
     if (obj[key] !== undefined) {
+      // @ts-ignore - Generic type assignment issue
       result[key] = obj[key];
     }
   });

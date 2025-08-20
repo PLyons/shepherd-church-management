@@ -17,7 +17,7 @@ export interface MemberDocument {
   email?: string;
   phone?: string;
   birthdate?: Timestamp;
-  gender?: 'Male' | 'Female';
+  gender?: 'Male' | 'Female' | '';
 
   // Church Information
   role?: 'admin' | 'pastor' | 'member';
@@ -45,7 +45,7 @@ export interface Member {
   email?: string;
   phone?: string;
   birthdate?: string; // ISO string
-  gender?: 'Male' | 'Female';
+  gender?: 'Male' | 'Female' | '';
   role?: 'admin' | 'pastor' | 'member';
   memberStatus?: 'active' | 'inactive' | 'visitor';
   joinedAt?: string; // ISO string
@@ -79,7 +79,7 @@ export interface HouseholdDocument {
 
   // Standardization fields
   normalizedName?: string; // Lowercase, trimmed version for uniqueness checks
-  status?: 'pending' | 'approved'; // Admin approval status
+  status?: 'approved' | 'pending' | 'rejected'; // Admin approval status
   createdBy?: string; // UID of the member who created this household
 
   // Address Information
@@ -101,6 +101,9 @@ export interface HouseholdDocument {
 export interface Household {
   id: string;
   familyName: string;
+  normalizedName?: string;
+  status?: 'approved' | 'pending' | 'rejected';
+  createdBy?: string;
   address: AddressData;
   primaryContactId?: string;
   primaryContactName?: string;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Navigation } from './Navigation';
 import { MobileMenu } from './MobileMenu';

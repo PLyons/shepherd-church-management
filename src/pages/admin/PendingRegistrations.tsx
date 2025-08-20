@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/FirebaseAuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
@@ -8,16 +8,12 @@ import {
   XCircle,
   Clock,
   Search,
-  Filter,
   Calendar,
   Mail,
   Phone,
   MapPin,
   AlertTriangle,
-  Edit3,
-  Trash2,
   Check,
-  X,
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';
@@ -408,7 +404,11 @@ export default function PendingRegistrations() {
                 onChange={(e) =>
                   setFilters((prev) => ({
                     ...prev,
-                    status: e.target.value as any,
+                    status: e.target.value as
+                      | 'all'
+                      | 'pending'
+                      | 'approved'
+                      | 'rejected',
                   }))
                 }
                 className="w-full py-2 px-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
@@ -427,7 +427,10 @@ export default function PendingRegistrations() {
                 onChange={(e) =>
                   setFilters((prev) => ({
                     ...prev,
-                    memberStatus: e.target.value as any,
+                    memberStatus: e.target.value as
+                      | 'all'
+                      | 'visitor'
+                      | 'member',
                   }))
                 }
                 className="w-full py-2 px-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
@@ -445,7 +448,11 @@ export default function PendingRegistrations() {
                 onChange={(e) =>
                   setFilters((prev) => ({
                     ...prev,
-                    dateRange: e.target.value as any,
+                    dateRange: e.target.value as
+                      | 'all'
+                      | 'today'
+                      | 'week'
+                      | 'month',
                   }))
                 }
                 className="w-full py-2 px-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"

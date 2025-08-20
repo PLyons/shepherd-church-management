@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import {
   BirthdateComponents,
   parseBirthdate,
@@ -72,8 +72,12 @@ export function BirthdateInput({
         value={components.month}
         onChange={(e) => {
           const value = e.target.value.replace(/\D/g, '');
-          if (value.length <= 2 && parseInt(value) <= 12) {
-            handleComponentChange('month', value);
+          // Ensure value is max 2 digits and valid month range
+          if (value.length <= 2) {
+            const monthNum = parseInt(value);
+            if (!value || (monthNum >= 1 && monthNum <= 12)) {
+              handleComponentChange('month', value);
+            }
           }
         }}
         className="w-16 px-2 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"
@@ -88,8 +92,12 @@ export function BirthdateInput({
         value={components.day}
         onChange={(e) => {
           const value = e.target.value.replace(/\D/g, '');
-          if (value.length <= 2 && parseInt(value) <= 31) {
-            handleComponentChange('day', value);
+          // Ensure value is max 2 digits and valid day range
+          if (value.length <= 2) {
+            const dayNum = parseInt(value);
+            if (!value || (dayNum >= 1 && dayNum <= 31)) {
+              handleComponentChange('day', value);
+            }
           }
         }}
         className="w-16 px-2 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center"

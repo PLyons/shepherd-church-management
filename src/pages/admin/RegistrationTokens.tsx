@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Plus,
   QrCode,
-  Download,
   Eye,
   EyeOff,
   Calendar,
@@ -10,7 +9,6 @@ import {
   Hash,
   Printer,
   Copy,
-  ExternalLink,
   BarChart3,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useUnifiedAuth';
@@ -28,9 +26,6 @@ export default function RegistrationTokens() {
   const [tokens, setTokens] = useState<RegistrationToken[]>([]);
   const [stats, setStats] = useState<RegistrationStats | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
-  const [selectedToken, setSelectedToken] = useState<RegistrationToken | null>(
-    null
-  );
   const [showQRCode, setShowQRCode] = useState<string | null>(null);
 
   useEffect(() => {
@@ -57,7 +52,6 @@ export default function RegistrationTokens() {
   };
 
   const handleCreateToken = async (tokenData: {
-    createdBy: string;
     expiresAt?: string;
     maxUses?: number;
     metadata: {

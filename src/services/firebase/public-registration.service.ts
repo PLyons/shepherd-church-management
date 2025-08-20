@@ -1,4 +1,4 @@
-// import { Timestamp } from 'firebase/firestore'; // Not used in this service
+import { Timestamp } from 'firebase/firestore';
 import { BaseFirestoreService } from './base.service';
 import { PendingRegistrationDocument } from '../../types/firestore';
 import {
@@ -254,8 +254,8 @@ class PublicRegistrationService extends BaseFirestoreService<
     try {
       const registrations = await this.getAll({
         where: [
-          { field: 'submittedAt', operator: '>=', value: new Date(startDate) },
-          { field: 'submittedAt', operator: '<=', value: new Date(endDate) },
+          { field: 'submittedAt', operator: '>=', value: Timestamp.fromDate(new Date(startDate)) },
+          { field: 'submittedAt', operator: '<=', value: Timestamp.fromDate(new Date(endDate)) },
         ],
         orderBy: { field: 'submittedAt', direction: 'desc' },
       });

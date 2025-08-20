@@ -7,7 +7,7 @@ import { Search, User, Users, Eye, Plus, Trash2, X } from 'lucide-react';
 import { MemberForm } from '../components/members/MemberForm';
 
 export default function Members() {
-  const { user, member } = useAuth();
+  const { member } = useAuth();
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -71,12 +71,8 @@ export default function Members() {
   const handleAddMember = async (newMember: Member) => {
     console.log('Member added successfully:', newMember);
     setShowForm(false);
-
-    // Add a small delay to ensure Firebase has propagated the changes
     setTimeout(async () => {
-      console.log('Refreshing member list...');
       await fetchMembers();
-      console.log('Member list refreshed');
     }, 500);
   };
 
@@ -155,6 +151,13 @@ export default function Members() {
                 <Plus className="h-4 w-4 mr-2" />
                 Add Member
               </button>
+              <Link
+                to="/members/new"
+                className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 mr-2"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Member (Page)
+              </Link>
               <button
                 onClick={() => fetchMembers()}
                 className="inline-flex items-center px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
@@ -231,9 +234,6 @@ export default function Members() {
                   Role
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Household
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -260,22 +260,17 @@ export default function Members() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
-                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(memberItem.memberStatus)}`}
+                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(memberItem.memberStatus || 'active')}`}
                     >
                       {memberItem.memberStatus}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
-                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(memberItem.role)}`}
+                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(memberItem.role || 'member')}`}
                     >
                       {memberItem.role}
                     </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {memberItem.householdName || 'N/A'}
-                    </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center gap-2">
@@ -355,10 +350,20 @@ export default function Members() {
       )}
 
       {showForm && (
-        <MemberForm
-          onClose={() => setShowForm(false)}
-          onSubmit={handleAddMember}
-        />
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium">Add Member</h3>
+              <button
+                onClick={() => setShowForm(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            <MemberForm onSuccess={handleAddMember} onCancel={() => setShowForm(false)} />
+          </div>
+        </div>
       )}
     </div>
   );

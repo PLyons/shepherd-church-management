@@ -1,0 +1,113 @@
+/**
+ * Utility functions to convert between camelCase (TypeScript) and snake_case (Firestore)
+ */
+
+/**
+ * Converts camelCase object to snake_case for Firestore
+ */
+export function toFirestoreFields<T extends Record<string, any>>(
+  data: T
+): Record<string, any> {
+  const converted: Record<string, any> = {};
+
+  for (const [key, value] of Object.entries(data)) {
+    // Skip undefined values
+    if (value === undefined) continue;
+
+    // Convert camelCase to snake_case
+    const snakeKey = key.replace(
+      /[A-Z]/g,
+      (letter) => `_${letter.toLowerCase()}`
+    );
+
+    // Recursively convert nested objects (except Dates and Timestamps)
+    if (
+      value &&
+      typeof value === 'object' &&
+      !(value instanceof Date) &&
+      !value._seconds
+    ) {
+      if (Array.isArray(value)) {
+        converted[snakeKey] = value.map((item) =>
+          typeof item === 'object' ? toFirestoreFields(item) : item
+        );
+      } else {
+        converted[snakeKey] = toFirestoreFields(value);
+      }
+    } else {
+      converted[snakeKey] = value;
+    }
+  }
+
+  return converted;
+}
+
+/**
+ * Converts snake_case Firestore document to camelCase for TypeScript
+ */
+export function fromFirestoreFields<T = any>(data: Record<string, any>): T {
+  const converted: Record<string, any> = {};
+
+  for (const [key, value] of Object.entries(data)) {
+    // Convert snake_case to camelCase
+    const camelKey = key.replace(/_([a-z])/g, (_, letter) =>
+      letter.toUpperCase()
+    );
+
+    // Recursively convert nested objects
+    if (
+      value &&
+      typeof value === 'object' &&
+      !(value instanceof Date) &&
+      !value._seconds
+    ) {
+      if (Array.isArray(value)) {
+        converted[camelKey] = value.map((item) =>
+          typeof item === 'object' ? fromFirestoreFields(item) : item
+        );
+      } else {
+        converted[camelKey] = fromFirestoreFields(value);
+      }
+    } else {
+      converted[camelKey] = value;
+    }
+  }
+
+  return converted as T;
+}
+
+/**
+ * Explicit field mappings for special cases
+ */
+export const fieldMappings = {
+  // TypeScript -> Firestore
+  toFirestore: {
+    id: 'id', // Keep as is
+    memberStatus: 'member_status',
+    familyName: 'family_name',
+    addressLine1: 'address_line1',
+    addressLine2: 'address_line2',
+    postalCode: 'postal_code',
+    createdAt: 'created_at',
+    updatedAt: 'updated_at',
+    birthDate: 'birth_date',
+    anniversaryDate: 'anniversary_date',
+    maritalStatus: 'marital_status',
+    smsOptIn: 'sms_opt_in',
+  },
+  // Firestore -> TypeScript
+  fromFirestore: {
+    id: 'id', // Keep as is
+    member_status: 'memberStatus',
+    family_name: 'familyName',
+    address_line1: 'addressLine1',
+    address_line2: 'addressLine2',
+    postal_code: 'postalCode',
+    created_at: 'createdAt',
+    updated_at: 'updatedAt',
+    birth_date: 'birthDate',
+    anniversary_date: 'anniversaryDate',
+    marital_status: 'maritalStatus',
+    sms_opt_in: 'smsOptIn',
+  },
+};

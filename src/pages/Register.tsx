@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useUnifiedAuth';
 import { useToast } from '../contexts/ToastContext';
-import { UserPlus, Mail, Lock, User, Phone, Home } from 'lucide-react';
+import { UserPlus, Mail, Lock, User, Phone } from 'lucide-react';
 
 export default function Register() {
   const navigate = useNavigate();
   const { signUp } = useAuth();
-  const { addToast } = useToast();
+  const { showToast } = useToast();
 
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -17,7 +17,6 @@ export default function Register() {
     firstName: '',
     lastName: '',
     phone: '',
-    householdName: '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -25,12 +24,12 @@ export default function Register() {
 
     // Validation
     if (formData.password !== formData.confirmPassword) {
-      addToast('Passwords do not match', 'error');
+      showToast('Passwords do not match', 'error');
       return;
     }
 
     if (formData.password.length < 6) {
-      addToast('Password must be at least 6 characters', 'error');
+      showToast('Password must be at least 6 characters', 'error');
       return;
     }
 
@@ -42,12 +41,11 @@ export default function Register() {
         first_name: formData.firstName,
         last_name: formData.lastName,
         phone: formData.phone || undefined,
-        household_id: '', // Will be created separately
       };
 
       await signUp(formData.email, formData.password, memberData);
 
-      addToast(
+      showToast(
         'Account created successfully! Please check your email to verify your account.',
         'success'
       );
@@ -59,18 +57,18 @@ export default function Register() {
         'code' in error &&
         error.code === 'auth/email-already-in-use'
       ) {
-        addToast('This email is already registered', 'error');
+        showToast('This email is already registered', 'error');
       } else if (
         error instanceof Error &&
         'code' in error &&
         error.code === 'auth/weak-password'
       ) {
-        addToast(
+        showToast(
           'Password is too weak. Please use a stronger password.',
           'error'
         );
       } else {
-        addToast(error.message || 'Failed to create account', 'error');
+        showToast((error as any).message || 'Failed to create account', 'error');
       }
     } finally {
       setLoading(false);
@@ -208,29 +206,6 @@ export default function Register() {
               </div>
             </div>
 
-            {/* Household Name (Optional) */}
-            <div>
-              <label
-                htmlFor="householdName"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Household Name (Optional)
-              </label>
-              <div className="mt-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Home className="h-4 w-4 text-gray-400" />
-                </div>
-                <input
-                  id="householdName"
-                  name="householdName"
-                  type="text"
-                  value={formData.householdName}
-                  onChange={handleChange}
-                  className="appearance-none block w-full pl-10 px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="The Doe Family"
-                />
-              </div>
-            </div>
 
             {/* Password Fields */}
             <div>

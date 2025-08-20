@@ -9,8 +9,7 @@ import Login from '../pages/Login';
 import Register from '../pages/Register';
 import Members from '../pages/Members';
 import MemberProfile from '../pages/MemberProfile';
-import Households from '../pages/Households';
-import HouseholdProfile from '../pages/HouseholdProfile';
+import { MemberForm } from '../components/members/MemberForm';
 import Settings from '../pages/Settings';
 import QRRegistration from '../pages/QRRegistration';
 import RegistrationTokens from '../pages/admin/RegistrationTokens';
@@ -60,20 +59,19 @@ export const router = createBrowserRouter(
           element: <Members />,
         },
         {
-          path: 'members/:id',
-          element: <MemberProfile />,
-        },
-        {
-          path: 'households',
-          element: <Households />,
-        },
-        {
-          path: 'households/:id',
+          path: 'members/new',
           element: (
             <RoleGuard allowedRoles={['admin', 'pastor']}>
-              <HouseholdProfile />
+              <div className="max-w-2xl mx-auto p-6">
+                <h1 className="text-2xl font-bold mb-6">Add New Member</h1>
+                <MemberForm />
+              </div>
             </RoleGuard>
           ),
+        },
+        {
+          path: 'members/:id',
+          element: <MemberProfile />,
         },
         {
           path: 'admin/registration-tokens',
@@ -144,7 +142,6 @@ export const router = createBrowserRouter(
   ],
   {
     future: {
-      v7_startTransition: true,
       v7_relativeSplatPath: true,
       v7_fetcherPersist: true,
       v7_normalizeFormMethod: true,

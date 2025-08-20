@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   dashboardService,
@@ -6,6 +6,7 @@ import {
 } from '../../services/firebase/dashboard.service';
 import { useAuth } from '../../hooks/useUnifiedAuth';
 import { LoadingSpinner } from '../common/LoadingSpinner';
+import { logger } from '../../utils/logger';
 import {
   Users,
   Calendar,
@@ -39,14 +40,15 @@ export function PastorDashboard({ member }: PastorDashboardProps) {
   }, [member]);
 
   const fetchDashboardData = async () => {
-    if (!user?.id) return;
+    const userId = user?.uid;
+    if (!userId) return;
 
     try {
       setLoading(true);
-      const data = await dashboardService.getDashboardData(user.id, 'pastor');
+      const data = await dashboardService.getDashboardData(userId, 'pastor');
       setDashboardData(data);
     } catch (error) {
-      console.error('Error fetching pastor dashboard data:', error);
+      logger.error('Error fetching pastor dashboard data', error);
     } finally {
       setLoading(false);
     }

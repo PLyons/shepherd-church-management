@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   dashboardService,
@@ -6,6 +6,7 @@ import {
 } from '../../services/firebase/dashboard.service';
 import { useAuth } from '../../hooks/useUnifiedAuth';
 import { LoadingSpinner } from '../common/LoadingSpinner';
+import { logger } from '../../utils/logger';
 import {
   Calendar,
   Heart,
@@ -13,7 +14,6 @@ import {
   Clock,
   MapPin,
   ChevronRight,
-  Home,
   CheckCircle,
   AlertCircle,
 } from 'lucide-react';
@@ -36,14 +36,15 @@ export function MemberDashboard({ member }: MemberDashboardProps) {
   }, [member]);
 
   const fetchDashboardData = async () => {
-    if (!user?.id) return;
+    const userId = user?.uid;
+    if (!userId) return;
 
     try {
       setLoading(true);
-      const data = await dashboardService.getDashboardData(user.id, 'member');
+      const data = await dashboardService.getDashboardData(userId, 'member');
       setDashboardData(data);
     } catch (error) {
-      console.error('Error fetching member dashboard data:', error);
+      logger.error('Error fetching member dashboard data', error);
     } finally {
       setLoading(false);
     }
@@ -70,7 +71,6 @@ export function MemberDashboard({ member }: MemberDashboardProps) {
   const stats = dashboardData?.stats || {};
   const upcomingEvents = dashboardData?.upcomingEvents || [];
   const quickActions = dashboardData?.quickActions || [];
-  const personalInfo = dashboardData?.personalInfo;
 
   return (
     <div className="space-y-8">
@@ -233,48 +233,6 @@ export function MemberDashboard({ member }: MemberDashboardProps) {
           </div>
         </div>
 
-        {/* Personal Information */}
-        {personalInfo?.householdInfo && (
-          <div className="bg-white rounded-lg shadow">
-            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-              <h2 className="text-lg font-semibold text-gray-900">
-                My Household
-              </h2>
-              <Link
-                to="/profile"
-                className="text-blue-600 hover:text-blue-500 text-sm font-medium flex items-center"
-              >
-                Edit <ChevronRight className="w-4 h-4 ml-1" />
-              </Link>
-            </div>
-            <div className="p-6">
-              <div className="flex items-center mb-4">
-                <Home className="w-5 h-5 text-gray-400 mr-2" />
-                <h3 className="font-medium text-gray-900">
-                  {personalInfo.householdInfo.familyName} Family
-                </h3>
-              </div>
-              <div className="space-y-2 text-sm text-gray-600">
-                {personalInfo.householdInfo.address?.line1 && (
-                  <p>{personalInfo.householdInfo.address.line1}</p>
-                )}
-                {personalInfo.householdInfo.address?.city && (
-                  <p>
-                    {personalInfo.householdInfo.address.city}
-                    {personalInfo.householdInfo.address.state &&
-                      `, ${personalInfo.householdInfo.address.state}`}
-                    {personalInfo.householdInfo.address.postalCode &&
-                      ` ${personalInfo.householdInfo.address.postalCode}`}
-                  </p>
-                )}
-                <p className="text-xs text-gray-500 mt-2">
-                  Members in household:{' '}
-                  {personalInfo.householdInfo.memberCount || 1}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Recent Personal Activity */}

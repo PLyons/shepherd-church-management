@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useUnifiedAuth';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
-import { CheckCircle } from 'lucide-react';
 
 export default function PasswordReset() {
   const [email, setEmail] = useState('');
@@ -37,10 +36,10 @@ export default function PasswordReset() {
         err.code === 'auth/user-not-found'
       ) {
         setMessage('No account found with this email address.');
-      } else if (err.code === 'auth/invalid-email') {
+      } else if ((err as any).code === 'auth/invalid-email') {
         setMessage('Please enter a valid email address.');
       } else {
-        setMessage(err.message || 'An error occurred. Please try again.');
+        setMessage((err as any).message || 'An error occurred. Please try again.');
       }
       setIsSuccess(false);
     } finally {

@@ -1,4 +1,4 @@
-import React from 'react';
+import { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useUnifiedAuth';
 import { LoadingSpinner } from '../common/LoadingSpinner';
@@ -6,7 +6,7 @@ import { LoadingSpinner } from '../common/LoadingSpinner';
 type UserRole = 'admin' | 'pastor' | 'member';
 
 interface RoleGuardProps {
-  children: React.ReactNode;
+  children: ReactNode;
   allowedRoles: UserRole[];
   fallbackUrl?: string;
 }
@@ -29,7 +29,7 @@ export function RoleGuard({ children, allowedRoles }: RoleGuardProps) {
     return <Navigate to="/login" replace />;
   }
 
-  if (!allowedRoles.includes(member.role)) {
+  if (!member.role || !allowedRoles.includes(member.role)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

@@ -37,6 +37,20 @@ The codebase uses a Firebase-based service layer pattern:
 - Core services: members, households, roles
 - All services extend BaseFirestoreService for consistent patterns
 
+### **CRITICAL: Data Translation & Type Conversion**
+**ALWAYS use the existing translation system - DO NOT create new ones!**
+
+- **`src/utils/firestore-converters.ts`** - The ONLY translation layer between TypeScript and Firestore
+- Contains `memberToMemberDocument()` and `memberDocumentToMember()` converters
+- **TypeScript uses camelCase, Firestore ALSO uses camelCase** (via converters)
+- **DO NOT use `firestore-field-mapper.ts`** - this is for different use cases
+- **Firebase Security Rules expect camelCase** (firstName, lastName, memberStatus)
+
+**Before changing ANY data layer code:**
+1. Check existing converter functions first
+2. Understand what translation system is already in place
+3. Never assume field naming conventions without checking the converters
+
 ### Component Organization
 Components are organized by feature in `src/components/`:
 - `members/` - Member management components
@@ -81,6 +95,32 @@ Three main contexts manage global state:
 - Use **async/await** over `.then()` syntax
 - Avoid magic strings/numbers — define constants where applicable
 - Prefer composition over inheritance
+
+### React & TypeScript Naming Conventions (MANDATORY)
+**ALWAYS follow these four critical naming rules:**
+
+1. **Never use snake_case** for variables/functions in React/TypeScript
+   - ❌ `const user_name = 'john'`
+   - ✅ `const userName = 'john'`
+
+2. **Always use camelCase** for variables, functions, props, and object properties
+   - ✅ `const isLoggedIn = true`
+   - ✅ `function getUserData() {}`
+   - ✅ `const [age, setAge] = useState(42)`
+   - ✅ `<Button onClick={handleClick} isDisabled={false} />`
+
+3. **PascalCase mandatory** for React components and interfaces (JSX requirement)
+   - ✅ `function UserProfile() {}`
+   - ✅ `const ProfileCard = () => {}`
+   - ✅ `interface UserProps { userName: string; }`
+
+4. **Follow React-specific conventions**:
+   - Event handlers: `on` + PascalCase → `onClick`, `onUserSelect`
+   - State setters: `set` + PascalCase → `setAge`, `setUserData`
+   - Custom hooks: `use` + PascalCase → `useAuth`, `useCustomHook`
+   - Constants: `SCREAMING_SNAKE_CASE` → `API_ENDPOINT`, `MAX_RETRIES`
+
+**These rules are non-negotiable and must be followed in all code.**
 
 ## Project-Wide Constraints
 - No use of paid services during development (must run on free-tier limits)
@@ -314,6 +354,22 @@ Define the Firestore collection for storing individual member information.
 3. **Mobile-First**: All features must work on mobile devices
 4. **Type Safety**: Leverage TypeScript strictly - avoid `any` types
 5. **Error Handling**: Always provide user-friendly error messages
+
+## **DEBUGGING METHODOLOGY**
+**When encountering issues, follow this EXACT order:**
+
+1. **Identify the actual error** - Don't assume root cause from symptoms
+2. **Check imports and dependencies** - Circular deps cause "uninitialized variable" errors
+3. **Use existing patterns** - Look at working code before creating new solutions  
+4. **Test simple fixes first** - Don't overcomplicate 5-minute problems
+5. **Understand existing architecture** - Read converter functions, service patterns, etc.
+6. **Make minimal changes** - Fix the actual problem, not perceived problems
+
+**RED FLAGS that indicate you're going off the rails:**
+- Changing security rules to match code instead of fixing code
+- Using different translation systems than what exists
+- Making multiple "fixes" for one simple problem
+- Not testing simple solutions before complex ones
 
 ## Common Development Tasks
 

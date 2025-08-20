@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   dashboardService,
@@ -6,6 +6,7 @@ import {
 } from '../../services/firebase/dashboard.service';
 import { useAuth } from '../../hooks/useUnifiedAuth';
 import { LoadingSpinner } from '../common/LoadingSpinner';
+import { logger } from '../../utils/logger';
 import {
   Users,
   Calendar,
@@ -42,41 +43,28 @@ export function AdminDashboard({ member }: AdminDashboardProps) {
   }, [member]);
 
   const fetchDashboardData = async () => {
-    console.log('AdminDashboard: Starting fetchDashboardData');
-    console.log('AdminDashboard: user object:', user);
-    console.log('AdminDashboard: member object:', member);
+    logger.debug('AdminDashboard: Starting fetchDashboardData');
 
-    const userId = user?.id || user?.uid;
+    const userId = user?.uid;
     if (!userId) {
-      console.warn('AdminDashboard: No user ID available', {
-        user: user,
-        userUid: user?.uid,
-        userId: user?.id,
-        member: member,
-      });
+      logger.warn('AdminDashboard: No user ID available');
       setLoading(false);
       return;
     }
 
     try {
       setLoading(true);
-      console.log(
-        'AdminDashboard: Fetching dashboard data for user:',
+      logger.debug('AdminDashboard: Fetching dashboard data', {
         userId,
-        'role: admin'
-      );
+        role: 'admin',
+      });
       const data = await dashboardService.getDashboardData(userId, 'admin');
-      console.log(
-        'AdminDashboard: Successfully fetched dashboard data:',
-        JSON.stringify(data, null, 2)
-      );
+      logger.info('AdminDashboard: Successfully fetched dashboard data');
       setDashboardData(data);
     } catch (error) {
-      console.error('AdminDashboard: Error fetching dashboard data:', error);
-      console.error('AdminDashboard: Error details:', {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : undefined,
-        userId: userId,
+      logger.error('AdminDashboard: Error fetching dashboard data', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        userId,
         userRole: 'admin',
       });
       // Set some default data to prevent hanging

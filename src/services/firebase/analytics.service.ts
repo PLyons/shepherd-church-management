@@ -1,6 +1,6 @@
 import { registrationTokensService } from './registration-tokens.service';
 import { publicRegistrationService } from './public-registration.service';
-import { PendingRegistration, RegistrationToken } from '../../types/firestore';
+import { PendingRegistration, RegistrationToken } from '../../types/registration';
 import { startOfDay, endOfDay, subDays, format, parseISO } from 'date-fns';
 
 export interface RegistrationAnalytics {

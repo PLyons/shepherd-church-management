@@ -90,7 +90,7 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
       if (customId) {
         // Use custom ID (e.g., Firebase Auth UID for members)
         docRef = this.getDocRef(customId);
-        await setDoc(docRef, finalData as Partial<TDocument>);
+        await setDoc(docRef, finalData as any);
       } else {
         // Auto-generate ID
         docRef = await addDoc(this.getCollectionRef(), finalData);
@@ -285,7 +285,7 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
 
       // If count fails, fallback to getting documents and counting them
       // This can happen if the collection doesn't exist yet
-      if (error.code === 'not-found' || error.code === 'permission-denied') {
+      if ((error as any).code === 'not-found' || (error as any).code === 'permission-denied') {
         console.warn(
           `BaseService: Fallback to document count for ${this.collectionName}`
         );

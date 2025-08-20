@@ -13,7 +13,6 @@ import {
 import {
   timestampToString,
   stringToTimestamp,
-  removeUndefined,
 } from '../../utils/firestore-converters';
 
 class RegistrationTokensService extends BaseFirestoreService<
@@ -67,7 +66,9 @@ class RegistrationTokensService extends BaseFirestoreService<
     if (client.isActive !== undefined) document.isActive = client.isActive;
 
     if (client.metadata) {
-      document.metadata = {};
+      document.metadata = {
+        purpose: client.metadata.purpose || 'General',
+      };
       if (client.metadata.purpose !== undefined)
         document.metadata.purpose = client.metadata.purpose;
       if (client.metadata.notes !== undefined)

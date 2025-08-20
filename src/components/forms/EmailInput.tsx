@@ -27,7 +27,7 @@ export function EmailInput({
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const email = e.target.value;
     onChange(email);
-    
+
     // Validate email if not empty and validation is enabled
     if (showValidation) {
       if (email && !isValidEmail(email)) {
@@ -58,9 +58,7 @@ export function EmailInput({
         required={required}
         disabled={disabled}
       />
-      {hasError && (
-        <p className="mt-1 text-sm text-red-600">{emailError}</p>
-      )}
+      {hasError && <p className="mt-1 text-sm text-red-600">{emailError}</p>}
     </div>
   );
 }

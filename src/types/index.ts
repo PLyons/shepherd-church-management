@@ -4,64 +4,35 @@
 
 export interface Member {
   id: string;
-
-  // Personal Information (unified naming)
   firstName: string;
   lastName: string;
+  middleName?: string;
   email?: string;
   phone?: string;
-  birthdate?: string;
+  birthDate?: Date | any;
+  birthdate?: string; // Alternative format for compatibility
+  anniversaryDate?: Date | any;
+  maritalStatus?: 'single' | 'married' | 'widowed' | 'divorced';
+  memberStatus: 'active' | 'inactive';
+  role: 'admin' | 'pastor' | 'member';
   gender?: 'Male' | 'Female';
-
-  // Church Information
-  role?: 'admin' | 'pastor' | 'member';
-  memberStatus?: 'active' | 'inactive' | 'visitor';
   joinedAt?: string;
-
-  // Household Relationship
-  householdId?: string;
-  isPrimaryContact?: boolean;
-
-  // Metadata
-  createdAt: string;
-  updatedAt: string;
-
-  // Computed/Denormalized Data
+  createdAt?: Date | any;
+  updatedAt?: Date | any;
   fullName?: string;
-  householdName?: string;
-
-  // Optional populated data
-  household?: Household;
 }
 
 export interface Household {
   id: string;
   familyName: string;
-
-  // Address Information (unified structure)
-  address?: {
-    line1?: string;
-    line2?: string;
-    city?: string;
-    state?: string;
-    postalCode?: string;
-    country?: string;
-  };
-
-  // Contact Information
-  primaryContactId?: string;
-  primaryContactName?: string;
-
-  // Member Management
-  memberIds?: string[];
-  memberCount?: number;
-
-  // Metadata
-  createdAt: string;
-  updatedAt: string;
-
-  // Optional populated data
-  members?: Member[];
+  addressLine1?: string;
+  addressLine2?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+  createdAt?: Date | any; // Firestore Timestamp
+  updatedAt?: Date | any; // Firestore Timestamp
 }
 
 export interface MemberEvent {
@@ -73,4 +44,35 @@ export interface MemberEvent {
   notes?: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface Event {
+  id: string;
+  title: string;
+  description?: string;
+  startTime: string;
+  endTime?: string;
+  location?: string;
+  isPublic?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DashboardStats {
+  totalMembers?: number;
+  activeMembers?: number;
+  totalHouseholds?: number;
+  upcomingEvents?: number;
+  monthlyDonations?: number;
+  totalDonations?: number;
+  myDonationsThisYear?: number;
+  myUpcomingCommitments?: number;
+}
+
+export interface DashboardData {
+  stats: DashboardStats;
+  recentActivity?: any[];
+  upcomingEvents?: Event[];
+  quickActions?: any[];
+  personalInfo?: any;
 }

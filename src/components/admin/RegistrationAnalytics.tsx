@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   LineChart,
   Line,
@@ -36,7 +36,7 @@ const COLORS = [
   '#d084d0',
 ];
 
-export const RegistrationAnalyticsComponent: React.FC = () => {
+export function RegistrationAnalyticsComponent() {
   const [analytics, setAnalytics] = useState<RegistrationAnalytics | null>(
     null
   );
@@ -347,4 +347,4 @@ export const RegistrationAnalyticsComponent: React.FC = () => {
       )}
     </div>
   );
-};
+}
