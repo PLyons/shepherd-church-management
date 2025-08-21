@@ -1,7 +1,7 @@
 # Documentation Index - Shepherd Church Management System
 
-**Last Updated:** 2025-08-20  
-**Project Status:** Production Ready with Core Features  
+**Last Updated:** 2025-08-21  
+**Project Status:** Phase 0.2 Member Profile Enhancement Planning Complete  
 
 Welcome to the Shepherd CMS documentation hub. This index provides quick access to all project documentation organized by topic and audience.
 
@@ -25,6 +25,7 @@ Welcome to the Shepherd CMS documentation hub. This index provides quick access 
 | [Project Tracker](project_tracker.md) | Current phase and progress | 2025-01-16 |
 | [Current Features](current-features.md) | Detailed feature documentation | Up to date |
 | [Session Context](SESSION_CONTEXT.md) | Recent development context | 2025-01-16 |
+| [**PRPs Directory**](prps/) | **Product Requirement Prompts** | **2025-08-21** |
 
 ---
 
@@ -61,6 +62,7 @@ Welcome to the Shepherd CMS documentation hub. This index provides quick access 
 
 ### Member & Household Management
 - **Enhanced Member Forms (Phase 0.1 ✅):** Professional contact management complete
+- **Member Profile Enhancement (Phase 0.2 📋):** [Complete PRP Suite](prps/phase-0.2-member-profile/) with 12 detailed implementation plans
 - **Current Implementation:** [Current Features](current-features.md)
 - **Data Models:** [Firebase Schema](firebase/firestore-schema-design.md)
 - **Service Layer:** Documented in CLAUDE.md
@@ -113,12 +115,14 @@ Historical and obsolete documentation is stored in:
 2. Read [CLAUDE.md](../CLAUDE.md) thoroughly
 3. Follow [Development Guide](development-guide.md)
 4. Review [Current Features](current-features.md)
+5. **For Phase 0.2 work:** Study [PRP Implementation Plans](prps/phase-0.2-member-profile/)
 
 ### For Project Managers
 1. Review [Project Tracker](project_tracker.md)
 2. Check [Current Features](current-features.md) 
 3. Reference [PRD](prd.md) for original requirements
 4. Monitor [Session Context](SESSION_CONTEXT.md) for recent changes
+5. **Phase 0.2 Planning:** Review [PRP Overview](prps/phase-0.2-member-profile/README.md) for detailed roadmap
 
 ### For DevOps/Deployment
 1. Follow [Deployment Guide](deployment.md)

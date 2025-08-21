@@ -184,7 +184,13 @@ Three main contexts manage global state:
 - ❌ **Volunteer Scheduling System** (Phase 2D - Planned)
 - ❌ **Sermon Archive & Media Management** (Phase 2D - Planned)
 
-**Next Focus**: Implement Phase 2A (Household Management) to advance MVP to 33.3% completion, following PRD Milestone 2B specifications. Post-MVP enhancements stored in `docs/Future Enhancements/`.
+**Phase 0.2 Planning Complete**: Complete Product Requirement Prompt (PRP) suite created for member profile enhancement. 12 detailed implementation plans available in `docs/prps/phase-0.2-member-profile/` with Planning Center-inspired UX improvements.
+
+**Implementation Options**:
+- **Option A (Recommended)**: Phase 0.2 Member Profile Enhancement - Professional tabbed interface, inline editing, activity tracking
+- **Option B**: Phase 2A Household Management - Advance MVP to 33.3% completion per PRD Milestone 2B
+
+Post-MVP enhancements stored in `docs/Future Enhancements/`.
 
 
 ## MCP Servers Integration
