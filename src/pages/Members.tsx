@@ -4,7 +4,7 @@ import { firebaseService } from '../services/firebase';
 import { Member } from '../types';
 import { useAuth } from '../hooks/useUnifiedAuth';
 import { formatPhoneForDisplay } from '../utils/member-form-utils';
-import { Search, User, Users, Plus, Trash2, X } from 'lucide-react';
+import { Search, User, Users, Plus, X } from 'lucide-react';
 
 export default function Members() {
   const { member } = useAuth();
@@ -33,7 +33,7 @@ export default function Members() {
         page: currentPage,
         limit: itemsPerPage,
         search: activeSearchTerm || undefined,
-        orderBy: 'name' as const,
+        orderBy: 'lastName' as const,
         orderDirection: 'asc' as const,
       };
 
@@ -222,24 +222,30 @@ export default function Members() {
         )}
       </div>
 
-      <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
+      <div className="bg-white shadow-sm rounded-lg">
+        <div className="overflow-x-auto rounded-lg">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
+                <th className="w-16 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Photo
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Last Name
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  First Name
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
                   Email
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">
                   Phone
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">
                   Status
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">
                   Role
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -250,41 +256,49 @@ export default function Members() {
             <tbody className="bg-white divide-y divide-gray-200">
               {members.map((memberItem) => (
                 <tr key={memberItem.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                        <User className="h-5 w-5 text-gray-600" />
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium">
-                          <Link 
-                            to={`/members/${memberItem.id}`}
-                            className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
-                          >
-                            {memberItem.firstName} {memberItem.lastName}
-                          </Link>
-                        </div>
-                      </div>
+                  <td className="w-16 px-4 py-4 whitespace-nowrap">
+                    <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                      <User className="h-5 w-5 text-gray-600" />
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium">
+                      <Link 
+                        to={`/members/${memberItem.id}`}
+                        className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                      >
+                        {memberItem.lastName}
+                      </Link>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium">
+                      <Link 
+                        to={`/members/${memberItem.id}`}
+                        className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                      >
+                        {memberItem.firstName}
+                      </Link>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
                     <div className="text-sm text-gray-900">
                       {getPrimaryEmail(memberItem)}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap hidden lg:table-cell">
                     <div className="text-sm text-gray-900">
                       {getPrimaryPhone(memberItem)}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap hidden lg:table-cell">
                     <span
                       className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(memberItem.memberStatus || 'active')}`}
                     >
                       {memberItem.memberStatus}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
+                  <td className="px-6 py-4 whitespace-nowrap hidden lg:table-cell">
                     <span
                       className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(memberItem.role || 'member')}`}
                     >
@@ -300,13 +314,12 @@ export default function Members() {
                             `${memberItem.firstName} ${memberItem.lastName}`
                           )
                         }
-                        className="text-red-600 hover:text-red-900 flex items-center gap-1"
+                        className="text-red-600 hover:text-red-900 transition-colors duration-200"
                       >
-                        <Trash2 className="h-4 w-4" />
                         Delete
                       </button>
                     ) : (
-                      <span className="text-gray-400">-</span>
+                      <span className="text-gray-400">No Actions</span>
                     )}
                   </td>
                 </tr>
@@ -315,52 +328,92 @@ export default function Members() {
           </table>
         </div>
 
+        {/* Empty state */}
         {members.length === 0 && (
           <div className="text-center py-12">
-            <User className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">
-              No members found
-            </h3>
+            <Users className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900">No members found</h3>
             <p className="mt-1 text-sm text-gray-500">
-              {activeSearchTerm
-                ? 'Try adjusting your search terms.'
-                : 'No members have been added yet.'}
+              {activeSearchTerm ? 'Try adjusting your search terms.' : 'No members available.'}
             </p>
           </div>
         )}
+
+        {/* Pagination */}
+        {showPagination && (
+          <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+            <div className="flex-1 flex justify-between sm:hidden">
+              {/* Mobile pagination */}
+              <button
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
+                  currentPage === 1
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                disabled={currentPage === totalPages}
+                className={`relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md ${
+                  currentPage === totalPages
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                Next
+              </button>
+            </div>
+            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm text-gray-700">
+                  Showing{' '}
+                  <span className="font-medium">
+                    {(currentPage - 1) * itemsPerPage + 1}
+                  </span>{' '}
+                  to{' '}
+                  <span className="font-medium">
+                    {Math.min(currentPage * itemsPerPage, totalCount)}
+                  </span>{' '}
+                  of <span className="font-medium">{totalCount}</span> results
+                </p>
+              </div>
+              <div>
+                <nav
+                  className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px"
+                  aria-label="Pagination"
+                >
+                  <button
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                    className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 text-sm font-medium ${
+                      currentPage === 1
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : 'bg-white text-gray-500 hover:bg-gray-50'
+                    }`}
+                  >
+                    Previous
+                  </button>
+                  <button
+                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                    disabled={currentPage === totalPages}
+                    className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 text-sm font-medium ${
+                      currentPage === totalPages
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : 'bg-white text-gray-500 hover:bg-gray-50'
+                    }`}
+                  >
+                    Next
+                  </button>
+                </nav>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-
-      {showPagination && (
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1 || loading}
-              className="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Previous
-            </button>
-            <span className="px-3 py-2 text-sm text-gray-700">
-              Page {currentPage} of {totalPages}
-            </span>
-            <button
-              onClick={() =>
-                setCurrentPage(Math.min(totalPages, currentPage + 1))
-              }
-              disabled={currentPage === totalPages || loading}
-              className="px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Next
-            </button>
-          </div>
-          <div className="text-sm text-gray-700">
-            Showing {(currentPage - 1) * itemsPerPage + 1} to{' '}
-            {Math.min(currentPage * itemsPerPage, totalCount)} of {totalCount}{' '}
-            results
-          </div>
-        </div>
-      )}
-
     </div>
   );
 }

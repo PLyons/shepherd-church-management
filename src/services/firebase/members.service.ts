@@ -122,20 +122,39 @@ export class MembersService extends BaseFirestoreService<
     status?: 'active' | 'inactive' | 'visitor';
     role?: 'admin' | 'pastor' | 'member';
     limit?: number;
-    orderBy?: 'name' | 'email' | 'status' | 'role';
+    orderBy?: 'name' | 'lastName' | 'firstName' | 'email' | 'status' | 'role';
     orderDirection?: 'asc' | 'desc';
   }): Promise<Member[]> {
     const queryOptions: QueryOptions = {
       where: [],
       limit: options?.limit || 50,
       orderBy: {
-        field:
-          options?.orderBy === 'name'
-            ? 'fullName'
-            : options?.orderBy || 'fullName',
+        field: 'lastName', // Default to lastName for better alphabetical sorting
         direction: options?.orderDirection || 'asc',
       },
     };
+
+    // Build order by field with support for lastName and firstName
+    switch (options?.orderBy) {
+      case 'name':
+      case 'lastName':
+        queryOptions.orderBy!.field = 'lastName';
+        break;
+      case 'firstName':
+        queryOptions.orderBy!.field = 'firstName';
+        break;
+      case 'email':
+        queryOptions.orderBy!.field = 'email';
+        break;
+      case 'status':
+        queryOptions.orderBy!.field = 'memberStatus';
+        break;
+      case 'role':
+        queryOptions.orderBy!.field = 'role';
+        break;
+      default:
+        queryOptions.orderBy!.field = 'lastName';
+    }
 
     // Add filters
     if (options?.status) {
@@ -154,21 +173,57 @@ export class MembersService extends BaseFirestoreService<
       });
     }
 
-
     let results = await this.getAll(queryOptions);
 
-    // Apply search filter if provided
+    // Apply search filter if provided (client-side filtering for full text search)
     if (options?.search) {
+      const searchLower = options.search.toLowerCase();
       results = results.filter(
         (member) =>
-          member.firstName
+          (member.firstName || '')
             .toLowerCase()
-            .includes(options.search!.toLowerCase()) ||
-          member.lastName
+            .includes(searchLower) ||
+          (member.lastName || '')
             .toLowerCase()
-            .includes(options.search!.toLowerCase()) ||
-          (member.email || '').toLowerCase().includes(options.search!.toLowerCase())
+            .includes(searchLower) ||
+          (member.fullName || '')
+            .toLowerCase()
+            .includes(searchLower) ||
+          (member.email || '')
+            .toLowerCase()
+            .includes(searchLower) ||
+          // Search in enhanced email arrays
+          (member.emails && member.emails.some(email => 
+            email.address.toLowerCase().includes(searchLower)
+          ))
       );
+    }
+
+    // Apply client-side sorting if needed (especially for compound sorting)
+    if (options?.orderBy === 'name' || options?.orderBy === 'lastName') {
+      // Sort by lastName first, then firstName for compound sorting
+      results.sort((a, b) => {
+        const aLastName = (a.lastName || '').toLowerCase();
+        const bLastName = (b.lastName || '').toLowerCase();
+        
+        if (aLastName !== bLastName) {
+          const result = aLastName.localeCompare(bLastName);
+          return options?.orderDirection === 'desc' ? -result : result;
+        }
+        
+        // If last names are the same, sort by first name
+        const aFirstName = (a.firstName || '').toLowerCase();
+        const bFirstName = (b.firstName || '').toLowerCase();
+        const result = aFirstName.localeCompare(bFirstName);
+        return options?.orderDirection === 'desc' ? -result : result;
+      });
+    } else if (options?.orderBy === 'firstName') {
+      results.sort((a, b) => {
+        const aFirstName = (a.firstName || '').toLowerCase();
+        const bFirstName = (b.firstName || '').toLowerCase();
+        const result = aFirstName.localeCompare(bFirstName);
+        return options?.orderDirection === 'desc' ? -result : result;
+      });
     }
 
     return results;
@@ -183,7 +238,7 @@ export class MembersService extends BaseFirestoreService<
     search?: string;
     status?: 'active' | 'inactive' | 'visitor';
     role?: 'admin' | 'pastor' | 'member';
-    orderBy?: 'name' | 'email' | 'status' | 'role';
+    orderBy?: 'name' | 'lastName' | 'firstName' | 'email' | 'status' | 'role';
     orderDirection?: 'asc' | 'desc';
   }): Promise<{
     data: Member[];
@@ -221,13 +276,31 @@ export class MembersService extends BaseFirestoreService<
       });
     }
 
+    // Build order by with support for lastName and firstName
+    let orderByField: string;
+    switch (options?.orderBy) {
+      case 'name':
+      case 'lastName':
+        orderByField = 'lastName';
+        break;
+      case 'firstName':
+        orderByField = 'firstName';
+        break;
+      case 'email':
+        orderByField = 'email';
+        break;
+      case 'status':
+        orderByField = 'memberStatus';
+        break;
+      case 'role':
+        orderByField = 'role';
+        break;
+      default:
+        orderByField = 'lastName'; // Default to lastName for alphabetical sorting
+    }
 
-    // Build order by
     const orderBy = {
-      field:
-        options?.orderBy === 'name'
-          ? 'fullName'
-          : options?.orderBy || 'fullName',
+      field: orderByField,
       direction: (options?.orderDirection || 'asc') as 'asc' | 'desc',
     };
 
@@ -245,12 +318,67 @@ export class MembersService extends BaseFirestoreService<
         limit: 1000, // Reasonable upper limit for search
       });
 
+      // Sort client-side for search results to ensure proper ordering
+      const sortedResults = searchResults.sort((a, b) => {
+        let aValue: string | number = '';
+        let bValue: string | number = '';
+        
+        switch (options?.orderBy) {
+          case 'name':
+          case 'lastName':
+            aValue = (a.lastName || '').toLowerCase();
+            bValue = (b.lastName || '').toLowerCase();
+            break;
+          case 'firstName':
+            aValue = (a.firstName || '').toLowerCase();
+            bValue = (b.firstName || '').toLowerCase();
+            break;
+          case 'email':
+            aValue = (a.email || '').toLowerCase();
+            bValue = (b.email || '').toLowerCase();
+            break;
+          case 'status':
+            aValue = (a.memberStatus || 'active').toLowerCase();
+            bValue = (b.memberStatus || 'active').toLowerCase();
+            break;
+          case 'role':
+            aValue = (a.role || 'member').toLowerCase();
+            bValue = (b.role || 'member').toLowerCase();
+            break;
+          default:
+            // Default to lastName
+            aValue = (a.lastName || '').toLowerCase();
+            bValue = (b.lastName || '').toLowerCase();
+        }
+
+        if (aValue < bValue) {
+          return options?.orderDirection === 'desc' ? 1 : -1;
+        }
+        if (aValue > bValue) {
+          return options?.orderDirection === 'desc' ? -1 : 1;
+        }
+        
+        // Secondary sort by firstName if lastName is the same
+        if (options?.orderBy === 'name' || options?.orderBy === 'lastName') {
+          const aFirst = (a.firstName || '').toLowerCase();
+          const bFirst = (b.firstName || '').toLowerCase();
+          if (aFirst < bFirst) {
+            return options?.orderDirection === 'desc' ? 1 : -1;
+          }
+          if (aFirst > bFirst) {
+            return options?.orderDirection === 'desc' ? -1 : 1;
+          }
+        }
+        
+        return 0;
+      });
+
       // Calculate pagination on client side for search results
-      const totalCount = searchResults.length;
+      const totalCount = sortedResults.length;
       const totalPages = Math.ceil(totalCount / limit);
       const startIndex = (page - 1) * limit;
       const endIndex = startIndex + limit;
-      const data = searchResults.slice(startIndex, endIndex);
+      const data = sortedResults.slice(startIndex, endIndex);
 
       return {
         data,
