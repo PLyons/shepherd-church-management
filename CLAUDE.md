@@ -131,18 +131,22 @@ Three main contexts manage global state:
 
 ## Project Status
 
-**🎯 Phase 0.1 ENHANCED MEMBER FORM - COMPLETE**: Advanced member management with professional contact arrays, enhanced forms, and deep field mapping.
+**🎯 Phase 0.1 ENHANCED MEMBER SYSTEM - COMPLETE**: Professional member management with enhanced forms, UX improvements, and industry-standard patterns.
 
-**✅ Recently Completed (Phase 0.1 - 2025-08-20):**
+**✅ Recently Completed (Phase 0.1.2 - 2025-08-21):**
+- **Member Directory UX Enhancement**: Industry-standard clickable name hyperlinks
+  - Removed redundant View buttons following Planning Center/WorshipTools patterns
+  - Converted member names to professional blue hyperlinks with hover effects
+  - Streamlined Actions column showing only relevant user actions
+  - Perfect WCAG 2.1 AA accessibility compliance with keyboard navigation
+  - Mobile-optimized touch targets exceeding 44x44px requirements
+  - Pattern consistency established as application standard
+- **US States Dropdown** (Phase 0.1.1): Standardized state selection with USPS abbreviations
 - **Enhanced Member Data Model**: Arrays for emails, phones, addresses with type/primary flags
 - **Advanced Member Form**: Collapsible sections, dynamic arrays, conditional SMS opt-in
 - **Deep Field Mapping**: Automatic camelCase ↔ snake_case conversion for nested data
 - **Smart Contact Display**: Primary email/phone detection with backward compatibility
-- **Data Migration**: Seamless handling of old and new member data formats
 - **Professional Contact Management**: Multiple contact methods per member
-- **UI/UX Refinements**: Fixed duplicate Add Member buttons, restored edit profile routing
-- **Enhanced Data Display**: Address, anniversary date, and phone number formatting improvements
-- **Data Persistence Fixes**: Resolved field mapping issues for dates and enhanced contact arrays
 
 **🔧 Recent Bug Fixes & Improvements (2025-08-20):**
 - **Duplicate UI Elements**: Removed redundant Add Member button from Members directory
@@ -153,34 +157,59 @@ Three main contexts manage global state:
 - **Contact Data Display**: Enhanced member profile view to show all enhanced contact arrays
 - **Field Mapping**: Updated Firestore converters for proper snake_case ↔ camelCase conversion
 
-**📋 Architecture Planning (2025-08-20):**
-- **Address Verification System**: Comprehensive PRP document created for real-time address validation
-- **Implementation Strategy**: Multi-provider approach (OpenStreetMap, Google Maps fallback)
-- **Technical Specifications**: Detailed 10-task implementation plan with caching and UI components
+**📋 Future Enhancements (2025-08-21):**
+- **Address Verification System**: Implementation plan moved to `docs/Future Enhancements/` for post-MVP development
+- **Post-MVP Features**: All enhancement specifications stored in `docs/Future Enhancements/` directory
 
-**Current Implementation:**
-- Member management with enhanced CRUD operations and arrays
-- Household management with family relationships  
-- Role-based access control (admin, pastor, member)
-- Firebase Authentication integration
-- Dashboard views by role
-- QR-based member onboarding and magic link authentication
-- Professional contact management (multiple emails, phones, addresses)
-- Enhanced member profile display with formatted phone numbers
-- Robust field mapping system for Firestore integration
+**Current MVP Implementation (16.7% Complete - 1 of 6 components):**
+- ✅ **Member Management** - Enhanced CRUD operations with professional contact arrays
+- ✅ **Role-based Access Control** - Admin, pastor, member roles with security enforcement
+- ✅ **Firebase Authentication** - Magic links and QR-based member onboarding
+- ✅ **Dashboard Views** - Role-based dashboards with member statistics
+- ✅ **Enhanced Member Profiles** - Multiple contact methods, formatted display, robust field mapping
 
-**Features Removed for Reimplementation:**
-- Event management and RSVP system
-- Donation tracking and financial reports
-- Sermon archive and media management
-- Volunteer scheduling system
+**MVP Features Pending Implementation (83.3% Remaining):**
+- ❌ **Household Management** (Phase 2A - Next Priority)
+- ❌ **Event Calendar & Attendance System** (Phase 2B - Planned)
+- ❌ **Donation Tracking & Financial Reports** (Phase 2C - Planned)
+- ❌ **Volunteer Scheduling System** (Phase 2D - Planned)
+- ❌ **Sermon Archive & Media Management** (Phase 2D - Planned)
 
-**Next Focus**: Address verification implementation following PRP specifications, then methodical reimplementation of additional features according to PRD specifications.
+**Next Focus**: Implement Phase 2A (Household Management) to advance MVP to 33.3% completion, following PRD Milestone 2B specifications. Post-MVP enhancements stored in `docs/Future Enhancements/`.
 
 
 ## MCP Servers Integration
 
 This project uses multiple Model Context Protocol (MCP) servers to enhance Claude Code's capabilities. All servers are automatically configured and should be running when working on this project.
+
+## **MANDATORY: MCP Server Usage Rules**
+
+**Claude Code MUST use MCP servers proactively for all relevant tasks. These tools exist to make you work smarter, not harder.**
+
+### **Required Usage Patterns:**
+
+1. **ALWAYS use Serena for code analysis** - Before reading entire files, use `get_symbols_overview` and `find_symbol` for token-efficient code exploration
+2. **ALWAYS use Context7 for current documentation** - When implementing features with external libraries, fetch current docs instead of using outdated knowledge
+3. **ALWAYS use Firebase MCP for database operations** - Direct Firebase tool usage instead of manual CLI commands
+4. **ALWAYS use Playwright for UI testing** - Test forms, workflows, and user interactions on the running development server
+5. **ALWAYS use Semgrep for security scanning** - Run security scans before code commits, especially for authentication/authorization code
+
+### **Proactive Usage Requirements:**
+
+- **Before editing code**: Use Serena's `find_symbol` and `get_symbols_overview` to understand existing patterns
+- **Before implementing new features**: Use Context7 to get current best practices and API documentation
+- **Before database changes**: Use Firebase MCP tools to verify data structure and test operations
+- **After UI changes**: Use Playwright to verify functionality on `http://localhost:5173` (development server)
+- **Before task completion**: Run Semgrep security scan to identify potential vulnerabilities
+
+### **Efficiency Rules:**
+
+1. **Don't reinvent what exists** - Use Serena to find existing patterns before creating new ones
+2. **Don't guess API usage** - Use Context7 to fetch current documentation
+3. **Don't manually test UI** - Use Playwright to automate testing on the running app
+4. **Don't skip security** - Use Semgrep to catch issues early
+
+**These tools exist to enhance your capabilities - USE THEM consistently and proactively.**
 
 ### Current MCP Servers
 
@@ -534,13 +563,16 @@ If you are unsure of assumptions or hit ambiguous scope:
 - **`/src/utils/member-form-utils.ts`** - Member form utilities including phone formatting
 
 ### Enhanced Components (Phase 0.1)
-- **`/src/components/members/MemberFormEnhanced.tsx`** - Advanced member form with arrays
+- **`/src/components/members/MemberFormEnhanced.tsx`** - Advanced member form with arrays and states dropdown
 - **`/src/pages/Members.tsx`** - Enhanced member list with smart contact display
 - **`/src/router/index.tsx`** - Updated routing for enhanced forms
 
+### Constants & Standards
+- **`/src/constants/states.ts`** - US States & Territories with USPS abbreviations
+
 ### Documentation & Testing
 - **`/docs/prd.md`** - Complete project requirements and specifications
-- **`/address-verification-implementation.md`** - Comprehensive PRP for address validation system
+- **`/docs/Future Enhancements/`** - Post-MVP feature specifications and implementation plans
 - **`/src/scripts/seed-firebase-data.ts`** - Database seeding with test data
 - **`/src/scripts/setup-admin.ts`** - Initial admin user setup
 - **`/MANUAL-TESTING-GUIDE.md`** - Comprehensive Phase 0.1 testing protocol

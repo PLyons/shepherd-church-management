@@ -4,7 +4,7 @@ import { firebaseService } from '../services/firebase';
 import { Member } from '../types';
 import { useAuth } from '../hooks/useUnifiedAuth';
 import { formatPhoneForDisplay } from '../utils/member-form-utils';
-import { Search, User, Users, Eye, Plus, Trash2, X } from 'lucide-react';
+import { Search, User, Users, Plus, Trash2, X } from 'lucide-react';
 
 export default function Members() {
   const { member } = useAuth();
@@ -256,8 +256,13 @@ export default function Members() {
                         <User className="h-5 w-5 text-gray-600" />
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">
-                          {memberItem.firstName} {memberItem.lastName}
+                        <div className="text-sm font-medium">
+                          <Link 
+                            to={`/members/${memberItem.id}`}
+                            className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                          >
+                            {memberItem.firstName} {memberItem.lastName}
+                          </Link>
                         </div>
                       </div>
                     </div>
@@ -287,29 +292,22 @@ export default function Members() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex items-center gap-2">
-                      <Link
-                        to={`/members/${memberItem.id}`}
-                        className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
+                    {canDeleteMembers ? (
+                      <button
+                        onClick={() =>
+                          handleDeleteMember(
+                            memberItem.id,
+                            `${memberItem.firstName} ${memberItem.lastName}`
+                          )
+                        }
+                        className="text-red-600 hover:text-red-900 flex items-center gap-1"
                       >
-                        <Eye className="h-4 w-4" />
-                        View
-                      </Link>
-                      {canDeleteMembers && (
-                        <button
-                          onClick={() =>
-                            handleDeleteMember(
-                              memberItem.id,
-                              `${memberItem.firstName} ${memberItem.lastName}`
-                            )
-                          }
-                          className="text-red-600 hover:text-red-900 flex items-center gap-1"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          Delete
-                        </button>
-                      )}
-                    </div>
+                        <Trash2 className="h-4 w-4" />
+                        Delete
+                      </button>
+                    ) : (
+                      <span className="text-gray-400">-</span>
+                    )}
                   </td>
                 </tr>
               ))}

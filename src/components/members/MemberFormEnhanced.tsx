@@ -6,6 +6,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { firebaseService } from '../../services/firebase';
 import { MemberFormData, Member } from '../../types';
 import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react';
+import { STATES_AND_TERRITORIES } from '../../constants/states';
 
 interface CollapsibleSections {
   basic: boolean;
@@ -623,12 +624,17 @@ export const MemberFormEnhanced: React.FC = () => {
                           placeholder="City"
                         />
                         
-                        <input
-                          type="text"
+                        <select
                           {...register(`addresses.${index}.state` as const)}
                           className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          placeholder="State"
-                        />
+                        >
+                          <option value="">Select State...</option>
+                          {STATES_AND_TERRITORIES.map((state) => (
+                            <option key={state.code} value={state.code}>
+                              {state.name}
+                            </option>
+                          ))}
+                        </select>
                         
                         <input
                           type="text"
