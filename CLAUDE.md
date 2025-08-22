@@ -541,10 +541,14 @@ git push origin main
    npm install
    ```
 
-2. **Environment setup:**
+2. **Environment setup (choose one):**
    ```bash
+   # Option 1: Use environment variables (recommended)
    cp .env.example .env
-   # Add your Firebase credentials to .env
+   # Edit .env with Firebase credentials
+   
+   # Option 2: Skip .env setup (simplest)
+   # Do nothing - uses hardcoded values automatically
    ```
 
 3. **MCP servers setup (if using Claude Code):**

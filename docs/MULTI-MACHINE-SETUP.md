@@ -39,23 +39,98 @@ npm install
 npm run dev --help
 ```
 
-### Step 3: Environment Configuration
-```bash
-# Copy environment template
-cp .env.example .env
+### Step 3: Environment Configuration (Optional but Recommended)
 
-# Edit .env file with your credentials
-# Add your Firebase configuration
-# Never commit .env files to Git
+The Shepherd project uses a **smart configuration system** that works with or without environment variables.
+
+#### **Understanding Environment Variables**
+
+**What is a `.env` file?**
+- `.env` stands for "environment variables"
+- A simple text file that stores configuration settings
+- Each line contains: `VARIABLE_NAME=value`
+- Keeps sensitive data out of your source code
+
+**How Shepherd's Configuration Works:**
+```typescript
+// From src/lib/firebase.ts
+apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'AIzaSyDuWQ35Fwb-ljb1Jq-GH5dzIHhTLDpgJxc'
 ```
 
-**Required Environment Variables:**
-- `VITE_FIREBASE_API_KEY`
-- `VITE_FIREBASE_AUTH_DOMAIN`
-- `VITE_FIREBASE_PROJECT_ID`
-- `VITE_FIREBASE_STORAGE_BUCKET`
-- `VITE_FIREBASE_MESSAGING_SENDER_ID`
-- `VITE_FIREBASE_APP_ID`
+This means: "Use environment variable if it exists, otherwise use hardcoded value"
+
+#### **Setup Options (Choose One)**
+
+##### **Option 1: Use Environment Variables (Recommended)**
+```bash
+# Copy the template
+cp .env.example .env
+
+# Edit .env file and uncomment lines (remove #)
+# Add these exact values from your desktop configuration:
+```
+
+Create `.env` file with these contents:
+```bash
+VITE_FIREBASE_API_KEY=AIzaSyDuWQ35Fwb-ljb1Jq-GH5dzIHhTLDpgJxc
+VITE_FIREBASE_AUTH_DOMAIN=shepherd-cms-ba981.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=shepherd-cms-ba981
+VITE_FIREBASE_STORAGE_BUCKET=shepherd-cms-ba981.firebasestorage.app
+VITE_FIREBASE_MESSAGING_SENDER_ID=280357223841
+VITE_FIREBASE_APP_ID=1:280357223841:web:73c9fb5edf2c0471b45fe0
+VITE_FIREBASE_MEASUREMENT_ID=G-L4YXRH7NJJ
+```
+
+**Benefits:**
+- Keeps configuration separate from code
+- Easy to change for different environments
+- Industry best practice
+
+##### **Option 2: Skip .env Setup (Simplest)**
+```bash
+# Do nothing - skip .env creation entirely
+# Application uses hardcoded values automatically
+```
+
+**Benefits:**
+- No additional setup required
+- Fewer things to configure
+- Same Firebase project as desktop
+
+##### **Option 3: Separate Development Project**
+```bash
+# Create separate Firebase project for laptop testing
+# Use different values in .env file
+# Prevents affecting production data
+```
+
+#### **What Each Variable Does**
+
+```bash
+VITE_FIREBASE_API_KEY=...           # Identifies your Firebase project
+VITE_FIREBASE_AUTH_DOMAIN=...       # Where users authenticate
+VITE_FIREBASE_PROJECT_ID=...        # Your project identifier  
+VITE_FIREBASE_STORAGE_BUCKET=...    # File storage location
+VITE_FIREBASE_MESSAGING_SENDER_ID=... # Push notifications
+VITE_FIREBASE_APP_ID=...            # Unique app identifier
+VITE_FIREBASE_MEASUREMENT_ID=...    # Google Analytics tracking
+```
+
+#### **Important Security Notes**
+
+- **Never commit `.env` files** - They're automatically ignored by Git
+- **The "VITE_" prefix** makes variables available to your React app
+- **Template file (`.env.example`)** is safe to commit - contains no real values
+- **Your `.env` file** stays on your machine only
+
+#### **Recommendation for Laptop Setup**
+
+**Use Option 1 (Environment Variables)** for the cleanest setup:
+
+1. Copy template: `cp .env.example .env`
+2. Edit `.env` with the values shown above
+3. Same Firebase project = consistent data across machines
+4. Professional development practice
 
 ### Step 4: Verify Setup
 ```bash
