@@ -22,44 +22,47 @@ interface HouseholdMember {
 }
 
 // Avatar component for displaying member initials
-function Avatar({ 
-  firstName, 
-  lastName, 
-  size = 'md', 
-  className = '' 
-}: { 
-  firstName: string; 
-  lastName: string; 
-  size?: 'sm' | 'md' | 'lg'; 
-  className?: string; 
+function Avatar({
+  firstName,
+  lastName,
+  size = 'md',
+  className = '',
+}: {
+  firstName: string;
+  lastName: string;
+  size?: 'sm' | 'md' | 'lg';
+  className?: string;
 }) {
-  const initials = `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
-  
+  const initials =
+    `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
+
   const sizeClasses = {
     sm: 'h-10 w-10 text-sm',
     md: 'h-12 w-12 text-base',
-    lg: 'h-16 w-16 text-xl'
+    lg: 'h-16 w-16 text-xl',
   };
 
   return (
-    <div className={`
+    <div
+      className={`
       ${sizeClasses[size]} 
       bg-blue-100 text-blue-800 rounded-full 
       flex items-center justify-center font-medium
       ${className}
-    `}>
+    `}
+    >
       {initials}
     </div>
   );
 }
 
 // Household header component
-function HouseholdHeader({ 
-  household, 
-  canManage 
-}: { 
-  household: Household; 
-  canManage: boolean; 
+function HouseholdHeader({
+  household,
+  canManage,
+}: {
+  household: Household;
+  canManage: boolean;
 }) {
   return (
     <div className="flex items-center justify-between mb-4">
@@ -70,7 +73,7 @@ function HouseholdHeader({
         </h3>
       </div>
       {canManage && (
-        <button 
+        <button
           className="p-1 text-gray-400 hover:text-gray-600 rounded transition-colors"
           title="Manage household"
         >
@@ -82,22 +85,22 @@ function HouseholdHeader({
 }
 
 // Individual member card component
-function HouseholdMemberCard({ 
-  member, 
-  isCurrentMember 
-}: { 
-  member: HouseholdMember; 
-  isCurrentMember: boolean; 
+function HouseholdMemberCard({
+  member,
+  isCurrentMember,
+}: {
+  member: HouseholdMember;
+  isCurrentMember: boolean;
 }) {
   if (isCurrentMember) {
     return (
       <div className="flex items-center gap-3 p-3 rounded-lg border transition-colors border-blue-200 bg-blue-50">
-        <Avatar 
-          firstName={member.firstName} 
+        <Avatar
+          firstName={member.firstName}
           lastName={member.lastName}
           size="sm"
         />
-        
+
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <p className="text-sm font-medium text-gray-900 truncate">
@@ -109,7 +112,7 @@ function HouseholdMemberCard({
               </span>
             )}
           </div>
-          
+
           {member.relationship && (
             <p className="text-xs text-gray-500 capitalize">
               {member.relationship}
@@ -129,12 +132,12 @@ function HouseholdMemberCard({
       to={`/members/${member.id}/overview`}
       className="flex items-center gap-4 p-4 rounded-lg border transition-colors border-gray-200 hover:border-gray-300 hover:bg-gray-50 cursor-pointer"
     >
-      <Avatar 
-        firstName={member.firstName} 
+      <Avatar
+        firstName={member.firstName}
         lastName={member.lastName}
         size="sm"
       />
-      
+
       <div className="flex-1 min-w-0">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
@@ -147,7 +150,7 @@ function HouseholdMemberCard({
               </span>
             )}
           </div>
-          
+
           <div className="flex items-center gap-3 text-sm text-gray-500">
             {member.relationship && (
               <span className="capitalize">{member.relationship}</span>
@@ -166,27 +169,29 @@ function HouseholdMemberCard({
 }
 
 // Member list component
-function HouseholdMemberList({ 
-  members, 
-  currentMemberId 
-}: { 
-  members: HouseholdMember[]; 
-  currentMemberId: string; 
+function HouseholdMemberList({
+  members,
+  currentMemberId,
+}: {
+  members: HouseholdMember[];
+  currentMemberId: string;
 }) {
   return (
     <div className="space-y-4">
-      {members.map(member => (
-        <HouseholdMemberCard 
+      {members.map((member) => (
+        <HouseholdMemberCard
           key={member.id}
           member={member}
           isCurrentMember={member.id === currentMemberId}
         />
       ))}
-      
+
       {/* Household statistics */}
       {members.length > 1 && (
         <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-          <h4 className="text-sm font-medium text-gray-900 mb-3">Household Summary</h4>
+          <h4 className="text-sm font-medium text-gray-900 mb-3">
+            Household Summary
+          </h4>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <span className="text-gray-500">Total Members:</span>
@@ -194,7 +199,9 @@ function HouseholdMemberList({
             </div>
             <div>
               <span className="text-gray-500">Active:</span>
-              <span className="ml-2 font-medium">{members.filter(m => m.memberStatus === 'active').length}</span>
+              <span className="ml-2 font-medium">
+                {members.filter((m) => m.memberStatus === 'active').length}
+              </span>
             </div>
           </div>
         </div>
@@ -213,7 +220,7 @@ function HouseholdLoadingState() {
           <div className="h-4 w-24 bg-gray-200 rounded"></div>
         </div>
         <div className="space-y-3">
-          {[1, 2, 3].map(i => (
+          {[1, 2, 3].map((i) => (
             <div key={i} className="flex items-center gap-3">
               <div className="h-8 w-8 bg-gray-200 rounded-full"></div>
               <div className="flex-1">
@@ -234,7 +241,9 @@ function HouseholdErrorState({ error }: { error: string }) {
     <div className="bg-white rounded-lg border border-red-200 p-6">
       <div className="text-center">
         <AlertCircle className="mx-auto h-8 w-8 text-red-500 mb-2" />
-        <h3 className="text-sm font-medium text-gray-900">Error Loading Household</h3>
+        <h3 className="text-sm font-medium text-gray-900">
+          Error Loading Household
+        </h3>
         <p className="mt-1 text-sm text-red-600">{error}</p>
       </div>
     </div>
@@ -242,11 +251,7 @@ function HouseholdErrorState({ error }: { error: string }) {
 }
 
 // No household state component
-function NoHouseholdState({ 
-  canManage 
-}: { 
-  canManage: boolean; 
-}) {
+function NoHouseholdState({ canManage }: { canManage: boolean }) {
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6">
       <div className="text-center">
@@ -301,25 +306,27 @@ function useHouseholdData(householdId?: string) {
       try {
         setLoading(true);
         setError(null);
-        
+
         const [householdData, householdMembers] = await Promise.all([
           householdsService.getById(householdId),
-          householdsService.getMembers(householdId)
+          householdsService.getMembers(householdId),
         ]);
-        
+
         setHousehold(householdData);
-        
+
         // Convert Member objects to HouseholdMember format
-        const formattedMembers: HouseholdMember[] = householdMembers.map(member => ({
-          id: member.id,
-          firstName: member.firstName,
-          lastName: member.lastName,
-          relationship: 'member', // TODO: Add relationship field to Member type
-          isPrimaryContact: member.isPrimaryContact,
-          memberStatus: member.memberStatus || 'active',
-          role: member.role || 'member'
-        }));
-        
+        const formattedMembers: HouseholdMember[] = householdMembers.map(
+          (member) => ({
+            id: member.id,
+            firstName: member.firstName,
+            lastName: member.lastName,
+            relationship: 'member', // TODO: Add relationship field to Member type
+            isPrimaryContact: member.isPrimaryContact,
+            memberStatus: member.memberStatus || 'active',
+            role: member.role || 'member',
+          })
+        );
+
         setMembers(formattedMembers);
       } catch (err) {
         console.error('Error fetching household data:', err);
@@ -336,44 +343,44 @@ function useHouseholdData(householdId?: string) {
 }
 
 // Main HouseholdSidebar component
-const HouseholdSidebar = memo(({ 
-  memberId, 
-  currentHouseholdId, 
-  className = '' 
-}: HouseholdSidebarProps) => {
-  const { member: currentUser } = useAuth();
-  const { household, members, loading, error } = useHouseholdData(currentHouseholdId);
-  
-  const canManageHousehold = currentUser?.role === 'admin' || currentUser?.role === 'pastor';
+const HouseholdSidebar = memo(
+  ({ memberId, currentHouseholdId, className = '' }: HouseholdSidebarProps) => {
+    const { member: currentUser } = useAuth();
+    const { household, members, loading, error } =
+      useHouseholdData(currentHouseholdId);
 
-  if (!currentHouseholdId) {
-    return <NoHouseholdState canManage={canManageHousehold} />;
-  }
+    const canManageHousehold =
+      currentUser?.role === 'admin' || currentUser?.role === 'pastor';
 
-  if (loading) {
-    return <HouseholdLoadingState />;
-  }
+    if (!currentHouseholdId) {
+      return <NoHouseholdState canManage={canManageHousehold} />;
+    }
 
-  if (error) {
-    return <HouseholdErrorState error={error} />;
-  }
+    if (loading) {
+      return <HouseholdLoadingState />;
+    }
 
-  if (!household) {
-    return <HouseholdErrorState error="Household not found" />;
-  }
+    if (error) {
+      return <HouseholdErrorState error={error} />;
+    }
 
-  return (
-    <div className={`bg-white rounded-lg border border-gray-200 p-8 ${className}`}>
-      <HouseholdHeader household={household} canManage={canManageHousehold} />
-      <div className="mt-6">
-        <HouseholdMemberList members={members} currentMemberId={memberId} />
+    if (!household) {
+      return <HouseholdErrorState error="Household not found" />;
+    }
+
+    return (
+      <div
+        className={`bg-white rounded-lg border border-gray-200 p-8 ${className}`}
+      >
+        <HouseholdHeader household={household} canManage={canManageHousehold} />
+        <div className="mt-6">
+          <HouseholdMemberList members={members} currentMemberId={memberId} />
+        </div>
+        {canManageHousehold && <HouseholdActions />}
       </div>
-      {canManageHousehold && (
-        <HouseholdActions />
-      )}
-    </div>
-  );
-});
+    );
+  }
+);
 
 HouseholdSidebar.displayName = 'HouseholdSidebar';
 

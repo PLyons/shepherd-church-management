@@ -22,11 +22,21 @@ import SetPassword from '../pages/SetPassword';
 import NotFound from '../pages/NotFound';
 
 // Lazy-loaded tab components
-const OverviewTab = lazy(() => import('../components/members/profile/tabs/OverviewTab'));
-const ActivityTab = lazy(() => import('../components/members/profile/tabs/ActivityTab'));
-const CommunicationsTab = lazy(() => import('../components/members/profile/tabs/CommunicationsTab'));
-const NotesTab = lazy(() => import('../components/members/profile/tabs/NotesTab'));
-const SettingsTab = lazy(() => import('../components/members/profile/tabs/SettingsTab'));
+const OverviewTab = lazy(
+  () => import('../components/members/profile/tabs/OverviewTab')
+);
+const ActivityTab = lazy(
+  () => import('../components/members/profile/tabs/ActivityTab')
+);
+const CommunicationsTab = lazy(
+  () => import('../components/members/profile/tabs/CommunicationsTab')
+);
+const NotesTab = lazy(
+  () => import('../components/members/profile/tabs/NotesTab')
+);
+const SettingsTab = lazy(
+  () => import('../components/members/profile/tabs/SettingsTab')
+);
 
 // Tab loading component
 function TabLoadingSpinner() {
@@ -97,7 +107,7 @@ export const router = createBrowserRouter(
           children: [
             {
               index: true,
-              element: <Navigate to="overview" replace />
+              element: <Navigate to="overview" replace />,
             },
             {
               path: 'overview',
@@ -105,7 +115,7 @@ export const router = createBrowserRouter(
                 <Suspense fallback={<TabLoadingSpinner />}>
                   <OverviewTab />
                 </Suspense>
-              )
+              ),
             },
             {
               path: 'activity',
@@ -113,7 +123,7 @@ export const router = createBrowserRouter(
                 <Suspense fallback={<TabLoadingSpinner />}>
                   <ActivityTab />
                 </Suspense>
-              )
+              ),
             },
             {
               path: 'communications',
@@ -121,7 +131,7 @@ export const router = createBrowserRouter(
                 <Suspense fallback={<TabLoadingSpinner />}>
                   <CommunicationsTab />
                 </Suspense>
-              )
+              ),
             },
             {
               path: 'notes',
@@ -131,7 +141,7 @@ export const router = createBrowserRouter(
                     <NotesTab />
                   </Suspense>
                 </RoleGuard>
-              )
+              ),
             },
             {
               path: 'settings',
@@ -141,9 +151,9 @@ export const router = createBrowserRouter(
                     <SettingsTab />
                   </Suspense>
                 </RoleGuard>
-              )
-            }
-          ]
+              ),
+            },
+          ],
         },
         {
           path: 'admin/registration-tokens',

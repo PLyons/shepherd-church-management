@@ -28,7 +28,10 @@ export function Dropdown({ children, className = '' }: DropdownProps) {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
@@ -52,30 +55,36 @@ export function Dropdown({ children, className = '' }: DropdownProps) {
 
   return (
     <div ref={dropdownRef} className={`relative ${className}`}>
-      <div onClick={() => setIsOpen(!isOpen)}>
-        {children}
-      </div>
+      <div onClick={() => setIsOpen(!isOpen)}>{children}</div>
     </div>
   );
 }
 
-export function DropdownTrigger({ children, className = '' }: DropdownTriggerProps) {
+export function DropdownTrigger({
+  children,
+  className = '',
+}: DropdownTriggerProps) {
   return <div className={className}>{children}</div>;
 }
 
-export function DropdownContent({ children, className = '' }: DropdownContentProps) {
+export function DropdownContent({
+  children,
+  className = '',
+}: DropdownContentProps) {
   return (
-    <div className={`absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 ${className}`}>
+    <div
+      className={`absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 ${className}`}
+    >
       <div className="py-1">{children}</div>
     </div>
   );
 }
 
-export function DropdownItem({ 
-  children, 
-  onClick, 
-  disabled = false, 
-  className = '' 
+export function DropdownItem({
+  children,
+  onClick,
+  disabled = false,
+  className = '',
 }: DropdownItemProps) {
   const handleClick = () => {
     if (!disabled && onClick) {
@@ -117,14 +126,21 @@ interface EnhancedDropdownProps {
   className?: string;
 }
 
-export function EnhancedDropdown({ trigger, children, className = '' }: EnhancedDropdownProps) {
+export function EnhancedDropdown({
+  trigger,
+  children,
+  className = '',
+}: EnhancedDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
@@ -152,7 +168,11 @@ export function EnhancedDropdown({ trigger, children, className = '' }: Enhanced
   };
 
   const handleTriggerKeyDown = (event: React.KeyboardEvent) => {
-    if (event.key === 'Enter' || event.key === ' ' || event.key === 'ArrowDown') {
+    if (
+      event.key === 'Enter' ||
+      event.key === ' ' ||
+      event.key === 'ArrowDown'
+    ) {
       event.preventDefault();
       setIsOpen(true);
     }
@@ -170,7 +190,7 @@ export function EnhancedDropdown({ trigger, children, className = '' }: Enhanced
       >
         {trigger}
       </button>
-      
+
       {isOpen && (
         <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50">
           <div className="py-1" role="menu" aria-orientation="vertical">

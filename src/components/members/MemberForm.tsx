@@ -31,7 +31,7 @@ export function MemberForm({ onSuccess, onCancel }: MemberFormProps) {
     console.log('🔥 FORM SUBMISSION STARTED');
     console.log('📝 Form data received:', data);
     console.log('📝 Form validation errors:', errors);
-    
+
     try {
       console.log('✅ Starting member creation process...');
 
@@ -58,7 +58,7 @@ export function MemberForm({ onSuccess, onCancel }: MemberFormProps) {
       console.log('🎉 Member created successfully:', newMember);
       console.log('📢 Showing success toast...');
       showToast('Member created successfully', 'success');
-      
+
       console.log('🔄 Checking for onSuccess callback...');
       if (onSuccess) {
         console.log('📞 Calling onSuccess with member:', newMember);
@@ -67,7 +67,7 @@ export function MemberForm({ onSuccess, onCancel }: MemberFormProps) {
         console.log('🧭 No onSuccess callback, navigating to /members');
         navigate('/members');
       }
-      
+
       console.log('✅ FORM SUBMISSION COMPLETED SUCCESSFULLY');
     } catch (error) {
       console.log('❌ FORM SUBMISSION FAILED');
@@ -76,8 +76,9 @@ export function MemberForm({ onSuccess, onCancel }: MemberFormProps) {
       console.error('💥 Error message:', (error as Error).message);
       console.error('💥 Error type:', typeof error);
       console.error('💥 Error constructor:', error?.constructor?.name);
-      
-      const errorMessage = (error as Error).message || 'Failed to create member';
+
+      const errorMessage =
+        (error as Error).message || 'Failed to create member';
       console.log('📢 Showing error toast:', errorMessage);
       showToast(errorMessage, 'error');
     }
@@ -173,7 +174,7 @@ export function MemberForm({ onSuccess, onCancel }: MemberFormProps) {
         </button>
         <button
           type="button"
-          onClick={() => onCancel ? onCancel() : navigate('/members')}
+          onClick={() => (onCancel ? onCancel() : navigate('/members'))}
           className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
         >
           Cancel

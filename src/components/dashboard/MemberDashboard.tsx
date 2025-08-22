@@ -232,7 +232,6 @@ export function MemberDashboard({ member }: MemberDashboardProps) {
             )}
           </div>
         </div>
-
       </div>
 
       {/* Recent Personal Activity */}

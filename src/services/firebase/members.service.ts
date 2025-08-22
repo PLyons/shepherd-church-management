@@ -21,9 +21,9 @@ import {
   memberDocumentToMember,
   memberToMemberDocument,
 } from '../../utils/firestore-converters';
-import { 
-  toFirestoreFieldsDeep, 
-  fromFirestoreFieldsDeep 
+import {
+  toFirestoreFieldsDeep,
+  fromFirestoreFieldsDeep,
 } from '../../utils/firestore-field-mapper';
 
 // ============================================================================
@@ -35,11 +35,9 @@ export class MembersService extends BaseFirestoreService<
   MemberDocument,
   Member
 > {
-
   constructor() {
     super(COLLECTIONS.MEMBERS);
   }
-
 
   // ============================================================================
   // ABSTRACT METHOD IMPLEMENTATIONS
@@ -76,7 +74,6 @@ export class MembersService extends BaseFirestoreService<
     const results = await this.getWhere('email', '==', email);
     return results.length > 0 ? results[0] : null;
   }
-
 
   /**
    * Get members by role
@@ -180,22 +177,15 @@ export class MembersService extends BaseFirestoreService<
       const searchLower = options.search.toLowerCase();
       results = results.filter(
         (member) =>
-          (member.firstName || '')
-            .toLowerCase()
-            .includes(searchLower) ||
-          (member.lastName || '')
-            .toLowerCase()
-            .includes(searchLower) ||
-          (member.fullName || '')
-            .toLowerCase()
-            .includes(searchLower) ||
-          (member.email || '')
-            .toLowerCase()
-            .includes(searchLower) ||
+          (member.firstName || '').toLowerCase().includes(searchLower) ||
+          (member.lastName || '').toLowerCase().includes(searchLower) ||
+          (member.fullName || '').toLowerCase().includes(searchLower) ||
+          (member.email || '').toLowerCase().includes(searchLower) ||
           // Search in enhanced email arrays
-          (member.emails && member.emails.some(email => 
-            email.address.toLowerCase().includes(searchLower)
-          ))
+          (member.emails &&
+            member.emails.some((email) =>
+              email.address.toLowerCase().includes(searchLower)
+            ))
       );
     }
 
@@ -205,12 +195,12 @@ export class MembersService extends BaseFirestoreService<
       results.sort((a, b) => {
         const aLastName = (a.lastName || '').toLowerCase();
         const bLastName = (b.lastName || '').toLowerCase();
-        
+
         if (aLastName !== bLastName) {
           const result = aLastName.localeCompare(bLastName);
           return options?.orderDirection === 'desc' ? -result : result;
         }
-        
+
         // If last names are the same, sort by first name
         const aFirstName = (a.firstName || '').toLowerCase();
         const bFirstName = (b.firstName || '').toLowerCase();
@@ -322,7 +312,7 @@ export class MembersService extends BaseFirestoreService<
       const sortedResults = searchResults.sort((a, b) => {
         let aValue: string | number = '';
         let bValue: string | number = '';
-        
+
         switch (options?.orderBy) {
           case 'name':
           case 'lastName':
@@ -357,7 +347,7 @@ export class MembersService extends BaseFirestoreService<
         if (aValue > bValue) {
           return options?.orderDirection === 'desc' ? -1 : 1;
         }
-        
+
         // Secondary sort by firstName if lastName is the same
         if (options?.orderBy === 'name' || options?.orderBy === 'lastName') {
           const aFirst = (a.firstName || '').toLowerCase();
@@ -369,7 +359,7 @@ export class MembersService extends BaseFirestoreService<
             return options?.orderDirection === 'desc' ? -1 : 1;
           }
         }
-        
+
         return 0;
       });
 
@@ -401,7 +391,6 @@ export class MembersService extends BaseFirestoreService<
 
     return result;
   }
-
 
   // ============================================================================
   // BULK OPERATIONS
@@ -595,7 +584,7 @@ export class MembersService extends BaseFirestoreService<
   async create(memberData: Omit<Member, 'id'>): Promise<Member> {
     try {
       console.log('🔧 MembersService.create called with:', memberData);
-      
+
       // Use deep field mapper for nested objects (emails, phones, addresses)
       const firestoreData = toFirestoreFieldsDeep({
         ...memberData,
@@ -606,13 +595,13 @@ export class MembersService extends BaseFirestoreService<
 
       const docRef = await addDoc(collection(db, 'members'), firestoreData);
       console.log('🔧 Member created with ID:', docRef.id);
-      
+
       // Fetch and return the created member using proper converter
       const createdMember = await this.getById(docRef.id);
       if (!createdMember) {
         throw new Error('Failed to fetch created member');
       }
-      
+
       console.log('🔧 Returning created member:', createdMember);
       return createdMember;
     } catch (error) {
@@ -630,7 +619,10 @@ export class MembersService extends BaseFirestoreService<
       }
 
       // Use the proper converter to transform MemberDocument to Member
-      return memberDocumentToMember(docSnap.id, docSnap.data() as MemberDocument);
+      return memberDocumentToMember(
+        docSnap.id,
+        docSnap.data() as MemberDocument
+      );
     } catch (error) {
       console.error('Error fetching member:', error);
       throw new Error(`Failed to fetch member: ${(error as Error).message}`);
@@ -648,7 +640,10 @@ export class MembersService extends BaseFirestoreService<
         updatedAt: serverTimestamp(),
       });
 
-      console.log('🔧 Update data converted to Firestore format:', firestoreData);
+      console.log(
+        '🔧 Update data converted to Firestore format:',
+        firestoreData
+      );
       await updateDoc(doc(db, 'members', id), firestoreData);
       console.log('Member updated:', id);
     } catch (error) {

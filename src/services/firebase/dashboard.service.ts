@@ -69,10 +69,12 @@ export class DashboardService {
     try {
       console.log('DashboardService: Starting admin dashboard data fetch');
 
-      const memberStats = await this.membersService.getStatistics().catch((err: any) => {
-        console.error('Members stats error:', err);
-        return { total: 0, active: 0, inactive: 0, visitors: 0 };
-      });
+      const memberStats = await this.membersService
+        .getStatistics()
+        .catch((err: any) => {
+          console.error('Members stats error:', err);
+          return { total: 0, active: 0, inactive: 0, visitors: 0 };
+        });
 
       console.log('DashboardService: Statistics fetched successfully');
 

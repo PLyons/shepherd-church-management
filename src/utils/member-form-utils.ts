@@ -36,15 +36,15 @@ export const normalizePhoneForStorage = (value: string): string => {
 
 export const formatPhoneForDisplay = (phoneNumber: string): string => {
   if (!phoneNumber) return phoneNumber;
-  
+
   // Remove all non-digit characters first
   const digits = phoneNumber.replace(/\D/g, '');
-  
+
   // Format 10-digit US phone numbers
   if (digits.length === 10) {
     return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
   }
-  
+
   // If it's already formatted or not 10 digits, return as-is
   return phoneNumber;
 };

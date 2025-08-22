@@ -68,7 +68,10 @@ export default function Register() {
           'error'
         );
       } else {
-        showToast((error as any).message || 'Failed to create account', 'error');
+        showToast(
+          (error as any).message || 'Failed to create account',
+          'error'
+        );
       }
     } finally {
       setLoading(false);
@@ -205,7 +208,6 @@ export default function Register() {
                 />
               </div>
             </div>
-
 
             {/* Password Fields */}
             <div>

@@ -1,8 +1,10 @@
-import { Edit, MoreVertical, Trash2, ArrowLeft } from 'lucide-react';
+import { useState } from 'react';
+import { Edit, MoreVertical, Trash2, ArrowLeft, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Member } from '../../../types';
 import Tooltip from '../../common/Tooltip';
 import { EnhancedDropdown, DropdownItem } from '../../common/Dropdown';
+import { MembershipTypeSelector } from './MembershipTypeSelector';
 
 interface MemberProfileHeaderProps {
   member: Member;
@@ -19,17 +21,14 @@ export default function MemberProfileHeader({
   onEdit,
   onDelete,
 }: MemberProfileHeaderProps) {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-100 text-green-800';
-      case 'inactive':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'visitor':
-        return 'bg-blue-100 text-blue-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
+  const [currentMember, setCurrentMember] = useState(member);
+
+  const handleStatusChange = (newStatus: string) => {
+    // Optimistic update for immediate UI feedback
+    setCurrentMember((prev) => ({ 
+      ...prev, 
+      memberStatus: newStatus as typeof prev.memberStatus
+    }));
   };
 
   const getRoleColor = (role: string) => {
@@ -43,83 +42,125 @@ export default function MemberProfileHeader({
     }
   };
 
+  // Avatar component for member
+  const Avatar = ({
+    firstName,
+    lastName,
+    size = 'lg',
+  }: {
+    firstName: string;
+    lastName: string;
+    size?: 'md' | 'lg';
+  }) => {
+    const initials =
+      `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
+    const sizeClasses = {
+      md: 'h-12 w-12 text-base',
+      lg: 'h-20 w-20 text-2xl',
+    };
+
+    return (
+      <div
+        className={`
+        ${sizeClasses[size]} 
+        bg-blue-100 text-blue-800 rounded-full 
+        flex items-center justify-center font-semibold border-4 border-white shadow-lg
+      `}
+      >
+        {initials || <User className="h-8 w-8" />}
+      </div>
+    );
+  };
+
   return (
-    <div className="flex items-center justify-between gap-4 mb-6">
-      <div className="flex items-center gap-4">
-        {/* Back button */}
+    <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
+      {/* Back button positioned absolutely */}
+      <div className="mb-4">
         <Tooltip content="Back to Members">
           <Link
             to="/members"
-            className="p-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+            className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 transition-colors"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-4 w-4" />
+            Back to Members
           </Link>
         </Tooltip>
-        
-        {/* Member name and badges */}
-        <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-bold text-gray-900">
-            {member.firstName} {member.lastName}
-          </h1>
-          <div className="flex items-center gap-2 flex-wrap">
-            {/* Status badge */}
-            <span 
-              className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(member.memberStatus || 'active')}`}
-            >
-              {member.memberStatus || 'active'}
-            </span>
-            {/* Role badge */}
-            <span 
-              className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(member.role || 'member')}`}
-            >
-              {member.role || 'member'}
-            </span>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-6">
+          {/* Large Avatar */}
+          <Avatar
+            firstName={currentMember.firstName}
+            lastName={currentMember.lastName}
+            size="lg"
+          />
+
+          {/* Member info and prominent badges */}
+          <div className="flex flex-col gap-3">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-1">
+                {currentMember.firstName} {currentMember.lastName}
+              </h1>
+              {/* Prominent badges positioned directly under name */}
+              <div className="flex items-center gap-3">
+                {/* Interactive Membership Status Selector */}
+                <MembershipTypeSelector
+                  member={currentMember}
+                  onStatusChange={handleStatusChange}
+                />
+                {/* Enhanced Role badge */}
+                <span
+                  className={`inline-flex px-3 py-1.5 text-sm font-semibold rounded-full ${getRoleColor(currentMember.role || 'member')}`}
+                >
+                  {currentMember.role || 'member'}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-      
-      {/* Actions */}
-      <div className="flex items-center gap-2 sm:flex-shrink-0">
-        {/* Edit button */}
-        {canEdit && (
-          <Tooltip content="Edit Profile">
-            <button
-              onClick={onEdit}
-              className="p-2 text-gray-600 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-            >
-              <Edit className="h-5 w-5" />
-            </button>
-          </Tooltip>
-        )}
-        
-        {/* Actions dropdown */}
-        <EnhancedDropdown
-          trigger={
-            <Tooltip content="More Actions">
-              <div className="p-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer">
-                <MoreVertical className="h-5 w-5" />
-              </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-2">
+          {/* Edit button */}
+          {canEdit && (
+            <Tooltip content="Edit Profile">
+              <button
+                onClick={onEdit}
+                className="px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors flex items-center gap-2"
+              >
+                <Edit className="h-4 w-4" />
+                Edit Profile
+              </button>
             </Tooltip>
-          }
-        >
-          {canDelete && (
-            <DropdownItem onClick={onDelete} className="text-red-600 hover:bg-red-50">
-              <Trash2 className="h-4 w-4 mr-2" />
-              Delete Member
-            </DropdownItem>
           )}
-          
-          {/* Future actions - disabled for now */}
-          <DropdownItem disabled>
-            Merge Profiles
-          </DropdownItem>
-          <DropdownItem disabled>
-            Export Data
-          </DropdownItem>
-          <DropdownItem disabled>
-            View History
-          </DropdownItem>
-        </EnhancedDropdown>
+
+          {/* Actions dropdown */}
+          <EnhancedDropdown
+            trigger={
+              <Tooltip content="More Actions">
+                <div className="p-2 text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center cursor-pointer">
+                  <MoreVertical className="h-5 w-5" />
+                </div>
+              </Tooltip>
+            }
+          >
+            {canDelete && (
+              <DropdownItem
+                onClick={onDelete}
+                className="text-red-600 hover:bg-red-50"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Member
+              </DropdownItem>
+            )}
+
+            {/* Future actions - disabled for now */}
+            <DropdownItem disabled>Merge Profiles</DropdownItem>
+            <DropdownItem disabled>Export Data</DropdownItem>
+            <DropdownItem disabled>View History</DropdownItem>
+          </EnhancedDropdown>
+        </div>
       </div>
     </div>
   );

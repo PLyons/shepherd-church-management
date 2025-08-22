@@ -22,12 +22,14 @@ export const MemberFormEnhanced: React.FC = () => {
   const isEditMode = Boolean(id);
 
   const [loading, setLoading] = useState(false);
-  const [expandedSections, setExpandedSections] = useState<CollapsibleSections>({
-    basic: true,
-    contact: true,
-    addresses: false,
-    administrative: false,
-  });
+  const [expandedSections, setExpandedSections] = useState<CollapsibleSections>(
+    {
+      basic: true,
+      contact: true,
+      addresses: false,
+      administrative: false,
+    }
+  );
 
   // Form setup with react-hook-form
   const {
@@ -36,7 +38,7 @@ export const MemberFormEnhanced: React.FC = () => {
     handleSubmit,
     reset,
     watch,
-    formState: { errors, isSubmitting }
+    formState: { errors, isSubmitting },
   } = useForm<MemberFormData>({
     defaultValues: {
       prefix: '',
@@ -53,23 +55,35 @@ export const MemberFormEnhanced: React.FC = () => {
       memberStatus: 'active',
       role: 'member',
       gender: undefined,
-    }
+    },
   });
 
   // Field arrays for dynamic fields
-  const { fields: emailFields, append: appendEmail, remove: removeEmail } = useFieldArray({
+  const {
+    fields: emailFields,
+    append: appendEmail,
+    remove: removeEmail,
+  } = useFieldArray({
     control,
-    name: 'emails'
+    name: 'emails',
   });
 
-  const { fields: phoneFields, append: appendPhone, remove: removePhone } = useFieldArray({
+  const {
+    fields: phoneFields,
+    append: appendPhone,
+    remove: removePhone,
+  } = useFieldArray({
     control,
-    name: 'phones'
+    name: 'phones',
   });
 
-  const { fields: addressFields, append: appendAddress, remove: removeAddress } = useFieldArray({
+  const {
+    fields: addressFields,
+    append: appendAddress,
+    remove: removeAddress,
+  } = useFieldArray({
     control,
-    name: 'addresses'
+    name: 'addresses',
   });
 
   // Watch for conditional rendering
@@ -86,11 +100,11 @@ export const MemberFormEnhanced: React.FC = () => {
     try {
       setLoading(true);
       const member = await firebaseService.members.getById(memberId);
-      
+
       if (member) {
         // Migrate old data format if needed
         const migratedMember = migrateLegacyData(member);
-        
+
         // Reset form with loaded data
         reset({
           prefix: migratedMember.prefix || '',
@@ -98,12 +112,21 @@ export const MemberFormEnhanced: React.FC = () => {
           middleName: migratedMember.middleName || '',
           lastName: migratedMember.lastName || '',
           suffix: migratedMember.suffix || '',
-          emails: migratedMember.emails && migratedMember.emails.length > 0 
-            ? migratedMember.emails 
-            : [{ type: 'home', address: '', primary: true }],
-          phones: migratedMember.phones && migratedMember.phones.length > 0
-            ? migratedMember.phones
-            : [{ type: 'mobile', number: '', primary: true, smsOptIn: false }],
+          emails:
+            migratedMember.emails && migratedMember.emails.length > 0
+              ? migratedMember.emails
+              : [{ type: 'home', address: '', primary: true }],
+          phones:
+            migratedMember.phones && migratedMember.phones.length > 0
+              ? migratedMember.phones
+              : [
+                  {
+                    type: 'mobile',
+                    number: '',
+                    primary: true,
+                    smsOptIn: false,
+                  },
+                ],
           addresses: migratedMember.addresses || [],
           birthDate: migratedMember.birthDate,
           anniversaryDate: migratedMember.anniversaryDate,
@@ -128,14 +151,23 @@ export const MemberFormEnhanced: React.FC = () => {
     // Migrate old email to emails array if no emails exist
     if (!migrated.emails || migrated.emails.length === 0) {
       if (migrated.email) {
-        migrated.emails = [{ type: 'home', address: migrated.email, primary: true }];
+        migrated.emails = [
+          { type: 'home', address: migrated.email, primary: true },
+        ];
       }
     }
 
-    // Migrate old phone to phones array if no phones exist  
+    // Migrate old phone to phones array if no phones exist
     if (!migrated.phones || migrated.phones.length === 0) {
       if (migrated.phone) {
-        migrated.phones = [{ type: 'mobile', number: migrated.phone, primary: true, smsOptIn: false }];
+        migrated.phones = [
+          {
+            type: 'mobile',
+            number: migrated.phone,
+            primary: true,
+            smsOptIn: false,
+          },
+        ];
       }
     }
 
@@ -144,9 +176,9 @@ export const MemberFormEnhanced: React.FC = () => {
 
   // Toggle collapsible sections
   const toggleSection = (section: keyof CollapsibleSections) => {
-    setExpandedSections(prev => ({
+    setExpandedSections((prev) => ({
       ...prev,
-      [section]: !prev[section]
+      [section]: !prev[section],
     }));
   };
 
@@ -155,7 +187,7 @@ export const MemberFormEnhanced: React.FC = () => {
     try {
       // Prepare data for Firestore
       const preparedData = prepareDataForFirestore(data);
-      
+
       if (isEditMode && id) {
         await firebaseService.members.update(id, preparedData);
         showToast('Member updated successfully', 'success');
@@ -163,7 +195,7 @@ export const MemberFormEnhanced: React.FC = () => {
         await firebaseService.members.create(preparedData);
         showToast('Member created successfully', 'success');
       }
-      
+
       navigate('/members');
     } catch (error) {
       console.error('Failed to save member:', error);
@@ -172,13 +204,18 @@ export const MemberFormEnhanced: React.FC = () => {
   };
 
   // Prepare data for Firestore submission
-  const prepareDataForFirestore = (data: MemberFormData): Omit<Member, 'id' | 'fullName'> => {
+  const prepareDataForFirestore = (
+    data: MemberFormData
+  ): Omit<Member, 'id' | 'fullName'> => {
     // Filter out empty entries first
-    const filteredEmails = data.emails?.filter(email => email.address.trim() !== '') || [];
-    const filteredPhones = data.phones?.filter(phone => phone.number.trim() !== '') || [];
-    const filteredAddresses = data.addresses?.filter(addr => 
-      addr.addressLine1?.trim() !== '' && addr.city?.trim() !== ''
-    ) || [];
+    const filteredEmails =
+      data.emails?.filter((email) => email.address.trim() !== '') || [];
+    const filteredPhones =
+      data.phones?.filter((phone) => phone.number.trim() !== '') || [];
+    const filteredAddresses =
+      data.addresses?.filter(
+        (addr) => addr.addressLine1?.trim() !== '' && addr.city?.trim() !== ''
+      ) || [];
 
     const prepared: Omit<Member, 'id' | 'fullName'> = {
       // Required fields
@@ -186,7 +223,7 @@ export const MemberFormEnhanced: React.FC = () => {
       lastName: data.lastName,
       memberStatus: data.memberStatus,
       role: data.role,
-      
+
       // Optional basic fields
       prefix: data.prefix,
       middleName: data.middleName,
@@ -194,20 +231,24 @@ export const MemberFormEnhanced: React.FC = () => {
       gender: data.gender,
       maritalStatus: data.maritalStatus,
       joinedAt: data.joinedAt,
-      
+
       // Contact arrays (only include if not empty)
       ...(filteredEmails.length > 0 && { emails: filteredEmails }),
       ...(filteredPhones.length > 0 && { phones: filteredPhones }),
       ...(filteredAddresses.length > 0 && { addresses: filteredAddresses }),
-      
+
       // Dates converted to Firestore Timestamps
-      ...(data.birthDate && { birthDate: Timestamp.fromDate(new Date(data.birthDate)) }),
-      ...(data.anniversaryDate && { anniversaryDate: Timestamp.fromDate(new Date(data.anniversaryDate)) }),
-      
+      ...(data.birthDate && {
+        birthDate: Timestamp.fromDate(new Date(data.birthDate)),
+      }),
+      ...(data.anniversaryDate && {
+        anniversaryDate: Timestamp.fromDate(new Date(data.anniversaryDate)),
+      }),
+
       // Timestamps
       updatedAt: Timestamp.now(),
       ...(isEditMode ? {} : { createdAt: Timestamp.now() }),
-      
+
       // DEPRECATED fields for compatibility (optional)
       email: data.email,
       phone: data.phone,
@@ -235,7 +276,6 @@ export const MemberFormEnhanced: React.FC = () => {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
-          
           {/* Basic Information Section */}
           <div className="border border-gray-200 rounded-lg">
             <button
@@ -243,14 +283,16 @@ export const MemberFormEnhanced: React.FC = () => {
               onClick={() => toggleSection('basic')}
               className="w-full px-4 py-3 flex items-center justify-between bg-gray-50 hover:bg-gray-100 rounded-t-lg"
             >
-              <h3 className="text-lg font-medium text-gray-900">Basic Information</h3>
+              <h3 className="text-lg font-medium text-gray-900">
+                Basic Information
+              </h3>
               {expandedSections.basic ? (
                 <ChevronUp className="h-5 w-5 text-gray-500" />
               ) : (
                 <ChevronDown className="h-5 w-5 text-gray-500" />
               )}
             </button>
-            
+
             {expandedSections.basic && (
               <div className="p-4 space-y-4">
                 <div className="grid grid-cols-4 gap-4">
@@ -272,11 +314,15 @@ export const MemberFormEnhanced: React.FC = () => {
                     </label>
                     <input
                       type="text"
-                      {...register('firstName', { required: 'First name is required' })}
+                      {...register('firstName', {
+                        required: 'First name is required',
+                      })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {errors.firstName && (
-                      <p className="mt-1 text-sm text-red-600">{errors.firstName.message}</p>
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.firstName.message}
+                      </p>
                     )}
                   </div>
 
@@ -311,11 +357,15 @@ export const MemberFormEnhanced: React.FC = () => {
                     </label>
                     <input
                       type="text"
-                      {...register('lastName', { required: 'Last name is required' })}
+                      {...register('lastName', {
+                        required: 'Last name is required',
+                      })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {errors.lastName && (
-                      <p className="mt-1 text-sm text-red-600">{errors.lastName.message}</p>
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.lastName.message}
+                      </p>
                     )}
                   </div>
 
@@ -384,7 +434,9 @@ export const MemberFormEnhanced: React.FC = () => {
               onClick={() => toggleSection('contact')}
               className="w-full px-4 py-3 flex items-center justify-between bg-gray-50 hover:bg-gray-100 rounded-t-lg"
             >
-              <h3 className="text-lg font-medium text-gray-900">Contact Information</h3>
+              <h3 className="text-lg font-medium text-gray-900">
+                Contact Information
+              </h3>
               {expandedSections.contact ? (
                 <ChevronUp className="h-5 w-5 text-gray-500" />
               ) : (
@@ -402,16 +454,25 @@ export const MemberFormEnhanced: React.FC = () => {
                     </label>
                     <button
                       type="button"
-                      onClick={() => appendEmail({ type: 'home', address: '', primary: false })}
+                      onClick={() =>
+                        appendEmail({
+                          type: 'home',
+                          address: '',
+                          primary: false,
+                        })
+                      }
                       className="flex items-center text-sm text-blue-600 hover:text-blue-800"
                     >
                       <Plus className="h-4 w-4 mr-1" />
                       Add Email
                     </button>
                   </div>
-                  
+
                   {emailFields.map((field, index) => (
-                    <div key={field.id} className="flex items-center space-x-2 mb-2">
+                    <div
+                      key={field.id}
+                      className="flex items-center space-x-2 mb-2"
+                    >
                       <select
                         {...register(`emails.${index}.type` as const)}
                         className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -420,19 +481,19 @@ export const MemberFormEnhanced: React.FC = () => {
                         <option value="work">Work</option>
                         <option value="other">Other</option>
                       </select>
-                      
+
                       <input
                         type="email"
                         {...register(`emails.${index}.address` as const, {
                           pattern: {
                             value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                            message: 'Invalid email address'
-                          }
+                            message: 'Invalid email address',
+                          },
                         })}
                         className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="email@example.com"
                       />
-                      
+
                       <label className="flex items-center">
                         <input
                           type="checkbox"
@@ -441,7 +502,7 @@ export const MemberFormEnhanced: React.FC = () => {
                         />
                         <span className="text-xs text-gray-500">Primary</span>
                       </label>
-                      
+
                       {emailFields.length > 1 && (
                         <button
                           type="button"
@@ -463,16 +524,26 @@ export const MemberFormEnhanced: React.FC = () => {
                     </label>
                     <button
                       type="button"
-                      onClick={() => appendPhone({ type: 'mobile', number: '', primary: false, smsOptIn: false })}
+                      onClick={() =>
+                        appendPhone({
+                          type: 'mobile',
+                          number: '',
+                          primary: false,
+                          smsOptIn: false,
+                        })
+                      }
                       className="flex items-center text-sm text-blue-600 hover:text-blue-800"
                     >
                       <Plus className="h-4 w-4 mr-1" />
                       Add Phone
                     </button>
                   </div>
-                  
+
                   {phoneFields.map((field, index) => (
-                    <div key={field.id} className="space-y-2 mb-4 p-3 border border-gray-200 rounded-md">
+                    <div
+                      key={field.id}
+                      className="space-y-2 mb-4 p-3 border border-gray-200 rounded-md"
+                    >
                       <div className="flex items-center space-x-2">
                         <select
                           {...register(`phones.${index}.type` as const)}
@@ -483,14 +554,14 @@ export const MemberFormEnhanced: React.FC = () => {
                           <option value="work">Work</option>
                           <option value="other">Other</option>
                         </select>
-                        
+
                         <input
                           type="tel"
                           {...register(`phones.${index}.number` as const)}
                           className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="(555) 123-4567"
                         />
-                        
+
                         <label className="flex items-center">
                           <input
                             type="checkbox"
@@ -499,7 +570,7 @@ export const MemberFormEnhanced: React.FC = () => {
                           />
                           <span className="text-xs text-gray-500">Primary</span>
                         </label>
-                        
+
                         {phoneFields.length > 1 && (
                           <button
                             type="button"
@@ -510,18 +581,19 @@ export const MemberFormEnhanced: React.FC = () => {
                           </button>
                         )}
                       </div>
-                      
+
                       {/* SMS Opt-in for mobile phones */}
-                      {watchedPhones && watchedPhones[index]?.type === 'mobile' && (
-                        <label className="flex items-center text-sm text-gray-600">
-                          <input
-                            type="checkbox"
-                            {...register(`phones.${index}.smsOptIn` as const)}
-                            className="mr-2"
-                          />
-                          Allow SMS messages to this number
-                        </label>
-                      )}
+                      {watchedPhones &&
+                        watchedPhones[index]?.type === 'mobile' && (
+                          <label className="flex items-center text-sm text-gray-600">
+                            <input
+                              type="checkbox"
+                              {...register(`phones.${index}.smsOptIn` as const)}
+                              className="mr-2"
+                            />
+                            Allow SMS messages to this number
+                          </label>
+                        )}
                     </div>
                   ))}
                 </div>
@@ -552,16 +624,18 @@ export const MemberFormEnhanced: React.FC = () => {
                   </label>
                   <button
                     type="button"
-                    onClick={() => appendAddress({
-                      type: 'home',
-                      addressLine1: '',
-                      addressLine2: '',
-                      city: '',
-                      state: '',
-                      postalCode: '',
-                      country: 'United States',
-                      primary: false
-                    })}
+                    onClick={() =>
+                      appendAddress({
+                        type: 'home',
+                        addressLine1: '',
+                        addressLine2: '',
+                        city: '',
+                        state: '',
+                        postalCode: '',
+                        country: 'United States',
+                        primary: false,
+                      })
+                    }
                     className="flex items-center text-sm text-blue-600 hover:text-blue-800"
                   >
                     <Plus className="h-4 w-4 mr-1" />
@@ -570,7 +644,10 @@ export const MemberFormEnhanced: React.FC = () => {
                 </div>
 
                 {addressFields.map((field, index) => (
-                  <div key={field.id} className="space-y-3 mb-4 p-4 border border-gray-200 rounded-md">
+                  <div
+                    key={field.id}
+                    className="space-y-3 mb-4 p-4 border border-gray-200 rounded-md"
+                  >
                     <div className="flex items-center justify-between">
                       <select
                         {...register(`addresses.${index}.type` as const)}
@@ -580,7 +657,7 @@ export const MemberFormEnhanced: React.FC = () => {
                         <option value="work">Work</option>
                         <option value="other">Other</option>
                       </select>
-                      
+
                       <div className="flex items-center space-x-2">
                         <label className="flex items-center">
                           <input
@@ -590,7 +667,7 @@ export const MemberFormEnhanced: React.FC = () => {
                           />
                           <span className="text-xs text-gray-500">Primary</span>
                         </label>
-                        
+
                         <button
                           type="button"
                           onClick={() => removeAddress(index)}
@@ -604,18 +681,22 @@ export const MemberFormEnhanced: React.FC = () => {
                     <div className="grid grid-cols-1 gap-3">
                       <input
                         type="text"
-                        {...register(`addresses.${index}.addressLine1` as const)}
+                        {...register(
+                          `addresses.${index}.addressLine1` as const
+                        )}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Street Address"
                       />
-                      
+
                       <input
                         type="text"
-                        {...register(`addresses.${index}.addressLine2` as const)}
+                        {...register(
+                          `addresses.${index}.addressLine2` as const
+                        )}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Apt, Suite, etc. (optional)"
                       />
-                      
+
                       <div className="grid grid-cols-3 gap-3">
                         <input
                           type="text"
@@ -623,7 +704,7 @@ export const MemberFormEnhanced: React.FC = () => {
                           className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="City"
                         />
-                        
+
                         <select
                           {...register(`addresses.${index}.state` as const)}
                           className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -635,15 +716,17 @@ export const MemberFormEnhanced: React.FC = () => {
                             </option>
                           ))}
                         </select>
-                        
+
                         <input
                           type="text"
-                          {...register(`addresses.${index}.postalCode` as const)}
+                          {...register(
+                            `addresses.${index}.postalCode` as const
+                          )}
                           className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                           placeholder="ZIP Code"
                         />
                       </div>
-                      
+
                       <input
                         type="text"
                         {...register(`addresses.${index}.country` as const)}
@@ -670,7 +753,9 @@ export const MemberFormEnhanced: React.FC = () => {
               onClick={() => toggleSection('administrative')}
               className="w-full px-4 py-3 flex items-center justify-between bg-gray-50 hover:bg-gray-100 rounded-t-lg"
             >
-              <h3 className="text-lg font-medium text-gray-900">Administrative</h3>
+              <h3 className="text-lg font-medium text-gray-900">
+                Administrative
+              </h3>
               {expandedSections.administrative ? (
                 <ChevronUp className="h-5 w-5 text-gray-500" />
               ) : (
@@ -686,14 +771,18 @@ export const MemberFormEnhanced: React.FC = () => {
                       Member Status *
                     </label>
                     <select
-                      {...register('memberStatus', { required: 'Member status is required' })}
+                      {...register('memberStatus', {
+                        required: 'Member status is required',
+                      })}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
                       <option value="active">Active</option>
                       <option value="inactive">Inactive</option>
                     </select>
                     {errors.memberStatus && (
-                      <p className="mt-1 text-sm text-red-600">{errors.memberStatus.message}</p>
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.memberStatus.message}
+                      </p>
                     )}
                   </div>
 
@@ -710,7 +799,9 @@ export const MemberFormEnhanced: React.FC = () => {
                       <option value="admin">Admin</option>
                     </select>
                     {errors.role && (
-                      <p className="mt-1 text-sm text-red-600">{errors.role.message}</p>
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.role.message}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -732,7 +823,11 @@ export const MemberFormEnhanced: React.FC = () => {
               disabled={isSubmitting}
               className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
             >
-              {isSubmitting ? 'Saving...' : isEditMode ? 'Update Member' : 'Create Member'}
+              {isSubmitting
+                ? 'Saving...'
+                : isEditMode
+                  ? 'Update Member'
+                  : 'Create Member'}
             </button>
           </div>
         </form>

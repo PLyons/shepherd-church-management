@@ -30,7 +30,13 @@ service cloud.firestore {
     function isValidMemberData() {
       return request.resource.data.keys().hasAll(['firstName', 'lastName']) &&
              (!('role' in request.resource.data) || request.resource.data.role in ['admin', 'pastor', 'member']) &&
-             (!('memberStatus' in request.resource.data) || request.resource.data.memberStatus in ['active', 'inactive', 'visitor']);
+             (!('memberStatus' in request.resource.data) || request.resource.data.memberStatus in ['active', 'inactive', 'regular_attender', 'visitor', 'participant', 'not_set']);
+    }
+    
+    function hasRole(roles) {
+      return isAuthenticated() && 
+             exists(/databases/$(database)/documents/members/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/members/$(request.auth.uid)).data.role in roles;
     }
     
     // Members collection
@@ -46,6 +52,21 @@ service cloud.firestore {
       
       // Only admins can delete members
       allow delete: if isAdmin();
+      
+      // Status history subcollection
+      match /statusHistory/{historyId} {
+        allow read: if isAuthenticated() && 
+          (resource.data.changedBy == request.auth.uid || 
+           hasRole(['admin', 'pastor']) ||
+           memberId == request.auth.uid);
+        
+        allow create: if isAuthenticated() && 
+          hasRole(['admin', 'pastor']) &&
+          request.resource.data.keys().hasAll(['memberId', 'previousStatus', 'newStatus', 'changedBy', 'changedByName', 'changedAt']) &&
+          request.resource.data.changedBy == request.auth.uid;
+        
+        allow update, delete: if false; // History should be immutable
+      }
     }
     
     // Households collection  

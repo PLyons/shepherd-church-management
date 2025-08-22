@@ -26,7 +26,7 @@ export function InlineEditArray({
   canEdit = true,
   itemTypes,
   validation,
-  placeholder = "No items added"
+  placeholder = 'No items added',
 }: InlineEditArrayProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editItems, setEditItems] = useState<ArrayItem[]>(items);
@@ -47,7 +47,10 @@ export function InlineEditArray({
   };
 
   const addItem = () => {
-    setEditItems([...editItems, { type: itemTypes[0]?.value || '', value: '', primary: false }]);
+    setEditItems([
+      ...editItems,
+      { type: itemTypes[0]?.value || '', value: '', primary: false },
+    ]);
   };
 
   const removeItem = (index: number) => {
@@ -73,14 +76,14 @@ export function InlineEditArray({
   const setPrimary = (index: number) => {
     const updated = editItems.map((item, i) => ({
       ...item,
-      primary: i === index
+      primary: i === index,
     }));
     setEditItems(updated);
   };
 
   const validateAndSave = async () => {
     const newErrors: Record<number, string> = {};
-    
+
     editItems.forEach((item, index) => {
       if (item.value.trim()) {
         if (validation) {
@@ -99,7 +102,7 @@ export function InlineEditArray({
 
     setIsSaving(true);
     try {
-      const validItems = editItems.filter(item => item.value.trim());
+      const validItems = editItems.filter((item) => item.value.trim());
       await onSave(validItems);
       setIsEditing(false);
       setErrors({});
@@ -112,7 +115,7 @@ export function InlineEditArray({
   };
 
   const DisplayMode = () => (
-    <div 
+    <div
       className={`
         group flex items-start gap-3 p-2 rounded-md cursor-pointer
         ${canEdit ? 'hover:bg-gray-50' : ''}
@@ -129,12 +132,17 @@ export function InlineEditArray({
             <div className="space-y-1">
               {items.map((item, index) => (
                 <div key={index} className="flex items-center gap-2">
-                  <span className={`inline-flex px-2 py-1 text-xs font-medium rounded ${item.primary ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700'}`}>
-                    {itemTypes.find(t => t.value === item.type)?.label || item.type}
+                  <span
+                    className={`inline-flex px-2 py-1 text-xs font-medium rounded ${item.primary ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-700'}`}
+                  >
+                    {itemTypes.find((t) => t.value === item.type)?.label ||
+                      item.type}
                   </span>
                   <span>{item.value}</span>
                   {item.primary && (
-                    <span className="text-xs text-blue-600 font-medium">Primary</span>
+                    <span className="text-xs text-blue-600 font-medium">
+                      Primary
+                    </span>
                   )}
                 </div>
               ))}
@@ -153,7 +161,7 @@ export function InlineEditArray({
       <Icon className="h-4 w-4 mt-0.5 flex-shrink-0 text-gray-600" />
       <div className="flex-1 min-w-0">
         <div className="text-sm font-medium text-gray-700 mb-2">{label}</div>
-        
+
         <div className="space-y-2">
           {editItems.map((item, index) => (
             <div key={index} className="flex items-center gap-2">
@@ -162,13 +170,13 @@ export function InlineEditArray({
                 onChange={(e) => updateItem(index, 'type', e.target.value)}
                 className="px-2 py-1 text-xs border border-gray-300 rounded"
               >
-                {itemTypes.map(type => (
+                {itemTypes.map((type) => (
                   <option key={type.value} value={type.value}>
                     {type.label}
                   </option>
                 ))}
               </select>
-              
+
               <input
                 type="text"
                 value={item.value}
@@ -176,19 +184,19 @@ export function InlineEditArray({
                 className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter value..."
               />
-              
+
               <button
                 onClick={() => setPrimary(index)}
                 className={`px-2 py-1 text-xs rounded ${
-                  item.primary 
-                    ? 'bg-blue-600 text-white' 
+                  item.primary
+                    ? 'bg-blue-600 text-white'
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                 }`}
                 title="Set as primary"
               >
                 Primary
               </button>
-              
+
               <button
                 onClick={() => removeItem(index)}
                 className="p-1 text-red-600 hover:bg-red-100 rounded"
@@ -198,7 +206,7 @@ export function InlineEditArray({
               </button>
             </div>
           ))}
-          
+
           {Object.entries(errors).map(([index, error]) => (
             <div key={index} className="text-xs text-red-600">
               {error}

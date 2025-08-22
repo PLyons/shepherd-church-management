@@ -73,7 +73,9 @@ class RegistrationApprovalService {
 
       // Generate a member ID (in a real implementation, this would be the Firebase Auth UID)
       // For now, we'll let Firebase auto-generate the ID
-      const member = await membersService.create(memberData as Omit<Member, "id">);
+      const member = await membersService.create(
+        memberData as Omit<Member, 'id'>
+      );
 
       // Household functionality disabled during cleanup
       // Update the household with the new member - DISABLED

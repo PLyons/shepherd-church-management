@@ -57,12 +57,23 @@ export const timestampToString = (
   }
 
   // If it's a timestamp object with seconds/nanoseconds (new format), convert it
-  if (timestamp && typeof timestamp === 'object' && 'seconds' in timestamp && 'nanoseconds' in timestamp) {
+  if (
+    timestamp &&
+    typeof timestamp === 'object' &&
+    'seconds' in timestamp &&
+    'nanoseconds' in timestamp
+  ) {
     try {
-      const date = new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000);
+      const date = new Date(
+        timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000
+      );
       return date.toISOString();
     } catch (error) {
-      console.error('Error converting timestamp object to string:', error, timestamp);
+      console.error(
+        'Error converting timestamp object to string:',
+        error,
+        timestamp
+      );
       return undefined;
     }
   }
@@ -115,11 +126,16 @@ export const getCurrentTimestamp = (): Timestamp => {
  * Converts a timestamp to YYYY-MM-DD format for HTML date inputs
  */
 export const timestampToDateString = (
-  timestamp: Timestamp | { seconds: number; nanoseconds: number } | string | null | undefined
+  timestamp:
+    | Timestamp
+    | { seconds: number; nanoseconds: number }
+    | string
+    | null
+    | undefined
 ): string | undefined => {
   const isoString = timestampToString(timestamp);
   if (!isoString) return undefined;
-  
+
   // Convert ISO string to YYYY-MM-DD format
   return isoString.split('T')[0];
 };
@@ -177,11 +193,12 @@ export const memberDocumentToMember = (
     fullName: doc.fullName,
     // Enhanced Phase 0.1 fields - convert from snake_case to camelCase
     emails: doc.emails,
-    phones: doc.phones?.map(phone => ({
+    phones: doc.phones?.map((phone) => ({
       ...phone,
-      smsOptIn: phone.sms_opt_in !== undefined ? phone.sms_opt_in : phone.smsOptIn
+      smsOptIn:
+        phone.sms_opt_in !== undefined ? phone.sms_opt_in : phone.smsOptIn,
     })),
-    addresses: doc.addresses?.map(addr => ({
+    addresses: doc.addresses?.map((addr) => ({
       type: addr.type,
       addressLine1: addr.address_line1 || addr.addressLine1,
       addressLine2: addr.address_line2 || addr.addressLine2,
@@ -189,7 +206,7 @@ export const memberDocumentToMember = (
       state: addr.state,
       postalCode: addr.postal_code || addr.postalCode,
       country: addr.country,
-      primary: addr.primary
+      primary: addr.primary,
     })),
     prefix: doc.prefix,
     middleName: doc.middle_name || doc.middleName,

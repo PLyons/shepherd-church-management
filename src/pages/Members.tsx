@@ -67,7 +67,6 @@ export default function Members() {
     setCurrentPage(1);
   };
 
-
   const handleDeleteMember = async (memberId: string, memberName: string) => {
     const confirmDelete = window.confirm(
       `Are you sure you want to delete ${memberName}? This action cannot be undone.`
@@ -116,7 +115,7 @@ export default function Members() {
   // Helper function to get primary email from arrays or fallback to deprecated field
   const getPrimaryEmail = (member: Member) => {
     if (member.emails && member.emails.length > 0) {
-      const primary = member.emails.find(e => e.primary);
+      const primary = member.emails.find((e) => e.primary);
       return primary?.address || member.emails[0].address;
     }
     return member.email || 'N/A';
@@ -126,7 +125,7 @@ export default function Members() {
   const getPrimaryPhone = (member: Member) => {
     let phoneNumber = '';
     if (member.phones && member.phones.length > 0) {
-      const primary = member.phones.find(p => p.primary);
+      const primary = member.phones.find((p) => p.primary);
       phoneNumber = primary?.number || member.phones[0].number;
     } else {
       phoneNumber = member.phone || '';
@@ -263,7 +262,7 @@ export default function Members() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium">
-                      <Link 
+                      <Link
                         to={`/members/${memberItem.id}`}
                         className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
                       >
@@ -273,7 +272,7 @@ export default function Members() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium">
-                      <Link 
+                      <Link
                         to={`/members/${memberItem.id}`}
                         className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
                       >
@@ -332,9 +331,13 @@ export default function Members() {
         {members.length === 0 && (
           <div className="text-center py-12">
             <Users className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No members found</h3>
+            <h3 className="mt-2 text-sm font-medium text-gray-900">
+              No members found
+            </h3>
             <p className="mt-1 text-sm text-gray-500">
-              {activeSearchTerm ? 'Try adjusting your search terms.' : 'No members available.'}
+              {activeSearchTerm
+                ? 'Try adjusting your search terms.'
+                : 'No members available.'}
             </p>
           </div>
         )}
@@ -372,7 +375,9 @@ export default function Members() {
                   Previous
                 </button>
                 <button
-                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                  onClick={() =>
+                    setCurrentPage(Math.min(totalPages, currentPage + 1))
+                  }
                   disabled={currentPage === totalPages}
                   className={`relative inline-flex items-center px-4 py-2 rounded-r-md border border-gray-300 text-sm font-medium ${
                     currentPage === totalPages

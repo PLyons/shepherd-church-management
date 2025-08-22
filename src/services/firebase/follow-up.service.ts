@@ -243,7 +243,11 @@ class FollowUpService extends BaseFirestoreService<
       const actions = await this.getAll({
         where: [
           { field: 'status', operator: '==', value: 'pending' },
-          { field: 'scheduledAt', operator: '<=', value: Timestamp.fromDate(now) },
+          {
+            field: 'scheduledAt',
+            operator: '<=',
+            value: Timestamp.fromDate(now),
+          },
         ],
         orderBy: { field: 'scheduledAt', direction: 'asc' },
       });

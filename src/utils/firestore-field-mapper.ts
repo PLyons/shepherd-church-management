@@ -94,7 +94,7 @@ export const fieldMappings = {
     anniversaryDate: 'anniversary_date',
     maritalStatus: 'marital_status',
     smsOptIn: 'sms_opt_in',
-    
+
     // Array fields (these stay as is)
     emails: 'emails',
     phones: 'phones',
@@ -114,7 +114,7 @@ export const fieldMappings = {
     anniversary_date: 'anniversaryDate',
     marital_status: 'maritalStatus',
     sms_opt_in: 'smsOptIn',
-    
+
     // Array fields
     emails: 'emails',
     phones: 'phones',
@@ -126,29 +126,40 @@ export const fieldMappings = {
  * Enhanced deep field mapper that uses explicit mappings with fallback
  * Handles nested arrays of objects (emails, phones, addresses)
  */
-export function toFirestoreFieldsDeep<T extends Record<string, any>>(data: T): Record<string, any> {
+export function toFirestoreFieldsDeep<T extends Record<string, any>>(
+  data: T
+): Record<string, any> {
   const converted: Record<string, any> = {};
-  
+
   for (const [key, value] of Object.entries(data)) {
     if (value === undefined) continue;
-    
+
     // Use explicit mapping or fallback to automatic snake_case conversion
-    const snakeKey = fieldMappings.toFirestore[key as keyof typeof fieldMappings.toFirestore] || 
-                     key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
-    
+    const snakeKey =
+      fieldMappings.toFirestore[
+        key as keyof typeof fieldMappings.toFirestore
+      ] || key.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+
     if (Array.isArray(value)) {
       // Handle arrays of objects (emails, phones, addresses)
-      converted[snakeKey] = value.map(item => 
-        typeof item === 'object' && item !== null ? toFirestoreFieldsDeep(item) : item
+      converted[snakeKey] = value.map((item) =>
+        typeof item === 'object' && item !== null
+          ? toFirestoreFieldsDeep(item)
+          : item
       );
-    } else if (value && typeof value === 'object' && !(value instanceof Date) && !value._seconds) {
+    } else if (
+      value &&
+      typeof value === 'object' &&
+      !(value instanceof Date) &&
+      !value._seconds
+    ) {
       // Recursively convert nested objects
       converted[snakeKey] = toFirestoreFieldsDeep(value);
     } else {
       converted[snakeKey] = value;
     }
   }
-  
+
   return converted;
 }
 
@@ -158,24 +169,33 @@ export function toFirestoreFieldsDeep<T extends Record<string, any>>(data: T): R
  */
 export function fromFirestoreFieldsDeep<T = any>(data: Record<string, any>): T {
   const converted: Record<string, any> = {};
-  
+
   for (const [key, value] of Object.entries(data)) {
     // Use explicit mapping or fallback to automatic camelCase conversion
-    const camelKey = fieldMappings.fromFirestore[key as keyof typeof fieldMappings.fromFirestore] || 
-                     key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-    
+    const camelKey =
+      fieldMappings.fromFirestore[
+        key as keyof typeof fieldMappings.fromFirestore
+      ] || key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+
     if (Array.isArray(value)) {
       // Handle arrays of objects
-      converted[camelKey] = value.map(item => 
-        typeof item === 'object' && item !== null ? fromFirestoreFieldsDeep(item) : item
+      converted[camelKey] = value.map((item) =>
+        typeof item === 'object' && item !== null
+          ? fromFirestoreFieldsDeep(item)
+          : item
       );
-    } else if (value && typeof value === 'object' && !(value instanceof Date) && !value._seconds) {
+    } else if (
+      value &&
+      typeof value === 'object' &&
+      !(value instanceof Date) &&
+      !value._seconds
+    ) {
       // Recursively convert nested objects
       converted[camelKey] = fromFirestoreFieldsDeep(value);
     } else {
       converted[camelKey] = value;
     }
   }
-  
+
   return converted as T;
 }

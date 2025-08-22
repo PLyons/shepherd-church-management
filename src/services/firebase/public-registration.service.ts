@@ -254,8 +254,16 @@ class PublicRegistrationService extends BaseFirestoreService<
     try {
       const registrations = await this.getAll({
         where: [
-          { field: 'submittedAt', operator: '>=', value: Timestamp.fromDate(new Date(startDate)) },
-          { field: 'submittedAt', operator: '<=', value: Timestamp.fromDate(new Date(endDate)) },
+          {
+            field: 'submittedAt',
+            operator: '>=',
+            value: Timestamp.fromDate(new Date(startDate)),
+          },
+          {
+            field: 'submittedAt',
+            operator: '<=',
+            value: Timestamp.fromDate(new Date(endDate)),
+          },
         ],
         orderBy: { field: 'submittedAt', direction: 'desc' },
       });

@@ -39,7 +39,9 @@ export default function PasswordReset() {
       } else if ((err as any).code === 'auth/invalid-email') {
         setMessage('Please enter a valid email address.');
       } else {
-        setMessage((err as any).message || 'An error occurred. Please try again.');
+        setMessage(
+          (err as any).message || 'An error occurred. Please try again.'
+        );
       }
       setIsSuccess(false);
     } finally {

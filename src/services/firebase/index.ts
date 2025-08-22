@@ -132,7 +132,7 @@ export class FirebaseService {
       });
       const canWrite = true;
 
-      // Test delete  
+      // Test delete
       if (testMember && typeof testMember === 'object' && 'id' in testMember) {
         await this.members.delete(testMember.id);
       }

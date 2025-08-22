@@ -285,7 +285,10 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
 
       // If count fails, fallback to getting documents and counting them
       // This can happen if the collection doesn't exist yet
-      if ((error as any).code === 'not-found' || (error as any).code === 'permission-denied') {
+      if (
+        (error as any).code === 'not-found' ||
+        (error as any).code === 'permission-denied'
+      ) {
         console.warn(
           `BaseService: Fallback to document count for ${this.collectionName}`
         );

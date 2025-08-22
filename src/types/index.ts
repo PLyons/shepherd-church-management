@@ -4,29 +4,29 @@
 
 export interface Member {
   id: string;
-  
+
   // Name fields
-  prefix?: string;                    // Mr., Mrs., Dr., etc.
+  prefix?: string; // Mr., Mrs., Dr., etc.
   firstName: string;
   middleName?: string;
   lastName: string;
-  suffix?: string;                    // Jr., Sr., III, etc.
-  
+  suffix?: string; // Jr., Sr., III, etc.
+
   // Email addresses (array)
   emails?: {
     type: 'home' | 'work' | 'other';
     address: string;
     primary?: boolean;
   }[];
-  
+
   // Phone numbers (array)
   phones?: {
     type: 'mobile' | 'home' | 'work' | 'other';
     number: string;
     primary?: boolean;
-    smsOptIn?: boolean;              // Only for mobile type
+    smsOptIn?: boolean; // Only for mobile type
   }[];
-  
+
   // Physical addresses (array)
   addresses?: {
     type: 'home' | 'work' | 'other';
@@ -38,33 +38,39 @@ export interface Member {
     country?: string;
     primary?: boolean;
   }[];
-  
+
   // Dates
   birthDate?: Date | any;
   birthdate?: string; // Alternative format for compatibility
   anniversaryDate?: Date | any;
-  
+
   // Status fields
   maritalStatus?: 'single' | 'married' | 'widowed' | 'divorced';
-  memberStatus: 'active' | 'inactive';
+  memberStatus:
+    | 'active'
+    | 'inactive'
+    | 'regular_attender'
+    | 'visitor'
+    | 'participant'
+    | 'not_set';
   role: 'admin' | 'pastor' | 'member';
   gender?: 'Male' | 'Female';
   joinedAt?: string;
-  
+
   // Household relationship
   householdId?: string;
   isPrimaryContact?: boolean;
-  
+
   // Metadata
   createdAt?: Date | any;
   updatedAt?: Date | any;
-  
+
   // Computed
   fullName?: string;
-  
+
   // DEPRECATED - kept for compatibility during migration
-  email?: string;        // Will migrate to emails array
-  phone?: string;        // Will migrate to phones array
+  email?: string; // Will migrate to emails array
+  phone?: string; // Will migrate to phones array
 }
 
 export interface Household {
@@ -123,6 +129,24 @@ export interface DashboardData {
 }
 
 // Form-specific types
-export interface MemberFormData extends Omit<Member, 'id' | 'createdAt' | 'updatedAt' | 'fullName'> {
+export interface MemberFormData
+  extends Omit<Member, 'id' | 'createdAt' | 'updatedAt' | 'fullName'> {
   // Form uses same structure as Member but excludes auto-generated fields
+}
+
+// Membership status change tracking
+export interface MembershipStatusChange {
+  id: string;
+  memberId: string;
+  previousStatus: string;
+  newStatus: string;
+  reason?: string;
+  changedBy: string;
+  changedByName: string;
+  changedAt: Date;
+  metadata?: {
+    userAgent?: string;
+    ipAddress?: string;
+    source: 'profile' | 'admin_panel' | 'bulk_import';
+  };
 }

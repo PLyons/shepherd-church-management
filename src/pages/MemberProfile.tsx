@@ -6,12 +6,12 @@ import { membersService } from '../services/firebase';
 import MemberProfileHeader from '../components/members/profile/MemberProfileHeader';
 import MemberProfileTabs from '../components/members/profile/MemberProfileTabs';
 import HouseholdSidebar from '../components/members/profile/HouseholdSidebar';
-import {
-  User,
-} from 'lucide-react';
+import { User } from 'lucide-react';
 
 // Create context to pass member data to tabs
-export const MemberContext = createContext<{ member: Member | null }>({ member: null });
+export const MemberContext = createContext<{ member: Member | null }>({
+  member: null,
+});
 
 export default function MemberProfile() {
   const { id } = useParams<{ id: string }>();
@@ -77,7 +77,6 @@ export default function MemberProfile() {
     }
   };
 
-
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-64">
@@ -115,7 +114,8 @@ export default function MemberProfile() {
 
   return (
     <MemberContext.Provider value={{ member }}>
-      <div className="space-y-6">
+      {/* Desktop-first container with minimum width constraint */}
+      <div className="min-w-[1200px] space-y-4">
         <MemberProfileHeader
           member={member}
           canEdit={canEdit}
@@ -124,19 +124,19 @@ export default function MemberProfile() {
           onDelete={handleDelete}
         />
         <MemberProfileTabs memberId={id!} />
-        
-        {/* Desktop-first layout with sidebar */}
-        <div className="grid grid-cols-5 gap-8">
-          {/* Main content */}
-          <div className="col-span-3">
+
+        {/* Flexbox layout replacing grid for better control */}
+        <div className="flex gap-6">
+          {/* Main content area - flexible width */}
+          <div className="flex-1 min-w-0">
             <Suspense fallback={<TabLoadingSpinner />}>
               <Outlet />
             </Suspense>
           </div>
-          
-          {/* Household sidebar - enhanced width */}
-          <div className="col-span-2">
-            <HouseholdSidebar 
+
+          {/* Fixed household sidebar - 400px width */}
+          <div className="w-[400px] flex-shrink-0">
+            <HouseholdSidebar
               memberId={id!}
               currentHouseholdId={member?.householdId}
               className="sticky top-6"

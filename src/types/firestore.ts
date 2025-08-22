@@ -21,7 +21,13 @@ export interface MemberDocument {
 
   // Church Information
   role?: 'admin' | 'pastor' | 'member';
-  memberStatus?: 'active' | 'inactive' | 'visitor';
+  memberStatus?:
+    | 'active'
+    | 'inactive'
+    | 'regular_attender'
+    | 'visitor'
+    | 'participant'
+    | 'not_set';
   joinedAt?: Timestamp;
 
   // Household Relationship
@@ -47,7 +53,13 @@ export interface Member {
   birthdate?: string; // ISO string
   gender?: 'Male' | 'Female' | '';
   role?: 'admin' | 'pastor' | 'member';
-  memberStatus?: 'active' | 'inactive' | 'visitor';
+  memberStatus?:
+    | 'active'
+    | 'inactive'
+    | 'regular_attender'
+    | 'visitor'
+    | 'participant'
+    | 'not_set';
   joinedAt?: string; // ISO string
   householdId?: string;
   isPrimaryContact?: boolean;
