@@ -162,7 +162,7 @@ import { RoleGuard } from '../components/auth/RoleGuard';
 ### Component Guidelines
 - Use **React Hook Form** for all forms
 - Implement **loading states** and **error handling**
-- Follow **mobile-first** responsive design
+- Follow **desktop-first** responsive design
 - Use **TailwindCSS** for styling
 
 ### Type Safety

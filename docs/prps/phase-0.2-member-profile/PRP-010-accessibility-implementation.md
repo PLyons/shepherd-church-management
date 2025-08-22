@@ -60,7 +60,6 @@ With the completion of all enhanced member profile features, accessibility imple
 ### Secondary Success Criteria
 - [ ] Reduced motion preferences respected
 - [ ] High contrast mode support
-- [ ] Touch target sizes meet accessibility guidelines (44x44px minimum)
 - [ ] Alternative interaction methods available
 - [ ] Consistent focus indicators throughout
 

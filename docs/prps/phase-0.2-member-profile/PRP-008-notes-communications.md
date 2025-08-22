@@ -26,7 +26,7 @@ Implement a secure notes and communications system for pastoral care and adminis
 - Rich text editor with formatting toolbar
 - Category badges and priority indicators
 - Search and filter interface
-- Responsive design for mobile access
+- Desktop-optimized design
 - Privacy indicators and access controls
 
 ### Dependencies
@@ -69,7 +69,7 @@ No notes or communication tracking exists:
 - [ ] Search and filter system works effectively
 - [ ] Communication logging integrates seamlessly
 - [ ] Access controls prevent unauthorized viewing
-- [ ] Mobile interface maintains full functionality
+- [ ] Desktop interface maintains full functionality
 - [ ] Audit trail tracks all note activities
 - [ ] Privacy indicators clearly show sensitivity levels
 - [ ] Performance remains good with large note sets
@@ -1370,7 +1370,7 @@ describe('Notes Security', () => {
 - [ ] Privacy settings are respected
 - [ ] Access tracking functions correctly
 - [ ] Communication logging works properly
-- [ ] Mobile interface maintains functionality
+- [ ] Desktop interface maintains functionality
 - [ ] Security rules prevent unauthorized access
 
 ## Rollback Plan

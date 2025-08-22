@@ -97,7 +97,7 @@ This project tracker aligns with the phases defined in `docs/prd.md`:
   - Ready for future member display components with consistent interaction patterns
 
 ### Phase 0.2 Member Profile Enhancement Planning (2025-08-21) ✅
-- ✅ **Complete PRP Suite** - 12 detailed Product Requirement Prompts created
+- ✅ **Complete PRP Suite** - 11 detailed Product Requirement Prompts created (desktop-first architecture)
   - [PRP-001: Header Redesign & Action Management](docs/prps/phase-0.2-member-profile/PRP-001-header-redesign.md)
   - [PRP-002: Tabbed Navigation Implementation](docs/prps/phase-0.2-member-profile/PRP-002-tabbed-navigation.md)
   - [PRP-003: Information Layout Redesign](docs/prps/phase-0.2-member-profile/PRP-003-information-layout.md)
@@ -106,7 +106,6 @@ This project tracker aligns with the phases defined in `docs/prd.md`:
   - [PRP-006: Membership Type Selector](docs/prps/phase-0.2-member-profile/PRP-006-membership-selector.md)
   - [PRP-007: Activity History Tab](docs/prps/phase-0.2-member-profile/PRP-007-activity-history.md)
   - [PRP-008: Notes & Communications Tab](docs/prps/phase-0.2-member-profile/PRP-008-notes-communications.md)
-  - [PRP-009: Mobile Optimization](docs/prps/phase-0.2-member-profile/PRP-009-mobile-optimization.md)
   - [PRP-010: Accessibility Implementation](docs/prps/phase-0.2-member-profile/PRP-010-accessibility-implementation.md)
   - [PRP-011: Performance Optimization](docs/prps/phase-0.2-member-profile/PRP-011-performance-optimization.md)
   - [PRP-012: Testing & Quality Assurance](docs/prps/phase-0.2-member-profile/PRP-012-testing-quality-assurance.md)

@@ -30,11 +30,11 @@ Product Requirement Prompts (PRPs) are detailed, executable implementation instr
 **Start Date:** 2025-08-21  
 **Target Completion:** 2025-08-28  
 
-**Overview:** Comprehensive redesign of member profile interface inspired by Planning Center's professional design patterns while maintaining Shepherd's modern, mobile-first approach.
+**Overview:** Comprehensive redesign of member profile interface inspired by Planning Center's professional design patterns optimized for Shepherd's desktop-first administrative workflows.
 
 **Documentation:** [Phase 0.2 PRPs](phase-0.2-member-profile/)
 
-**PRPs:** 12 sequential implementation prompts covering:
+**PRPs:** 11 sequential implementation prompts covering:
 - UI structure and navigation
 - Information architecture
 - Household integration  

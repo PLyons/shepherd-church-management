@@ -29,7 +29,7 @@ Optimize the enhanced member profile system for maximum performance, ensuring fa
 - Progressive loading strategies
 
 ### Device Requirements
-- Smooth performance on low-end mobile devices
+- Smooth performance on standard desktop computers
 - Network-resilient design for slow connections
 - Offline capability for cached data
 - Battery-efficient implementations
@@ -61,7 +61,7 @@ With all enhanced member profile features implemented, performance optimization 
 - [ ] All Core Web Vitals metrics in "Good" range
 - [ ] Tab switching completes in < 200ms
 - [ ] Inline editing response time < 100ms
-- [ ] Member profile load time < 2 seconds on 3G
+- [ ] Member profile load time < 2 seconds on broadband
 - [ ] Bundle size optimized with effective code splitting
 - [ ] Zero memory leaks detected in 24-hour test
 
@@ -360,7 +360,7 @@ const OptimizedImage = memo(({
   alt, 
   className = '', 
   placeholder = '/placeholder-avatar.svg',
-  sizes = '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'
+  sizes = '(max-width: 1200px) 50vw, 33vw'
 }: OptimizedImageProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -621,8 +621,7 @@ const ProgressiveLoader = memo(({
     
     // Adjust delay based on connection quality
     const connection = (navigator as any).connection;
-    const multiplier = connection?.effectiveType === '4g' ? 1 : 
-                     connection?.effectiveType === '3g' ? 1.5 : 2;
+    const multiplier = connection?.effectiveType === 'slow-2g' || connection?.effectiveType === '2g' ? 2 : 1;
 
     const timer = setTimeout(() => {
       setShouldRender(true);

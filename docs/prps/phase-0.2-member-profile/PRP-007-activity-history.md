@@ -25,7 +25,7 @@ Implement the Activity tab showing a comprehensive timeline of member's event at
 - Icons and color coding for different activity types
 - Date grouping and search functionality
 - Empty states and loading indicators
-- Responsive design for mobile viewing
+- Desktop-optimized design
 - Filter chips and date range picker
 
 ### Dependencies
