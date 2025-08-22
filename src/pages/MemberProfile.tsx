@@ -20,7 +20,6 @@ export default function MemberProfile() {
   const navigate = useNavigate();
   const [member, setMember] = useState<Member | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showHouseholdDrawer, setShowHouseholdDrawer] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -127,91 +126,24 @@ export default function MemberProfile() {
         />
         <MemberProfileTabs memberId={id!} />
         
-        {/* Responsive layout container with horizontal scroll support */}
-        <div className="w-full overflow-x-auto">
-          <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 min-w-full xl:min-w-0">
-            {/* Main content */}
-            <div className="xl:col-span-3 min-w-0">
-              <Suspense fallback={<TabLoadingSpinner />}>
-                <Outlet />
-              </Suspense>
-            </div>
-            
-            {/* Household sidebar - visible on xl screens (1280px+) */}
-            <div className="hidden xl:block xl:col-span-1 min-w-0">
-              <HouseholdSidebar 
-                memberId={id!}
-                currentHouseholdId={member?.householdId}
-                className="sticky top-6"
-              />
-            </div>
+        {/* Desktop-first layout with sidebar */}
+        <div className="grid grid-cols-5 gap-8">
+          {/* Main content */}
+          <div className="col-span-3">
+            <Suspense fallback={<TabLoadingSpinner />}>
+              <Outlet />
+            </Suspense>
           </div>
-        </div>
-
-        {/* Intermediate screen size household access (lg to xl) */}
-        <div className="hidden lg:block xl:hidden mt-6">
-          <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-gray-600" />
-                <span className="text-sm font-medium text-gray-900">
-                  {member?.householdId ? 'Household Information' : 'No Household'}
-                </span>
-              </div>
-              {member?.householdId ? (
-                <button 
-                  onClick={() => setShowHouseholdDrawer(true)}
-                  className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-100 rounded-md hover:bg-blue-200 transition-colors"
-                >
-                  <Users className="h-4 w-4 mr-1" />
-                  View Household
-                </button>
-              ) : (
-                <span className="text-sm text-gray-500">
-                  This member is not part of a household
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile household button */}
-        {member?.householdId && (
-          <div className="block lg:hidden">
-            <button 
-              onClick={() => setShowHouseholdDrawer(true)}
-              className="w-full flex items-center justify-center gap-2 p-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              <Users className="h-4 w-4" />
-              View Household
-            </button>
-          </div>
-        )}
-
-        {/* Mobile and tablet drawer */}
-        {showHouseholdDrawer && (
-          <div className="fixed inset-0 z-50 xl:hidden">
-            <div 
-              className="fixed inset-0 bg-black bg-opacity-25" 
-              onClick={() => setShowHouseholdDrawer(false)} 
+          
+          {/* Household sidebar - enhanced width */}
+          <div className="col-span-2">
+            <HouseholdSidebar 
+              memberId={id!}
+              currentHouseholdId={member?.householdId}
+              className="sticky top-6"
             />
-            <div className="fixed bottom-0 left-0 right-0 bg-white rounded-t-lg p-6 max-h-96 overflow-y-auto">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-medium text-gray-900">Household</h3>
-                <button
-                  onClick={() => setShowHouseholdDrawer(false)}
-                  className="p-1 text-gray-400 hover:text-gray-600 rounded"
-                >
-                  ✕
-                </button>
-              </div>
-              <HouseholdSidebar 
-                memberId={id!}
-                currentHouseholdId={member?.householdId}
-              />
-            </div>
           </div>
-        )}
+        </div>
       </div>
     </MemberContext.Provider>
   );

@@ -134,7 +134,7 @@ export function AdminDashboard({ member }: AdminDashboardProps) {
       </div>
 
       {/* Comprehensive Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-4 gap-6">
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center">
             <div className="flex-shrink-0">
@@ -232,7 +232,7 @@ export function AdminDashboard({ member }: AdminDashboardProps) {
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
           Administrative Actions
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           {quickActions.map((action) => (
             <Link
               key={action.id}
@@ -267,7 +267,7 @@ export function AdminDashboard({ member }: AdminDashboardProps) {
       </div>
 
       {/* Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-2 gap-8">
         {/* All Events (Including Private) */}
         <div className="bg-white rounded-lg shadow">
           <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
@@ -387,7 +387,7 @@ export function AdminDashboard({ member }: AdminDashboardProps) {
             View reports <BarChart3 className="w-4 h-4 ml-1" />
           </Link>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="grid grid-cols-3 gap-6">
           <div className="text-center">
             <div className="text-2xl font-bold text-green-600">
               {formatCurrency(stats.totalDonations || 0)}
@@ -420,7 +420,7 @@ export function AdminDashboard({ member }: AdminDashboardProps) {
             Settings <Settings className="w-4 h-4 ml-1" />
           </Link>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           <div className="flex items-center p-3 bg-green-50 rounded-lg">
             <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
             <div>

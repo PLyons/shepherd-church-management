@@ -154,9 +154,9 @@ export default function OverviewTab() {
   }, [member.emails, member.email, member.phones, member.phone, member.addresses]);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+    <div className="grid grid-cols-3 gap-6">
       {/* Contact Information */}
-      <InfoCard title="Contact Information" icon={Mail} className="md:col-span-1">
+      <InfoCard title="Contact Information" icon={Mail}>
         <ContactList 
           contacts={processedContacts.emailContacts}
           icon={Mail}
@@ -175,7 +175,7 @@ export default function OverviewTab() {
       </InfoCard>
 
       {/* Personal Information */}
-      <InfoCard title="Personal Information" icon={User} className="md:col-span-1">
+      <InfoCard title="Personal Information" icon={User}>
         <InfoField 
           label="Full Name"
           value={`${member.firstName} ${member.lastName}`}
@@ -216,7 +216,7 @@ export default function OverviewTab() {
       </InfoCard>
 
       {/* Church Information */}
-      <InfoCard title="Church Information" icon={Badge} className="md:col-span-2 xl:col-span-1">
+      <InfoCard title="Church Information" icon={Badge}>
         <InfoField 
           label="Member Status"
           value={

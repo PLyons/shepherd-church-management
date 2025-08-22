@@ -44,7 +44,7 @@ export default function MemberProfileHeader({
   };
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+    <div className="flex items-center justify-between gap-4 mb-6">
       <div className="flex items-center gap-4">
         {/* Back button */}
         <Tooltip content="Back to Members">

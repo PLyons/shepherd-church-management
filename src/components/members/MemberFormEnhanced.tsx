@@ -226,7 +226,7 @@ export const MemberFormEnhanced: React.FC = () => {
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="p-6">
       <div className="bg-white rounded-lg shadow-md">
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-2xl font-bold text-gray-900">
@@ -253,7 +253,7 @@ export const MemberFormEnhanced: React.FC = () => {
             
             {expandedSections.basic && (
               <div className="p-4 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-4 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Prefix
@@ -304,7 +304,7 @@ export const MemberFormEnhanced: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Last Name *
@@ -334,7 +334,7 @@ export const MemberFormEnhanced: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Birth Date
@@ -616,7 +616,7 @@ export const MemberFormEnhanced: React.FC = () => {
                         placeholder="Apt, Suite, etc. (optional)"
                       />
                       
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div className="grid grid-cols-3 gap-3">
                         <input
                           type="text"
                           {...register(`addresses.${index}.city` as const)}
@@ -680,7 +680,7 @@ export const MemberFormEnhanced: React.FC = () => {
 
             {expandedSections.administrative && (
               <div className="p-4 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Member Status *

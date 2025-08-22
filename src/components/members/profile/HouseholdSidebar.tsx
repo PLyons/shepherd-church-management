@@ -36,9 +36,9 @@ function Avatar({
   const initials = `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
   
   const sizeClasses = {
-    sm: 'h-8 w-8 text-sm',
-    md: 'h-10 w-10 text-base',
-    lg: 'h-12 w-12 text-lg'
+    sm: 'h-10 w-10 text-sm',
+    md: 'h-12 w-12 text-base',
+    lg: 'h-16 w-16 text-xl'
   };
 
   return (
@@ -127,7 +127,7 @@ function HouseholdMemberCard({
   return (
     <Link
       to={`/members/${member.id}/overview`}
-      className="flex items-center gap-3 p-3 rounded-lg border transition-colors border-gray-200 hover:border-gray-300 hover:bg-gray-50 cursor-pointer"
+      className="flex items-center gap-4 p-4 rounded-lg border transition-colors border-gray-200 hover:border-gray-300 hover:bg-gray-50 cursor-pointer"
     >
       <Avatar 
         firstName={member.firstName} 
@@ -136,22 +136,30 @@ function HouseholdMemberCard({
       />
       
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <p className="text-sm font-medium text-gray-900 truncate">
-            {member.firstName} {member.lastName}
-          </p>
-          {member.isPrimaryContact && (
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-              Primary
-            </span>
-          )}
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <p className="text-base font-medium text-gray-900 truncate">
+              {member.firstName} {member.lastName}
+            </p>
+            {member.isPrimaryContact && (
+              <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">
+                Primary
+              </span>
+            )}
+          </div>
+          
+          <div className="flex items-center gap-3 text-sm text-gray-500">
+            {member.relationship && (
+              <span className="capitalize">{member.relationship}</span>
+            )}
+            <span className="capitalize">{member.memberStatus}</span>
+            {member.role !== 'member' && (
+              <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs font-medium capitalize">
+                {member.role}
+              </span>
+            )}
+          </div>
         </div>
-        
-        {member.relationship && (
-          <p className="text-xs text-gray-500 capitalize">
-            {member.relationship}
-          </p>
-        )}
       </div>
     </Link>
   );
@@ -166,7 +174,7 @@ function HouseholdMemberList({
   currentMemberId: string; 
 }) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {members.map(member => (
         <HouseholdMemberCard 
           key={member.id}
@@ -174,6 +182,23 @@ function HouseholdMemberList({
           isCurrentMember={member.id === currentMemberId}
         />
       ))}
+      
+      {/* Household statistics */}
+      {members.length > 1 && (
+        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+          <h4 className="text-sm font-medium text-gray-900 mb-3">Household Summary</h4>
+          <div className="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <span className="text-gray-500">Total Members:</span>
+              <span className="ml-2 font-medium">{members.length}</span>
+            </div>
+            <div>
+              <span className="text-gray-500">Active:</span>
+              <span className="ml-2 font-medium">{members.filter(m => m.memberStatus === 'active').length}</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -338,9 +363,11 @@ const HouseholdSidebar = memo(({
   }
 
   return (
-    <div className={`bg-white rounded-lg border border-gray-200 p-6 ${className}`}>
+    <div className={`bg-white rounded-lg border border-gray-200 p-8 ${className}`}>
       <HouseholdHeader household={household} canManage={canManageHousehold} />
-      <HouseholdMemberList members={members} currentMemberId={memberId} />
+      <div className="mt-6">
+        <HouseholdMemberList members={members} currentMemberId={memberId} />
+      </div>
       {canManageHousehold && (
         <HouseholdActions />
       )}
