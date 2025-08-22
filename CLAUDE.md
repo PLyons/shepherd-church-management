@@ -230,14 +230,15 @@ Three main contexts manage global state:
 
 **Phase 0.2 Implementation Status**:
 - **✅ Corrective PRPs (101-106)**: COMPLETED - Fixed fundamental layout architecture issues
-- **Original PRPs (005-012)**: PRP-005 (Inline Editing) completed, ready to resume PRP-006 with corrected layout
-- **Next Steps**: Resume original PRPs 006-011 with the corrected layout foundation
+- **Original PRPs (005-012)**: PRP-005 (Inline Editing), PRP-006 (Membership Type Selector), and PRP-007 (Activity History Tab) completed, ready to continue with PRP-008
+- **Next Steps**: Continue with PRPs 008-011 with the corrected layout foundation
 
 **Implementation Sequence** (Updated 2025-08-22):
 1. ✅ Execute corrective PRPs 101-106 to fix layout foundation → **COMPLETED**
-2. 🔄 Resume PRP-006 (Membership Type Selector) with corrected layout → **READY**
-3. Continue with PRPs 007-011 as originally planned
-4. Skip PRP-012 (Testing) as requested
+2. ✅ Resume PRP-006 (Membership Type Selector) with corrected layout → **COMPLETED**
+3. ✅ Continue with PRP-007 (Activity History Tab) → **COMPLETED**
+4. 🔄 Continue with PRPs 008-011 as originally planned → **READY FOR PRP-008**
+5. Skip PRP-012 (Testing) as requested
 
 Post-MVP enhancements stored in `docs/Future Enhancements/`.
 
@@ -257,6 +258,7 @@ This project uses multiple Model Context Protocol (MCP) servers to enhance Claud
 3. **ALWAYS use Firebase MCP for database operations** - Direct Firebase tool usage instead of manual CLI commands
 4. **ALWAYS use Playwright for UI testing** - Test forms, workflows, and user interactions on the running development server
 5. **ALWAYS use Semgrep for security scanning** - Run security scans before code commits, especially for authentication/authorization code
+6. **ALWAYS use GitHub MCP for repository operations** - Automate PR creation, issue management, and GitHub Actions workflows
 
 ### **Proactive Usage Requirements:**
 
@@ -265,6 +267,7 @@ This project uses multiple Model Context Protocol (MCP) servers to enhance Claud
 - **Before database changes**: Use Firebase MCP tools to verify data structure and test operations
 - **After UI changes**: Use Playwright to verify functionality on `http://localhost:5173` (development server)
 - **Before task completion**: Run Semgrep security scan to identify potential vulnerabilities
+- **After completing tasks**: Use GitHub MCP to create PRs with standardized commit messages and manage issues
 
 ### **Efficiency Rules:**
 
@@ -272,6 +275,7 @@ This project uses multiple Model Context Protocol (MCP) servers to enhance Claud
 2. **Don't guess API usage** - Use Context7 to fetch current documentation
 3. **Don't manually test UI** - Use Playwright to automate testing on the running app
 4. **Don't skip security** - Use Semgrep to catch issues early
+5. **Don't manually manage repository tasks** - Use GitHub MCP to automate PR creation, issue management, and workflows
 
 **These tools exist to enhance your capabilities - USE THEM consistently and proactively.**
 
@@ -419,6 +423,67 @@ Browser automation and testing framework providing comprehensive end-to-end test
 - Multi-tab support for complex user workflows
 - Element targeting using human-readable descriptions
 - Comprehensive interaction capabilities (clicks, typing, file uploads)
+
+#### 6. GitHub MCP Server
+GitHub's official MCP server providing comprehensive GitHub API integration for repository management, automation, and development workflows.
+
+**Configuration:**
+```bash
+# Official GitHub MCP server via remote HTTP transport (recommended)
+claude mcp add --transport http github https://api.githubcopilot.com/mcp -H "Authorization: Bearer <your-github-token>"
+
+# Alternative: Local Docker installation
+claude mcp add github -e GITHUB_PERSONAL_ACCESS_TOKEN=<your-token> -- docker run -i --rm -e GITHUB_PERSONAL_ACCESS_TOKEN ghcr.io/github/github-mcp-server
+```
+
+**13 Comprehensive Toolsets:**
+- **Issues Management**: Create, update, comment, assign, and manage GitHub issues
+- **Pull Requests**: Create, review, merge, and manage pull requests with full workflow support
+- **Repositories**: Complete repository operations including file management, branches, and settings
+- **GitHub Actions**: Workflow management, run triggering, artifact handling, and CI/CD automation
+- **Code Security**: Security alerts, vulnerability scanning, and code analysis integration
+- **Dependabot**: Dependency vulnerability tracking and automated security updates
+- **Discussions**: GitHub Discussions creation, management, and community engagement
+- **Gists**: Code snippet creation, sharing, and management
+- **Notifications**: GitHub notification handling and management
+- **Organizations**: Organization-level operations and team management
+- **Users**: User profile interactions and management
+- **Secret Protection**: Security scanning for exposed secrets and sensitive data
+- **Context**: Repository and user context information for enhanced AI interactions
+
+**Essential Tools:**
+- Complete repository file operations and branch management
+- Issue creation with automated assignment and labeling
+- Pull request creation with standardized commit messages and descriptions
+- GitHub Actions workflow triggering and monitoring
+- Security alert management and vulnerability tracking
+- Comprehensive project and organization management
+
+**Development Applications:**
+- **Automated PR Creation**: Create properly formatted pull requests with standardized commit messages
+- **Issue Management**: Convert TODOs and bugs into tracked GitHub issues
+- **CI/CD Integration**: Trigger builds, tests, and deployments through GitHub Actions
+- **Code Documentation**: Create and manage Gists for code snippets and examples
+- **Security Management**: Manage repository secrets for Firebase, deployment keys, and API tokens
+- **Release Automation**: Automate release creation and deployment workflows
+
+**Benefits for Shepherd Project:**
+- Seamless integration with existing MCP server stack (Serena, Firebase, Semgrep, Playwright)
+- Automated development workflows for PRP implementation
+- Enhanced CI/CD capabilities for deployment automation
+- Secure secrets management for production deployments
+- Standardized commit message formatting with "🤖 Generated with Claude Code"
+
+**Setup Requirements:**
+- GitHub Personal Access Token with `repo` scope (minimum required)
+- Additional recommended scopes: `workflow`, `gist`, `read:org`, `read:user`
+- Optional: Docker installation for local server deployment
+- Claude Code CLI or Claude Desktop application
+
+**Authentication Methods:**
+- **Remote Server**: Uses Authorization Bearer header with GitHub PAT
+- **Local Docker**: Uses GITHUB_PERSONAL_ACCESS_TOKEN environment variable
+- **OAuth Integration**: Supported for enterprise installations
 
 ### MCP Server Management
 
