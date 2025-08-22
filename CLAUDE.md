@@ -514,6 +514,71 @@ claude mcp remove <name>
 7. **Performance**: Batch operations when possible using parallel tool calls
 8. **Development Workflow**: Context7 → Serena → Implementation → Playwright Testing → Semgrep → Firebase deployment
 
+## Multi-Machine Development Workflow
+
+This project supports seamless development across multiple machines (desktop and laptop) using Git-based synchronization.
+
+### Critical Workflow Rules
+
+**ALWAYS start work with:**
+```bash
+git pull origin main
+```
+
+**ALWAYS end work with:**
+```bash
+git add .
+git commit -m "WIP: Work in progress - switching to [laptop/desktop]"
+git push origin main
+```
+
+### Initial Laptop Setup
+
+1. **Clone repository:**
+   ```bash
+   git clone https://github.com/PLyons/shepherd-church-management.git
+   cd shepherd-church-management
+   npm install
+   ```
+
+2. **Environment setup:**
+   ```bash
+   cp .env.example .env
+   # Add your Firebase credentials to .env
+   ```
+
+3. **MCP servers setup (if using Claude Code):**
+   Follow the same MCP server configuration as documented above
+
+### Best Practices for Multi-Machine Work
+
+1. **Commit Frequently**: Small, focused commits prevent conflicts
+2. **Use "WIP" Commits**: For incomplete work when switching machines
+3. **Pull Before Starting**: Always get latest changes first
+4. **Push Before Switching**: Never leave uncommitted work on a machine
+5. **Descriptive Commit Messages**: Help track work across machines
+
+### Conflict Resolution
+
+If merge conflicts occur:
+```bash
+# Git will mark conflicts in files
+# Edit files to resolve conflicts
+# Remove conflict markers and choose correct version
+git add .
+git commit -m "Resolve merge conflicts"
+git push origin main
+```
+
+### Emergency Recovery
+
+- All pushed commits are safe in GitHub
+- Use `git reflog` to see recent actions
+- Use `git log --oneline` to see commit history
+- Local backups available via Time Machine (Mac)
+
+**Detailed Setup Guide**: See `docs/MULTI-MACHINE-SETUP.md` for comprehensive instructions.
+
 ## PRP Task Format
 
 Each task file follows the **PRP structure**: Purpose, Requirements, Procedure
