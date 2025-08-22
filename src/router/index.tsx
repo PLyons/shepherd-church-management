@@ -1,4 +1,5 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
 import { AuthGuard } from '../components/auth/AuthGuard';
 import { RoleGuard } from '../components/auth/RoleGuard';
 import { Layout } from '../components/common/Layout';
@@ -19,6 +20,22 @@ import AuthCallback from '../pages/AuthCallback';
 import PasswordReset from '../pages/PasswordReset';
 import SetPassword from '../pages/SetPassword';
 import NotFound from '../pages/NotFound';
+
+// Lazy-loaded tab components
+const OverviewTab = lazy(() => import('../components/members/profile/tabs/OverviewTab'));
+const ActivityTab = lazy(() => import('../components/members/profile/tabs/ActivityTab'));
+const CommunicationsTab = lazy(() => import('../components/members/profile/tabs/CommunicationsTab'));
+const NotesTab = lazy(() => import('../components/members/profile/tabs/NotesTab'));
+const SettingsTab = lazy(() => import('../components/members/profile/tabs/SettingsTab'));
+
+// Tab loading component
+function TabLoadingSpinner() {
+  return (
+    <div className="flex justify-center items-center py-12">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+    </div>
+  );
+}
 
 export const router = createBrowserRouter(
   [
@@ -77,6 +94,56 @@ export const router = createBrowserRouter(
         {
           path: 'members/:id',
           element: <MemberProfile />,
+          children: [
+            {
+              index: true,
+              element: <Navigate to="overview" replace />
+            },
+            {
+              path: 'overview',
+              element: (
+                <Suspense fallback={<TabLoadingSpinner />}>
+                  <OverviewTab />
+                </Suspense>
+              )
+            },
+            {
+              path: 'activity',
+              element: (
+                <Suspense fallback={<TabLoadingSpinner />}>
+                  <ActivityTab />
+                </Suspense>
+              )
+            },
+            {
+              path: 'communications',
+              element: (
+                <Suspense fallback={<TabLoadingSpinner />}>
+                  <CommunicationsTab />
+                </Suspense>
+              )
+            },
+            {
+              path: 'notes',
+              element: (
+                <RoleGuard allowedRoles={['admin', 'pastor']}>
+                  <Suspense fallback={<TabLoadingSpinner />}>
+                    <NotesTab />
+                  </Suspense>
+                </RoleGuard>
+              )
+            },
+            {
+              path: 'settings',
+              element: (
+                <RoleGuard allowedRoles={['admin']}>
+                  <Suspense fallback={<TabLoadingSpinner />}>
+                    <SettingsTab />
+                  </Suspense>
+                </RoleGuard>
+              )
+            }
+          ]
         },
         {
           path: 'admin/registration-tokens',

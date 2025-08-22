@@ -51,6 +51,10 @@ export interface Member {
   gender?: 'Male' | 'Female';
   joinedAt?: string;
   
+  // Household relationship
+  householdId?: string;
+  isPrimaryContact?: boolean;
+  
   // Metadata
   createdAt?: Date | any;
   updatedAt?: Date | any;

@@ -6,6 +6,7 @@
 // Individual Services
 export { BaseFirestoreService } from './base.service';
 export { MembersService, membersService } from './members.service';
+export { HouseholdsService, householdsService } from './households.service';
 
 // Import classes for FirebaseService constructor
 import { MembersService } from './members.service';
