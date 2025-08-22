@@ -1,7 +1,7 @@
 # Documentation Index - Shepherd Church Management System
 
-**Last Updated:** 2025-08-21  
-**Project Status:** Phase 0.2 Member Profile Enhancement Planning Complete  
+**Last Updated:** 2025-08-22  
+**Project Status:** Phase 0.2 Corrective Implementation - Layout Issues Identified  
 
 Welcome to the Shepherd CMS documentation hub. This index provides quick access to all project documentation organized by topic and audience.
 
@@ -62,7 +62,10 @@ Welcome to the Shepherd CMS documentation hub. This index provides quick access 
 
 ### Member & Household Management
 - **Enhanced Member Forms (Phase 0.1 ✅):** Professional contact management complete
-- **Member Profile Enhancement (Phase 0.2 📋):** [Complete PRP Suite](prps/phase-0.2-member-profile/) with 12 detailed implementation plans
+- **Member Profile Enhancement (Phase 0.2 🔧):** 
+  - [Original PRP Suite](prps/phase-0.2-member-profile/) - PRPs 005-012
+  - **[Corrective PRPs](prps/phase-0.2-member-profile/)** - PRPs 101-106 (Layout fixes required)
+  - PRP-005 (Inline Editing) completed, revealed layout issues
 - **Current Implementation:** [Current Features](current-features.md)
 - **Data Models:** [Firebase Schema](firebase/firestore-schema-design.md)
 - **Service Layer:** Documented in CLAUDE.md

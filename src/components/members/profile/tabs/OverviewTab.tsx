@@ -1,4 +1,4 @@
-import { useContext, useMemo } from 'react';
+import { useContext, useMemo, useCallback } from 'react';
 import { 
   User,
   Mail,
@@ -16,9 +16,16 @@ import { MemberContext } from '../../../../pages/MemberProfile';
 import InfoCard from '../common/InfoCard';
 import InfoField from '../common/InfoField';
 import ContactList from '../common/ContactList';
+import { InlineEditText, InlineEditSelect, InlineEditDate } from '../../../common/inline-edit';
+import { useEditPermissions } from '../../../../hooks/useEditPermissions';
+import { useToast } from '../../../../contexts/ToastContext';
+import { membersService } from '../../../../services/firebase/members.service';
+import { validateName } from '../../../../utils/validation';
 
 export default function OverviewTab() {
   const { member } = useContext(MemberContext);
+  const { showToast } = useToast();
+  const permissions = useEditPermissions(member?.id || '');
 
   if (!member) {
     return (
@@ -27,6 +34,19 @@ export default function OverviewTab() {
       </div>
     );
   }
+
+  const handleFieldSave = useCallback(async (field: string, value: any) => {
+    if (!member?.id) return;
+    
+    try {
+      await membersService.update(member.id, { [field]: value });
+      showToast('Field updated successfully', 'success');
+    } catch (error) {
+      console.error(`Error updating ${field}:`, error);
+      showToast('Failed to update field', 'error');
+      throw error;
+    }
+  }, [member?.id, showToast]);
 
   // Helper function to format addresses
   const formatAddress = (address: any) => {
@@ -106,16 +126,6 @@ export default function OverviewTab() {
     }
   };
 
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'admin':
-        return 'bg-red-100 text-red-800';
-      case 'pastor':
-        return 'bg-purple-100 text-purple-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
 
   // Process contact data with memoization for performance
   const processedContacts = useMemo(() => {
@@ -176,47 +186,74 @@ export default function OverviewTab() {
 
       {/* Personal Information */}
       <InfoCard title="Personal Information" icon={User}>
-        <InfoField 
-          label="Full Name"
-          value={`${member.firstName} ${member.lastName}`}
+        <InlineEditText
+          value={member.firstName || ''}
+          onSave={(value) => handleFieldSave('firstName', value)}
+          label="First Name"
           icon={User}
+          canEdit={permissions.canEditPersonalInfo}
+          validation={validateName}
+          placeholder="Enter first name"
         />
         
-        {member.gender && (
-          <InfoField 
-            label="Gender"
-            value={member.gender}
-            icon={User}
-          />
-        )}
+        <InlineEditText
+          value={member.lastName || ''}
+          onSave={(value) => handleFieldSave('lastName', value)}
+          label="Last Name"
+          icon={User}
+          canEdit={permissions.canEditPersonalInfo}
+          validation={validateName}
+          placeholder="Enter last name"
+        />
+        
+        <InlineEditSelect
+          value={member.gender || ''}
+          onSave={(value) => handleFieldSave('gender', value)}
+          options={[
+            { label: 'Male', value: 'Male' },
+            { label: 'Female', value: 'Female' }
+          ]}
+          label="Gender"
+          icon={User}
+          canEdit={permissions.canEditPersonalInfo}
+        />
 
-        {(member.birthDate || member.birthdate) && (
-          <InfoField 
-            label="Birth Date"
-            value={formatDateWithAge(member.birthDate || member.birthdate)}
-            icon={Calendar}
-          />
-        )}
+        <InlineEditDate
+          value={member.birthDate || member.birthdate || ''}
+          onSave={(value) => handleFieldSave('birthDate', value)}
+          label="Birth Date"
+          icon={Calendar}
+          canEdit={permissions.canEditPersonalInfo}
+          formatDisplay={(value) => formatDateWithAge(String(value))}
+        />
 
-        {member.anniversaryDate && (
-          <InfoField 
-            label="Anniversary"
-            value={formatDateWithYears(member.anniversaryDate)}
-            icon={Heart}
-          />
-        )}
+        <InlineEditDate
+          value={member.anniversaryDate || ''}
+          onSave={(value) => handleFieldSave('anniversaryDate', value)}
+          label="Anniversary"
+          icon={Heart}
+          canEdit={permissions.canEditPersonalInfo}
+          formatDisplay={(value) => formatDateWithYears(String(value))}
+        />
 
-        {member.maritalStatus && (
-          <InfoField 
-            label="Marital Status"
-            value={member.maritalStatus}
-            icon={Users}
-          />
-        )}
+        <InlineEditSelect
+          value={member.maritalStatus || ''}
+          onSave={(value) => handleFieldSave('maritalStatus', value)}
+          options={[
+            { label: 'Single', value: 'Single' },
+            { label: 'Married', value: 'Married' },
+            { label: 'Divorced', value: 'Divorced' },
+            { label: 'Widowed', value: 'Widowed' }
+          ]}
+          label="Marital Status"
+          icon={Users}
+          canEdit={permissions.canEditPersonalInfo}
+        />
       </InfoCard>
 
       {/* Church Information */}
       <InfoCard title="Church Information" icon={Badge}>
+        {/* Member Status - will be replaced with dropdown selector in PRP-006 */}
         <InfoField 
           label="Member Status"
           value={
@@ -227,23 +264,27 @@ export default function OverviewTab() {
           icon={Badge}
         />
 
-        <InfoField 
+        <InlineEditSelect
+          value={member.role || 'member'}
+          onSave={(value) => handleFieldSave('role', value)}
+          options={[
+            { label: 'Member', value: 'member' },
+            { label: 'Pastor', value: 'pastor' },
+            { label: 'Admin', value: 'admin' }
+          ]}
           label="Role"
-          value={
-            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(member.role || 'member')}`}>
-              {member.role || 'member'}
-            </span>
-          }
           icon={Shield}
+          canEdit={permissions.canEditRole}
         />
 
-        {member.joinedAt && (
-          <InfoField 
-            label="Joined"
-            value={formatDate(member.joinedAt)}
-            icon={Clock}
-          />
-        )}
+        <InlineEditDate
+          value={member.joinedAt || ''}
+          onSave={(value) => handleFieldSave('joinedAt', value)}
+          label="Joined Date"
+          icon={Clock}
+          canEdit={permissions.canEditChurchInfo}
+          formatDisplay={(value) => formatDate(String(value))}
+        />
       </InfoCard>
     </div>
   );

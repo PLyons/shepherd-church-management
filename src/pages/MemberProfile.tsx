@@ -8,7 +8,6 @@ import MemberProfileTabs from '../components/members/profile/MemberProfileTabs';
 import HouseholdSidebar from '../components/members/profile/HouseholdSidebar';
 import {
   User,
-  Users,
 } from 'lucide-react';
 
 // Create context to pass member data to tabs
