@@ -41,11 +41,15 @@ A React + TypeScript church management system focused on core membership functio
 - **Multiple Admin Setup Scripts** - Flexible admin user creation
 - **MCP Server Integration** - Enhanced development with AI coding tools
 
+### Event Management (Phase 2B - Service Layer Complete)
+- **Event Data Model** - Complete TypeScript interfaces for events, RSVPs, and attendance
+- **Events Service** - Full CRUD with role-based queries and event lifecycle management  
+- **RSVP Service** - Capacity management, waitlist processing, and comprehensive statistics
+- **Ready for UI Components** - Calendar views, event forms, and RSVP interfaces
+
 ## 🚀 Features Ready for Implementation
 
 Based on PRD specifications, the following features have a solid foundation and can be systematically added:
-
-- **Event Management** - Calendar, RSVP system, attendance tracking
 - **Donation Tracking** - Financial management and reporting
 - **Volunteer Scheduling** - Ministry and service coordination
 - **Sermon Archive** - File management and sermon notes

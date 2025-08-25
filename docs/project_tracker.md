@@ -301,13 +301,52 @@ This project tracker aligns with the phases defined in `docs/prd.md`:
   - Extended global search to include events alongside members
   - Singleton service instance (`eventsService`) exported for direct use
 
+### ✅ PRP-2B-003: Event RSVP Service Implementation (2025-08-25) ✅
+- ✅ **Complete RSVP Service Architecture** - Professional subcollection-based service extending BaseFirestoreService
+  - Created `src/services/firebase/event-rsvp.service.ts` with full RSVP lifecycle management
+  - Subcollection pattern: RSVPs stored as `/events/{eventId}/rsvps/{rsvpId}`
+  - Proper TypeScript ↔ Firestore conversion with RSVPDocument interface
+  - Timestamp handling for responseDate, createdAt, updatedAt fields
+  - Error handling following established project patterns
+
+- ✅ **Core RSVP Operations** - Complete CRUD with capacity management
+  - **createRSVP()** - RSVP creation with automatic capacity checking and waitlist handling
+  - **updateRSVP()** - RSVP updates with capacity validation for status changes
+  - **deleteRSVP()** - RSVP deletion with proper cleanup
+  - Atomic transactions prevent race conditions during capacity checks
+  - Duplicate RSVP prevention (one RSVP per member per event)
+
+- ✅ **Comprehensive Query Methods** - Multi-dimensional RSVP retrieval
+  - **getRSVPsByEvent()** - All RSVPs for an event ordered by creation date
+  - **getRSVPsByStatus()** - Filter RSVPs by status (yes, no, maybe, waitlist)
+  - **getRSVPByMember()** - Single member's RSVP for specific event
+  - **getRSVPsByMember()** - All RSVPs for member across events (collection group query)
+
+- ✅ **Statistics and Analytics** - Complete RSVP reporting system
+  - **getRSVPSummary()** - Comprehensive statistics (counts by status, total people including guests)
+  - **getCapacityInfo()** - Real-time capacity tracking (spots remaining, at capacity, waitlist info)
+  - Status breakdown with guest count calculations
+  - Integration with event capacity settings
+
+- ✅ **Waitlist Management System** - FIFO waitlist processing
+  - **processWaitlist()** - Automatic promotion from waitlist to confirmed when spots available
+  - **getWaitlistPosition()** - Member's position in waitlist queue
+  - First-in-first-out (FIFO) ordering based on creation timestamp
+  - Group size consideration for waitlist promotion
+
+- ✅ **Service Integration** - Complete system integration
+  - Added exports to `src/services/firebase/index.ts`
+  - Updated FirebaseService class with eventRSVPs property
+  - Integration with EventsService for capacity validation
+  - Ready for UI component integration with complete API surface
+
 ### ✅ Complete PRP Documentation Suite:
 
 **Foundation Layer (Data & Services):**
 - ✅ **[PRP-2B-001: Event Data Model & Types](docs/prps/phase-2b-events/PRP-2B-001-event-data-model.md)** - COMPLETED ✅ (Event, RSVP, and Attendance interfaces)
-- ✅ **[PRP-2B-002: Events Firebase Service](docs/prps/phase-2b-events/PRP-2B-002-events-firebase-service.md)** - Complete CRUD service with role-based queries (3-4 hours)
-- ✅ **[PRP-2B-003: Event RSVP Service](docs/prps/phase-2b-events/PRP-2B-003-event-rsvp-service.md)** - RSVP management with capacity and waitlist (3-4 hours)
-- ✅ **[PRP-2B-004: Firestore Security Rules](docs/prps/phase-2b-events/PRP-2B-004-firestore-security-rules.md)** - Role-based security for events and RSVPs (2-3 hours)
+- ✅ **[PRP-2B-002: Events Firebase Service](docs/prps/phase-2b-events/PRP-2B-002-events-firebase-service.md)** - COMPLETED ✅ (Complete CRUD service with role-based queries)
+- ✅ **[PRP-2B-003: Event RSVP Service](docs/prps/phase-2b-events/PRP-2B-003-event-rsvp-service.md)** - COMPLETED ✅ (RSVP management with capacity and waitlist - 2025-08-25)
+- ❌ **[PRP-2B-004: Firestore Security Rules](docs/prps/phase-2b-events/PRP-2B-004-firestore-security-rules.md)** - Role-based security for events and RSVPs (2-3 hours)
 
 **User Interface Layer:**
 - ✅ **[PRP-2B-005: Event Form Component](docs/prps/phase-2b-events/PRP-2B-005-event-form-component.md)** - Create/edit events with comprehensive validation (4-5 hours)
@@ -344,10 +383,11 @@ This project tracker aligns with the phases defined in `docs/prd.md`:
 ### Implementation Strategy:
 1. ✅ **PRP-2B-001 COMPLETED** - Event Data Model & Types (comprehensive interface system)
 2. ✅ **PRP-2B-002 COMPLETED** - Events Firebase Service (complete CRUD with role-based queries)
-3. **Next: PRP-2B-003** - Event RSVP Service implementation
-4. **Follow sequence strictly** - each PRP depends on previous completion
-5. **Test at boundaries** - validate each PRP before proceeding
-6. **Update tracker** - mark PRPs complete as implemented
+3. ✅ **PRP-2B-003 COMPLETED** - Event RSVP Service implementation (2025-08-25)
+4. **Next: PRP-2B-004** - Firestore Security Rules for Events
+5. **Follow sequence strictly** - each PRP depends on previous completion
+6. **Test at boundaries** - validate each PRP before proceeding
+7. **Update tracker** - mark PRPs complete as implemented
 
 ### Subsequent Phases:
 - Calendar view with filtering capabilities

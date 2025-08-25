@@ -8,10 +8,12 @@ export { BaseFirestoreService } from './base.service';
 export { MembersService, membersService } from './members.service';
 export { HouseholdsService, householdsService } from './households.service';
 export { EventsService, eventsService } from './events.service';
+export { EventRSVPService, eventRSVPService } from './event-rsvp.service';
 
 // Import classes for FirebaseService constructor
 import { MembersService } from './members.service';
 import { EventsService } from './events.service';
+import { EventRSVPService } from './event-rsvp.service';
 import type { Member } from '../../types';
 import type { Event } from '../../types/events';
 
@@ -49,6 +51,9 @@ export const firebase = {
   get events() {
     return new EventsService();
   },
+  get eventRSVPs() {
+    return new EventRSVPService();
+  },
 } as const;
 
 // ============================================================================
@@ -59,10 +64,12 @@ export const firebase = {
 export class FirebaseService {
   public readonly members: MembersService;
   public readonly events: EventsService;
+  public readonly eventRSVPs: EventRSVPService;
 
   constructor() {
     this.members = new MembersService();
     this.events = new EventsService();
+    this.eventRSVPs = new EventRSVPService();
   }
 
   // ============================================================================
