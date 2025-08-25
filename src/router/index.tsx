@@ -17,6 +17,7 @@ import CreateHousehold from '../pages/CreateHousehold';
 import EditHousehold from '../pages/EditHousehold';
 import HouseholdMembers from '../pages/HouseholdMembers';
 import Events from '../pages/Events';
+import { Calendar } from '../pages/Calendar';
 import { CreateEvent } from '../pages/CreateEvent';
 import { EditEvent } from '../pages/EditEvent';
 import Settings from '../pages/Settings';
@@ -198,6 +199,10 @@ export const router = createBrowserRouter(
         {
           path: 'events',
           element: <Events />,
+        },
+        {
+          path: 'calendar',
+          element: <Calendar />,
         },
         {
           path: 'events/new',

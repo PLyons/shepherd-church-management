@@ -17,6 +17,7 @@ const navigationItems = [
   { name: 'Members', href: '/members', roles: ['admin', 'pastor', 'member'] },
   { name: 'Households', href: '/households', roles: ['admin', 'pastor', 'member'] },
   { name: 'Events', href: '/events', roles: ['admin', 'pastor', 'member'] },
+  { name: 'Calendar', href: '/calendar', roles: ['admin', 'pastor', 'member'] },
   {
     name: 'Registration',
     href: '/admin/registration-tokens',
