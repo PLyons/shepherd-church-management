@@ -16,6 +16,8 @@ import HouseholdProfile from '../pages/HouseholdProfile';
 import CreateHousehold from '../pages/CreateHousehold';
 import EditHousehold from '../pages/EditHousehold';
 import HouseholdMembers from '../pages/HouseholdMembers';
+import { CreateEvent } from '../pages/CreateEvent';
+import { EditEvent } from '../pages/EditEvent';
 import Settings from '../pages/Settings';
 import QRRegistration from '../pages/QRRegistration';
 import RegistrationTokens from '../pages/admin/RegistrationTokens';
@@ -191,6 +193,14 @@ export const router = createBrowserRouter(
               <HouseholdMembers />
             </RoleGuard>
           ),
+        },
+        {
+          path: 'events/new',
+          element: <CreateEvent />,
+        },
+        {
+          path: 'events/:id/edit',
+          element: <EditEvent />,
         },
         {
           path: 'admin/registration-tokens',
