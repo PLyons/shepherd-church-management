@@ -39,6 +39,32 @@ service cloud.firestore {
              get(/databases/$(database)/documents/members/$(request.auth.uid)).data.role in roles;
     }
     
+    function isValidEventData() {
+      return request.resource.data.keys().hasAll(['title', 'startDate', 'endDate', 'eventType', 'isPublic']) &&
+             request.resource.data.eventType in ['service', 'bible_study', 'prayer_meeting', 'youth_group', 'seniors_group', 'womens_ministry', 'mens_ministry', 'special_event', 'outreach', 'volunteer_activity', 'board_meeting', 'training', 'other'] &&
+             request.resource.data.isPublic is bool &&
+             request.resource.data.isActive is bool &&
+             (!('requiredRoles' in request.resource.data) || request.resource.data.requiredRoles is list);
+    }
+
+    function isValidRSVPData() {
+      return request.resource.data.keys().hasAll(['eventId', 'memberId', 'status']) &&
+             request.resource.data.status in ['yes', 'no', 'maybe', 'waitlist'] &&
+             request.resource.data.numberOfGuests is number &&
+             request.resource.data.numberOfGuests >= 0;
+    }
+
+    function canReadEvent(eventId) {
+      let eventData = get(/databases/$(database)/documents/events/$(eventId)).data;
+      return eventData.isPublic == true || 
+             hasRole(eventData.requiredRoles) || 
+             isAdminOrPastor();
+    }
+
+    function isEventCreator(eventId) {
+      return get(/databases/$(database)/documents/events/$(eventId)).data.createdBy == request.auth.uid;
+    }
+    
     // Members collection
     match /members/{memberId} {
       // Anyone authenticated can read member profiles
@@ -126,6 +152,85 @@ service cloud.firestore {
       allow update, delete: if isAuthenticated() && 
         hasRole(['admin']) ||
         (hasRole(['pastor']) && resource.data.recordedBy == request.auth.uid);
+    }
+    
+    // Events collection
+    match /events/{eventId} {
+      // Read access rules
+      allow read: if isAuthenticated() && (
+        // Public events readable by all
+        resource.data.isPublic == true ||
+        // Private events readable by required roles
+        hasRole(resource.data.requiredRoles) ||
+        // Admin/pastor can read all events
+        isAdminOrPastor()
+      );
+      
+      // Write access rules
+      allow create: if isAdminOrPastor() && 
+        isValidEventData() &&
+        request.resource.data.createdBy == request.auth.uid;
+        
+      allow update: if isAdminOrPastor() && 
+        isValidEventData() &&
+        // Preserve original creator
+        request.resource.data.createdBy == resource.data.createdBy;
+        
+      allow delete: if isAdminOrPastor();
+      
+      // RSVP subcollection
+      match /rsvps/{rsvpId} {
+        // Members can read RSVPs for events they can access
+        allow read: if isAuthenticated() && (
+          // Can read own RSVP
+          resource.data.memberId == request.auth.uid ||
+          // Admin/pastor can read all RSVPs
+          isAdminOrPastor() ||
+          // Event creators can read RSVPs
+          get(/databases/$(database)/documents/events/$(eventId)).data.createdBy == request.auth.uid
+        );
+        
+        // RSVP creation rules
+        allow create: if isAuthenticated() && 
+          isValidRSVPData() &&
+          request.resource.data.memberId == request.auth.uid &&
+          // Can only RSVP to events you can read
+          canReadEvent(eventId);
+          
+        // RSVP update rules
+        allow update: if isAuthenticated() && (
+          // Members can update their own RSVPs
+          (resource.data.memberId == request.auth.uid && 
+           request.resource.data.memberId == request.auth.uid) ||
+          // Admin/pastor can update any RSVP
+          isAdminOrPastor()
+        ) && isValidRSVPData();
+        
+        // RSVP deletion rules
+        allow delete: if isAuthenticated() && (
+          resource.data.memberId == request.auth.uid ||
+          isAdminOrPastor()
+        );
+      }
+      
+      // Attendance subcollection
+      match /attendance/{attendanceId} {
+        // Only admin/pastor can access attendance data
+        allow read, write: if isAdminOrPastor();
+      }
+    }
+    
+    // Collection group for RSVP queries across events
+    match /{path=**}/rsvps/{rsvpId} {
+      allow read: if isAuthenticated() && (
+        resource.data.memberId == request.auth.uid ||
+        isAdminOrPastor()
+      );
+    }
+
+    // Collection group for attendance queries across events
+    match /{path=**}/attendance/{attendanceId} {
+      allow read: if isAdminOrPastor();
     }
     
     // Default rule - deny everything else

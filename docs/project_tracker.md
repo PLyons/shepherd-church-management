@@ -340,13 +340,48 @@ This project tracker aligns with the phases defined in `docs/prd.md`:
   - Integration with EventsService for capacity validation
   - Ready for UI component integration with complete API surface
 
+### ✅ PRP-2B-004: Firestore Security Rules for Events (2025-08-25) ✅
+- ✅ **Comprehensive Event Security Rules** - Role-based access control for events system
+  - Added complete security rules to `firestore.rules` for events collection
+  - Public events readable by all authenticated users
+  - Private events readable only by users with required roles + admin/pastor
+  - Only admin/pastor can create, update, and delete events
+  - Event creators can read RSVPs for their events
+
+- ✅ **RSVP Subcollection Security** - Secure RSVP management with member ownership
+  - Members can only read their own RSVPs + admin/pastor can read all
+  - Members can only RSVP to events they have read access to
+  - Members can only manage their own RSVPs
+  - RSVP creation requires valid event access validation
+
+- ✅ **Attendance Data Protection** - Strict admin/pastor only access
+  - Attendance subcollection completely restricted to admin/pastor roles
+  - No member-level access to attendance data
+  - Supports future attendance tracking UI for administrative users
+
+- ✅ **Data Validation Functions** - Comprehensive validation helpers
+  - **isValidEventData()** - Validates event structure, required fields, and enum values
+  - **isValidRSVPData()** - Validates RSVP structure and constraints  
+  - **canReadEvent()** - Determines user access to specific events
+  - **isEventCreator()** - Checks event creator permissions
+
+- ✅ **Collection Group Query Support** - Cross-event queries with security
+  - RSVP collection group queries respect member ownership
+  - Attendance collection group queries restricted to admin/pastor
+  - Enables efficient multi-event analytics while maintaining security
+
+- ✅ **Production Deployment** - Successfully deployed to Firebase project
+  - Rules deployed to `shepherd-cms-ba981` Firebase project
+  - Security validation completed across all access patterns
+  - Foundation ready for UI component development
+
 ### ✅ Complete PRP Documentation Suite:
 
 **Foundation Layer (Data & Services):**
 - ✅ **[PRP-2B-001: Event Data Model & Types](docs/prps/phase-2b-events/PRP-2B-001-event-data-model.md)** - COMPLETED ✅ (Event, RSVP, and Attendance interfaces)
 - ✅ **[PRP-2B-002: Events Firebase Service](docs/prps/phase-2b-events/PRP-2B-002-events-firebase-service.md)** - COMPLETED ✅ (Complete CRUD service with role-based queries)
 - ✅ **[PRP-2B-003: Event RSVP Service](docs/prps/phase-2b-events/PRP-2B-003-event-rsvp-service.md)** - COMPLETED ✅ (RSVP management with capacity and waitlist - 2025-08-25)
-- ❌ **[PRP-2B-004: Firestore Security Rules](docs/prps/phase-2b-events/PRP-2B-004-firestore-security-rules.md)** - Role-based security for events and RSVPs (2-3 hours)
+- ✅ **[PRP-2B-004: Firestore Security Rules](docs/prps/phase-2b-events/PRP-2B-004-firestore-security-rules.md)** - COMPLETED ✅ (Role-based security for events and RSVPs - 2025-08-25)
 
 **User Interface Layer:**
 - ✅ **[PRP-2B-005: Event Form Component](docs/prps/phase-2b-events/PRP-2B-005-event-form-component.md)** - Create/edit events with comprehensive validation (4-5 hours)
@@ -384,10 +419,11 @@ This project tracker aligns with the phases defined in `docs/prd.md`:
 1. ✅ **PRP-2B-001 COMPLETED** - Event Data Model & Types (comprehensive interface system)
 2. ✅ **PRP-2B-002 COMPLETED** - Events Firebase Service (complete CRUD with role-based queries)
 3. ✅ **PRP-2B-003 COMPLETED** - Event RSVP Service implementation (2025-08-25)
-4. **Next: PRP-2B-004** - Firestore Security Rules for Events
-5. **Follow sequence strictly** - each PRP depends on previous completion
-6. **Test at boundaries** - validate each PRP before proceeding
-7. **Update tracker** - mark PRPs complete as implemented
+4. ✅ **PRP-2B-004 COMPLETED** - Firestore Security Rules for Events (2025-08-25)
+5. **Next: PRP-2B-005** - Event Form Component implementation
+6. **Follow sequence strictly** - each PRP depends on previous completion
+7. **Test at boundaries** - validate each PRP before proceeding
+8. **Update tracker** - mark PRPs complete as implemented
 
 ### Subsequent Phases:
 - Calendar view with filtering capabilities
