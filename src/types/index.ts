@@ -40,9 +40,9 @@ export interface Member {
   }[];
 
   // Dates
-  birthDate?: Date | any;
+  birthDate?: Date | string;
   birthdate?: string; // Alternative format for compatibility
-  anniversaryDate?: Date | any;
+  anniversaryDate?: Date | string;
 
   // Status fields
   maritalStatus?: 'single' | 'married' | 'widowed' | 'divorced';
@@ -62,8 +62,8 @@ export interface Member {
   isPrimaryContact?: boolean;
 
   // Metadata
-  createdAt?: Date | any;
-  updatedAt?: Date | any;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 
   // Computed
   fullName?: string;
@@ -82,8 +82,8 @@ export interface Household {
   state?: string;
   postalCode?: string;
   country?: string;
-  createdAt?: Date | any; // Firestore Timestamp
-  updatedAt?: Date | any; // Firestore Timestamp
+  createdAt?: Date | string; // Firestore Timestamp
+  updatedAt?: Date | string; // Firestore Timestamp
 }
 
 export interface MemberEvent {
@@ -122,10 +122,10 @@ export interface DashboardStats {
 
 export interface DashboardData {
   stats: DashboardStats;
-  recentActivity?: any[];
+  recentActivity?: Record<string, unknown>[];
   upcomingEvents?: Event[];
-  quickActions?: any[];
-  personalInfo?: any;
+  quickActions?: Record<string, unknown>[];
+  personalInfo?: Record<string, unknown>;
 }
 
 // Form-specific types

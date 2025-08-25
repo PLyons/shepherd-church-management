@@ -11,6 +11,11 @@ import Register from '../pages/Register';
 import Members from '../pages/Members';
 import MemberProfile from '../pages/MemberProfile';
 import { MemberFormEnhanced } from '../components/members/MemberFormEnhanced';
+import Households from '../pages/Households';
+import HouseholdProfile from '../pages/HouseholdProfile';
+import CreateHousehold from '../pages/CreateHousehold';
+import EditHousehold from '../pages/EditHousehold';
+import HouseholdMembers from '../pages/HouseholdMembers';
 import Settings from '../pages/Settings';
 import QRRegistration from '../pages/QRRegistration';
 import RegistrationTokens from '../pages/admin/RegistrationTokens';
@@ -154,6 +159,38 @@ export const router = createBrowserRouter(
               ),
             },
           ],
+        },
+        {
+          path: 'households',
+          element: <Households />,
+        },
+        {
+          path: 'households/new',
+          element: (
+            <RoleGuard allowedRoles={['admin', 'pastor']}>
+              <CreateHousehold />
+            </RoleGuard>
+          ),
+        },
+        {
+          path: 'households/:id',
+          element: <HouseholdProfile />,
+        },
+        {
+          path: 'households/:id/edit',
+          element: (
+            <RoleGuard allowedRoles={['admin', 'pastor']}>
+              <EditHousehold />
+            </RoleGuard>
+          ),
+        },
+        {
+          path: 'households/:id/members',
+          element: (
+            <RoleGuard allowedRoles={['admin', 'pastor']}>
+              <HouseholdMembers />
+            </RoleGuard>
+          ),
         },
         {
           path: 'admin/registration-tokens',

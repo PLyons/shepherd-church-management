@@ -71,14 +71,14 @@ export class DashboardService {
 
       const memberStats = await this.membersService
         .getStatistics()
-        .catch((err: any) => {
+        .catch((err: unknown) => {
           console.error('Members stats error:', err);
           return { total: 0, active: 0, inactive: 0, visitors: 0 };
         });
 
       console.log('DashboardService: Statistics fetched successfully');
 
-      const recentActivity = await this.getAdminActivity().catch((err: any) => {
+      const recentActivity = await this.getAdminActivity().catch((err: unknown) => {
         console.error('Admin activity error:', err);
         return [];
       });

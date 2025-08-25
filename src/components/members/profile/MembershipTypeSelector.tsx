@@ -77,19 +77,23 @@ export function MembershipTypeSelector({
         memberStatus: pendingStatus as typeof member.memberStatus,
       });
 
-      // Record history
-      await membershipHistoryService.addStatusChange({
-        memberId: member.id,
-        previousStatus: currentStatus,
-        newStatus: pendingStatus,
-        reason: reason.trim() || undefined,
-        changedBy: currentUser.id,
-        changedByName: `${currentUser.firstName} ${currentUser.lastName}`,
-        metadata: {
-          source: 'profile',
-          userAgent: navigator.userAgent,
-        },
-      });
+      // Record history (non-blocking - don't fail if history can't be saved)
+      try {
+        await membershipHistoryService.addStatusChange({
+          memberId: member.id,
+          previousStatus: currentStatus,
+          newStatus: pendingStatus,
+          reason: reason.trim() || undefined,
+          changedBy: currentUser.id,
+          changedByName: `${currentUser.firstName} ${currentUser.lastName}`,
+          metadata: {
+            source: 'profile',
+            userAgent: navigator.userAgent,
+          },
+        });
+      } catch (historyError) {
+        console.warn('Failed to save status history, but member update was successful:', historyError);
+      }
 
       showToast('Membership status updated successfully', 'success');
       setShowConfirmDialog(false);

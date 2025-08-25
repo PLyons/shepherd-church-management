@@ -11,7 +11,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     message: string,
     type: 'success' | 'error' | 'info' = 'info'
   ) => {
-    console.log(`Toast (${type}):`, message);
+    console.log('Toast:', type, message);
   };
 
   return (

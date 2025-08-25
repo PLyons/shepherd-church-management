@@ -142,7 +142,7 @@ export const initializeMemberFormData = (member?: Member): MemberFormData => {
     };
   }
 
-  // @ts-ignore - householdId property missing after cleanup
+  // @ts-expect-error - householdId property missing after cleanup
   return {
     firstName: member.firstName || '',
     lastName: member.lastName || '',

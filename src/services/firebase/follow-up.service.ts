@@ -1,4 +1,5 @@
 import { BaseFirestoreService } from './base.service';
+import { db } from '../../lib/firebase';
 import { Member } from '../../types';
 import { PendingRegistration } from '../../types/registration';
 import { Timestamp } from 'firebase/firestore';
@@ -72,7 +73,33 @@ class FollowUpService extends BaseFirestoreService<
   FollowUpAction
 > {
   constructor() {
-    super('follow_up_actions');
+    super(
+      db,
+      'follow_up_actions',
+      (id: string, document: FollowUpActionDocument) => ({
+        id,
+        memberId: document.memberId,
+        actionType: document.actionType as any,
+        status: document.status as any,
+        scheduledAt: document.scheduledAt.toISOString(),
+        completedAt: document.completedAt?.toISOString(),
+        metadata: document.metadata,
+        createdAt: document.createdAt.toISOString(),
+        updatedAt: document.updatedAt.toISOString(),
+      }),
+      (client: Partial<FollowUpAction>) => {
+        const document: Partial<FollowUpActionDocument> = {};
+        if (client.memberId) document.memberId = client.memberId;
+        if (client.actionType) document.actionType = client.actionType;
+        if (client.status) document.status = client.status;
+        if (client.scheduledAt) document.scheduledAt = new Date(client.scheduledAt);
+        if (client.completedAt) document.completedAt = new Date(client.completedAt);
+        if (client.metadata) document.metadata = client.metadata;
+        if (client.createdAt) document.createdAt = new Date(client.createdAt);
+        if (client.updatedAt) document.updatedAt = new Date(client.updatedAt);
+        return document;
+      }
+    );
   }
 
   protected documentToClient(

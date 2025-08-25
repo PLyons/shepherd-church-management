@@ -7,7 +7,8 @@ import {
   limit, 
   startAfter,
   getDocs, 
-  Timestamp 
+  Timestamp,
+  QueryDocumentSnapshot
 } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { MemberActivity, ActivityType, ActivityFilter } from '../../types/activity';
@@ -31,8 +32,8 @@ class ActivityService {
     memberId: string, 
     filters: Partial<ActivityFilter> = {},
     pageSize: number = 20,
-    lastDoc?: any
-  ): Promise<{ activities: MemberActivity[]; hasMore: boolean; lastDoc: any }> {
+    lastDoc?: QueryDocumentSnapshot
+  ): Promise<{ activities: MemberActivity[]; hasMore: boolean; lastDoc: QueryDocumentSnapshot | undefined }> {
     try {
       let q = query(
         collection(db, this.collectionName),

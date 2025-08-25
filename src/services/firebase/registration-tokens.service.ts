@@ -1,5 +1,5 @@
-// import { Timestamp } from 'firebase/firestore'; // Not used in this service
 import { BaseFirestoreService } from './base.service';
+import { db } from '../../lib/firebase';
 import { RegistrationTokenDocument } from '../../types/firestore';
 import {
   RegistrationToken,
@@ -20,7 +20,60 @@ class RegistrationTokensService extends BaseFirestoreService<
   RegistrationToken
 > {
   constructor() {
-    super('registration_tokens');
+    super(
+      db,
+      'registration_tokens',
+      (id: string, document: RegistrationTokenDocument) => {
+        return {
+          id,
+          token: document.token,
+          createdBy: document.createdBy,
+          createdAt: timestampToString(document.createdAt) || '',
+          expiresAt: timestampToString(document.expiresAt),
+          maxUses: document.maxUses,
+          currentUses: document.currentUses,
+          isActive: document.isActive,
+          metadata: {
+            purpose: document.metadata.purpose,
+            notes: document.metadata.notes,
+            eventDate: timestampToString(document.metadata.eventDate),
+            location: document.metadata.location,
+          },
+        };
+      },
+      (client: Partial<RegistrationToken>) => {
+        const document: Partial<RegistrationTokenDocument> = {};
+
+        if (client.token !== undefined) document.token = client.token;
+        if (client.createdBy !== undefined) document.createdBy = client.createdBy;
+        if (client.createdAt !== undefined)
+          document.createdAt = stringToTimestamp(client.createdAt);
+        if (client.expiresAt !== undefined)
+          document.expiresAt = stringToTimestamp(client.expiresAt);
+        if (client.maxUses !== undefined) document.maxUses = client.maxUses;
+        if (client.currentUses !== undefined)
+          document.currentUses = client.currentUses;
+        if (client.isActive !== undefined) document.isActive = client.isActive;
+
+        if (client.metadata) {
+          document.metadata = {
+            purpose: client.metadata.purpose || 'General',
+          };
+          if (client.metadata.purpose !== undefined)
+            document.metadata.purpose = client.metadata.purpose;
+          if (client.metadata.notes !== undefined)
+            document.metadata.notes = client.metadata.notes;
+          if (client.metadata.eventDate !== undefined)
+            document.metadata.eventDate = stringToTimestamp(
+              client.metadata.eventDate
+            );
+          if (client.metadata.location !== undefined)
+            document.metadata.location = client.metadata.location;
+        }
+
+        return document;
+      }
+    );
   }
 
   // ============================================================================
@@ -227,9 +280,7 @@ class RegistrationTokensService extends BaseFirestoreService<
         currentUses: token.currentUses + 1,
       });
 
-      console.log(
-        `Token usage incremented: ${tokenId} (${token.currentUses + 1})`
-      );
+      console.log('Token usage incremented:', tokenId, '(', token.currentUses + 1, ')');
     } catch (error) {
       console.error('Error incrementing token usage:', error);
       throw error;
@@ -244,7 +295,7 @@ class RegistrationTokensService extends BaseFirestoreService<
       await this.update(tokenId, {
         isActive: false,
       });
-      console.log(`Token deactivated: ${tokenId}`);
+      console.log('Token deactivated:', tokenId);
     } catch (error) {
       console.error('Error deactivating token:', error);
       throw error;
@@ -339,7 +390,7 @@ class RegistrationTokensService extends BaseFirestoreService<
         }
       }
 
-      console.log(`Cleaned up ${cleanedCount} expired tokens`);
+      console.log('Cleaned up expired tokens:', cleanedCount);
       return cleanedCount;
     } catch (error) {
       console.error('Error cleaning up expired tokens:', error);

@@ -96,6 +96,38 @@ service cloud.firestore {
       allow read, update, delete: if isAdminOrPastor();
     }
     
+    // Notes subcollection - Pastoral Care Security
+    match /members/{memberId}/notes/{noteId} {
+      allow read: if isAuthenticated() && 
+        hasRole(['admin', 'pastor']) &&
+        (resource.data.isPrivate == false || 
+         resource.data.createdBy == request.auth.uid || 
+         hasRole(['admin']));
+      
+      allow create: if isAuthenticated() && 
+        hasRole(['admin', 'pastor']) &&
+        request.resource.data.keys().hasAll(['memberId', 'title', 'content', 'category', 'priority', 'createdBy']) &&
+        request.resource.data.createdBy == request.auth.uid;
+      
+      allow update: if isAuthenticated() && 
+        hasRole(['admin', 'pastor']) &&
+        (resource.data.createdBy == request.auth.uid || hasRole(['admin']));
+      
+      allow delete: if isAuthenticated() && 
+        hasRole(['admin', 'pastor']) &&
+        (resource.data.createdBy == request.auth.uid || hasRole(['admin']));
+    }
+
+    // Communications subcollection - Member Interaction Logging
+    match /members/{memberId}/communications/{commId} {
+      allow read, create: if isAuthenticated() && 
+        hasRole(['admin', 'pastor']);
+      
+      allow update, delete: if isAuthenticated() && 
+        hasRole(['admin']) ||
+        (hasRole(['pastor']) && resource.data.recordedBy == request.auth.uid);
+    }
+    
     // Default rule - deny everything else
     match /{document=**} {
       allow read, write: if false;

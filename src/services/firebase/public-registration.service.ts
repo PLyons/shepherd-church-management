@@ -1,5 +1,6 @@
 import { Timestamp } from 'firebase/firestore';
 import { BaseFirestoreService } from './base.service';
+import { db } from '../../lib/firebase';
 import { PendingRegistrationDocument } from '../../types/firestore';
 import {
   PendingRegistration,
@@ -17,7 +18,49 @@ class PublicRegistrationService extends BaseFirestoreService<
   PendingRegistration
 > {
   constructor() {
-    super('pending_registrations');
+    super(
+      db,
+      'pending_registrations',
+      (id: string, document: PendingRegistrationDocument) => ({
+        id,
+        tokenId: document.tokenId,
+        firstName: document.firstName,
+        lastName: document.lastName,
+        email: document.email,
+        phone: document.phone,
+        birthdate: timestampToString(document.birthdate),
+        gender: document.gender,
+        address: document.address,
+        memberStatus: document.memberStatus,
+        submittedAt: timestampToString(document.submittedAt) || '',
+        ipAddress: document.ipAddress,
+        userAgent: document.userAgent,
+        approvalStatus: document.approvalStatus,
+        approvedBy: document.approvedBy,
+        approvedAt: timestampToString(document.approvedAt),
+        rejectionReason: document.rejectionReason,
+        memberId: document.memberId,
+      }),
+      (client: Partial<PendingRegistration>) => removeUndefined({
+        tokenId: client.tokenId,
+        firstName: client.firstName,
+        lastName: client.lastName,
+        email: client.email,
+        phone: client.phone,
+        birthdate: stringToTimestamp(client.birthdate),
+        gender: client.gender,
+        address: client.address,
+        memberStatus: client.memberStatus,
+        submittedAt: client.submittedAt ? stringToTimestamp(client.submittedAt) : undefined,
+        ipAddress: client.ipAddress,
+        userAgent: client.userAgent,
+        approvalStatus: client.approvalStatus || 'pending',
+        approvedBy: client.approvedBy,
+        approvedAt: stringToTimestamp(client.approvedAt),
+        rejectionReason: client.rejectionReason,
+        memberId: client.memberId,
+      })
+    );
   }
 
   // ============================================================================

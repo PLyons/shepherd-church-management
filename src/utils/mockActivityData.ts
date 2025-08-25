@@ -28,7 +28,7 @@ export function generateMockActivities(memberId: string, count: number = 20): Om
     let activity: Omit<MemberActivity, 'id'>;
 
     switch (type) {
-      case 'profile_update':
+      case 'profile_update': {
         const fields = ['phone', 'email', 'address', 'emergency_contact'];
         const field = fields[Math.floor(Math.random() * fields.length)];
         activity = {
@@ -46,8 +46,9 @@ export function generateMockActivities(memberId: string, count: number = 20): Om
           source: 'system'
         };
         break;
+      }
 
-      case 'status_change':
+      case 'status_change': {
         const statuses = [
           { from: 'visitor', to: 'regular_attender', reason: 'Consistent attendance' },
           { from: 'regular_attender', to: 'active', reason: 'Completed membership class' },
@@ -69,8 +70,9 @@ export function generateMockActivities(memberId: string, count: number = 20): Om
           source: 'system'
         };
         break;
+      }
 
-      case 'event_attendance':
+      case 'event_attendance': {
         const eventName = mockEvents[Math.floor(Math.random() * mockEvents.length)];
         activity = {
           memberId,
@@ -87,8 +89,9 @@ export function generateMockActivities(memberId: string, count: number = 20): Om
           source: 'system'
         };
         break;
+      }
 
-      case 'volunteer_service':
+      case 'volunteer_service': {
         const department = mockDepartments[Math.floor(Math.random() * mockDepartments.length)];
         const role = mockRoles[Math.floor(Math.random() * mockRoles.length)];
         const hours = Math.floor(Math.random() * 8) + 1;
@@ -108,8 +111,9 @@ export function generateMockActivities(memberId: string, count: number = 20): Om
           source: 'system'
         };
         break;
+      }
 
-      case 'registration':
+      case 'registration': {
         activity = {
           memberId,
           type,
@@ -123,8 +127,9 @@ export function generateMockActivities(memberId: string, count: number = 20): Om
           source: 'system'
         };
         break;
+      }
 
-      case 'login':
+      case 'login': {
         activity = {
           memberId,
           type,
@@ -138,6 +143,7 @@ export function generateMockActivities(memberId: string, count: number = 20): Om
           source: 'system'
         };
         break;
+      }
 
       default:
         activity = {

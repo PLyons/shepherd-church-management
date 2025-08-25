@@ -5,7 +5,7 @@ export interface BaseActivity {
   title: string;
   description?: string;
   timestamp: Date;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   createdBy?: string;
   source: 'system' | 'manual' | 'import';
 }
@@ -26,8 +26,8 @@ export interface ProfileUpdateActivity extends BaseActivity {
   type: 'profile_update';
   metadata: {
     field: string;
-    oldValue?: any;
-    newValue: any;
+    oldValue?: unknown;
+    newValue: unknown;
     updatedBy: string;
   };
 }

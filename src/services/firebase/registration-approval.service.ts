@@ -86,15 +86,15 @@ class RegistrationApprovalService {
         'approved',
         approvedBy,
         undefined,
-        // @ts-ignore - member type issue
+        // @ts-expect-error - member type issue
         member.id || 'unknown'
       );
 
       // Process follow-up actions
       try {
-        // @ts-ignore - member type issue
+        // @ts-expect-error - member type issue
         await followUpService.processApprovedRegistration(registration, member);
-        // @ts-ignore - member type issue
+        // @ts-expect-error - member type issue
         console.log(`Follow-up actions scheduled for member ${member.id}`);
       } catch (followUpError) {
         console.error('Error scheduling follow-up actions:', followUpError);
@@ -102,7 +102,7 @@ class RegistrationApprovalService {
       }
 
       console.log(
-        // @ts-ignore - member type issue
+        // @ts-expect-error - member type issue
         `Registration ${registrationId} approved, member ${member.id} created`
       );
 

@@ -140,8 +140,16 @@ export default function RegistrationTokens() {
 
     // Note: In a real implementation, we'd need to generate the QR code here
     // For now, we'll show a placeholder
-    printWindow.document.getElementById('qr-code')!.innerHTML =
-      `<div style="width: 200px; height: 200px; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center;">QR Code for ${url}</div>`;
+    const qrElement = printWindow.document.getElementById('qr-code')!;
+    const placeholderDiv = printWindow.document.createElement('div');
+    placeholderDiv.style.width = '200px';
+    placeholderDiv.style.height = '200px';
+    placeholderDiv.style.border = '1px solid #ccc';
+    placeholderDiv.style.display = 'flex';
+    placeholderDiv.style.alignItems = 'center';
+    placeholderDiv.style.justifyContent = 'center';
+    placeholderDiv.textContent = `QR Code for ${url}`; // Safe: uses textContent instead of innerHTML
+    qrElement.appendChild(placeholderDiv);
 
     printWindow.document.close();
     printWindow.print();

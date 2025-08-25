@@ -2,7 +2,7 @@ import { useState, useEffect, useContext, useMemo } from 'react';
 import { Filter, Download, Calendar } from 'lucide-react';
 import { MemberContext } from '../../../../pages/MemberProfile';
 import { useAuth } from '../../../../hooks/useUnifiedAuth';
-import { activityService } from '../../../../services/firebase/activity.service';
+// import { activityService } from '../../../../services/firebase/activity.service';
 import { MemberActivity, ActivityFilter, ActivityType } from '../../../../types/activity';
 import { ACTIVITY_CONFIG } from '../../../../types/activity';
 import { ActivityTimeline } from '../components/ActivityTimeline';

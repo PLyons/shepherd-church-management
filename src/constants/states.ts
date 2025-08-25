@@ -67,3 +67,6 @@ export const STATES_AND_TERRITORIES: State[] = [
   { code: 'PR', name: 'Puerto Rico' },
   { code: 'VI', name: 'U.S. Virgin Islands' },
 ];
+
+// Export alias for compatibility
+export const US_STATES = STATES_AND_TERRITORIES;

@@ -201,7 +201,7 @@ export class FirebaseService {
     const allMembers = await this.members.getAll();
 
     let issuesFound = 0;
-    let issuesFixed = 0;
+    const issuesFixed = 0;
 
     // Basic member data validation
     for (const member of allMembers) {

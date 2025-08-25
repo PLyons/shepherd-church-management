@@ -41,8 +41,8 @@ export default function Members() {
         await firebaseService.members.getMemberDirectoryPaginated(options);
       console.log('Fetched paginated members:', result);
 
-      setMembers(result.data);
-      setTotalCount(result.totalCount);
+      setMembers(result?.data || []);
+      setTotalCount(result?.totalCount || 0);
     } catch (error) {
       console.error('Error fetching members:', error);
     } finally {
@@ -253,7 +253,8 @@ export default function Members() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {members.map((memberItem) => (
+              {members && members.length > 0 ? (
+                members.map((memberItem) => (
                 <tr key={memberItem.id} className="hover:bg-gray-50">
                   <td className="w-16 px-4 py-4 whitespace-nowrap">
                     <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
@@ -322,25 +323,26 @@ export default function Members() {
                     )}
                   </td>
                 </tr>
-              ))}
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={8} className="px-6 py-12 text-center">
+                    <Users className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                    <h3 className="text-sm font-medium text-gray-900">
+                      No members found
+                    </h3>
+                    <p className="mt-1 text-sm text-gray-500">
+                      {activeSearchTerm
+                        ? 'Try adjusting your search terms.'
+                        : 'No members available.'}
+                    </p>
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
 
-        {/* Empty state */}
-        {members.length === 0 && (
-          <div className="text-center py-12">
-            <Users className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">
-              No members found
-            </h3>
-            <p className="mt-1 text-sm text-gray-500">
-              {activeSearchTerm
-                ? 'Try adjusting your search terms.'
-                : 'No members available.'}
-            </p>
-          </div>
-        )}
 
         {/* Pagination */}
         {showPagination && (

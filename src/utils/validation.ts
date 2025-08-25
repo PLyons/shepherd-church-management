@@ -10,7 +10,7 @@ export const validateEmail = (value: string): string | null => {
 
 export const validatePhone = (value: string): string | null => {
   if (!value.trim()) return null; // Optional field
-  const phoneRegex = /^[\d\s\-\(\)\+\.]{10,}$/;
+  const phoneRegex = /^[\d\s\-()]{10,}$/;
   return phoneRegex.test(value) ? null : 'Please enter a valid phone number';
 };
 
