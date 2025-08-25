@@ -16,6 +16,7 @@ import HouseholdProfile from '../pages/HouseholdProfile';
 import CreateHousehold from '../pages/CreateHousehold';
 import EditHousehold from '../pages/EditHousehold';
 import HouseholdMembers from '../pages/HouseholdMembers';
+import Events from '../pages/Events';
 import { CreateEvent } from '../pages/CreateEvent';
 import { EditEvent } from '../pages/EditEvent';
 import Settings from '../pages/Settings';
@@ -193,6 +194,10 @@ export const router = createBrowserRouter(
               <HouseholdMembers />
             </RoleGuard>
           ),
+        },
+        {
+          path: 'events',
+          element: <Events />,
         },
         {
           path: 'events/new',
