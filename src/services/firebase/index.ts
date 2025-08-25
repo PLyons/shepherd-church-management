@@ -7,10 +7,13 @@
 export { BaseFirestoreService } from './base.service';
 export { MembersService, membersService } from './members.service';
 export { HouseholdsService, householdsService } from './households.service';
+export { EventsService, eventsService } from './events.service';
 
 // Import classes for FirebaseService constructor
 import { MembersService } from './members.service';
+import { EventsService } from './events.service';
 import type { Member } from '../../types';
+import type { Event } from '../../types/events';
 
 // Service instances for direct use (lazy loading to avoid circular deps)
 interface MemberStatistics {
@@ -23,16 +26,28 @@ interface MemberStatistics {
   members: number;
 }
 
+interface EventStatistics {
+  total: number;
+  upcoming: number;
+  thisWeek: number;
+  thisMonth: number;
+}
+
 interface DashboardStatistics {
   members: MemberStatistics;
+  events: EventStatistics;
   overview: {
     totalMembers: number;
+    upcomingEvents: number;
     recentActivity: string[];
   };
 }
 export const firebase = {
   get members() {
     return new MembersService();
+  },
+  get events() {
+    return new EventsService();
   },
 } as const;
 
@@ -43,9 +58,11 @@ export const firebase = {
 
 export class FirebaseService {
   public readonly members: MembersService;
+  public readonly events: EventsService;
 
   constructor() {
     this.members = new MembersService();
+    this.events = new EventsService();
   }
 
   // ============================================================================
@@ -57,18 +74,34 @@ export class FirebaseService {
    */
   async getDashboardStats(): Promise<DashboardStatistics> {
     const memberStats = await this.members.getStatistics();
+    
+    // Get upcoming events for stats
+    const upcomingEvents = await this.events.getUpcomingPublicEvents(100);
+    const now = new Date();
+    const oneWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const oneMonth = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+    const eventStats: EventStatistics = {
+      total: upcomingEvents.length,
+      upcoming: upcomingEvents.length,
+      thisWeek: upcomingEvents.filter(event => event.startDate <= oneWeek).length,
+      thisMonth: upcomingEvents.filter(event => event.startDate <= oneMonth).length,
+    };
 
     const overview = {
       totalMembers: memberStats.total,
+      upcomingEvents: eventStats.upcoming,
       recentActivity: [
         'Recent registrations',
         'Member activities',
         'Recent updates',
+        'Event activities',
       ],
     };
 
     return {
       members: memberStats,
+      events: eventStats,
       overview,
     };
   }
@@ -78,28 +111,52 @@ export class FirebaseService {
   // ============================================================================
 
   /**
-   * Global search across members
+   * Global search across members and events
    */
   async globalSearch(
     searchTerm: string,
     options?: {
       includeMembers?: boolean;
+      includeEvents?: boolean;
       limit?: number;
     }
   ): Promise<{
     members: Member[];
+    events: Event[];
     total: number;
   }> {
-    const { includeMembers = true, limit = 20 } = options || {};
+    const { includeMembers = true, includeEvents = true, limit = 20 } = options || {};
 
-    const members = includeMembers
-      ? await this.members.search(searchTerm, { limit })
-      : [];
+    const [members, events] = await Promise.all([
+      includeMembers ? this.members.search(searchTerm, { limit }) : [],
+      includeEvents ? this.searchEvents(searchTerm, limit) : [],
+    ]);
+
+    const totalResults = members.length + events.length;
 
     return {
       members: members.slice(0, limit),
-      total: members.length,
+      events: events.slice(0, limit),
+      total: totalResults,
     };
+  }
+
+  /**
+   * Search events by title, description, or location
+   */
+  private async searchEvents(searchTerm: string, limitCount: number): Promise<Event[]> {
+    // For now, get all upcoming events and filter client-side
+    // In production, you might want to implement server-side text search
+    const allEvents = await this.events.getUpcomingPublicEvents(100);
+    
+    const searchLower = searchTerm.toLowerCase();
+    return allEvents
+      .filter(event => 
+        event.title.toLowerCase().includes(searchLower) ||
+        event.description.toLowerCase().includes(searchLower) ||
+        event.location.toLowerCase().includes(searchLower)
+      )
+      .slice(0, limitCount);
   }
 
   // ============================================================================
@@ -154,10 +211,17 @@ export class FirebaseService {
    */
   async getCollectionCounts(): Promise<{
     members: number;
+    events: number;
   }> {
-    const members = await this.members.count();
+    const [members, allEvents] = await Promise.all([
+      this.members.count(),
+      this.events.getUpcomingPublicEvents(1000), // Get a large number to count
+    ]);
 
-    return { members };
+    return { 
+      members, 
+      events: allEvents.length 
+    };
   }
 
   // ============================================================================

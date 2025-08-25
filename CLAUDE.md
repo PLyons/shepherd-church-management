@@ -34,7 +34,7 @@ npm run setup-admin     # Setup initial admin
 ### Service Layer Architecture
 The codebase uses a Firebase-based service layer pattern:
 - `src/services/firebase/` - Firebase service implementations
-- Core services: members, households, roles
+- Core services: members, households, events, roles
 - All services extend BaseFirestoreService for consistent patterns
 
 ### **CRITICAL: Data Translation & Type Conversion**
@@ -64,6 +64,7 @@ Components are organized by feature in `src/components/`:
 ### Type Definitions
 All TypeScript types are centralized in `src/types/`:
 - `index.ts` - Core domain models (Member, Household)
+- `events.ts` - Event system types (Event, EventRSVP, EventAttendance)
 - `firestore.ts` - Firebase/Firestore schema types
 - Clean, Firebase-focused type definitions
 
@@ -119,23 +120,23 @@ Three main contexts manage global state:
 
 ## Project Status
 
-**Current Status**: Phase 0.2 desktop-first architecture implemented. Layout foundation corrected with flexbox, vertical sections, and fixed sidebar patterns.
+**Current Status**: Phase 2B Event Calendar & Attendance System - IN PROGRESS. Core service layer implementation complete.
 
-**MVP Implementation (25% Complete)**:
-- ✅ Member Management - Enhanced CRUD with contact arrays and household sidebar
-- ✅ Role-based Access Control - Admin/pastor/member roles with security enforcement  
+**MVP Implementation (50% Complete)**:
+- ✅ Member Management - Enhanced CRUD with contact arrays and household sidebar  
+- ✅ Role-based Access Control - Admin/pastor/member roles with security enforcement
 - ✅ Firebase Authentication - Magic links and member onboarding
 - ✅ Dashboard Views - Role-based dashboards with statistics
-- 🔄 Household Management - Profile integration done, CRUD operations pending
+- ✅ Household Management - Complete CRUD system with member assignment and primary contact management
+- 🔄 Event Calendar & Attendance - Data model and service layer complete, UI components next
 
-**Active Phase 0.2 Implementation**:
-- ✅ Corrective PRPs 101-106: Layout architecture fixes completed
-- ✅ PRPs 005-007: Inline editing, membership selector, activity history completed  
-- 🔄 **Next**: Continue with PRP-008 through PRP-011
+**Active Phase 2B Event Calendar & Attendance (August 2025)**:
+- ✅ PRP-2B-001: Event Data Model & Types - Complete TypeScript interface system
+- ✅ PRP-2B-002: Events Firebase Service - Complete CRUD service with role-based queries
+- 🔄 **Next**: PRP-2B-003 Event RSVP Service implementation
 
-**Pending MVP Features (75% Remaining)**:
-- Household Management CRUD interface
-- Event Calendar & Attendance System
+**Pending MVP Features (50% Remaining)**:
+- Event Calendar & Attendance UI Components (Forms, Calendar View, RSVP System)
 - Donation Tracking & Financial Reports
 - Volunteer Scheduling System
 - Sermon Archive & Media Management
@@ -278,8 +279,9 @@ If you are unsure of assumptions or hit ambiguous scope:
 - `.env.example` - Environment variables
 
 ### Services & Types  
-- `/src/services/firebase/` - Firebase service implementations (members, households, roles, dashboard)
+- `/src/services/firebase/` - Firebase service implementations (members, households, events, roles, dashboard)
 - `/src/types/index.ts` - Core domain models (Member, Household)
+- `/src/types/events.ts` - Event system types (Event, EventRSVP, EventAttendance, EventType)
 - `/src/utils/firestore-converters.ts` - **CRITICAL**: Type-safe document conversion
 - `/src/utils/member-form-utils.ts` - Form utilities and phone formatting
 
