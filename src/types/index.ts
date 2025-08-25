@@ -150,3 +150,6 @@ export interface MembershipStatusChange {
     source: 'profile' | 'admin_panel' | 'bulk_import';
   };
 }
+
+// Export comprehensive event types
+export * from './events';
