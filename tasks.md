@@ -39,16 +39,16 @@ These are the tasks to implement an enhanced RSVP modal system that will replace
   - [x] 3.8 Add proper toast notifications following existing patterns
   - [x] 3.9 Verify all service integration tests pass
 
-- [ ] 4. EventCard Modal Integration
-  - [ ] 4.1 Write tests for EventCard modal trigger and state management
-  - [ ] 4.2 Replace inline RSVP buttons with "RSVP" button that opens modal
-  - [ ] 4.3 Maintain existing RSVP status display for quick reference
-  - [ ] 4.4 Add modal trigger state management in EventCard
-  - [ ] 4.5 Implement proper props passing between EventCard and RSVPModal
-  - [ ] 4.6 Preserve existing EventCard functionality for past events
-  - [ ] 4.7 Update EventCard styling to accommodate new RSVP button
-  - [ ] 4.8 Ensure proper cleanup and state management
-  - [ ] 4.9 Verify all EventCard integration tests pass
+- [x] 4. EventCard Modal Integration
+  - [x] 4.1 Write tests for EventCard modal trigger and state management
+  - [x] 4.2 Replace inline RSVP buttons with "RSVP" button that opens modal
+  - [x] 4.3 Maintain existing RSVP status display for quick reference
+  - [x] 4.4 Add modal trigger state management in EventCard
+  - [x] 4.5 Implement proper props passing between EventCard and RSVPModal
+  - [x] 4.6 Preserve existing EventCard functionality for past events
+  - [x] 4.7 Update EventCard styling to accommodate new RSVP button
+  - [x] 4.8 Ensure proper cleanup and state management
+  - [x] 4.9 Verify all EventCard integration tests pass
 
 - [ ] 5. Enhanced UX Features and Polish
   - [ ] 5.1 Write tests for advanced modal features and edge cases

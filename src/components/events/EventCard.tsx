@@ -20,6 +20,7 @@ import { Member } from '../../types';
 import { eventRSVPService } from '../../services/firebase/event-rsvp.service';
 import { eventsService } from '../../services/firebase/events.service';
 import { useToast } from '../../contexts/ToastContext';
+import { RSVPModal } from './RSVPModal';
 
 interface EventCardProps {
   event: Event;
@@ -90,6 +91,7 @@ export function EventCard({
   const [userRSVP, setUserRSVP] = useState<EventRSVP | null>(null);
   const [rsvpLoading, setRSVPLoading] = useState(false);
   const [loadingRSVPStatus, setLoadingRSVPStatus] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { showToast } = useToast();
 
   useEffect(() => {
@@ -157,6 +159,25 @@ export function EventCard({
       console.error('Error deleting event:', error);
       showToast('Failed to delete event', 'error');
     }
+  };
+
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleModalRSVPUpdate = async (updatedRSVP: EventRSVP) => {
+    // Update local state with the new RSVP
+    setUserRSVP(updatedRSVP);
+    
+    // Close the modal
+    setIsModalOpen(false);
+    
+    // Notify parent component
+    onEventUpdate();
   };
 
   const formatDate = (date: Date) => {
@@ -292,43 +313,14 @@ export function EventCard({
               )}
             </div>
 
-            {/* RSVP Buttons */}
-            <div className="flex items-center space-x-1">
+            {/* RSVP Button */}
+            <div className="flex items-center space-x-2">
               <button
-                onClick={() => handleRSVP('yes')}
-                disabled={rsvpLoading || userRSVP?.status === 'yes'}
-                className={`p-1.5 rounded text-xs font-medium transition-colors ${
-                  userRSVP?.status === 'yes'
-                    ? 'bg-green-100 text-green-700 border border-green-200'
-                    : 'text-gray-600 hover:bg-green-100 hover:text-green-700'
-                }`}
-                title="Going"
+                onClick={handleOpenModal}
+                disabled={loadingRSVPStatus}
+                className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                <UserCheck className="h-4 w-4" />
-              </button>
-              <button
-                onClick={() => handleRSVP('maybe')}
-                disabled={rsvpLoading || userRSVP?.status === 'maybe'}
-                className={`p-1.5 rounded text-xs font-medium transition-colors ${
-                  userRSVP?.status === 'maybe'
-                    ? 'bg-yellow-100 text-yellow-700 border border-yellow-200'
-                    : 'text-gray-600 hover:bg-yellow-100 hover:text-yellow-700'
-                }`}
-                title="Maybe"
-              >
-                <HelpCircle className="h-4 w-4" />
-              </button>
-              <button
-                onClick={() => handleRSVP('no')}
-                disabled={rsvpLoading || userRSVP?.status === 'no'}
-                className={`p-1.5 rounded text-xs font-medium transition-colors ${
-                  userRSVP?.status === 'no'
-                    ? 'bg-red-100 text-red-700 border border-red-200'
-                    : 'text-gray-600 hover:bg-red-100 hover:text-red-700'
-                }`}
-                title="Not Going"
-              >
-                <UserX className="h-4 w-4" />
+                RSVP
               </button>
             </div>
           </div>
@@ -359,6 +351,15 @@ export function EventCard({
           </div>
         </div>
       )}
+
+      {/* RSVP Modal */}
+      <RSVPModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        event={event}
+        currentUserRSVP={userRSVP}
+        onRSVPUpdate={handleModalRSVPUpdate}
+      />
     </div>
   );
 }
