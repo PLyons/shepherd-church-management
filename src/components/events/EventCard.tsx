@@ -13,7 +13,7 @@ import {
   HelpCircle,
   Loader,
 } from 'lucide-react';
-import { Event, EventRSVP, RSVPStatus } from '../../types/events';
+import { Event, EventRSVP } from '../../types/events';
 import { Member } from '../../types';
 import { eventRSVPService } from '../../services/firebase/event-rsvp.service';
 import { eventsService } from '../../services/firebase/events.service';
@@ -87,7 +87,7 @@ export function EventCard({
   onEventUpdate 
 }: EventCardProps) {
   const [userRSVP, setUserRSVP] = useState<EventRSVP | null>(null);
-  const [rsvpLoading, setRSVPLoading] = useState(false);
+  const [rsvpLoading] = useState(false);
   const [loadingRSVPStatus, setLoadingRSVPStatus] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { showToast } = useToast();
@@ -110,52 +110,28 @@ export function EventCard({
     }
   };
 
-  const handleRSVPUpdate = async (status: RSVPStatus) => {
-    if (!currentMember || !event.id) return;
-
-    try {
-      setRSVPLoading(true);
-      
-      if (userRSVP) {
-        // Update existing RSVP
-        await eventRSVPService.updateRSVP(event.id, userRSVP.id!, {
-          status,
-          updatedAt: new Date(),
-        });
-      } else {
-        // Create new RSVP
-        await eventRSVPService.createRSVP({
-          eventId: event.id,
-          memberId: currentMember.id,
-          status,
-          numberOfGuests: 0,
-          responseDate: new Date(),
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        });
-      }
-
-      // Refresh RSVP data
-      await loadUserRSVP();
-      showToast('RSVP updated successfully', 'success');
-    } catch (error) {
-      console.error('Error updating RSVP:', error);
-      showToast('Failed to update RSVP', 'error');
-    } finally {
-      setRSVPLoading(false);
-    }
+  // Handler for RSVP updates from the modal (receives full EventRSVP object)
+  const handleRSVPUpdateFromModal = async (updatedRSVP: EventRSVP) => {
+    // Update local state with the new RSVP
+    setUserRSVP(updatedRSVP);
+    
+    // Close the modal
+    setIsModalOpen(false);
+    
+    // Notify parent component
+    onEventUpdate();
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this event?')) return;
+    if (!confirm('Are you sure you want to cancel this event?')) return;
 
     try {
-      await eventsService.deleteEvent(event.id);
-      showToast('Event deleted successfully', 'success');
+      await eventsService.cancelEvent(event.id);
+      showToast('Event cancelled successfully', 'success');
       onEventUpdate();
     } catch (error) {
-      console.error('Error deleting event:', error);
-      showToast('Failed to delete event', 'error');
+      console.error('Error cancelling event:', error);
+      showToast('Failed to cancel event', 'error');
     }
   };
 
@@ -176,9 +152,10 @@ export function EventCard({
     });
   };
 
-  const canRSVP = currentMember && event.enableRSVP;
-  const eventDate = event.startDateTime instanceof Date ? event.startDateTime : new Date(event.startDateTime);
+  const canRSVP = currentMember && (typeof event.capacity === 'number' && !isNaN(event.capacity)); // Use capacity to determine if RSVP is enabled
+  const eventDate = event.startDate instanceof Date ? event.startDate : new Date(event.startDate);
   const isPastEvent = eventDate < new Date();
+
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow">
@@ -189,13 +166,13 @@ export function EventCard({
             <h3 className="text-lg font-semibold text-gray-900">{event.title}</h3>
             <span
               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                eventTypeColors[event.type] || 'bg-gray-100 text-gray-800'
+                eventTypeColors[event.eventType] || 'bg-gray-100 text-gray-800'
               }`}
             >
-              {eventTypeLabels[event.type] || event.type}
+              {eventTypeLabels[event.eventType] || event.eventType}
             </span>
-            {event.visibility === 'private' && (
-              <EyeOff className="h-4 w-4 text-gray-400" title="Private Event" />
+            {!event.isPublic && (
+              <EyeOff className="h-4 w-4 text-gray-400" />
             )}
           </div>
           {event.description && (
@@ -235,10 +212,10 @@ export function EventCard({
           <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
           <span>
             {formatTime(eventDate)}
-            {event.endDateTime && (
+            {event.endDate && (
               <span>
                 {' - '}
-                {formatTime(event.endDateTime instanceof Date ? event.endDateTime : new Date(event.endDateTime))}
+                {formatTime(event.endDate instanceof Date ? event.endDate : new Date(event.endDate))}
               </span>
             )}
           </span>
@@ -250,13 +227,13 @@ export function EventCard({
             <span>{event.location}</span>
           </div>
         )}
-
-        {event.maxAttendees && (
+        
+        {(typeof event.capacity === 'number' && !isNaN(event.capacity)) && (
           <div className="flex items-center text-sm text-gray-600">
             <Users className="h-4 w-4 mr-2 flex-shrink-0" />
             <span>
-              {event.currentAttendees || 0} / {event.maxAttendees} attendees
-              {event.currentAttendees === event.maxAttendees && (
+              {(typeof event.currentAttendees === 'number' && !isNaN(event.currentAttendees)) ? event.currentAttendees : 0} / {event.capacity} attendees
+              {((typeof event.currentAttendees === 'number' ? event.currentAttendees : 0)) >= event.capacity && (
                 <span className="text-amber-600 font-medium"> (Full)</span>
               )}
             </span>
@@ -292,7 +269,7 @@ export function EventCard({
 
             <button
               onClick={() => setIsModalOpen(true)}
-              disabled={rsvpLoading}
+              disabled={rsvpLoading || loadingRSVPStatus}
               className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors disabled:opacity-50"
             >
               {rsvpLoading ? (
@@ -307,15 +284,14 @@ export function EventCard({
         </div>
       )}
 
-      {/* RSVP Modal */}
-      {isModalOpen && (
-        <RSVPModal
-          event={event}
-          currentRSVP={userRSVP}
-          onClose={() => setIsModalOpen(false)}
-          onRSVPSubmit={handleRSVPUpdate}
-        />
-      )}
+      {/* RSVP Modal - Fixed props */}
+      <RSVPModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        event={event}
+        currentUserRSVP={userRSVP}
+        onRSVPUpdate={handleRSVPUpdateFromModal}
+      />
     </div>
   );
 }

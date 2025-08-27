@@ -1,10 +1,10 @@
 import {
-  Event,
-  EventDocument,
-  EventRSVP,
-  EventRSVPDocument,
-  EventAttendance,
-  EventAttendanceDocument,
+  LegacyEvent as Event,
+  LegacyEventDocument as EventDocument,
+  LegacyEventRSVP as EventRSVP,
+  LegacyEventRSVPDocument as EventRSVPDocument,
+  LegacyEventAttendance as EventAttendance,
+  LegacyEventAttendanceDocument as EventAttendanceDocument,
   MemberEvent,
   MemberEventDocument,
 } from '../../types/firestore';

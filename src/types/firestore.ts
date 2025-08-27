@@ -139,7 +139,8 @@ export interface RSVPStats {
   total: number;
 }
 
-export interface EventDocument {
+// DEPRECATED: Legacy event types - use types/events.ts instead
+export interface LegacyEventDocument {
   // Event Information
   title: string;
   description?: string;
@@ -164,7 +165,8 @@ export interface EventDocument {
   updatedAt: Timestamp;
 }
 
-export interface Event {
+// DEPRECATED: Legacy event type - use types/events.ts instead
+export interface LegacyEvent {
   id: string;
   title: string;
   description?: string;
@@ -179,8 +181,8 @@ export interface Event {
   updatedAt: string; // ISO string
 }
 
-// Event RSVP Subcollection
-export interface EventRSVPDocument {
+// DEPRECATED: Legacy RSVP types - use types/events.ts instead
+export interface LegacyEventRSVPDocument {
   memberId: string;
   memberName: string; // Denormalized
   response: 'yes' | 'no' | 'maybe';
@@ -188,7 +190,8 @@ export interface EventRSVPDocument {
   note?: string;
 }
 
-export interface EventRSVP {
+// DEPRECATED: Legacy RSVP type - use types/events.ts instead
+export interface LegacyEventRSVP {
   id: string; // memberId
   memberId: string;
   memberName: string;
@@ -197,8 +200,8 @@ export interface EventRSVP {
   note?: string;
 }
 
-// Event Attendance Subcollection
-export interface EventAttendanceDocument {
+// DEPRECATED: Legacy attendance types - use types/events.ts instead
+export interface LegacyEventAttendanceDocument {
   memberId: string;
   memberName: string; // Denormalized
   attended: boolean;
@@ -206,7 +209,8 @@ export interface EventAttendanceDocument {
   checkedInBy?: string; // Admin/Pastor member ID
 }
 
-export interface EventAttendance {
+// DEPRECATED: Legacy attendance type - use types/events.ts instead
+export interface LegacyEventAttendance {
   id: string; // memberId
   memberId: string;
   memberName: string;

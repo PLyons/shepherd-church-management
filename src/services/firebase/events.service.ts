@@ -28,6 +28,7 @@ export interface EventDocument {
   
   // Capacity management
   capacity?: number;
+  currentAttendees?: number;
   enableWaitlist: boolean;
   
   // Administrative
@@ -338,6 +339,7 @@ function eventDocumentToEvent(id: string, document: EventDocument): Event {
     isPublic: document.isPublic,
     requiredRoles: document.requiredRoles,
     capacity: document.capacity,
+    currentAttendees: document.currentAttendees || 0,
     enableWaitlist: document.enableWaitlist,
     createdAt: document.createdAt.toDate(),
     updatedAt: document.updatedAt.toDate(),
@@ -361,6 +363,7 @@ function eventToEventDocument(event: Partial<Event>): Partial<EventDocument> {
   if (event.isPublic !== undefined) document.isPublic = event.isPublic;
   if (event.requiredRoles !== undefined) document.requiredRoles = event.requiredRoles;
   if (event.capacity !== undefined) document.capacity = event.capacity;
+  if (event.currentAttendees !== undefined) document.currentAttendees = event.currentAttendees;
   if (event.enableWaitlist !== undefined) document.enableWaitlist = event.enableWaitlist;
   if (event.createdBy !== undefined) document.createdBy = event.createdBy;
   if (event.isActive !== undefined) document.isActive = event.isActive;

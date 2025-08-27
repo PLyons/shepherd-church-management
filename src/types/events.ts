@@ -39,17 +39,18 @@ export interface Event {
   
   // Temporal data
   startDate: Date;
-  endDate: Date;
-  isAllDay: boolean;
+  endDate?: Date;
+  isAllDay?: boolean;
   
   // Event classification
   eventType: EventType;
   isPublic: boolean;
-  requiredRoles: Role[];
+  requiredRoles?: Role[];
   
   // Capacity management
   capacity?: number;
-  enableWaitlist: boolean;
+  currentAttendees?: number;
+  enableWaitlist?: boolean;
   
   // Recurrence (future enhancement foundation)
   recurrence?: RecurrencePattern;
@@ -60,8 +61,8 @@ export interface Event {
   createdBy: string; // Member ID
   
   // Status
-  isActive: boolean;
-  isCancelled: boolean;
+  isActive?: boolean;
+  isCancelled?: boolean;
   cancellationReason?: string;
 }
 

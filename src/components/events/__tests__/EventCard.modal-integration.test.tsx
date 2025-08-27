@@ -16,7 +16,9 @@ vi.mock('../../../services/firebase/events.service');
 vi.mock('../../../contexts/FirebaseAuthContext');
 vi.mock('../../../contexts/ToastContext');
 vi.mock('../RSVPModal', () => ({
-  RSVPModal: vi.fn(() => <div data-testid="rsvp-modal">RSVP Modal</div>)
+  RSVPModal: vi.fn(({ isOpen }) => 
+    isOpen ? <div data-testid="rsvp-modal">RSVP Modal</div> : null
+  )
 }));
 
 const mockEventRSVPService = eventRSVPService as unknown as {
@@ -54,20 +56,20 @@ describe('EventCard - Modal Integration Tests', () => {
     id: 'event-1',
     title: 'Test Event',
     description: 'Test Description',
-    type: 'service' as EventType,
-    startDateTime: new Date('2024-01-20T10:00:00'),
-    endDateTime: new Date('2024-01-20T12:00:00'),
+    eventType: 'service' as EventType,
+    startDate: new Date('2025-12-20T10:00:00'),
+    endDate: new Date('2025-12-20T12:00:00'),
     location: 'Test Location',
-    enableRSVP: true,
-    maxAttendees: 10,
+    capacity: 10,
     currentAttendees: 5,
-    visibility: 'public',
+    isPublic: true,
     createdBy: 'test-creator',
     createdAt: new Date(),
     updatedAt: new Date(),
   };
 
   const mockShowToast = vi.fn();
+  const mockOnEventUpdate = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -93,7 +95,7 @@ describe('EventCard - Modal Integration Tests', () => {
           event={mockEvent}
           currentMember={mockMember}
           canManageEvents={false}
-          onEventUpdate={() => {}}
+          onEventUpdate={mockOnEventUpdate}
           {...props}
         />
       </BrowserRouter>
@@ -124,9 +126,9 @@ describe('EventCard - Modal Integration Tests', () => {
         expect(mockRSVPModal).toHaveBeenCalledWith(
           expect.objectContaining({
             event: mockEvent,
-            currentRSVP: null,
+            currentUserRSVP: null,
             onClose: expect.any(Function),
-            onRSVPSubmit: expect.any(Function),
+            onRSVPUpdate: expect.any(Function),
           }),
           expect.anything()
         );
@@ -188,21 +190,23 @@ describe('EventCard - Modal Integration Tests', () => {
       const rsvpButton = screen.getByText('RSVP');
       fireEvent.click(rsvpButton);
 
-      // Get the onRSVPSubmit callback and call it
+      // Get the onRSVPUpdate callback and call it
       const lastCall = mockRSVPModal.mock.calls[mockRSVPModal.mock.calls.length - 1];
-      const onRSVPSubmitCallback = lastCall[0].onRSVPSubmit;
+      const onRSVPUpdateCallback = lastCall[0].onRSVPUpdate;
       
-      await onRSVPSubmitCallback('yes');
+      await onRSVPUpdateCallback({ 
+        id: 'rsvp-1', 
+        status: 'yes', 
+        memberId: mockMember.id, 
+        eventId: mockEvent.id,
+        responseDate: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date()
+      });
 
+      // The EventCard should update its state
       await waitFor(() => {
-        expect(mockEventRSVPService.createRSVP).toHaveBeenCalledWith(
-          expect.objectContaining({
-            eventId: mockEvent.id,
-            memberId: mockMember.id,
-            status: 'yes',
-          })
-        );
-        expect(mockShowToast).toHaveBeenCalledWith('RSVP updated successfully', 'success');
+        expect(mockOnEventUpdate).toHaveBeenCalled();
       });
     });
   });
