@@ -314,7 +314,7 @@ export class HouseholdsService extends BaseFirestoreService<
       const updatedMemberIds = household.memberIds.filter(id => id !== memberId);
       
       const householdRef = doc(db, this.collectionName, householdId);
-      let householdUpdates: Partial<HouseholdDocument> = {
+      const householdUpdates: Partial<HouseholdDocument> = {
         memberIds: updatedMemberIds,
         memberCount: updatedMemberIds.length,
         updatedAt: new Date()

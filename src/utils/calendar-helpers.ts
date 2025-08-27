@@ -30,7 +30,7 @@ export const generateCalendarGrid = (date: Date): Date[][] => {
   const startDate = getStartOfWeek(firstDay);
   
   const weeks: Date[][] = [];
-  let currentDate = new Date(startDate);
+  const currentDate = new Date(startDate);
   
   // Generate 6 weeks (42 days) to ensure consistent grid
   for (let week = 0; week < 6; week++) {

@@ -28,16 +28,16 @@ These are the tasks to implement an enhanced RSVP modal system that will replace
   - [x] 2.8 Implement proper error handling and display
   - [x] 2.9 Verify all RSVP form tests pass
 
-- [ ] 3. EventRSVPService Integration
-  - [ ] 3.1 Write tests for modal service integration and capacity handling
-  - [ ] 3.2 Integrate modal with existing EventRSVPService methods
-  - [ ] 3.3 Implement capacity checking and waitlist logic in modal
-  - [ ] 3.4 Add real-time capacity updates and availability display
-  - [ ] 3.5 Implement waitlist position display when applicable
-  - [ ] 3.6 Add loading states during RSVP operations
-  - [ ] 3.7 Implement optimistic UI updates with rollback on error
-  - [ ] 3.8 Add proper toast notifications following existing patterns
-  - [ ] 3.9 Verify all service integration tests pass
+- [x] 3. EventRSVPService Integration
+  - [x] 3.1 Write tests for modal service integration and capacity handling
+  - [x] 3.2 Integrate modal with existing EventRSVPService methods
+  - [x] 3.3 Implement capacity checking and waitlist logic in modal
+  - [x] 3.4 Add real-time capacity updates and availability display
+  - [x] 3.5 Implement waitlist position display when applicable
+  - [x] 3.6 Add loading states during RSVP operations
+  - [x] 3.7 Implement optimistic UI updates with rollback on error
+  - [x] 3.8 Add proper toast notifications following existing patterns
+  - [x] 3.9 Verify all service integration tests pass
 
 - [ ] 4. EventCard Modal Integration
   - [ ] 4.1 Write tests for EventCard modal trigger and state management

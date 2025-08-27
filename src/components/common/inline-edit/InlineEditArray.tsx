@@ -71,7 +71,7 @@ export function InlineEditArray({
       delete newErrors[index];
       setErrors(newErrors);
     }
-  };;
+  };
 
   const setPrimary = (index: number) => {
     const updated = editItems.map((item, i) => ({
