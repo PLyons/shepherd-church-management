@@ -127,4 +127,5 @@ export interface RSVPFormData {
   status: RSVPStatus;
   numberOfGuests: number;
   notes?: string;
+  dietaryRestrictions?: string;
 }

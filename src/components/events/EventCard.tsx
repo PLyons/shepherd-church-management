@@ -254,8 +254,8 @@ export function EventCard({
           </div>
         )}
 
-        {/* Capacity */}
-        {event.capacity && (
+        {/* Capacity - completely rewritten without any loose expressions */}
+        {(typeof event.capacity === 'number' && Number.isFinite(event.capacity) && event.capacity > 0) && (
           <div className="flex items-center space-x-2 text-sm text-gray-600">
             <Users className="h-4 w-4" />
             <span>Capacity: {event.capacity} people</span>

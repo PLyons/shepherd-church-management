@@ -129,6 +129,32 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
   }
 
   /**
+   * Temporary method to get events without complex indexes (while building)
+   */
+  async getEventsByRoleSimple(userRole: Role, limitCount = 20): Promise<Event[]> {
+    // Use a simpler query that doesn't require custom indexes
+    const constraints: QueryConstraint[] = [
+      where('isActive', '==', true),
+      limit(limitCount)
+    ];
+
+    let events = await this.getAll(constraints);
+    const now = new Date();
+
+    // Filter client-side to avoid complex indexes while they're building
+    events = events.filter(event => 
+      !event.isCancelled && 
+      event.startDate >= now &&
+      (userRole === 'admin' || userRole === 'pastor' || event.isPublic)
+    );
+
+    // Sort by start date
+    events.sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
+
+    return events.slice(0, limitCount);
+  }
+
+  /**
    * Get events by type
    */
   async getEventsByType(eventType: EventType, limitCount = 10): Promise<Event[]> {

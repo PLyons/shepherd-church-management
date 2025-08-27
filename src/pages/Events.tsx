@@ -51,7 +51,7 @@ export default function Events() {
     
     try {
       setLoading(true);
-      const data = await eventsService.getEventsByRole(currentMember.role);
+      const data = await eventsService.getEventsByRoleSimple(currentMember.role);
       setEvents(data);
     } catch (error) {
       console.error('Error loading events:', error);
@@ -76,7 +76,7 @@ export default function Events() {
 
     // Type filter
     if (filters.type !== 'all') {
-      filtered = filtered.filter(event => event.type === filters.type);
+      filtered = filtered.filter(event => event.eventType === filters.type);
     }
 
     // Date range filter
