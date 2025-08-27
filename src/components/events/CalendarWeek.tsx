@@ -69,7 +69,7 @@ export const CalendarWeek: React.FC<CalendarWeekProps> = ({
         <div className="grid grid-cols-8">
           {/* Time slots column */}
           <div className="border-r border-gray-200">
-            {TIME_SLOTS.map((time, index) => (
+            {TIME_SLOTS.map((time) => (
               <div 
                 key={time}
                 className="h-16 p-2 text-xs text-gray-500 border-b border-gray-100"
