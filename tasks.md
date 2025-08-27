@@ -1,63 +1,151 @@
-# Spec Tasks
-
-These are the tasks to implement an enhanced RSVP modal system that will replace or enhance the current inline RSVP buttons in EventCard with a comprehensive modal interface.
+# React State Loop Fix Tasks
 
 > Created: 2025-08-27
 > Status: Ready for Implementation
+> Priority: High
+> Issue: "Maximum update depth exceeded" errors in RSVPModal/EventCard components
 
-## Tasks
+## Overview
 
-- [x] 1. RSVP Modal Component Foundation
-  - [x] 1.1 Write tests for RSVPModal component structure and props
-  - [x] 1.2 Create RSVPModal component in `/src/components/events/RSVPModal.tsx`
-  - [x] 1.3 Implement modal base structure with proper accessibility (ARIA labels, focus management)
-  - [x] 1.4 Add responsive design for desktop-first approach
-  - [x] 1.5 Integrate with existing modal/overlay system or create one if needed
-  - [x] 1.6 Add proper TypeScript interfaces for RSVPModalProps
-  - [x] 1.7 Implement modal open/close states with proper escape key and backdrop handling
-  - [x] 1.8 Verify all RSVPModal foundation tests pass
+Critical bug fix needed for infinite re-render loops in RSVP modal functionality. The issue manifests as "Maximum update depth exceeded" React errors, indicating state updates triggering unnecessary re-renders in a loop.
 
-- [x] 2. RSVP Form Implementation
-  - [x] 2.1 Write tests for RSVP form validation and submission logic
-  - [x] 2.2 Create form using React Hook Form following existing patterns
-  - [x] 2.3 Implement RSVP status selection (Yes/No/Maybe) with enhanced UI
-  - [x] 2.4 Add guest count input field with validation (min: 0, max: reasonable limit)
-  - [x] 2.5 Implement notes/comments textarea for additional information
-  - [x] 2.6 Add dietary restrictions or special needs field
-  - [x] 2.7 Create form validation rules following project patterns
-  - [x] 2.8 Implement proper error handling and display
-  - [x] 2.9 Verify all RSVP form tests pass
+## Task 1: Root Cause Analysis & Diagnosis
 
-- [x] 3. EventRSVPService Integration
-  - [x] 3.1 Write tests for modal service integration and capacity handling
-  - [x] 3.2 Integrate modal with existing EventRSVPService methods
-  - [x] 3.3 Implement capacity checking and waitlist logic in modal
-  - [x] 3.4 Add real-time capacity updates and availability display
-  - [x] 3.5 Implement waitlist position display when applicable
-  - [x] 3.6 Add loading states during RSVP operations
-  - [x] 3.7 Implement optimistic UI updates with rollback on error
-  - [x] 3.8 Add proper toast notifications following existing patterns
-  - [x] 3.9 Verify all service integration tests pass
+**Objective**: Identify the exact source of the infinite re-render loop in RSVPModal/EventCard components.
 
-- [x] 4. EventCard Modal Integration
-  - [x] 4.1 Write tests for EventCard modal trigger and state management
-  - [x] 4.2 Replace inline RSVP buttons with "RSVP" button that opens modal
-  - [x] 4.3 Maintain existing RSVP status display for quick reference
-  - [x] 4.4 Add modal trigger state management in EventCard
-  - [x] 4.5 Implement proper props passing between EventCard and RSVPModal
-  - [x] 4.6 Preserve existing EventCard functionality for past events
-  - [x] 4.7 Update EventCard styling to accommodate new RSVP button
-  - [x] 4.8 Ensure proper cleanup and state management
-  - [x] 4.9 Verify all EventCard integration tests pass
+### Subtasks:
+1. **Analyze current component state flow**
+   - Map out all state variables in RSVPModal and EventCard components
+   - Document all useEffect dependencies and triggers
+   - Identify any direct state mutations or circular dependencies
 
-- [ ] 5. Enhanced UX Features and Polish
-  - [ ] 5.1 Write tests for advanced modal features and edge cases
-  - [ ] 5.2 Add event details display within modal (date, time, location, capacity)
-  - [ ] 5.3 Implement RSVP history/previous responses if changing status
-  - [ ] 5.4 Add confirmation dialog for changing from "Yes" to "No" if event is soon
-  - [ ] 5.5 Implement smart defaults (pre-fill guest count from previous RSVPs)
-  - [ ] 5.6 Add keyboard navigation and improved accessibility
-  - [ ] 5.7 Implement modal animations and transitions
-  - [ ] 5.8 Add mobile responsiveness optimization
-  - [ ] 5.9 Perform comprehensive testing across all user roles (admin/pastor/member)
-  - [ ] 5.10 Verify all enhanced UX tests pass and system integration works end-to-end
+2. **Review event handlers and callbacks**
+   - Audit onClick, onChange, and other event handlers for inline function definitions
+   - Check for callback props being recreated on every render
+   - Verify proper memoization of callback functions
+
+3. **Examine service layer interactions**
+   - Review RSVP service calls and their return values
+   - Check for unnecessary service calls triggering state updates
+   - Verify proper error handling that doesn't cause re-render loops
+
+4. **Create minimal reproduction case**
+   - Build isolated test component demonstrating the loop
+   - Document exact steps to trigger the maximum update depth error
+   - Capture React DevTools profiler data showing the loop pattern
+
+## Task 2: State Management Architecture Fix
+
+**Objective**: Restructure component state management to eliminate circular dependencies and unnecessary re-renders.
+
+### Subtasks:
+1. **Implement proper useCallback and useMemo patterns**
+   - Wrap all callback functions in useCallback with correct dependencies
+   - Memoize complex computed values with useMemo
+   - Ensure dependency arrays are complete and accurate
+
+2. **Optimize useEffect dependencies**
+   - Review all useEffect hooks for missing or incorrect dependencies
+   - Split complex useEffect hooks into focused, single-purpose effects
+   - Add proper cleanup functions to prevent memory leaks
+
+3. **Refactor state structure**
+   - Consolidate related state variables into single objects where appropriate
+   - Eliminate redundant state that can be derived from other state
+   - Implement proper state initialization patterns
+
+4. **Add React.memo optimizations**
+   - Wrap child components in React.memo where appropriate
+   - Create proper comparison functions for complex props
+   - Ensure parent components don't unnecessarily re-render children
+
+## Task 3: Component Integration Testing
+
+**Objective**: Comprehensive testing to verify the state loop fix works across all RSVP modal scenarios.
+
+### Subtasks:
+1. **Create unit tests for isolated components**
+   - Test RSVPModal component with various props and state combinations
+   - Test EventCard component RSVP interactions
+   - Mock all service dependencies to isolate component behavior
+
+2. **Integration tests for modal workflows**
+   - Test complete RSVP submission flow from EventCard to modal close
+   - Test modal opening/closing with different event states
+   - Verify proper cleanup when modal is unmounted
+
+3. **Error boundary and edge case testing**
+   - Test behavior when RSVP service calls fail
+   - Test rapid user interactions (double-clicks, quick modal toggles)
+   - Verify graceful handling of invalid event data
+
+4. **Performance testing with React Profiler**
+   - Measure render counts before and after fixes
+   - Verify no excessive re-renders during normal user interactions
+   - Document performance improvements in render cycle efficiency
+
+## Task 4: Service Layer Optimization
+
+**Objective**: Ensure RSVP service interactions don't contribute to the re-render loop issue.
+
+### Subtasks:
+1. **Audit RSVP service call patterns**
+   - Review when and how often RSVP services are called
+   - Identify any service calls happening on every render
+   - Implement proper service call debouncing/throttling if needed
+
+2. **Optimize service response handling**
+   - Ensure service responses don't trigger unnecessary state updates
+   - Implement proper loading states that don't cause render loops
+   - Add response caching where appropriate to reduce redundant calls
+
+3. **Error handling improvements**
+   - Implement proper error boundaries for service failures
+   - Ensure error states don't trigger re-render loops
+   - Add user-friendly error messages without state side effects
+
+4. **Service layer testing**
+   - Mock service responses to test component behavior
+   - Test service failure scenarios and recovery
+   - Verify service calls are properly cancelled when components unmount
+
+## Task 5: Code Quality & Documentation
+
+**Objective**: Improve code maintainability and prevent future state management issues.
+
+### Subtasks:
+1. **Code review and cleanup**
+   - Remove any unused state variables or effects
+   - Ensure consistent coding patterns across RSVP components
+   - Add proper TypeScript types for all state and props
+
+2. **Add comprehensive documentation**
+   - Document state flow and component interactions
+   - Add inline comments explaining complex useEffect dependencies
+   - Create architectural decision records for state management patterns
+
+3. **Implement development safeguards**
+   - Add ESLint rules to catch common re-render patterns
+   - Create custom hooks for complex state logic to improve reusability
+   - Add React DevTools annotations for better debugging
+
+4. **Create troubleshooting guide**
+   - Document common React state management pitfalls
+   - Create debugging checklist for future state loop issues
+   - Add monitoring/logging for production state management issues
+
+## Dependencies & Prerequisites
+
+- React DevTools installed for profiling
+- Access to browser console for error reproduction
+- Current RSVP modal components and service layer
+- Test environment with sample event data
+
+## Success Criteria
+
+- ✅ Zero "Maximum update depth exceeded" errors in console
+- ✅ RSVPModal opens and closes without performance issues
+- ✅ RSVP submission works smoothly without excessive re-renders
+- ✅ All existing functionality preserved
+- ✅ Comprehensive test coverage for fixed components
+- ✅ Performance metrics show reduced render cycles
