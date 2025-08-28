@@ -86,7 +86,7 @@ export const EventForm: React.FC<EventFormProps> = ({
           location: event.location,
           startDate: formatDateForInput(event.startDate),
           endDate: formatDateForInput(event.endDate),
-          isAllDay: event.isAllDay,
+          isAllDay: event.isAllDay || false,
           eventType: event.eventType,
           isPublic: event.isPublic,
           requiredRoles: event.requiredRoles,
@@ -152,7 +152,12 @@ export const EventForm: React.FC<EventFormProps> = ({
   if (isLoadingEvent) {
     return (
       <div className="flex justify-center items-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div 
+          className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
+          data-testid="loading-spinner"
+          role="status"
+          aria-label="Loading event data"
+        ></div>
       </div>
     );
   }
