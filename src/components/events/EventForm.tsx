@@ -46,7 +46,8 @@ export const EventForm: React.FC<EventFormProps> = ({
   });
 
   const watchIsAllDay = watch('isAllDay');
-  const watchHasCapacity = watch('capacity');
+  const watchCapacityValue = watch('capacity');
+  const watchHasCapacity = watchCapacityValue && !isNaN(Number(watchCapacityValue)) && Number(watchCapacityValue) > 0;
 
   // Event type options
   const eventTypeOptions: { value: EventType; label: string }[] = [
@@ -353,7 +354,7 @@ export const EventForm: React.FC<EventFormProps> = ({
               </div>
 
               {/* Waitlist */}
-              {watchHasCapacity && (
+              {watchHasCapacity ? (
                 <div className="flex items-start pt-8">
                   <label className="inline-flex items-center">
                     <input
@@ -366,7 +367,7 @@ export const EventForm: React.FC<EventFormProps> = ({
                     </span>
                   </label>
                 </div>
-              )}
+              ) : null}
             </div>
           </section>
 
