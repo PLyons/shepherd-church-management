@@ -43,6 +43,8 @@ The following features have been successfully implemented and are production-rea
 
 ## Phase 1: Current Development (15% MVP Remaining)
 
+**⚠️ CRITICAL:** Firebase Index Error must be fixed before Phase 2B completion (see docs/bug-fixes/)
+
 ### Phase 2B: Event Calendar & Attendance Completion (1-2 weeks)
 - [ ] **Attendance Tracking Interface** *(Final Phase 2B Task)*
   - Event check-in/check-out functionality

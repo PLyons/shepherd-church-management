@@ -21,10 +21,11 @@ Welcome to the Shepherd CMS documentation hub. This index provides quick access 
 
 | Document | Description | Last Updated |
 |----------|-------------|---------------|
+| [**PROJECT_STATUS.md**](PROJECT_STATUS.md) | **📍 PRIMARY SOURCE OF TRUTH** | **2025-08-28** |
 | [PRD](prd.md) | Product Requirements Document | Original spec |
-| [Project Tracker](project_tracker.md) | Current phase and progress | 2025-01-16 |
-| [Current Features](current-features.md) | Detailed feature documentation | Up to date |
-| [Session Context](SESSION_CONTEXT.md) | Recent development context | 2025-01-16 |
+| [Project Tracker](project_tracker.md) | Historical phase progress | 2025-08-16 |
+| [Current Features](current-features.md) | Legacy feature documentation | Superseded |
+| [Session Context](SESSION_CONTEXT.md) | Legacy development context | 2025-08-16 |
 | [**PRPs Directory**](prps/) | **Product Requirement Prompts** | **2025-08-21** |
 
 ---

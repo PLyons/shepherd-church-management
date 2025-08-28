@@ -120,9 +120,11 @@ Three main contexts manage global state:
 
 ## Project Status
 
-**Current Status**: Phase 2B Event Calendar & Attendance System - IN PROGRESS. Foundation layer complete (Events + RSVP services + Security Rules), next: Event Form Component.
+**📍 For current development status, see [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md) - the authoritative source of truth.**
 
-**MVP Implementation (50% Complete)**:
+**Summary**: Phase 2B Event Calendar & Attendance System - 85% complete. Critical Firebase index bug pending fix.
+
+**MVP Implementation (85% Complete)**:
 - ✅ Member Management - Enhanced CRUD with contact arrays and household sidebar  
 - ✅ Role-based Access Control - Admin/pastor/member roles with security enforcement
 - ✅ Firebase Authentication - Magic links and member onboarding
