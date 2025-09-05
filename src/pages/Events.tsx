@@ -6,18 +6,14 @@ import {
   Search,
   RefreshCw,
   Filter,
-  Clock,
-  Users,
-  MapPin,
   X,
 } from 'lucide-react';
 import { Event, EventType } from '../types/events';
 import { eventsService } from '../services/firebase/events.service';
 import { useAuth } from '../hooks/useUnifiedAuth';
 import { useToast } from '../contexts/ToastContext';
-import { LoadingSpinner } from '../components/common/LoadingSpinner';
-import { EventCard } from '../components/events/EventCard';
 import { EventFilters } from '../components/events/EventFilters';
+import { EventList } from '../components/events/EventList';
 
 export interface EventFiltersState {
   type: EventType | 'all';
@@ -61,67 +57,6 @@ export default function Events() {
     }
   };
 
-  const filteredEvents = useMemo(() => {
-    let filtered = events;
-
-    // Search filter
-    if (searchTerm.trim()) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(event =>
-        event.title.toLowerCase().includes(term) ||
-        event.description?.toLowerCase().includes(term) ||
-        event.location?.toLowerCase().includes(term)
-      );
-    }
-
-    // Type filter
-    if (filters.type !== 'all') {
-      filtered = filtered.filter(event => event.eventType === filters.type);
-    }
-
-    // Date range filter
-    const now = new Date();
-    const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - now.getDay());
-    const endOfWeek = new Date(startOfWeek);
-    endOfWeek.setDate(startOfWeek.getDate() + 6);
-    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-
-    switch (filters.dateRange) {
-      case 'upcoming':
-        filtered = filtered.filter(event => event.startDate >= now);
-        break;
-      case 'this_week':
-        filtered = filtered.filter(event => 
-          event.startDate >= startOfWeek && event.startDate <= endOfWeek
-        );
-        break;
-      case 'this_month':
-        filtered = filtered.filter(event => 
-          event.startDate >= startOfMonth && event.startDate <= endOfMonth
-        );
-        break;
-      case 'past':
-        filtered = filtered.filter(event => event.startDate < now);
-        break;
-    }
-
-    // Public/Private filter
-    if (filters.isPublic !== 'all') {
-      const isPublic = filters.isPublic === 'public';
-      filtered = filtered.filter(event => event.isPublic === isPublic);
-    }
-
-    // Sort events by start date
-    return filtered.sort((a, b) => {
-      if (filters.dateRange === 'past') {
-        return b.startDate.getTime() - a.startDate.getTime(); // Most recent first for past events
-      }
-      return a.startDate.getTime() - b.startDate.getTime(); // Soonest first for upcoming events
-    });
-  }, [events, searchTerm, filters]);
-
   const handleClearSearch = () => {
     setSearchTerm('');
   };
@@ -139,10 +74,6 @@ export default function Events() {
            searchTerm.trim() !== '';
   }, [filters, searchTerm]);
 
-  if (loading) {
-    return <LoadingSpinner />;
-  }
-
   const canManageEvents = currentMember?.role === 'admin' || currentMember?.role === 'pastor';
 
   return (
@@ -157,9 +88,6 @@ export default function Events() {
           </div>
         </div>
         <div className="flex items-center space-x-3">
-          <div className="text-sm text-gray-500">
-            {filteredEvents.length} {filteredEvents.length === 1 ? 'event' : 'events'}
-          </div>
           {canManageEvents && (
             <Link
               to="/events/new"
@@ -229,44 +157,23 @@ export default function Events() {
         )}
       </div>
 
-      {/* Events Grid */}
-      {filteredEvents.length === 0 ? (
-        <div className="text-center py-12">
-          <Calendar className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">
-            {hasActiveFilters ? 'No events found' : 'No events yet'}
-          </h3>
-          <p className="mt-1 text-sm text-gray-500">
-            {hasActiveFilters 
-              ? 'Try adjusting your search or filter criteria.' 
-              : 'Get started by creating your first event.'
-            }
-          </p>
-          {!hasActiveFilters && canManageEvents && (
-            <div className="mt-6">
-              <Link
-                to="/events/new"
-                className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Create Event
-              </Link>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredEvents.map((event) => (
-            <EventCard
-              key={event.id}
-              event={event}
-              currentMember={currentMember}
-              canManageEvents={canManageEvents}
-              onEventUpdate={loadEvents}
-            />
-          ))}
-        </div>
-      )}
+      {/* Event List */}
+      <EventList
+        events={events}
+        currentMember={currentMember}
+        canManageEvents={canManageEvents}
+        filters={filters}
+        searchTerm={searchTerm}
+        onEventUpdate={loadEvents}
+        loading={loading}
+        showDisplayModeToggle={true}
+        emptyStateTitle={hasActiveFilters ? 'No events found' : 'No events yet'}
+        emptyStateDescription={
+          hasActiveFilters 
+            ? 'Try adjusting your search or filter criteria.' 
+            : 'Get started by creating your first event.'
+        }
+      />
     </div>
   );
 }
