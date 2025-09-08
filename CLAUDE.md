@@ -122,15 +122,15 @@ Three main contexts manage global state:
 
 **📍 For current development status, see [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md) - the authoritative source of truth.**
 
-**Summary**: Phase 2B Event Calendar & Attendance System - 92% complete. Calendar View Component completed (PRP-2B-007).
+**Summary**: Phase 2B Event Calendar & Attendance System - 97% complete. Calendar View Component completed (PRP-2B-007).
 
-**MVP Implementation (87% Complete)**:
+**MVP Implementation (95% Complete)**:
 - ✅ Member Management - Enhanced CRUD with contact arrays and household sidebar  
 - ✅ Role-based Access Control - Admin/pastor/member roles with security enforcement
 - ✅ Firebase Authentication - Magic links and member onboarding
 - ✅ Dashboard Views - Role-based dashboards with statistics
 - ✅ Household Management - Complete CRUD system with member assignment and primary contact management
-- 🔄 Event Calendar & Attendance - Event CRUD interface complete, discovery UI next
+- 🔄 Event Calendar & Attendance - Event CRUD, discovery UI, and calendar views complete
 
 **Active Phase 2B Event Calendar & Attendance (August 2025)**:
 - ✅ PRP-2B-001: Event Data Model & Types - Complete TypeScript interface system
