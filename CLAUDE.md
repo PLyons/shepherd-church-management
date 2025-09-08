@@ -122,25 +122,28 @@ Three main contexts manage global state:
 
 **📍 For current development status, see [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md) - the authoritative source of truth.**
 
-**Summary**: Phase 2B Event Calendar & Attendance System - 85% complete. Critical Firebase index bug pending fix.
+**Summary**: Phase 2B Event Calendar & Attendance System - 92% complete. Calendar View Component completed (PRP-2B-007).
 
-**MVP Implementation (85% Complete)**:
+**MVP Implementation (87% Complete)**:
 - ✅ Member Management - Enhanced CRUD with contact arrays and household sidebar  
 - ✅ Role-based Access Control - Admin/pastor/member roles with security enforcement
 - ✅ Firebase Authentication - Magic links and member onboarding
 - ✅ Dashboard Views - Role-based dashboards with statistics
 - ✅ Household Management - Complete CRUD system with member assignment and primary contact management
-- 🔄 Event Calendar & Attendance - Data model and service layer complete, UI components next
+- 🔄 Event Calendar & Attendance - Event CRUD interface complete, discovery UI next
 
 **Active Phase 2B Event Calendar & Attendance (August 2025)**:
 - ✅ PRP-2B-001: Event Data Model & Types - Complete TypeScript interface system
 - ✅ PRP-2B-002: Events Firebase Service - Complete CRUD service with role-based queries
 - ✅ PRP-2B-003: Event RSVP Service - Complete with capacity management and waitlist support
 - ✅ PRP-2B-004: Firestore Security Rules - Complete role-based security for events and RSVPs
-- 🔄 **Next**: PRP-2B-005 Event Form Component Implementation
+- ✅ PRP-2B-005: Event Form Component - Complete EventForm with React Hook Form validation (2025-08-28)
+- ✅ PRP-2B-006: Event List & Cards Component - Complete EventList with filtering and search
+- ✅ PRP-2B-007: Calendar View Component - Complete EventCalendar with monthly/weekly views
+- 🔄 **Next**: PRP-2B-008 Event Details & RSVP Modal Implementation
 
-**Pending MVP Features (50% Remaining)**:
-- Event Calendar & Attendance UI Components (Forms, Calendar View, RSVP System)
+**Pending MVP Features (40% Remaining)**:
+- Event Calendar & Attendance UI Components (Event Discovery, Calendar View, RSVP System)
 - Donation Tracking & Financial Reports
 - Volunteer Scheduling System
 - Sermon Archive & Media Management
@@ -294,6 +297,7 @@ If you are unsure of assumptions or hit ambiguous scope:
 - `/src/pages/MemberProfile.tsx` - Profile with household sidebar
 - `/src/components/members/` - Member forms and profile components
 - `/src/components/common/` - Layout, Navigation, shared UI
+- `/src/components/events/EventForm.tsx` - **NEW**: Comprehensive event creation/editing form
 
 ### Documentation & Scripts
 - `/docs/prd.md` - Project requirements

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useMemo } from 'react';
 import { Event } from '../../types/events';
 import { 
   generateWeekDates,
@@ -8,7 +8,10 @@ import {
   isToday,
   getEventsForDate,
   sortEventsByTime,
-  isEventInTimeSlot
+  isEventInTimeSlot,
+  getEventTypeColors,
+  hasCapacityInfo,
+  getCapacityStatus
 } from '../../utils/calendar-helpers';
 
 interface CalendarWeekProps {
@@ -18,13 +21,13 @@ interface CalendarWeekProps {
   onEventClick: (event: Event) => void;
 }
 
-export const CalendarWeek: React.FC<CalendarWeekProps> = ({
+export const CalendarWeek: React.FC<CalendarWeekProps> = memo(({
   currentDate,
   events,
   onDateClick,
   onEventClick
 }) => {
-  const weekDates = generateWeekDates(currentDate);
+  const weekDates = useMemo(() => generateWeekDates(currentDate), [currentDate]);
 
   const handleEventClick = (event: Event, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -91,7 +94,7 @@ export const CalendarWeek: React.FC<CalendarWeekProps> = ({
                     if (event.isAllDay) return slotIndex === 0; // Show all-day events in first slot
                     
                     const startDate = event.startDate instanceof Date ? event.startDate : new Date(event.startDate);
-                    const endDate = event.endDate instanceof Date ? event.endDate : new Date(event.endDate);
+                    const endDate = event.endDate ? (event.endDate instanceof Date ? event.endDate : new Date(event.endDate)) : startDate;
                     
                     return isEventInTimeSlot(startDate, endDate, slotHour);
                   });
@@ -102,27 +105,86 @@ export const CalendarWeek: React.FC<CalendarWeekProps> = ({
                       className="h-16 p-1 border-b border-gray-100 hover:bg-gray-25 cursor-pointer transition-colors"
                       onClick={() => onDateClick(date)}
                     >
-                      {slotEvents.map((event) => (
-                        <div
-                          key={event.id}
-                          className={`text-xs p-1 mb-1 rounded cursor-pointer transition-colors truncate ${
-                            event.isAllDay 
-                              ? 'bg-green-100 text-green-800 border border-green-200 hover:bg-green-200'
-                              : 'bg-blue-100 text-blue-800 border border-blue-200 hover:bg-blue-200'
-                          }`}
-                          onClick={(e) => handleEventClick(event, e)}
-                          title={`${event.title}${event.location ? ` - ${event.location}` : ''}`}
-                        >
-                          <div className="font-medium truncate">
-                            {event.title}
-                          </div>
-                          {event.location && (
-                            <div className="text-xs opacity-75 truncate">
-                              {event.location}
+                      {slotEvents.map((event) => {
+                        const colors = getEventTypeColors(event.eventType);
+                        const capacityStatus = getCapacityStatus(event);
+                        
+                        return (
+                          <div
+                            key={event.id}
+                            className={`text-xs p-1 mb-1 rounded cursor-pointer transition-all duration-150 truncate border relative group/event ${colors.bg} ${colors.text} ${colors.border} ${colors.hover}`}
+                            onClick={(e) => handleEventClick(event, e)}
+                            title={`${event.title} - ${event.eventType}${event.location ? ` at ${event.location}` : ''}`}
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium truncate">
+                                  {event.title}
+                                </div>
+                                {event.location && (
+                                  <div className="text-xs opacity-75 truncate">
+                                    {event.location}
+                                  </div>
+                                )}
+                              </div>
+                              
+                              {/* Capacity indicator */}
+                              {hasCapacityInfo(event) && (
+                                <div className="ml-1 flex-shrink-0">
+                                  <div className={`w-2 h-2 rounded-full ${capacityStatus.full ? 'bg-red-500' : 'bg-green-500'}`} />
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
-                      ))}
+
+                            {/* Week view hover preview */}
+                            <div className="absolute invisible group-hover/event:visible opacity-0 group-hover/event:opacity-100 transition-all duration-200 z-50 bg-white border border-gray-200 rounded-lg shadow-lg p-3 w-64 -top-1 left-full ml-2">
+                              <div className="space-y-2">
+                                <div className="flex items-start justify-between">
+                                  <h4 className="font-semibold text-gray-900 text-sm leading-5">{event.title}</h4>
+                                  <span className={`text-xs px-2 py-1 rounded-full ${colors.bg} ${colors.text}`}>
+                                    {event.eventType}
+                                  </span>
+                                </div>
+                                
+                                {event.description && (
+                                  <p className="text-sm text-gray-600 line-clamp-2">{event.description}</p>
+                                )}
+                                
+                                <div className="space-y-1 text-xs text-gray-500">
+                                  <div className="flex items-center">
+                                    <span className="font-medium">Time:</span>
+                                    <span className="ml-1">
+                                      {event.isAllDay ? 'All Day' : 'See calendar time slot'}
+                                    </span>
+                                  </div>
+                                  
+                                  {event.location && (
+                                    <div className="flex items-center">
+                                      <span className="font-medium">Location:</span>
+                                      <span className="ml-1">{event.location}</span>
+                                    </div>
+                                  )}
+                                  
+                                  {hasCapacityInfo(event) && (
+                                    <div className="flex items-center">
+                                      <span className="font-medium">Capacity:</span>
+                                      <span className={`ml-1 ${capacityStatus.color}`}>
+                                        {capacityStatus.text}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                <div className="pt-2 border-t border-gray-100">
+                                  <div className="text-xs text-blue-600">
+                                    Click to RSVP or view details
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   );
                 })}
@@ -133,4 +195,4 @@ export const CalendarWeek: React.FC<CalendarWeekProps> = ({
       </div>
     </div>
   );
-};
+});

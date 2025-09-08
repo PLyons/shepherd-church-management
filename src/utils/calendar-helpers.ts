@@ -1,4 +1,5 @@
 // Calendar utility functions for date manipulation and calendar grid generation
+import { Event } from '../types/events';
 
 // Get the first day of the month
 export const getFirstDayOfMonth = (date: Date): Date => {
@@ -26,7 +27,6 @@ export const getEndOfWeek = (date: Date): Date => {
 // Generate calendar grid for a month (includes prev/next month days)
 export const generateCalendarGrid = (date: Date): Date[][] => {
   const firstDay = getFirstDayOfMonth(date);
-  const lastDay = getLastDayOfMonth(date);
   const startDate = getStartOfWeek(firstDay);
   
   const weeks: Date[][] = [];
@@ -161,7 +161,7 @@ export const isEventInTimeSlot = (eventStart: Date, eventEnd: Date, slotHour: nu
 };
 
 // Get events for a specific date
-export const getEventsForDate = (events: any[], date: Date): any[] => {
+export const getEventsForDate = (events: Event[], date: Date): Event[] => {
   return events.filter(event => {
     const eventDate = event.startDate instanceof Date ? event.startDate : new Date(event.startDate);
     return isSameDay(eventDate, date);
@@ -169,10 +169,63 @@ export const getEventsForDate = (events: any[], date: Date): any[] => {
 };
 
 // Sort events by start time
-export const sortEventsByTime = (events: any[]): any[] => {
+export const sortEventsByTime = (events: Event[]): Event[] => {
   return [...events].sort((a, b) => {
     const timeA = a.startDate instanceof Date ? a.startDate : new Date(a.startDate);
     const timeB = b.startDate instanceof Date ? b.startDate : new Date(b.startDate);
     return timeA.getTime() - timeB.getTime();
   });
+};
+
+// Event type color mapping for desktop UI
+export const EVENT_TYPE_COLORS = {
+  worship: { bg: 'bg-blue-100', text: 'text-blue-800', border: 'border-blue-200', hover: 'hover:bg-blue-200' },
+  study: { bg: 'bg-green-100', text: 'text-green-800', border: 'border-green-200', hover: 'hover:bg-green-200' },
+  outreach: { bg: 'bg-orange-100', text: 'text-orange-800', border: 'border-orange-200', hover: 'hover:bg-orange-200' },
+  fellowship: { bg: 'bg-purple-100', text: 'text-purple-800', border: 'border-purple-200', hover: 'hover:bg-purple-200' },
+  prayer: { bg: 'bg-indigo-100', text: 'text-indigo-800', border: 'border-indigo-200', hover: 'hover:bg-indigo-200' },
+  service: { bg: 'bg-red-100', text: 'text-red-800', border: 'border-red-200', hover: 'hover:bg-red-200' },
+  conference: { bg: 'bg-gray-100', text: 'text-gray-800', border: 'border-gray-200', hover: 'hover:bg-gray-200' },
+  retreat: { bg: 'bg-teal-100', text: 'text-teal-800', border: 'border-teal-200', hover: 'hover:bg-teal-200' },
+  youth: { bg: 'bg-pink-100', text: 'text-pink-800', border: 'border-pink-200', hover: 'hover:bg-pink-200' },
+  children: { bg: 'bg-yellow-100', text: 'text-yellow-800', border: 'border-yellow-200', hover: 'hover:bg-yellow-200' },
+  seniors: { bg: 'bg-amber-100', text: 'text-amber-800', border: 'border-amber-200', hover: 'hover:bg-amber-200' },
+  meeting: { bg: 'bg-slate-100', text: 'text-slate-800', border: 'border-slate-200', hover: 'hover:bg-slate-200' },
+  special: { bg: 'bg-violet-100', text: 'text-violet-800', border: 'border-violet-200', hover: 'hover:bg-violet-200' }
+};
+
+// Get event type color classes
+export const getEventTypeColors = (eventType: string) => {
+  return EVENT_TYPE_COLORS[eventType as keyof typeof EVENT_TYPE_COLORS] || EVENT_TYPE_COLORS.meeting;
+};
+
+// Format event time for display
+export const formatEventTime = (date: Date): string => {
+  return date.toLocaleTimeString('en-US', { 
+    hour: 'numeric', 
+    minute: '2-digit',
+    hour12: true 
+  });
+};
+
+// Check if event has capacity information
+export const hasCapacityInfo = (event: Event): boolean => {
+  return Boolean(event.capacity && event.capacity > 0);
+};
+
+// Get capacity status for display
+export const getCapacityStatus = (event: Event): { text: string; color: string; full: boolean } => {
+  if (!hasCapacityInfo(event)) {
+    return { text: 'Unlimited', color: 'text-gray-600', full: false };
+  }
+
+  const remaining = (event.capacity || 0) - (event.currentAttendees || 0);
+  
+  if (remaining <= 0) {
+    return { text: 'Full', color: 'text-red-600', full: true };
+  } else if (remaining <= 5) {
+    return { text: `${remaining} spots left`, color: 'text-orange-600', full: false };
+  } else {
+    return { text: `${remaining} spots available`, color: 'text-green-600', full: false };
+  }
 };

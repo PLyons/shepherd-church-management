@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Calendar, Columns } from 'lucide-react';
-import { Event } from '../../types/events';
+import { Event, EventRSVP } from '../../types/events';
 import { eventsService } from '../../services/firebase/events.service';
+import { eventRSVPService } from '../../services/firebase/event-rsvp.service';
 import { useAuth } from '../../hooks/useUnifiedAuth';
 import { useToast } from '../../contexts/ToastContext';
+import { RSVPModal } from './RSVPModal';
 import { CalendarDay } from './CalendarDay';
 import { CalendarWeek } from './CalendarWeek';
 import { 
@@ -34,7 +36,7 @@ export const EventCalendar: React.FC<EventCalendarProps> = ({
   onCreateEvent,
   initialView = 'month'
 }) => {
-  const { currentUser } = useAuth();
+  const { member: currentUser } = useAuth();
   const { showToast } = useToast();
   
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -43,12 +45,12 @@ export const EventCalendar: React.FC<EventCalendarProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Load events for the current view period
-  useEffect(() => {
-    loadEvents();
-  }, [currentDate, view, currentUser]);
+  // RSVP Modal state
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [isRSVPModalOpen, setIsRSVPModalOpen] = useState(false);
+  const [currentUserRSVP, setCurrentUserRSVP] = useState<EventRSVP | null>(null);
 
-  const loadEvents = async () => {
+  const loadEvents = useCallback(async () => {
     if (!currentUser) {
       setEvents([]);
       setLoading(false);
@@ -84,42 +86,140 @@ export const EventCalendar: React.FC<EventCalendarProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentUser, view, currentDate, showToast]);
 
-  const handleNavigation = (direction: 'prev' | 'next') => {
+  // Memoize event handlers with useCallback
+  const handleNavigation = useCallback((direction: 'prev' | 'next') => {
     if (view === 'month') {
       setCurrentDate(getNavigationMonth(currentDate, direction));
     } else {
       setCurrentDate(getNavigationWeek(currentDate, direction));
     }
-  };
+  }, [view, currentDate]);
 
-  const handleToday = () => {
+  const handleToday = useCallback(() => {
     setCurrentDate(new Date());
-  };
+  }, []);
 
-  const handleViewChange = (newView: CalendarView) => {
+  const handleViewChange = useCallback((newView: CalendarView) => {
     setView(newView);
-  };
+  }, []);
 
-  const handleDateClick = (date: Date) => {
-    if (onDateClick) {
-      onDateClick(date);
-    } else if (onCreateEvent) {
-      onCreateEvent(date);
+  // Load events for the current view period
+  useEffect(() => {
+    loadEvents();
+  }, [currentDate, view, currentUser, loadEvents]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Don't interfere if user is typing in an input
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      switch (event.key) {
+        case 'ArrowLeft':
+          event.preventDefault();
+          handleNavigation('prev');
+          break;
+        case 'ArrowRight':
+          event.preventDefault();
+          handleNavigation('next');
+          break;
+        case 't':
+        case 'T':
+          if (!event.ctrlKey && !event.metaKey) {
+            event.preventDefault();
+            handleToday();
+          }
+          break;
+        case 'm':
+        case 'M':
+          if (!event.ctrlKey && !event.metaKey) {
+            event.preventDefault();
+            handleViewChange('month');
+          }
+          break;
+        case 'w':
+        case 'W':
+          if (!event.ctrlKey && !event.metaKey) {
+            event.preventDefault();
+            handleViewChange('week');
+          }
+          break;
+        default:
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleNavigation, handleToday, handleViewChange]);
+
+  // Enhanced event click handler to open RSVP modal
+  const handleEventClick = async (event: Event) => {
+    // First try external handler
+    if (onEventClick) {
+      onEventClick(event);
+      return;
     }
+
+    // Open RSVP modal for seamless desktop experience
+    setSelectedEvent(event);
+    
+    // Load current user's RSVP if exists
+    try {
+      if (currentUser?.id) {
+        const userRSVP = await eventRSVPService.getRSVPByMember(event.id, currentUser.id);
+        setCurrentUserRSVP(userRSVP);
+      }
+    } catch (err) {
+      console.error('Error loading user RSVP:', err);
+      setCurrentUserRSVP(null);
+    }
+
+    setIsRSVPModalOpen(true);
   };
 
-  const getHeaderTitle = () => {
+  const handleRSVPModalClose = () => {
+    setIsRSVPModalOpen(false);
+    setSelectedEvent(null);
+    setCurrentUserRSVP(null);
+  };
+
+  const handleRSVPUpdate = (rsvp: EventRSVP) => {
+    setCurrentUserRSVP(rsvp);
+    // Optionally reload events to get updated attendee counts
+    loadEvents();
+  };
+
+  // Memoize header title calculation
+  const headerTitle = useMemo(() => {
     if (view === 'month') {
       return formatMonthYear(currentDate);
     } else {
       return formatWeekRange(getStartOfWeek(currentDate));
     }
-  };
+  }, [view, currentDate]);
+
+  // Memoize calendar grid generation
+  const calendarGrid = useMemo(() => {
+    return view === 'month' ? generateCalendarGrid(currentDate) : null;
+  }, [view, currentDate]);
+
+  const handleDateClick = useCallback((date: Date) => {
+    if (onDateClick) {
+      onDateClick(date);
+    } else if (onCreateEvent) {
+      onCreateEvent(date);
+    }
+  }, [onDateClick, onCreateEvent]);
 
   const renderMonthView = () => {
-    const calendarGrid = generateCalendarGrid(currentDate);
+    if (!calendarGrid) return null;
 
     return (
       <div className="flex flex-col h-full">
@@ -146,7 +246,7 @@ export const EventCalendar: React.FC<EventCalendarProps> = ({
                   currentMonth={currentDate}
                   events={events}
                   onDateClick={handleDateClick}
-                  onEventClick={onEventClick}
+                  onEventClick={handleEventClick}
                 />
               ))}
             </div>
@@ -162,7 +262,7 @@ export const EventCalendar: React.FC<EventCalendarProps> = ({
         currentDate={currentDate}
         events={events}
         onDateClick={handleDateClick}
-        onEventClick={onEventClick}
+        onEventClick={handleEventClick}
       />
     );
   };
@@ -193,73 +293,115 @@ export const EventCalendar: React.FC<EventCalendarProps> = ({
   }
 
   return (
-    <div className="h-full flex flex-col bg-white">
-      {/* Calendar header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200">
-        {/* Navigation */}
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={() => handleNavigation('prev')}
-            className="p-2 hover:bg-gray-100 rounded-md transition-colors"
-            title={`Previous ${view}`}
-          >
-            <ChevronLeft className="h-5 w-5 text-gray-600" />
-          </button>
-          
-          <button
-            onClick={() => handleNavigation('next')}
-            className="p-2 hover:bg-gray-100 rounded-md transition-colors"
-            title={`Next ${view}`}
-          >
-            <ChevronRight className="h-5 w-5 text-gray-600" />
-          </button>
+    <>
+      <div className="h-full flex flex-col bg-white relative" role="application" aria-label="Calendar">
+        {/* Calendar header */}
+        <div className="flex items-center justify-between p-4 border-b border-gray-200" role="toolbar" aria-label="Calendar navigation and controls">
+          {/* Navigation */}
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => handleNavigation('prev')}
+              className="p-2 hover:bg-gray-100 rounded-md transition-colors"
+              title={`Previous ${view}`}
+              aria-label={`Go to previous ${view}`}
+            >
+              <ChevronLeft className="h-5 w-5 text-gray-600" aria-hidden="true" />
+            </button>
+            
+            <button
+              onClick={() => handleNavigation('next')}
+              className="p-2 hover:bg-gray-100 rounded-md transition-colors"
+              title={`Next ${view}`}
+              aria-label={`Go to next ${view}`}
+            >
+              <ChevronRight className="h-5 w-5 text-gray-600" aria-hidden="true" />
+            </button>
 
-          <button
-            onClick={handleToday}
-            className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
-          >
-            Today
-          </button>
+            <button
+              onClick={handleToday}
+              className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
+              aria-label="Go to today"
+            >
+              Today
+            </button>
+          </div>
+
+          {/* Title */}
+          <h2 className="text-lg font-semibold text-gray-900">
+            {headerTitle}
+          </h2>
+
+          {/* View controls */}
+          <div className="flex items-center space-x-2">
+            <div className="flex rounded-md border border-gray-300" role="radiogroup" aria-label="Calendar view">
+              <button
+                onClick={() => handleViewChange('month')}
+                className={`px-3 py-2 text-sm font-medium transition-colors ${
+                  view === 'month'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+                role="radio"
+                aria-checked={view === 'month'}
+                aria-label="Month view"
+              >
+                <Calendar className="h-4 w-4" aria-hidden="true" />
+                <span className="ml-1 hidden sm:inline">Month</span>
+              </button>
+              <button
+                onClick={() => handleViewChange('week')}
+                className={`px-3 py-2 text-sm font-medium transition-colors border-l border-gray-300 ${
+                  view === 'week'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-gray-50'
+                }`}
+                role="radio"
+                aria-checked={view === 'week'}
+                aria-label="Week view"
+              >
+                <Columns className="h-4 w-4" aria-hidden="true" />
+                <span className="ml-1 hidden sm:inline">Week</span>
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* Title */}
-        <h2 className="text-lg font-semibold text-gray-900">
-          {getHeaderTitle()}
-        </h2>
+        {/* Calendar content */}
+        <div className="flex-1 overflow-hidden" role="main" aria-label={`${view} view of calendar`}>
+          {view === 'month' ? renderMonthView() : renderWeekView()}
+        </div>
 
-        {/* View controls */}
-        <div className="flex items-center space-x-2">
-          <div className="flex rounded-md border border-gray-300">
-            <button
-              onClick={() => handleViewChange('month')}
-              className={`px-3 py-2 text-sm font-medium transition-colors ${
-                view === 'month'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              <Calendar className="h-4 w-4" />
-              <span className="ml-1 hidden sm:inline">Month</span>
-            </button>
-            <button
-              onClick={() => handleViewChange('week')}
-              className={`px-3 py-2 text-sm font-medium transition-colors border-l border-gray-300 ${
-                view === 'week'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              <Columns className="h-4 w-4" />
-              <span className="ml-1 hidden sm:inline">Week</span>
-            </button>
+        {/* Keyboard shortcuts help tooltip */}
+        <div className="absolute bottom-4 right-4 group">
+          <button 
+            className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-600 text-sm font-medium"
+            title="Keyboard shortcuts: ← → navigate, T today, M month, W week"
+            aria-label="Show keyboard shortcuts"
+          >
+            ?
+          </button>
+          <div className="absolute bottom-full right-0 mb-2 w-64 bg-gray-900 text-white text-xs p-3 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+            <div className="font-medium mb-1">Keyboard Shortcuts:</div>
+            <div className="space-y-1">
+              <div>← → Navigate months/weeks</div>
+              <div>T Go to today</div>
+              <div>M Month view</div>
+              <div>W Week view</div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Calendar content */}
-      <div className="flex-1 overflow-hidden">
-        {view === 'month' ? renderMonthView() : renderWeekView()}
-      </div>
-    </div>
+      {/* RSVP Modal */}
+      {selectedEvent && (
+        <RSVPModal
+          isOpen={isRSVPModalOpen}
+          onClose={handleRSVPModalClose}
+          event={selectedEvent}
+          currentUserRSVP={currentUserRSVP}
+          onRSVPUpdate={handleRSVPUpdate}
+        />
+      )}
+    </>
   );
 };
