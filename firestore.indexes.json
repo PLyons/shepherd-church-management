@@ -5,22 +5,32 @@
       "queryScope": "COLLECTION",
       "fields": [
         {
+          "fieldPath": "createdBy",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "endDate",
+          "order": "DESCENDING"
+        },
+        {
           "fieldPath": "isActive",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "isCancelled", 
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "startDate",
           "order": "ASCENDING"
         }
       ]
     },
     {
       "collectionGroup": "events",
-      "queryScope": "COLLECTION", 
+      "queryScope": "COLLECTION",
       "fields": [
         {
           "fieldPath": "isActive",
@@ -49,6 +59,10 @@
           "order": "ASCENDING"
         },
         {
+          "fieldPath": "isCancelled",
+          "order": "ASCENDING"
+        },
+        {
           "fieldPath": "startDate",
           "order": "ASCENDING"
         }
@@ -59,21 +73,35 @@
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "endDate",
-          "order": "DESCENDING"
+          "fieldPath": "isActive",
+          "order": "ASCENDING"
         },
         {
-          "fieldPath": "isActive",
+          "fieldPath": "startDate",
           "order": "ASCENDING"
         }
       ]
     },
     {
-      "collectionGroup": "events",
+      "collectionGroup": "rsvps",
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "createdBy",
+          "fieldPath": "status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "rsvps",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {
+          "fieldPath": "memberId",
           "order": "ASCENDING"
         },
         {
