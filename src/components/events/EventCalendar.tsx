@@ -5,7 +5,7 @@ import { eventsService } from '../../services/firebase/events.service';
 import { eventRSVPService } from '../../services/firebase/event-rsvp.service';
 import { useAuth } from '../../hooks/useUnifiedAuth';
 import { useToast } from '../../contexts/ToastContext';
-import { RSVPModal } from './RSVPModal';
+import { EventDetailsModal } from './EventDetailsModal';
 import { CalendarDay } from './CalendarDay';
 import { CalendarWeek } from './CalendarWeek';
 import { 
@@ -45,9 +45,9 @@ export const EventCalendar: React.FC<EventCalendarProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // RSVP Modal state
+  // Event Details Modal state
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [isRSVPModalOpen, setIsRSVPModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [currentUserRSVP, setCurrentUserRSVP] = useState<EventRSVP | null>(null);
 
   const loadEvents = useCallback(async () => {
@@ -159,7 +159,7 @@ export const EventCalendar: React.FC<EventCalendarProps> = ({
     };
   }, [handleNavigation, handleToday, handleViewChange]);
 
-  // Enhanced event click handler to open RSVP modal
+  // Enhanced event click handler to open event details modal
   const handleEventClick = async (event: Event) => {
     // First try external handler
     if (onEventClick) {
@@ -167,7 +167,7 @@ export const EventCalendar: React.FC<EventCalendarProps> = ({
       return;
     }
 
-    // Open RSVP modal for seamless desktop experience
+    // Open event details modal for comprehensive event interaction
     setSelectedEvent(event);
     
     // Load current user's RSVP if exists
@@ -181,11 +181,11 @@ export const EventCalendar: React.FC<EventCalendarProps> = ({
       setCurrentUserRSVP(null);
     }
 
-    setIsRSVPModalOpen(true);
+    setIsDetailsModalOpen(true);
   };
 
-  const handleRSVPModalClose = () => {
-    setIsRSVPModalOpen(false);
+  const handleDetailsModalClose = () => {
+    setIsDetailsModalOpen(false);
     setSelectedEvent(null);
     setCurrentUserRSVP(null);
   };
@@ -392,11 +392,11 @@ export const EventCalendar: React.FC<EventCalendarProps> = ({
         </div>
       </div>
 
-      {/* RSVP Modal */}
+      {/* Event Details Modal */}
       {selectedEvent && (
-        <RSVPModal
-          isOpen={isRSVPModalOpen}
-          onClose={handleRSVPModalClose}
+        <EventDetailsModal
+          isOpen={isDetailsModalOpen}
+          onClose={handleDetailsModalClose}
           event={selectedEvent}
           currentUserRSVP={currentUserRSVP}
           onRSVPUpdate={handleRSVPUpdate}
