@@ -44,7 +44,6 @@ export interface Event {
   
   // Event classification
   eventType: EventType;
-  isPublic: boolean;
   requiredRoles?: Role[];
   
   // Capacity management
@@ -118,7 +117,6 @@ export interface EventFormData {
   endDate: string;
   isAllDay: boolean;
   eventType: EventType;
-  isPublic: boolean;
   requiredRoles: Role[];
   capacity?: number;
   enableWaitlist: boolean;

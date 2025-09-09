@@ -23,7 +23,6 @@ export interface EventDocument {
   
   // Event classification
   eventType: EventType;
-  isPublic: boolean;
   requiredRoles: Role[];
   
   // Capacity management
@@ -81,12 +80,11 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
   }
 
   /**
-   * Get upcoming public events
+   * Get upcoming events
    */
-  async getUpcomingPublicEvents(limitCount = 10): Promise<Event[]> {
+  async getUpcomingEvents(limitCount = 10): Promise<Event[]> {
     const now = Timestamp.now();
     const constraints = [
-      where('isPublic', '==', true),
       where('isActive', '==', true),
       where('isCancelled', '==', false),
       where('startDate', '>=', now),
@@ -110,17 +108,11 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
       limit(limitCount)
     ];
 
-    // If user is not admin or pastor, only show public events or events that specifically allow their role
-    if (userRole === 'member') {
-      constraints.push(where('isPublic', '==', true));
-    }
-
     let events = await this.getAll(constraints);
 
-    // Additional filtering for role-specific events
+    // Filter for role-specific events
     if (userRole !== 'admin') {
       events = events.filter(event => 
-        event.isPublic || 
         event.requiredRoles.length === 0 || 
         event.requiredRoles.includes(userRole)
       );
@@ -145,8 +137,7 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
     // Filter client-side to avoid complex indexes while they're building
     events = events.filter(event => 
       !event.isCancelled && 
-      event.startDate >= now &&
-      (userRole === 'admin' || userRole === 'pastor' || event.isPublic)
+      event.startDate >= now
     );
 
     // Sort by start date
@@ -181,6 +172,7 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
     
     const constraints = [
       where('isActive', '==', true),
+      where('isCancelled', '==', false),
       where('startDate', '>=', startTimestamp),
       where('startDate', '<=', endTimestamp),
       orderBy('startDate', 'asc')
@@ -215,6 +207,8 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
   async getEventsByCreator(createdBy: string): Promise<Event[]> {
     const constraints = [
       where('createdBy', '==', createdBy),
+      where('isActive', '==', true),
+      where('isCancelled', '==', false),
       orderBy('createdAt', 'desc')
     ];
 
@@ -229,6 +223,7 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
     const constraints = [
       where('endDate', '<', now),
       where('isActive', '==', true),
+      where('isCancelled', '==', false),
       orderBy('endDate', 'desc'),
       limit(limitCount)
     ];
@@ -247,19 +242,6 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
     return this.getEventsInRange(startOfDay, endOfDay);
   }
 
-  /**
-   * Get public events only
-   */
-  async getPublicEvents(): Promise<Event[]> {
-    const constraints = [
-      where('isPublic', '==', true),
-      where('isActive', '==', true),
-      where('isCancelled', '==', false),
-      orderBy('startDate', 'asc')
-    ];
-
-    return this.getAll(constraints);
-  }
 
   /**
    * Search events by text query
@@ -267,7 +249,7 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
   async searchEvents(query: string): Promise<Event[]> {
     // Get all active events first, then filter client-side
     // In production, you might want to implement Firestore full-text search
-    const allEvents = await this.getUpcomingPublicEvents(100);
+    const allEvents = await this.getUpcomingEvents(100);
     const searchLower = query.toLowerCase();
     
     return allEvents.filter(event => 
@@ -336,7 +318,6 @@ function eventDocumentToEvent(id: string, document: EventDocument): Event {
     endDate: document.endDate.toDate(),
     isAllDay: document.isAllDay,
     eventType: document.eventType,
-    isPublic: document.isPublic,
     requiredRoles: document.requiredRoles,
     capacity: document.capacity,
     currentAttendees: document.currentAttendees || 0,
@@ -360,7 +341,6 @@ function eventToEventDocument(event: Partial<Event>): Partial<EventDocument> {
   if (event.endDate !== undefined) document.endDate = Timestamp.fromDate(event.endDate);
   if (event.isAllDay !== undefined) document.isAllDay = event.isAllDay;
   if (event.eventType !== undefined) document.eventType = event.eventType;
-  if (event.isPublic !== undefined) document.isPublic = event.isPublic;
   if (event.requiredRoles !== undefined) document.requiredRoles = event.requiredRoles;
   if (event.capacity !== undefined) document.capacity = event.capacity;
   if (event.currentAttendees !== undefined) document.currentAttendees = event.currentAttendees;

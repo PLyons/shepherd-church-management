@@ -1,4 +1,5 @@
 import { MembersService } from './members.service';
+import { eventsService } from './events.service';
 import type { Event, DashboardStats as MainDashboardStats } from '../../types';
 
 // ============================================================================
@@ -78,20 +79,36 @@ export class DashboardService {
 
       console.log('DashboardService: Statistics fetched successfully');
 
+      // Get upcoming events using the same method as calendar for consistency
+      const now = new Date();
+      const thirtyDaysFromNow = new Date();
+      thirtyDaysFromNow.setDate(now.getDate() + 30);
+      
+      const upcomingEvents = await eventsService.getEventsInRange(now, thirtyDaysFromNow)
+        .catch((err: unknown) => {
+          console.error('Upcoming events error:', err);
+          return [];
+        });
+
       const recentActivity = await this.getAdminActivity().catch((err: unknown) => {
         console.error('Admin activity error:', err);
         return [];
       });
 
-      console.log('DashboardService: Admin dashboard data complete');
+      console.log('DashboardService: Admin dashboard data complete', {
+        totalMembers: memberStats.total,
+        upcomingEventsCount: upcomingEvents.length,
+        upcomingEvents: upcomingEvents.map(e => ({ title: e.title, startDate: e.startDate }))
+      });
 
       return {
         stats: {
           totalMembers: memberStats.total,
           activeMembers: memberStats.active,
+          upcomingEvents: upcomingEvents.length,
         },
         recentActivity,
-        upcomingEvents: [],
+        upcomingEvents: upcomingEvents.slice(0, 5), // Limit to 5 for dashboard display
         quickActions: this.getQuickActions('admin'),
       };
     } catch (error) {
@@ -106,6 +123,13 @@ export class DashboardService {
   private async getPastorDashboard(_userId: string): Promise<DashboardData> {
     const memberStats = await this.membersService.getStatistics();
 
+    // Get upcoming events for dashboard
+    const upcomingEvents = await eventsService.getEventsByRoleSimple('pastor', 5)
+      .catch((err: unknown) => {
+        console.error('Upcoming events error:', err);
+        return [];
+      });
+
     const recentActivity = await this.getPastorActivity();
 
     return {
@@ -114,7 +138,7 @@ export class DashboardService {
         activeMembers: memberStats.active,
       },
       recentActivity,
-      upcomingEvents: [],
+      upcomingEvents,
       quickActions: this.getQuickActions('pastor'),
     };
   }
@@ -129,13 +153,20 @@ export class DashboardService {
       throw new Error('Member not found');
     }
 
+    // Get upcoming events for dashboard
+    const upcomingEvents = await eventsService.getEventsByRoleSimple('member', 5)
+      .catch((err: unknown) => {
+        console.error('Upcoming events error:', err);
+        return [];
+      });
+
     // Get personal activity
     const recentActivity = await this.getMemberActivity(userId);
 
     return {
       stats: {},
       recentActivity,
-      upcomingEvents: [],
+      upcomingEvents,
       quickActions: this.getQuickActions('member'),
     };
   }

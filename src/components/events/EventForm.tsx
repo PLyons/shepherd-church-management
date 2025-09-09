@@ -38,7 +38,6 @@ export const EventForm: React.FC<EventFormProps> = ({
       endDate: '',
       isAllDay: false,
       eventType: 'other' as EventType,
-      isPublic: true,
       requiredRoles: [] as Role[],
       capacity: undefined,
       enableWaitlist: false,
@@ -89,7 +88,6 @@ export const EventForm: React.FC<EventFormProps> = ({
           endDate: formatDateForInput(event.endDate),
           isAllDay: event.isAllDay || false,
           eventType: event.eventType,
-          isPublic: event.isPublic,
           requiredRoles: event.requiredRoles,
           capacity: event.capacity,
           enableWaitlist: event.enableWaitlist,
@@ -308,22 +306,6 @@ export const EventForm: React.FC<EventFormProps> = ({
             </div>
           </section>
 
-          {/* Visibility & Access Section */}
-          <section>
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Visibility & Access</h3>
-            
-            {/* Public Event Toggle */}
-            <div className="mb-4">
-              <label className="inline-flex items-center">
-                <input
-                  type="checkbox"
-                  {...register('isPublic')}
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <span className="ml-2 text-sm text-gray-700">Public event (visible to all members)</span>
-              </label>
-            </div>
-          </section>
 
           {/* Capacity Management Section */}
           <section>
