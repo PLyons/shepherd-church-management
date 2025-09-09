@@ -153,3 +153,6 @@ export interface MembershipStatusChange {
 
 // Export comprehensive event types
 export * from './events';
+
+// Export comprehensive donation types
+export * from './donations';
