@@ -17,18 +17,20 @@ vi.mock('../../../lib/firebase', () => ({
   db: {},
 }));
 
-// Mock the BaseFirestoreService class
-const mockCreate = vi.fn();
-const mockGetById = vi.fn();
-const mockUpdate = vi.fn();
-const mockDelete = vi.fn();
-const mockGetAll = vi.fn();
-const mockGetWhere = vi.fn();
-const mockSearch = vi.fn();
-const mockCount = vi.fn();
-const mockSubscribeToCollection = vi.fn();
-const mockUnsubscribe = vi.fn();
+// Mock functions hoisted to ensure proper initialization
+const mockCreate = vi.hoisted(() => vi.fn());
+const mockGetById = vi.hoisted(() => vi.fn());
+const mockUpdate = vi.hoisted(() => vi.fn());
+const mockDelete = vi.hoisted(() => vi.fn());
+const mockGetAll = vi.hoisted(() => vi.fn());
+const mockGetWhere = vi.hoisted(() => vi.fn());
+const mockSearch = vi.hoisted(() => vi.fn());
+const mockCount = vi.hoisted(() => vi.fn());
+const mockSubscribeToCollection = vi.hoisted(() => vi.fn());
+const mockUnsubscribe = vi.hoisted(() => vi.fn());
+const mockCreateMultiple = vi.hoisted(() => vi.fn());
 
+// Mock the BaseFirestoreService class
 vi.mock('../base/base-firestore-service', () => ({
   BaseFirestoreService: class {
     create = mockCreate;
@@ -41,7 +43,7 @@ vi.mock('../base/base-firestore-service', () => ({
     count = mockCount;
     subscribeToCollection = mockSubscribeToCollection;
     unsubscribe = mockUnsubscribe;
-    createMultiple = vi.fn();
+    createMultiple = mockCreateMultiple;
     
     constructor(db: any, collectionName: string, docToClient: any, clientToDoc: any) {
       // Store for verification

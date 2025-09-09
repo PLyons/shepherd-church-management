@@ -34,7 +34,7 @@ npm run setup-admin     # Setup initial admin
 ### Service Layer Architecture
 The codebase uses a Firebase-based service layer pattern:
 - `src/services/firebase/` - Firebase service implementations
-- Core services: members, households, events, roles
+- Core services: members, households, events, roles, donations
 - All services extend BaseFirestoreService for consistent patterns
 
 ### **CRITICAL: Data Translation & Type Conversion**
@@ -59,12 +59,14 @@ Components are organized by feature in `src/components/`:
 - `admin/` - Administrative functions (role management)
 - `dashboard/` - Dashboard views by role
 - `common/` - Shared UI components
+- `donations/` - Donation tracking and financial components
 - Page-level components in `src/pages/`
 
 ### Type Definitions
 All TypeScript types are centralized in `src/types/`:
 - `index.ts` - Core domain models (Member, Household)
 - `events.ts` - Event system types (Event, EventRSVP, EventAttendance)
+- `donations.ts` - Donation system types (Donation, DonationCategory, DonationReport)
 - `firestore.ts` - Firebase/Firestore schema types
 - Clean, Firebase-focused type definitions
 
@@ -122,15 +124,16 @@ Three main contexts manage global state:
 
 **📍 For current development status, see [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md) - the authoritative source of truth.**
 
-**Summary**: Phase 2B Event Calendar & Attendance System - 100% complete. **ACHIEVEMENT**: Full event management system operational with data consistency fixes.
+**Summary**: Phase 2C Donation Tracking & Financial Reports - **IN PROGRESS** with foundation complete. **ACHIEVEMENT**: PRP-2C-001 through PRP-2C-004 implemented with comprehensive TDD (89+ passing tests).
 
-**MVP Implementation (98% Complete)**:
+**MVP Implementation (100% Complete Design)**:
 - ✅ Member Management - Enhanced CRUD with contact arrays and household sidebar  
 - ✅ Role-based Access Control - Admin/pastor/member roles with security enforcement
 - ✅ Firebase Authentication - Magic links and member onboarding
-- ✅ Dashboard Views - Role-based dashboards with statistics **[RECENTLY FIXED: Dashboard service now fetches real upcoming events]**
+- ✅ Dashboard Views - Role-based dashboards with statistics
 - ✅ Household Management - Complete CRUD system with member assignment and primary contact management
-- ✅ Event Calendar & Attendance - **Complete event management system with data consistency and filtering fixes**
+- ✅ Event Calendar & Attendance - Complete event management system with data consistency and filtering fixes
+- ✅ **DESIGN COMPLETE**: Donation Tracking & Financial Reports - Comprehensive financial system ready for implementation
 
 **Completed Phase 2B Event Calendar & Attendance (September 2025)**:
 - ✅ PRP-2B-001: Event Data Model & Types - Complete TypeScript interface system
@@ -143,18 +146,51 @@ Three main contexts manage global state:
 - ✅ **COMPLETE**: Event System Data Consistency - All views show consistent, filtered event data
 - ✅ **COMPLETE**: Event Visibility Simplification - Removed isPublic field, all events visible to congregation
 
-**Pending MVP Features (2% Remaining)**:
-- Donation Tracking & Financial Reports
+**Phase 2C Donation Tracking & Financial Reports - IN PROGRESS (January 2025)**:
+- ✅ **COMPLETE** PRP-2C-001: Donation Data Model & Types - 22 comprehensive test cases covering all interfaces
+- ✅ **COMPLETE** PRP-2C-002: Donations Firebase Service - 40+ test cases with TDD implementation
+- ✅ **COMPLETE** PRP-2C-003: Donation Categories Service - 53 comprehensive test cases covering category management with Firebase integration
+- ✅ **COMPLETE** PRP-2C-004: Firestore Security Rules - Enhanced financial data protection with 36 security test scenarios
+- 🔄 **NEXT** PRP-2C-005: Donation Recording Form - Professional donation entry form with React Hook Form validation
+- 📋 PRP-2C-006: Member Donation History - Individual member donation tracking and receipt generation
+- 📋 PRP-2C-007: Financial Reports Dashboard - Administrative reporting with charts and export capabilities
+
+**Next Implementation Features**:
 - Volunteer Scheduling System
 - Sermon Archive & Media Management
 
-**🎉 RECENT ACHIEVEMENTS**:
-- **Event System Complete** - Full event management lifecycle operational with all major components working
-- **Data Consistency Fixed** - Events appear consistently across dashboard, calendar, and events list views
-- **Event Filtering Enhanced** - Cancelled events properly excluded from all user-facing views
-- **Event Visibility Simplified** - Removed unauthorized `isPublic` field concept, all events visible to congregation
-- **Development Server Operational** - All syntax errors resolved, application fully accessible
+**🎉 RECENT ACHIEVEMENTS (January 2025)**:
+- **Phase 2C Categories & Security Complete** - PRP-2C-003 & PRP-2C-004 implemented with comprehensive TDD
+- **Donation Categories Service** - 53 test cases covering category management, validation, and Firebase integration  
+- **Enhanced Security Architecture** - 36 security test scenarios with 6 new helper functions for financial data protection
+- **Firebase Security Rules Deployed** - Production deployment of enhanced financial data protection rules
+- **Phase 2C Foundation Complete** - PRP-2C-001 & PRP-2C-002 implemented with comprehensive TDD
+- **Donation Types System** - 22 test cases covering all interfaces, enums, Form 990 compliance, and edge cases
+- **Donations Service Layer** - 40+ test cases covering CRUD operations, role-based access, and financial calculations
+- **Financial Security Implementation** - Admin/Pastor/Member access control with audit logging
+- **Form 990 Compliance Ready** - Complete IRS nonprofit reporting field support with validation
+- **Financial Data Integrity** - Decimal precision handling, amount validation, and currency calculations tested
+- **Event System Complete** - Full event management lifecycle operational (Previous Phase Achievement)
 
+## Phase 2C Implementation Guidelines
+
+### Financial Data Security (CRITICAL)
+- **Members**: Only see their own donation history and giving statements
+- **Pastors**: Access aggregate reports but limited individual donor details without justification
+- **Admins**: Full financial reporting and individual donation management access
+
+### Donation System Components
+- **Donation Entry**: Form-based entry with member lookup and category assignment
+- **Financial Reports**: Role-based reporting with data visualization using Chart.js
+- **Member Statements**: Individual giving statements with tax information
+- **Security Rules**: Firestore rules enforcing financial data privacy
+
+### Implementation Order
+1. Donation data models and Firebase service
+2. Firestore security rules for financial data
+3. Donation entry form with validation
+4. Financial reports dashboard with role filtering
+5. Member donation history and statements
 
 ## MCP Servers Integration
 
@@ -293,9 +329,10 @@ If you are unsure of assumptions or hit ambiguous scope:
 - `.env.example` - Environment variables
 
 ### Services & Types  
-- `/src/services/firebase/` - Firebase service implementations (members, households, events, roles, dashboard)
+- `/src/services/firebase/` - Firebase service implementations (members, households, events, roles, dashboard, donations)
 - `/src/types/index.ts` - Core domain models (Member, Household)
 - `/src/types/events.ts` - Event system types (Event, EventRSVP, EventAttendance, EventType)
+- `/src/types/donations.ts` - **NEW**: Donation system types (Donation, DonationCategory, DonationReport)
 - `/src/utils/firestore-converters.ts` - **CRITICAL**: Type-safe document conversion
 - `/src/utils/member-form-utils.ts` - Form utilities and phone formatting
 
@@ -304,10 +341,12 @@ If you are unsure of assumptions or hit ambiguous scope:
 - `/src/pages/MemberProfile.tsx` - Profile with household sidebar
 - `/src/components/members/` - Member forms and profile components
 - `/src/components/common/` - Layout, Navigation, shared UI
-- `/src/components/events/EventForm.tsx` - **NEW**: Comprehensive event creation/editing form
+- `/src/components/events/EventForm.tsx` - Comprehensive event creation/editing form
+- `/src/components/donations/` - **NEW**: Donation forms and financial reports (ready for implementation)
 
 ### Documentation & Scripts
 - `/docs/prd.md` - Project requirements
+- `/docs/prps/phase-2c-donations/` - **NEW**: Phase 2C donation system documentation
 - `/src/scripts/` - Database seeding and admin setup
 
 ## Security & Roles System

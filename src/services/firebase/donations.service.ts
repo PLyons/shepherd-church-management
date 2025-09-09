@@ -18,6 +18,7 @@ import {
   donationDocumentToDonation,
   donationToDonationDocument,
 } from '../../utils/converters/donation-converters';
+import { DonationCategoriesService } from './donation-categories.service';
 
 // Helper type for member donation summary
 interface MemberDonationSummary {
@@ -38,6 +39,8 @@ interface DonationStatistics {
 }
 
 export class DonationsService extends BaseFirestoreService<DonationDocument, Donation> {
+  private categoriesService: DonationCategoriesService;
+
   constructor() {
     super(
       db,
@@ -45,6 +48,7 @@ export class DonationsService extends BaseFirestoreService<DonationDocument, Don
       (id: string, document: DonationDocument) => donationDocumentToDonation(id, document),
       (client: Partial<Donation>) => donationToDonationDocument(client)
     );
+    this.categoriesService = new DonationCategoriesService();
   }
 
   // ============================================================================
@@ -56,7 +60,7 @@ export class DonationsService extends BaseFirestoreService<DonationDocument, Don
    */
   async createDonation(donationData: Omit<Donation, 'id' | 'createdAt' | 'updatedAt' | 'status'>): Promise<Donation> {
     // Validation
-    this.validateDonationData(donationData);
+    await this.validateDonationData(donationData);
 
     const now = new Date();
     const currentYear = now.getFullYear();
@@ -472,29 +476,139 @@ export class DonationsService extends BaseFirestoreService<DonationDocument, Don
   async createMultipleDonations(
     donationsData: Array<Omit<Donation, 'id' | 'createdAt' | 'updatedAt' | 'status'>>
   ): Promise<{ successful: number; failed: number; errors: string[] }> {
-    const items = donationsData.map((donationData, index) => {
+    // Validate all donations first
+    const validationPromises = donationsData.map(async (donationData, index) => {
       try {
-        this.validateDonationData(donationData);
-        
-        const now = new Date();
-        const currentYear = now.getFullYear();
-
-        return {
-          data: {
-            ...donationData,
-            status: 'pending' as DonationStatus,
-            isReceiptSent: false,
-            taxYear: donationData.taxYear || currentYear,
-            createdAt: now,
-            updatedAt: now,
-          }
-        };
+        await this.validateDonationData(donationData);
+        return { index, valid: true, error: null };
       } catch (error) {
-        throw new Error(`Validation failed for donation ${index}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        return { 
+          index, 
+          valid: false, 
+          error: `Validation failed for donation ${index}: ${error instanceof Error ? error.message : 'Unknown error'}` 
+        };
       }
     });
 
+    const validationResults = await Promise.all(validationPromises);
+    const failedValidations = validationResults.filter(result => !result.valid);
+    
+    if (failedValidations.length > 0) {
+      return {
+        successful: 0,
+        failed: failedValidations.length,
+        errors: failedValidations.map(result => result.error!),
+      };
+    }
+
+    const items = donationsData.map((donationData) => {
+      const now = new Date();
+      const currentYear = now.getFullYear();
+
+      return {
+        data: {
+          ...donationData,
+          status: 'pending' as DonationStatus,
+          isReceiptSent: false,
+          taxYear: donationData.taxYear || currentYear,
+          createdAt: now,
+          updatedAt: now,
+        }
+      };
+    });
+
     return this.createMultiple(items);
+  }
+
+  // ============================================================================
+  // CATEGORY STATISTICS METHODS
+  // ============================================================================
+
+  /**
+   * Update category statistics after donation changes
+   */
+  private async updateCategoryStatistics(categoryId: string): Promise<void> {
+    try {
+      const categoryDonations = await this.getDonationsByCategory(categoryId);
+      
+      if (categoryDonations.length === 0) {
+        // Reset statistics for category with no donations
+        await this.categoriesService.updateCategoryStatistics(categoryId, {
+          totalAmount: 0,
+          donationCount: 0,
+          averageDonation: 0,
+          currentYearTotal: 0,
+        });
+        return;
+      }
+
+      const totalAmount = categoryDonations.reduce((sum, donation) => sum + donation.amount, 0);
+      const donationCount = categoryDonations.length;
+      const averageDonation = totalAmount / donationCount;
+      
+      const currentYear = new Date().getFullYear();
+      const currentYearTotal = categoryDonations
+        .filter(donation => donation.taxYear === currentYear)
+        .reduce((sum, donation) => sum + donation.amount, 0);
+
+      const latestDonation = categoryDonations
+        .sort((a, b) => new Date(b.donationDate).getTime() - new Date(a.donationDate).getTime())[0];
+
+      await this.categoriesService.updateCategoryStatistics(categoryId, {
+        totalAmount,
+        donationCount,
+        averageDonation,
+        lastDonationDate: latestDonation?.donationDate,
+        currentYearTotal,
+      });
+    } catch (error) {
+      console.error(`Failed to update category statistics for ${categoryId}:`, error);
+      // Don't throw error to avoid breaking the main operation
+    }
+  }
+
+  /**
+   * Override create to update category statistics
+   */
+  async create(data: Partial<Donation>): Promise<Donation> {
+    const result = await super.create(data);
+    
+    if (result.categoryId) {
+      await this.updateCategoryStatistics(result.categoryId);
+    }
+    
+    return result;
+  }
+
+  /**
+   * Override update to update category statistics
+   */
+  async update(id: string, data: Partial<Donation>): Promise<Donation> {
+    const oldDonation = await this.getById(id);
+    const result = await super.update(id, data);
+    
+    // Update statistics for both old and new categories if they changed
+    if (oldDonation.categoryId && oldDonation.categoryId !== result.categoryId) {
+      await this.updateCategoryStatistics(oldDonation.categoryId);
+    }
+    
+    if (result.categoryId) {
+      await this.updateCategoryStatistics(result.categoryId);
+    }
+    
+    return result;
+  }
+
+  /**
+   * Override delete to update category statistics
+   */
+  async delete(id: string): Promise<void> {
+    const donation = await this.getById(id);
+    await super.delete(id);
+    
+    if (donation.categoryId) {
+      await this.updateCategoryStatistics(donation.categoryId);
+    }
   }
 
   // ============================================================================
@@ -504,7 +618,7 @@ export class DonationsService extends BaseFirestoreService<DonationDocument, Don
   /**
    * Validate donation data before creation/update
    */
-  private validateDonationData(donationData: Partial<Donation>): void {
+  private async validateDonationData(donationData: Partial<Donation>): Promise<void> {
     if (donationData.amount !== undefined && donationData.amount <= 0) {
       throw new Error('Donation amount must be greater than 0');
     }
@@ -520,5 +634,23 @@ export class DonationsService extends BaseFirestoreService<DonationDocument, Don
     if (!donationData.form990Fields) {
       throw new Error('Form 990 fields are required');
     }
+
+    // Validate category exists and is active
+    if (donationData.categoryId) {
+      try {
+        const category = await this.categoriesService.getById(donationData.categoryId);
+        if (!category.isActive) {
+          throw new Error(`Donation category '${category.name}' is not active`);
+        }
+      } catch (error) {
+        if (error instanceof Error && error.message.includes('not found')) {
+          throw new Error(`Invalid donation category ID: ${donationData.categoryId}`);
+        }
+        throw error;
+      }
+    }
   }
 }
+
+// Create singleton instance
+export const donationsService = new DonationsService();

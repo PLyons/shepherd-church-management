@@ -15,10 +15,15 @@
     "typecheck": "tsc --noEmit",
     "build:staging": "tsc && vite build --mode staging",
     "security:check": "npm audit --audit-level=moderate",
+    "security:rules": "vitest run __tests__/security/firestore-security-rules.test.ts",
+    "security:rules:full": "./__tests__/security/run-security-tests.sh",
+    "security:emulator:start": "firebase emulators:start --only firestore --project=test-project-security-rules",
+    "security:emulator:stop": "firebase emulators:stop",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "test:security": "npm run security:rules:full"
   },
   "dependencies": {
     "@tiptap/extension-placeholder": "^3.3.0",
@@ -40,6 +45,7 @@
     "recharts": "^3.1.2"
   },
   "devDependencies": {
+    "@firebase/rules-unit-testing": "^5.0.0",
     "@testing-library/jest-dom": "^6.8.0",
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^14.6.1",

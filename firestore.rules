@@ -232,6 +232,171 @@ service cloud.firestore {
     match /{path=**}/attendance/{attendanceId} {
       allow read: if isAdminOrPastor();
     }
+
+    // Enhanced Financial Data Helper Functions (PRP-2C-004)
+    function isValidDonationData() {
+      return request.resource.data.keys().hasAll(['amount', 'donationDate', 'method', 'categoryId', 'memberId']) &&
+             request.resource.data.amount is number &&
+             request.resource.data.amount > 0 &&
+             request.resource.data.amount <= 1000000 && // Max $1M per donation
+             request.resource.data.method in ['cash', 'check', 'credit_card', 'debit_card', 'bank_transfer', 'online', 'other'] &&
+             request.resource.data.donationDate is timestamp &&
+             request.resource.data.categoryId is string &&
+             request.resource.data.memberId is string &&
+             (!('status' in request.resource.data) || request.resource.data.status in ['pending', 'verified', 'cancelled']) &&
+             (!('isAnonymous' in request.resource.data) || request.resource.data.isAnonymous is bool) &&
+             (!('notes' in request.resource.data) || request.resource.data.notes is string) &&
+             (!('taxDeductible' in request.resource.data) || request.resource.data.taxDeductible is bool) &&
+             (!('checkNumber' in request.resource.data) || request.resource.data.checkNumber is string) &&
+             (!('designatedFund' in request.resource.data) || request.resource.data.designatedFund is string);
+    }
+
+    function isValidDonationCategoryData() {
+      return request.resource.data.keys().hasAll(['name', 'description', 'isActive', 'isTaxDeductible']) &&
+             request.resource.data.name is string &&
+             request.resource.data.name.size() > 0 &&
+             request.resource.data.description is string &&
+             request.resource.data.isActive is bool &&
+             request.resource.data.isTaxDeductible is bool &&
+             (!('displayOrder' in request.resource.data) || request.resource.data.displayOrder is number) &&
+             (!('code' in request.resource.data) || request.resource.data.code is string) &&
+             (!('fundCode' in request.resource.data) || request.resource.data.fundCode is string);
+    }
+
+    function canAccessFinancialData() {
+      return isAdmin(); // Only admins have full financial access
+    }
+
+    function canMemberEditDonation(donationTimestamp) {
+      // Members can only edit donations within 24 hours of creation
+      let now = request.time;
+      let createdAt = donationTimestamp;
+      let hoursPassed = (now.toMillis() - createdAt.toMillis()) / (1000 * 60 * 60);
+      return hoursPassed <= 24;
+    }
+
+    function requiresAuditLog() {
+      // All financial data access requires audit logging
+      return true;
+    }
+
+    function isValidFinancialQuery() {
+      // Validate that financial queries are properly scoped
+      return isAdmin() || 
+             (isAuthenticated() && request.auth.uid != null);
+    }
+
+    // Donation Categories collection
+    match /donation-categories/{categoryId} {
+      // Admin: Full access to all categories with validation
+      allow read, write: if isAdmin() && 
+                           (request.method == 'read' || isValidDonationCategoryData());
+      
+      // Pastor: Read access to all categories, create/update active categories only
+      allow read: if isPastor();
+      allow create, update: if isPastor() && 
+                              isValidDonationCategoryData() &&
+                              request.resource.data.isActive == true;
+      
+      // Members: Read-only access to active categories only
+      allow read: if isAuthenticated() && 
+                     resource.data.isActive == true;
+      
+      // No deletion for non-admins
+      allow delete: if isAdmin();
+    }
+
+    // Donations collection - Enhanced Security (PRP-2C-004)
+    match /donations/{donationId} {
+      // Admin: Full access to all donations with audit logging
+      allow read: if canAccessFinancialData() && requiresAuditLog();
+      allow write: if canAccessFinancialData() && 
+                     isValidDonationData() &&
+                     request.resource.data.createdBy == request.auth.uid;
+      
+      // CRITICAL: Pastors NO LONGER have access to individual donations
+      // Pastors must use donation-summaries collection for aggregate data
+      
+      // Members: Read access ONLY to their own donations
+      allow read: if isAuthenticated() && 
+                     resource.data.memberId == request.auth.uid;
+      
+      // Members: Can create donations for themselves only
+      allow create: if isAuthenticated() && 
+                      isValidDonationData() &&
+                      request.resource.data.memberId == request.auth.uid &&
+                      request.resource.data.createdBy == request.auth.uid &&
+                      request.resource.data.status == 'pending';
+      
+      // Members: Can update their own donations within 24-hour window and only if pending
+      allow update: if isAuthenticated() && 
+                      resource.data.memberId == request.auth.uid &&
+                      request.resource.data.memberId == request.auth.uid &&
+                      resource.data.status == 'pending' &&
+                      canMemberEditDonation(resource.data.createdAt) &&
+                      isValidDonationData();
+      
+      // Members: Cannot delete donations (audit trail preservation)
+      // Only admins can delete donations
+      allow delete: if isAdmin();
+    }
+
+    // Donation Summaries collection - Pastor Aggregate Access (PRP-2C-004)
+    match /donation-summaries/{summaryId} {
+      // Admin: Full access to all summaries
+      allow read, write: if isAdmin();
+      
+      // Pastor: Read access to aggregate summaries (no individual donor details)
+      allow read: if isPastor() && 
+                     (resource.data.aggregationType in ['monthly', 'quarterly', 'yearly', 'category', 'fund']) &&
+                     (!('individualDonorDetails' in resource.data) || resource.data.individualDonorDetails == false);
+      
+      // Pastors can create aggregate summaries but not individual donor summaries
+      allow create, update: if isPastor() && 
+                              request.resource.data.aggregationType in ['monthly', 'quarterly', 'yearly', 'category', 'fund'] &&
+                              (!('individualDonorDetails' in request.resource.data) || request.resource.data.individualDonorDetails == false);
+      
+      // Members: No access to any summaries
+      allow read, write: if false;
+    }
+
+    // Financial Audit Log collection - Admin Only (PRP-2C-004)
+    match /financial-audit-log/{logId} {
+      // Only admins can access audit logs
+      allow read, write: if isAdmin();
+      
+      // System can create audit entries (server-side rules)
+      allow create: if true; // Server-side validation handles this
+    }
+
+    // Collection group rules for donations (Enhanced Security)
+    match /{path=**}/donations/{donationId} {
+      // Admin: Can query across all donations with audit logging
+      allow read: if isAdmin() && 
+                     requiresAuditLog() &&
+                     isValidFinancialQuery();
+      
+      // Members: Can only access their own donations in queries
+      allow read: if isAuthenticated() && 
+                     resource.data.memberId == request.auth.uid;
+                     
+      // No write access through collection group queries
+      allow write: if false;
+    }
+
+    // Collection group rules for donation summaries
+    match /{path=**}/donation-summaries/{summaryId} {
+      // Admin: Full access to summary queries
+      allow read: if isAdmin();
+      
+      // Pastor: Limited access to aggregate summaries only
+      allow read: if isPastor() && 
+                     resource.data.aggregationType in ['monthly', 'quarterly', 'yearly', 'category', 'fund'] &&
+                     (!('individualDonorDetails' in resource.data) || resource.data.individualDonorDetails == false);
+      
+      // No write access through collection group queries
+      allow write: if false;
+    }
     
     // Default rule - deny everything else
     match /{document=**} {

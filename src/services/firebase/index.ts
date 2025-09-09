@@ -9,11 +9,15 @@ export { MembersService, membersService } from './members.service';
 export { HouseholdsService, householdsService } from './households.service';
 export { EventsService, eventsService } from './events.service';
 export { EventRSVPService, eventRSVPService } from './event-rsvp.service';
+export { DonationsService, donationsService } from './donations.service';
+export { DonationCategoriesService, donationCategoriesService } from './donation-categories.service';
 
 // Import classes for FirebaseService constructor
 import { MembersService } from './members.service';
 import { EventsService } from './events.service';
 import { EventRSVPService } from './event-rsvp.service';
+import { DonationsService } from './donations.service';
+import { DonationCategoriesService } from './donation-categories.service';
 import type { Member } from '../../types';
 import type { Event } from '../../types/events';
 
@@ -54,6 +58,12 @@ export const firebase = {
   get eventRSVPs() {
     return new EventRSVPService();
   },
+  get donations() {
+    return new DonationsService();
+  },
+  get donationCategories() {
+    return new DonationCategoriesService();
+  },
 } as const;
 
 // ============================================================================
@@ -65,11 +75,15 @@ export class FirebaseService {
   public readonly members: MembersService;
   public readonly events: EventsService;
   public readonly eventRSVPs: EventRSVPService;
+  public readonly donations: DonationsService;
+  public readonly donationCategories: DonationCategoriesService;
 
   constructor() {
     this.members = new MembersService();
     this.events = new EventsService();
     this.eventRSVPs = new EventRSVPService();
+    this.donations = new DonationsService();
+    this.donationCategories = new DonationCategoriesService();
   }
 
   // ============================================================================
