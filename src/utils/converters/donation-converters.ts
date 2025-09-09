@@ -3,7 +3,7 @@ import {
   DonationDocument,
   DonationCategory,
   DonationCategoryDocument,
-} from '../../types/firestore';
+} from '../../types/donations';
 import {
   timestampToString,
   stringToTimestamp,
@@ -29,8 +29,19 @@ export const donationDocumentToDonation = (
     note: doc.note,
     categoryId: doc.categoryId,
     categoryName: doc.categoryName,
+    form990Fields: doc.form990Fields,
+    receiptNumber: doc.receiptNumber,
+    isReceiptSent: doc.isReceiptSent,
+    receiptSentAt: timestampToString(doc.receiptSentAt),
+    isTaxDeductible: doc.isTaxDeductible,
+    taxYear: doc.taxYear,
     createdAt: timestampToString(doc.createdAt)!,
     createdBy: doc.createdBy,
+    updatedAt: timestampToString(doc.updatedAt)!,
+    updatedBy: doc.updatedBy,
+    status: doc.status,
+    verifiedBy: doc.verifiedBy,
+    verifiedAt: timestampToString(doc.verifiedAt),
   };
 };
 
@@ -47,10 +58,23 @@ export const donationToDonationDocument = (
     note: donation.note,
     categoryId: donation.categoryId,
     categoryName: donation.categoryName,
+    form990Fields: donation.form990Fields,
+    receiptNumber: donation.receiptNumber,
+    isReceiptSent: donation.isReceiptSent,
+    receiptSentAt: stringToTimestamp(donation.receiptSentAt),
+    isTaxDeductible: donation.isTaxDeductible,
+    taxYear: donation.taxYear,
     createdAt: donation.createdAt
       ? stringToTimestamp(donation.createdAt)
       : getCurrentTimestamp(),
     createdBy: donation.createdBy,
+    updatedAt: donation.updatedAt
+      ? stringToTimestamp(donation.updatedAt)
+      : getCurrentTimestamp(),
+    updatedBy: donation.updatedBy,
+    status: donation.status,
+    verifiedBy: donation.verifiedBy,
+    verifiedAt: stringToTimestamp(donation.verifiedAt),
   };
 };
 
@@ -67,11 +91,21 @@ export const donationCategoryDocumentToDonationCategory = (
     name: doc.name,
     description: doc.description,
     isActive: doc.isActive,
+    defaultForm990LineItem: doc.defaultForm990LineItem,
+    isTaxDeductible: doc.isTaxDeductible,
+    annualGoal: doc.annualGoal,
+    currentYearTotal: doc.currentYearTotal,
+    lastYearTotal: doc.lastYearTotal,
     totalAmount: doc.totalAmount,
     donationCount: doc.donationCount,
     lastDonationDate: timestampToString(doc.lastDonationDate),
+    averageDonation: doc.averageDonation,
+    includeInReports: doc.includeInReports,
+    reportingCategory: doc.reportingCategory,
+    displayOrder: doc.displayOrder,
     createdAt: timestampToString(doc.createdAt)!,
     updatedAt: timestampToString(doc.updatedAt)!,
+    createdBy: doc.createdBy,
   };
 };
 
@@ -84,10 +118,20 @@ export const donationCategoryToDonationCategoryDocument = (
     name: category.name,
     description: category.description,
     isActive: category.isActive !== undefined ? category.isActive : true,
+    defaultForm990LineItem: category.defaultForm990LineItem,
+    isTaxDeductible: category.isTaxDeductible,
+    annualGoal: category.annualGoal,
+    currentYearTotal: category.currentYearTotal || 0,
+    lastYearTotal: category.lastYearTotal || 0,
     totalAmount: category.totalAmount || 0,
     donationCount: category.donationCount || 0,
     lastDonationDate: stringToTimestamp(category.lastDonationDate),
+    averageDonation: category.averageDonation || 0,
+    includeInReports: category.includeInReports !== undefined ? category.includeInReports : true,
+    reportingCategory: category.reportingCategory,
+    displayOrder: category.displayOrder || 0,
     createdAt: category.createdAt ? stringToTimestamp(category.createdAt) : now,
     updatedAt: now,
+    createdBy: category.createdBy,
   };
 };

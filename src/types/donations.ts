@@ -1,4 +1,4 @@
-import { Member, Household } from './index';
+import { Member } from './index';
 import { Timestamp } from 'firebase/firestore';
 
 // ============================================================================
