@@ -1,3 +1,8 @@
+// src/components/common/LoadingSpinner.tsx
+// Reusable loading spinner component with configurable sizes for async operations
+// Provides consistent loading state UI across the application with CSS animations
+// RELEVANT FILES: src/components/auth/AuthGuard.tsx, src/components/auth/RoleGuard.tsx, src/components/common/Button.tsx, src/hooks/useUnifiedAuth.tsx
+
 interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg';
   className?: string;

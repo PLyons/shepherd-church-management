@@ -1,3 +1,8 @@
+// src/pages/Members.tsx
+// Member directory page displaying a searchable and paginated list of all church members
+// This file exists to provide the main member management interface with role-based access controls
+// RELEVANT FILES: src/components/members/MemberList.tsx, src/services/firebase/members.service.ts, src/hooks/useUnifiedAuth.ts, src/pages/MemberProfile.tsx
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { firebaseService } from '../services/firebase';

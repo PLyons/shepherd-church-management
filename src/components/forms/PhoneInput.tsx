@@ -1,3 +1,8 @@
+// src/components/forms/PhoneInput.tsx
+// Phone number input component with automatic formatting and validation for consistent form usage
+// This file exists to provide standardized phone input with US phone number formatting across all forms
+// RELEVANT FILES: src/utils/member-form-utils.ts, src/components/forms/EmailInput.tsx, src/components/members/MemberFormEnhanced.tsx, src/components/registration/steps/FormStepContact.tsx
+
 import React from 'react';
 import { formatPhoneNumber } from '../../utils/member-form-utils';
 

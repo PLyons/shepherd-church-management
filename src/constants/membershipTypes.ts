@@ -1,3 +1,8 @@
+// src/constants/membershipTypes.ts
+// Church membership type definitions with visual styling for member categorization and display
+// This file exists to standardize membership types across the application with consistent UI representation
+// RELEVANT FILES: src/types/index.ts, src/components/members/MemberFormEnhanced.tsx, src/components/members/MemberCard.tsx, src/pages/Members.tsx
+
 export interface MembershipType {
   value: string;
   label: string;

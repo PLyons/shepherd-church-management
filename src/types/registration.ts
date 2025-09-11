@@ -1,3 +1,8 @@
+// src/types/registration.ts
+// TypeScript type definitions for the QR code self-registration system
+// This file exists to define registration token and pending registration types for church member onboarding
+// RELEVANT FILES: src/services/firebase/registration-tokens.service.ts, src/pages/QRRegistration.tsx, src/components/registration/RegistrationStates.tsx, src/types/firestore.ts
+
 // ============================================================================
 // REGISTRATION TYPES - QR SELF-REGISTRATION SYSTEM
 // ============================================================================

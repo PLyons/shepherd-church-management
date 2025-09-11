@@ -1,3 +1,8 @@
+// src/components/dashboard/PastorDashboard.tsx
+// Pastor-focused dashboard providing congregation oversight and pastoral care tools
+// Displays member engagement metrics, upcoming events, and pastoral care features for pastor role users
+// RELEVANT FILES: src/services/firebase/dashboard.service.ts, src/pages/Dashboard.tsx, src/components/dashboard/StatsCard.tsx, src/components/auth/RoleGuard.tsx
+
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {

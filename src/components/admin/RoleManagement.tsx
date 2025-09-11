@@ -1,3 +1,8 @@
+// src/components/admin/RoleManagement.tsx
+// Administrative role management interface for assigning and managing user roles (admin/pastor/member)
+// Provides secure role assignment with audit logging and real-time role updates for system administrators
+// RELEVANT FILES: src/services/firebase/roles.service.ts, src/components/auth/RoleGuard.tsx, src/types/index.ts, src/pages/Settings.tsx
+
 import { useState, useEffect, useCallback } from 'react';
 import {
   rolesService,

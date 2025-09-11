@@ -1,3 +1,8 @@
+// src/services/firebase/households.service.ts
+// Firebase service for household management including CRUD operations, member assignment, and primary contact management
+// Handles household lifecycle, member relationships, address management, and household-level data operations
+// RELEVANT FILES: src/types/firestore.ts, src/utils/firestore-converters.ts, src/services/firebase/base.service.ts, src/services/firebase/members.service.ts
+
 import {
   collection,
   doc,

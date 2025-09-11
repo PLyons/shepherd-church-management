@@ -1,3 +1,8 @@
+// src/components/registration/QRCodeDisplay.tsx
+// QR code display and export component for member registration token visualization
+// This file exists to generate and display QR codes with multiple export options for registration tokens
+// RELEVANT FILES: src/components/registration/TokenManager.tsx, src/services/firebase/registration-tokens.service.ts, src/pages/admin/RegistrationTokens.tsx, src/utils/token-generator.ts
+
 import { useRef, useState } from 'react';
 import {
   X,

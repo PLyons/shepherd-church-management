@@ -1,3 +1,8 @@
+// src/utils/mockActivityData.ts
+// Mock activity data generator for testing and development of member activity timeline components
+// This file exists to provide realistic test data for activity tracking functionality during development
+// RELEVANT FILES: src/types/activity.ts, src/components/members/profile/components/ActivityTimeline.tsx, src/services/firebase/activity.service.ts, src/pages/Members.tsx
+
 import { MemberActivity, ActivityType } from '../types/activity';
 
 export function generateMockActivities(memberId: string, count: number = 20): Omit<MemberActivity, 'id'>[] {

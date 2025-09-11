@@ -1,3 +1,8 @@
+// src/utils/converters/converter-utils.ts
+// Utility functions for Firestore document conversion including timestamp handling and data transformation helpers
+// Provides shared conversion logic used across all entity converters for consistent data format handling
+// RELEVANT FILES: src/utils/converters/member-converters.ts, src/utils/converters/donation-converters.ts, src/utils/converters/event-converters.ts, src/utils/converters/household-converters.ts
+
 import { Timestamp } from 'firebase/firestore';
 
 /**

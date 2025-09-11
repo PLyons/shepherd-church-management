@@ -1,3 +1,8 @@
+// src/pages/Dashboard.tsx
+// Main dashboard page that renders role-specific dashboard components based on user authentication
+// This file exists to provide the primary landing page after login with role-based access control
+// RELEVANT FILES: src/components/dashboard/AdminDashboard.tsx, src/components/dashboard/PastorDashboard.tsx, src/components/dashboard/MemberDashboard.tsx, src/hooks/useUnifiedAuth.ts
+
 import { useAuth } from '../hooks/useUnifiedAuth';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import {

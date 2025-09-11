@@ -1,3 +1,8 @@
+// src/pages/Households.tsx
+// Household management page displaying all church households with search and CRUD operations
+// This file exists to provide the main interface for managing household data and relationships
+// RELEVANT FILES: src/pages/HouseholdProfile.tsx, src/pages/CreateHousehold.tsx, src/services/firebase/households.service.ts, src/types/index.ts
+
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {

@@ -1,3 +1,8 @@
+// src/components/events/EventForm.tsx
+// Comprehensive event creation and editing form with React Hook Form validation
+// Handles all event properties including scheduling, capacity, and type management for admin/pastor roles
+// RELEVANT FILES: src/types/events.ts, src/services/firebase/eventsService.ts, src/pages/Events.tsx, src/components/events/EventCard.tsx
+
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';

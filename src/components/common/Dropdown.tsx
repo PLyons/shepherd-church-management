@@ -1,3 +1,8 @@
+// src/components/common/Dropdown.tsx
+// Reusable dropdown component with customizable trigger and content positioning
+// Provides accessible dropdown pattern with click-outside detection and keyboard navigation
+// RELEVANT FILES: src/components/common/Navigation.tsx, src/components/members/MemberCard.tsx, src/components/events/EventCard.tsx, src/components/admin/RoleManagement.tsx
+
 import { ReactNode, useState, useRef, useEffect } from 'react';
 
 interface DropdownProps {

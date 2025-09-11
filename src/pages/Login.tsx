@@ -1,3 +1,8 @@
+// src/pages/Login.tsx
+// User authentication page supporting both password and magic link sign-in methods
+// This file exists to provide the main authentication entry point for the church management system
+// RELEVANT FILES: src/hooks/useUnifiedAuth.ts, src/contexts/FirebaseAuthContext.tsx, src/pages/Register.tsx, src/pages/PasswordReset.tsx
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useUnifiedAuth';

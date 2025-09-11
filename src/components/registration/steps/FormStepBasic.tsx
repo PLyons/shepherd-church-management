@@ -1,3 +1,8 @@
+// src/components/registration/steps/FormStepBasic.tsx
+// Basic information form step component for QR code registration multi-step form
+// This file exists to capture essential member information in the first step of registration process
+// RELEVANT FILES: src/hooks/useQRRegistration.ts, src/types/registration.ts, src/pages/QRRegistration.tsx, src/components/registration/steps/FormStepContact.tsx
+
 import { FormErrors, useQRRegistration } from '../../../hooks/useQRRegistration';
 import { RegistrationFormData } from '../../../types/registration';
 

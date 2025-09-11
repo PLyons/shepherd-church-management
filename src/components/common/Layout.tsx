@@ -1,3 +1,8 @@
+// src/components/common/Layout.tsx
+// Main application layout component providing navigation structure and responsive design
+// Wraps all pages with consistent navigation, mobile menu, and role-based UI rendering
+// RELEVANT FILES: src/components/common/Navigation.tsx, src/components/common/MobileMenu.tsx, src/hooks/useUnifiedAuth.tsx, src/router/index.tsx
+
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Navigation } from './Navigation';

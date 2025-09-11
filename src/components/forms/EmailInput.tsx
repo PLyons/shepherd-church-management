@@ -1,3 +1,8 @@
+// src/components/forms/EmailInput.tsx
+// Email input component with validation and real-time feedback for form consistency
+// This file exists to provide standardized email input with validation across all forms
+// RELEVANT FILES: src/utils/member-form-utils.ts, src/components/forms/PhoneInput.tsx, src/components/members/MemberFormEnhanced.tsx, src/components/registration/steps/FormStepContact.tsx
+
 import React, { useState } from 'react';
 import { isValidEmail } from '../../utils/member-form-utils';
 

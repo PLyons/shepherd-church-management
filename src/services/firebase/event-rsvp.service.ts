@@ -1,3 +1,8 @@
+// src/services/firebase/event-rsvp.service.ts
+// Firebase service for event RSVP management with capacity tracking, waitlist handling, and atomic operations
+// Handles RSVP submissions, capacity management, status updates, and ensures data consistency with transaction safety
+// RELEVANT FILES: src/types/events.ts, src/services/firebase/events.service.ts, src/services/firebase/base.service.ts, src/components/events/RSVPModal.tsx
+
 import {
   Timestamp,
   orderBy,

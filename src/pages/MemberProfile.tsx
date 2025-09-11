@@ -1,3 +1,8 @@
+// src/pages/MemberProfile.tsx
+// Detailed member profile page with tabbed interface and household information sidebar
+// This file exists to provide comprehensive member information display with role-based access and editing capabilities
+// RELEVANT FILES: src/components/members/profile/MemberProfileHeader.tsx, src/components/members/profile/MemberProfileTabs.tsx, src/components/members/profile/HouseholdSidebar.tsx, src/pages/Members.tsx
+
 import { useState, useEffect, createContext, Suspense } from 'react';
 import { useParams, Link, useNavigate, Outlet } from 'react-router-dom';
 import { Member } from '../types';

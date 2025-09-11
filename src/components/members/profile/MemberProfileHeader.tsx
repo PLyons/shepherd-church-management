@@ -1,3 +1,8 @@
+// src/components/members/profile/MemberProfileHeader.tsx
+// Member profile header component displaying key information with edit and action controls
+// Provides quick access to member details, membership type editing, and profile management actions
+// RELEVANT FILES: src/pages/MemberProfile.tsx, src/components/members/profile/MembershipTypeSelector.tsx, src/types/index.ts, src/components/common/Dropdown.tsx
+
 import { useState } from 'react';
 import { Edit, MoreVertical, Trash2, ArrowLeft, User } from 'lucide-react';
 import { Link } from 'react-router-dom';

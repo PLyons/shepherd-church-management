@@ -1,3 +1,8 @@
+// src/pages/Events.tsx
+// Events management page displaying filterable list of church events with role-based access controls
+// This file exists to provide the main events management interface with search, filtering, and CRUD operations
+// RELEVANT FILES: src/components/events/EventList.tsx, src/services/firebase/events.service.ts, src/pages/CreateEvent.tsx, src/components/events/EventFilters.tsx
+
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {

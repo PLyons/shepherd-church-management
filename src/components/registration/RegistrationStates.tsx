@@ -1,3 +1,8 @@
+// src/components/registration/RegistrationStates.tsx
+// Registration state display component for QR code registration flow feedback messages
+// This file exists to provide user feedback during different states of the registration process
+// RELEVANT FILES: src/pages/QRRegistration.tsx, src/hooks/useQRRegistration.ts, src/services/firebase/public-registration.service.ts, src/components/common/LoadingSpinner.tsx
+
 import { QrCode, AlertCircle, Heart } from 'lucide-react';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 

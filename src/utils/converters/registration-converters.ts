@@ -1,3 +1,8 @@
+// src/utils/converters/registration-converters.ts
+// Type-safe converters for transforming between registration TypeScript types and Firestore document schemas
+// This file exists to handle QR registration token and pending registration data persistence with Timestamp conversions
+// RELEVANT FILES: src/types/registration.ts, src/types/firestore.ts, src/services/firebase/registration-tokens.service.ts, src/services/firebase/public-registration.service.ts
+
 import {
   RegistrationTokenDocument,
   PendingRegistrationDocument,

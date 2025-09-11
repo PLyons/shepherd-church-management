@@ -1,3 +1,8 @@
+// src/components/auth/RoleGuard.tsx
+// Role-based access control component that restricts routes based on user roles (admin/pastor/member)
+// Implements principle of least privilege by checking member roles before allowing access to protected routes
+// RELEVANT FILES: src/hooks/useUnifiedAuth.tsx, src/components/auth/AuthGuard.tsx, src/types/index.ts, src/components/common/LoadingSpinner.tsx
+
 import { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useUnifiedAuth';

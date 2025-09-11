@@ -1,3 +1,8 @@
+// src/types/notes.ts
+// TypeScript type definitions for the member notes and pastoral care system
+// This file exists to define note management types with privacy controls and categorization
+// RELEVANT FILES: src/services/firebase/notes.service.ts, src/components/members/profile/components/NoteEditor.tsx, src/types/index.ts, src/types/activity.ts
+
 export interface MemberNote {
   id: string;
   memberId: string;

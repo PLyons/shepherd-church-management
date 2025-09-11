@@ -1,3 +1,8 @@
+// src/contexts/ToastContext.tsx
+// Toast notification context provider for displaying user feedback messages with type-based styling
+// Provides centralized toast management for success, error, and info messages throughout the application
+// RELEVANT FILES: src/hooks/useToast.ts, src/components/common/Toast.tsx, src/contexts/FirebaseAuthContext.tsx, src/components/members/MemberFormEnhanced.tsx
+
 import React, { createContext, useContext } from 'react';
 
 interface ToastContextType {

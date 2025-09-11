@@ -1,3 +1,8 @@
+// src/services/firebase/base.service.ts
+// Export aggregator for the refactored BaseFirestoreService architecture split into modular components
+// Provides backward compatibility while delegating to the new composition-based service architecture in base/ directory
+// RELEVANT FILES: src/services/firebase/base/index.ts, src/services/firebase/base/base-firestore-service.ts, src/services/firebase/members.service.ts, src/services/firebase/events.service.ts
+
 // REFACTORED: This file has been restructured using composition pattern
 // Original 680-line monolithic service split into focused modules in src/services/firebase/base/
 

@@ -1,3 +1,8 @@
+// src/services/firebase/events.service.ts
+// Firebase service for event management including CRUD operations, role-based queries, and capacity tracking
+// Handles event lifecycle, attendee management, and role-based access control for church events and activities
+// RELEVANT FILES: src/types/events.ts, src/services/firebase/base.service.ts, src/services/firebase/event-rsvp.service.ts, src/utils/converters/event-converters.ts
+
 import {
   where,
   orderBy,

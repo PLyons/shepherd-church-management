@@ -1,3 +1,8 @@
+// src/hooks/useMemberForm.ts
+// Custom hook for member form state management with React Hook Form integration and validation
+// Handles form initialization, data loading, submission, and section collapsibility for member creation/editing
+// RELEVANT FILES: src/components/members/MemberFormEnhanced.tsx, src/types/index.ts, src/services/firebase/members.service.ts, src/utils/member-form-utils.ts
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useForm, useFieldArray } from 'react-hook-form';

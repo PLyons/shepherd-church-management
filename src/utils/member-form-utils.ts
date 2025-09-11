@@ -1,3 +1,8 @@
+// src/utils/member-form-utils.ts
+// Shared utilities for member form handling including phone formatting and form state management
+// Extracted from member components to eliminate duplication and provide consistent form behavior across the app
+// RELEVANT FILES: src/components/members/MemberFormEnhanced.tsx, src/components/members/MemberProfile.tsx, src/types/index.ts, src/utils/validation.ts
+
 /**
  * Shared utilities for member form handling
  * Extracted from MemberForm.tsx and MemberProfile.tsx to eliminate duplication

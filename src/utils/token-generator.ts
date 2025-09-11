@@ -1,3 +1,8 @@
+// src/utils/token-generator.ts
+// Cryptographically secure token generation utility for QR registration system
+// This file exists to generate URL-safe tokens for secure member registration links
+// RELEVANT FILES: src/services/firebase/registration-tokens.service.ts, src/components/registration/TokenManager.tsx, src/pages/QRRegistration.tsx, src/components/registration/QRCodeDisplay.tsx
+
 /**
  * Token Generation Utility for QR Registration System
  * Generates cryptographically secure, URL-safe tokens

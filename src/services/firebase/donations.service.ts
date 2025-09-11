@@ -1,3 +1,8 @@
+// src/services/firebase/donations.service.ts
+// Firebase service for donation management including CRUD operations, financial reporting, and role-based access
+// Handles donation tracking, Form 990 compliance, member contribution history, and secure financial data management
+// RELEVANT FILES: src/types/donations.ts, src/services/firebase/donation-categories.service.ts, src/utils/converters/donation-converters.ts, src/services/firebase/base/base-firestore-service.ts
+
 import {
   where,
   QueryConstraint,

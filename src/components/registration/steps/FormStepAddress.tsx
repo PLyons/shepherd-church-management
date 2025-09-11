@@ -1,3 +1,8 @@
+// src/components/registration/steps/FormStepAddress.tsx
+// Address information form step component for QR code registration multi-step form
+// This file exists to capture complete address details in the registration process
+// RELEVANT FILES: src/types/registration.ts, src/constants/states.ts, src/components/registration/steps/FormStepContact.tsx, src/hooks/useQRRegistration.ts
+
 import { RegistrationFormData } from '../../../types/registration';
 
 interface FormStepAddressProps {

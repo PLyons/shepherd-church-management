@@ -1,3 +1,8 @@
+// src/services/firebase/base/firestore-queries.ts
+// Advanced Firestore querying module with pagination, filtering, and sorting capabilities
+// Provides type-safe query construction, pagination support, and efficient result handling for complex data retrieval
+// RELEVANT FILES: src/services/firebase/base/base-firestore-service.ts, src/services/firebase/base/firestore-operations.ts, src/services/firebase/members/member-pagination.ts, src/services/firebase/members/member-search.ts
+
 import {
   query,
   where,

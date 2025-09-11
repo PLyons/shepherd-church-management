@@ -1,3 +1,8 @@
+// src/types/index.ts
+// Core TypeScript type definitions for Members, Households, Events, and Dashboard data structures
+// This file exists as the central type definition hub for the church management system domain models
+// RELEVANT FILES: src/types/events.ts, src/types/donations.ts, src/services/firebase/members.service.ts, src/utils/firestore-converters.ts
+
 // ============================================================================
 // CORE TYPES - FIREBASE-BASED
 // ============================================================================

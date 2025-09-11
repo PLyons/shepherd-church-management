@@ -1,3 +1,8 @@
+// src/components/common/MobileMenu.tsx
+// Mobile navigation menu component with sliding panel and collapsible submenus
+// Provides responsive navigation experience for smaller screens with role-based menu filtering
+// RELEVANT FILES: src/components/common/Navigation.tsx, src/components/common/Layout.tsx, src/hooks/useUnifiedAuth.tsx, src/router/index.tsx
+
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { X, LogOut, User, ChevronDown, ChevronRight } from 'lucide-react';

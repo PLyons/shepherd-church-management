@@ -1,3 +1,8 @@
+// src/components/registration/steps/FormStepContact.tsx
+// Contact information form step component for QR code registration multi-step form
+// This file exists to capture phone, email, and communication preferences in the registration process
+// RELEVANT FILES: src/utils/member-form-utils.ts, src/hooks/useQRRegistration.ts, src/types/registration.ts, src/components/registration/steps/FormStepBasic.tsx
+
 import { formatPhoneNumber } from '../../../utils/member-form-utils';
 import { FormErrors } from '../../../hooks/useQRRegistration';
 import { RegistrationFormData } from '../../../types/registration';

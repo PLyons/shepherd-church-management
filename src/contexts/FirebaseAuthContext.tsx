@@ -1,3 +1,8 @@
+// src/contexts/FirebaseAuthContext.tsx
+// Firebase authentication context provider with member data integration and magic link support
+// Manages user authentication state, member profile data synchronization, and provides auth methods throughout the app
+// RELEVANT FILES: src/lib/firebase.ts, src/types/index.ts, src/hooks/useAuth.ts, src/services/firebase/members.service.ts
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import {
   User,

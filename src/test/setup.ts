@@ -1,3 +1,8 @@
+// src/test/setup.ts
+// Vitest test environment setup with mocked Firebase services and React Testing Library configuration
+// This file exists to provide a consistent testing environment with mocked external dependencies
+// RELEVANT FILES: vitest.config.ts, src/lib/firebase.ts, src/contexts/FirebaseAuthContext.tsx, src/contexts/ToastContext.tsx
+
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 

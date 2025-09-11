@@ -1,3 +1,8 @@
+// src/services/firebase/roles.service.ts
+// Firebase service for role management with security audit trail and admin-only role assignment capabilities
+// Handles role-based access control assignment, change tracking, audit logging, and security enforcement
+// RELEVANT FILES: src/services/firebase/members.service.ts, src/types/index.ts, src/components/admin/RoleManagement.tsx, src/utils/logger.ts
+
 import { MembersService } from './members.service';
 import type { Member } from '../../types';
 import { logger } from '../../utils/logger';

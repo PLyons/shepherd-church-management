@@ -1,3 +1,8 @@
+// src/utils/event-validation.ts
+// Event-specific validation functions for date ranges, capacity limits, and business rule enforcement
+// Provides validation logic for event forms ensuring data integrity and business rule compliance
+// RELEVANT FILES: src/components/events/EventForm.tsx, src/utils/validation.ts, src/types/events.ts, src/services/firebase/events.service.ts
+
 export const validateEventDates = (startDate: string, endDate: string): string | null => {
   const start = new Date(startDate);
   const end = new Date(endDate);

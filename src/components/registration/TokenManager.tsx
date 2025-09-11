@@ -1,3 +1,8 @@
+// src/components/registration/TokenManager.tsx
+// Registration token management form component for creating and configuring QR registration tokens
+// This file exists to provide admin interface for creating time-limited registration tokens with metadata
+// RELEVANT FILES: src/services/firebase/registration-tokens.service.ts, src/pages/admin/RegistrationTokens.tsx, src/components/registration/QRCodeDisplay.tsx, src/utils/token-generator.ts
+
 import React, { useState } from 'react';
 import { X, Calendar, Hash, FileText, MapPin } from 'lucide-react';
 

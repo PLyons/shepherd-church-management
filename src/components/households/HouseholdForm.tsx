@@ -1,3 +1,8 @@
+// src/components/households/HouseholdForm.tsx
+// Household creation and editing form with member assignment and primary contact management
+// Handles household CRUD operations with member search, assignment, and validation workflows
+// RELEVANT FILES: src/services/firebase/households.service.ts, src/types/firestore.ts, src/pages/Households.tsx, src/components/members/MemberProfile.tsx
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Save, X, Plus, Search, User } from 'lucide-react';

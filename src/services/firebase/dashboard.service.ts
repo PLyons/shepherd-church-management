@@ -1,3 +1,8 @@
+// src/services/firebase/dashboard.service.ts
+// Firebase service for role-based dashboard data aggregation including statistics, activity, and quick actions
+// Provides secure, role-filtered dashboard content with real-time updates and permission-based data access
+// RELEVANT FILES: src/services/firebase/members.service.ts, src/services/firebase/events.service.ts, src/types/index.ts, src/components/dashboard/AdminDashboard.tsx
+
 import { MembersService } from './members.service';
 import { eventsService } from './events.service';
 import type { Event, DashboardStats as MainDashboardStats } from '../../types';

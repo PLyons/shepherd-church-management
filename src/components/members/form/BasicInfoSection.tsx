@@ -1,3 +1,8 @@
+// src/components/members/form/BasicInfoSection.tsx
+// Basic information form section for member registration collecting core personal details
+// Handles name, gender, birthdate, and membership type fields with validation and error display
+// RELEVANT FILES: src/components/members/MemberFormEnhanced.tsx, src/types/index.ts, src/hooks/useMemberForm.tsx, src/utils/member-form-utils.ts
+
 import { ChevronDown, ChevronUp } from 'lucide-react';
 import { UseFormReturn, FieldErrors } from 'react-hook-form';
 import { MemberFormData } from '../../../types';

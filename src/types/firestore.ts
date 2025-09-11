@@ -1,3 +1,8 @@
+// src/types/firestore.ts
+// Firestore-specific type definitions for document schemas and database operations
+// This file exists to define the exact structure of data as stored in Firestore with Timestamp fields
+// RELEVANT FILES: src/utils/firestore-converters.ts, src/types/index.ts, src/services/firebase/base/base-firestore-service.ts, firestore.rules
+
 import { Timestamp, DocumentSnapshot } from 'firebase/firestore';
 
 // ============================================================================

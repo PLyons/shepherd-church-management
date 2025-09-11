@@ -1,3 +1,8 @@
+// src/services/firebase/base/firestore-subscriptions.ts
+// Real-time Firestore subscription management module for live data updates and collection monitoring
+// Handles onSnapshot subscriptions for both collections and documents with automatic error handling and cleanup
+// RELEVANT FILES: src/services/firebase/base/base-firestore-service.ts, src/services/firebase/members/member-subscriptions.ts, src/services/firebase/base/firestore-queries.ts, src/services/firebase/base/firestore-error-handler.ts
+
 import {
   onSnapshot,
   query,

@@ -1,3 +1,8 @@
+// src/pages/Calendar.tsx
+// Calendar view page displaying church events in monthly, weekly, and daily calendar layouts
+// This file exists to provide a visual calendar interface for event management and scheduling
+// RELEVANT FILES: src/components/events/EventCalendar.tsx, src/pages/Events.tsx, src/pages/CreateEvent.tsx, src/types/events.ts
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, List } from 'lucide-react';

@@ -1,3 +1,8 @@
+// src/components/common/Navigation.tsx
+// Primary navigation component with role-based menu items and dropdown submenu support
+// Handles desktop navigation with user authentication status and responsive mobile menu toggle
+// RELEVANT FILES: src/components/common/Layout.tsx, src/components/common/MobileMenu.tsx, src/hooks/useUnifiedAuth.tsx, src/router/index.tsx
+
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, LogOut, User, ChevronDown } from 'lucide-react';

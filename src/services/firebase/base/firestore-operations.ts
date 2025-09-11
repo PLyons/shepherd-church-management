@@ -1,3 +1,8 @@
+// src/services/firebase/base/firestore-operations.ts
+// Core Firestore CRUD operations module providing type-safe document manipulation with automatic timestamp handling
+// Handles basic create, read, update, delete operations with document-to-client transformation and error management
+// RELEVANT FILES: src/services/firebase/base/base-firestore-service.ts, src/services/firebase/base/firestore-error-handler.ts, src/utils/converters/converter-utils.ts, src/services/firebase/base/index.ts
+
 import {
   collection,
   doc,

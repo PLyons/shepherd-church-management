@@ -1,3 +1,8 @@
+// src/services/firebase/donation-categories.service.ts
+// Firebase service for donation category management with Form 990 compliance and financial tracking capabilities
+// Handles category CRUD operations, statistics updates, default category initialization, and role-based access control
+// RELEVANT FILES: src/types/donations.ts, src/utils/converters/donation-converters.ts, src/services/firebase/donations.service.ts, src/services/firebase/base/base-firestore-service.ts
+
 import { db } from '../../lib/firebase';
 import { BaseFirestoreService } from './base/base-firestore-service';
 import { 

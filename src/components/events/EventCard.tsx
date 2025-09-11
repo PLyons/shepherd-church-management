@@ -1,3 +1,8 @@
+// src/components/events/EventCard.tsx
+// Event display card component with RSVP functionality and role-based action controls
+// Shows event details, capacity status, and provides RSVP modal integration for member interaction
+// RELEVANT FILES: src/components/events/RSVPModal.tsx, src/components/events/EventList.tsx, src/types/events.ts, src/services/firebase/eventsService.ts
+
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {

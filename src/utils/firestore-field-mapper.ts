@@ -1,3 +1,8 @@
+// src/utils/firestore-field-mapper.ts
+// Utility functions for converting between camelCase (TypeScript) and snake_case (Firestore) field naming conventions
+// This file exists to handle field name transformation between TypeScript and Firestore document structures
+// RELEVANT FILES: src/utils/firestore-converters.ts, src/services/firebase/base/base-firestore-service.ts, src/types/firestore.ts, src/types/index.ts
+
 /**
  * Utility functions to convert between camelCase (TypeScript) and snake_case (Firestore)
  */

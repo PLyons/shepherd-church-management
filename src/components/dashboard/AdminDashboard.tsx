@@ -1,3 +1,8 @@
+// src/components/dashboard/AdminDashboard.tsx
+// Administrative dashboard providing comprehensive system overview with statistics and quick actions
+// Displays system-wide metrics, member management, event statistics, and administrative tools for admin users
+// RELEVANT FILES: src/services/firebase/dashboard.service.ts, src/pages/Dashboard.tsx, src/components/dashboard/StatsCard.tsx, src/components/auth/RoleGuard.tsx
+
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {

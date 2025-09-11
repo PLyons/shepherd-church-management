@@ -1,3 +1,8 @@
+// src/utils/validation.ts
+// Form validation utilities with regex patterns for email, phone, name, and general field validation
+// Provides consistent validation functions used across forms with standardized error messaging
+// RELEVANT FILES: src/components/members/MemberFormEnhanced.tsx, src/components/households/HouseholdForm.tsx, src/components/events/EventForm.tsx, src/utils/member-form-utils.ts
+
 export const validateRequired = (value: string): string | null => {
   return value.trim() ? null : 'This field is required';
 };

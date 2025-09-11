@@ -1,3 +1,8 @@
+// src/services/firebase/members.service.ts
+// Export aggregator for the refactored MembersService architecture split into modular components
+// Provides backward compatibility while delegating to the new composition-based member service architecture in members/ directory
+// RELEVANT FILES: src/services/firebase/members/index.ts, src/services/firebase/members/members-service.ts, src/types/index.ts, src/utils/firestore-converters.ts
+
 // REFACTORED: This file has been restructured using composition pattern
 // Original 675-line service split into focused modules in src/services/firebase/members/
 

@@ -1,3 +1,8 @@
+// src/utils/converters/volunteer-converters.ts
+// Type-safe converters for transforming between volunteer management TypeScript types and Firestore document schemas
+// This file exists to handle volunteer role and scheduling data persistence with Timestamp conversions
+// RELEVANT FILES: src/types/firestore.ts, src/services/firebase/volunteer.service.ts, src/utils/converters/converter-utils.ts, src/components/volunteers/*
+
 import {
   VolunteerRole,
   VolunteerRoleDocument,

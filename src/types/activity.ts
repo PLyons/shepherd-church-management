@@ -1,3 +1,8 @@
+// src/types/activity.ts
+// TypeScript type definitions for member activity tracking and communication logging
+// This file exists to define activity timeline types for member engagement history and pastoral care tracking
+// RELEVANT FILES: src/services/firebase/activity.service.ts, src/components/members/profile/components/ActivityTimeline.tsx, src/types/notes.ts, src/types/index.ts
+
 export interface BaseActivity {
   id: string;
   memberId: string;

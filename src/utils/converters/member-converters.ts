@@ -1,3 +1,8 @@
+// src/utils/converters/member-converters.ts
+// Type-safe converters for Member domain models to/from Firestore document format with timestamp handling
+// Provides bidirectional transformation between Member TypeScript interface and MemberDocument Firestore schema
+// RELEVANT FILES: src/types/firestore.ts, src/utils/converters/converter-utils.ts, src/services/firebase/members/members-service.ts, src/types/index.ts
+
 import { Member, MemberDocument } from '../../types/firestore';
 import {
   timestampToString,

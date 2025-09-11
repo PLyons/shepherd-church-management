@@ -1,3 +1,8 @@
+// src/components/auth/AuthGuard.tsx
+// Authentication guard component that protects routes based on user authentication status
+// Ensures authenticated access to protected routes and redirects unauthenticated users to login
+// RELEVANT FILES: src/hooks/useUnifiedAuth.tsx, src/components/auth/RoleGuard.tsx, src/components/common/LoadingSpinner.tsx, src/router/index.tsx
+
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useUnifiedAuth';

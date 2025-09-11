@@ -1,3 +1,8 @@
+// src/utils/converters/donation-converters.ts
+// Type-safe converters for Donation and DonationCategory models to/from Firestore document format
+// Handles bidirectional transformation for financial data with decimal precision and Form 990 compliance fields
+// RELEVANT FILES: src/types/donations.ts, src/utils/converters/converter-utils.ts, src/services/firebase/donations.service.ts, src/services/firebase/donation-categories.service.ts
+
 import {
   Donation,
   DonationDocument,

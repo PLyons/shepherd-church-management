@@ -1,3 +1,8 @@
+// src/components/members/MemberFormEnhanced.tsx
+// Enhanced member registration form with multi-section layout and comprehensive data collection
+// Integrates all member form sections for complete profile creation and editing workflow
+// RELEVANT FILES: src/hooks/useMemberForm.tsx, src/components/members/form/BasicInfoSection.tsx, src/components/members/form/ContactInfoSection.tsx, src/pages/Members.tsx
+
 import React from 'react';
 import { useMemberForm } from '../../hooks/useMemberForm';
 import { BasicInfoSection } from './form/BasicInfoSection';

@@ -1,6 +1,7 @@
-// states.ts
-// Created for standardized address forms in React + TypeScript
-// Source: USPS Postal Abbreviations (official standard)
+// src/constants/states.ts
+// US states and territories data with standardized USPS postal abbreviations for address forms
+// This file exists to provide consistent state/territory options in address input components
+// RELEVANT FILES: src/components/forms/*, src/components/members/MemberFormEnhanced.tsx, src/components/households/HouseholdForm.tsx, src/components/registration/steps/FormStepAddress.tsx
 
 export interface State {
   code: string;

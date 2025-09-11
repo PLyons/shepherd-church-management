@@ -1,3 +1,8 @@
+// src/services/firebase/index.ts
+// Centralized export aggregator and unified service class for all Firebase services with cross-service operations
+// Provides single entry point for Firebase operations, dashboard statistics, global search, and service orchestration
+// RELEVANT FILES: src/services/firebase/members.service.ts, src/services/firebase/events.service.ts, src/services/firebase/donations.service.ts, src/services/firebase/base.service.ts
+
 // ============================================================================
 // FIREBASE SERVICES INDEX
 // ============================================================================

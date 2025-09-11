@@ -1,3 +1,8 @@
+// src/utils/converters/household-converters.ts
+// Type-safe converters for transforming between Household TypeScript types and Firestore document schemas
+// This file exists to handle Timestamp conversions and field mapping for household data persistence
+// RELEVANT FILES: src/types/firestore.ts, src/types/index.ts, src/utils/converters/converter-utils.ts, src/services/firebase/households.service.ts
+
 import { Household, HouseholdDocument } from '../../types/firestore';
 import {
   timestampToString,

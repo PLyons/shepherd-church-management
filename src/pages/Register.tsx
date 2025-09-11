@@ -1,3 +1,8 @@
+// src/pages/Register.tsx
+// User registration page for creating new church member accounts with profile information
+// This file exists to provide new user account creation with member profile setup
+// RELEVANT FILES: src/pages/Login.tsx, src/hooks/useUnifiedAuth.ts, src/contexts/FirebaseAuthContext.tsx, src/components/members/MemberFormEnhanced.tsx
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useUnifiedAuth';

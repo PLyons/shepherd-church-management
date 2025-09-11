@@ -1,3 +1,8 @@
+// src/utils/calendar-helpers.ts
+// Calendar utility functions for date manipulation, calendar grid generation, and event date calculations
+// Provides date arithmetic, week/month navigation, and calendar layout helpers for event calendar components
+// RELEVANT FILES: src/components/events/EventCalendar.tsx, src/components/events/CalendarDay.tsx, src/types/events.ts, src/components/events/CalendarWeek.tsx
+
 // Calendar utility functions for date manipulation and calendar grid generation
 import { Event } from '../types/events';
 

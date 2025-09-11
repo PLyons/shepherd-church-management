@@ -1,3 +1,8 @@
+// src/components/forms/BirthdateInput.tsx
+// Birthdate input component with three separate fields for month, day, and year with validation
+// This file exists to provide user-friendly date input with validation and accessibility features
+// RELEVANT FILES: src/utils/member-form-utils.ts, src/components/forms/EmailInput.tsx, src/components/members/MemberFormEnhanced.tsx, src/components/registration/steps/FormStepPersonal.tsx
+
 import { useRef, useState, useEffect } from 'react';
 import {
   BirthdateComponents,

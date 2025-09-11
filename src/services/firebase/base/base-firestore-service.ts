@@ -1,3 +1,8 @@
+// src/services/firebase/base/base-firestore-service.ts
+// Abstract base service class using composition pattern for modular Firestore operations, queries, and subscriptions
+// Provides unified interface for Firebase service layer with type-safe CRUD operations, real-time subscriptions, and error handling
+// RELEVANT FILES: src/services/firebase/base/firestore-operations.ts, src/services/firebase/base/firestore-queries.ts, src/services/firebase/base/firestore-subscriptions.ts, src/services/firebase/base/firestore-batch.ts
+
 import {
   collection,
   doc,

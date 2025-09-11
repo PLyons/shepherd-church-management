@@ -1,3 +1,8 @@
+// src/lib/firebase.ts
+// Firebase client configuration and service initialization for the Shepherd Church Management System
+// Provides centralized Firebase app instance, authentication, Firestore database, and cloud storage access
+// RELEVANT FILES: src/services/firebase/index.ts, src/contexts/FirebaseAuthContext.tsx, src/lib/firebase-runtime.ts, src/lib/firebase-node.ts
+
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';

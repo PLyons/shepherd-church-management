@@ -1,3 +1,8 @@
+// src/types/events.ts
+// TypeScript type definitions for the event management system including Event, RSVP, and Attendance models
+// This file exists to define the complete event system type structure with role-based access and capacity management
+// RELEVANT FILES: src/services/firebase/events.service.ts, src/services/firebase/event-rsvp.service.ts, src/components/events/EventForm.tsx, src/pages/Events.tsx
+
 // ============================================================================
 // EVENT TYPES - COMPREHENSIVE EVENT CALENDAR & ATTENDANCE SYSTEM
 // ============================================================================

@@ -1,3 +1,8 @@
+// src/utils/logger.ts
+// Application-wide logging utility with environment-aware log levels and structured output formatting
+// Provides centralized logging with automatic timestamp prefixes and conditional debug logging for development
+// RELEVANT FILES: src/contexts/FirebaseAuthContext.tsx, src/services/firebase/base/firestore-error-handler.ts, src/lib/firebase.ts, src/utils/validation.ts
+
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 interface Logger {

@@ -1,3 +1,8 @@
+// src/utils/converters/event-converters.ts
+// Type-safe converters for Event, RSVP, and Attendance models to/from Firestore document format
+// Handles bidirectional transformation for event system entities with timestamp management and type safety
+// RELEVANT FILES: src/types/firestore.ts, src/utils/converters/converter-utils.ts, src/services/firebase/events.service.ts, src/services/firebase/event-rsvp.service.ts
+
 import {
   LegacyEvent as Event,
   LegacyEventDocument as EventDocument,

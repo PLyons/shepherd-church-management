@@ -1,3 +1,8 @@
+// src/utils/converters/content-converters.ts
+// Type-safe converters for transforming between sermon/content TypeScript types and Firestore document schemas
+// This file exists to handle multimedia content data persistence including sermons and media with Timestamp conversions
+// RELEVANT FILES: src/types/firestore.ts, src/services/firebase/content.service.ts, src/utils/converters/converter-utils.ts, src/components/sermons/*
+
 import { Sermon, SermonDocument } from '../../types/firestore';
 import {
   timestampToString,
