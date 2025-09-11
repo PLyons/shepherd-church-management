@@ -4,6 +4,7 @@
 **Task**: 2C.5  
 **Priority**: HIGH - Core UI for donation recording/editing  
 **Estimated Time**: 4-5 hours  
+**TDD Implementation**: REQUIRED - Component + Integration testing  
 
 ## Purpose
 
@@ -47,7 +48,227 @@ Implement the DonationForm component for creating and editing donations, followi
 6. **Category Integration**: Dynamic category dropdown from service
 7. **Payment Methods**: Support for all payment types with method-specific fields
 
+## TDD Requirements
+
+**Test Coverage Targets:**
+- **Minimum Coverage**: 85% overall for UI components
+- **Critical Path Coverage**: 90% for form validation and submission flows
+- **High-Risk Areas**: 95% for currency handling and data validation
+- **User Interaction Coverage**: 90% for form workflows
+
+**Testing Strategy:**
+- **Component Tests**: Form rendering, validation, user interactions
+- **Integration Tests**: Service integration, data submission flows
+- **Validation Tests**: Currency formatting, form validation rules
+- **Accessibility Tests**: Form accessibility and error handling
+
+**Test File Structure:**
+```
+src/components/donations/
+├── __tests__/
+│   ├── DonationForm.test.tsx              # Component behavior tests
+│   ├── DonationForm.validation.test.tsx   # Form validation tests
+│   ├── DonationForm.integration.test.tsx  # Service integration tests
+│   └── MemberLookup.test.tsx              # Member lookup component tests
+├── DonationForm.tsx
+└── index.ts
+```
+
+**TDD Success Criteria:**
+- [ ] All tests written before implementation (RED phase)
+- [ ] All tests pass after implementation (GREEN phase)
+- [ ] Code refactored for clarity and performance (REFACTOR phase)
+- [ ] Coverage targets met: `npm run test:coverage`
+- [ ] No regression in existing tests: `npm run test`
+- [ ] Form validation scenarios comprehensively tested
+- [ ] Currency handling edge cases covered
+- [ ] User interaction workflows validated
+
+**Key Test Scenarios:**
+1. **Form Rendering**: Component renders with proper initial state
+2. **Field Validation**: All validation rules trigger correct error messages
+3. **Currency Formatting**: Real-time formatting and parsing accuracy
+4. **Member Lookup**: Search functionality and selection behavior
+5. **Batch Entry**: Multiple donation entry and removal
+6. **Form Submission**: Data formatting and service integration
+7. **Error Handling**: Network errors and validation failures
+8. **Role Access**: Admin/pastor only access verification
+
 ## Detailed Procedure
+
+### Step 0: TDD Setup (MANDATORY FIRST STEP)
+
+**Create Test Files First:**
+
+Create `src/components/donations/__tests__/DonationForm.test.tsx`:
+```typescript
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { DonationForm } from '../DonationForm';
+import { TestProviders } from '../../__tests__/test-providers';
+import { donationsService, donationCategoriesService } from '../../../services/firebase';
+
+// Mock services
+vi.mock('../../../services/firebase', () => ({
+  donationsService: {
+    create: vi.fn(),
+    update: vi.fn(),
+    getById: vi.fn(),
+    createBatch: vi.fn(),
+  },
+  donationCategoriesService: {
+    getActive: vi.fn(),
+  },
+  membersService: {
+    search: vi.fn(),
+    getById: vi.fn(),
+  },
+}));
+
+describe('DonationForm', () => {
+  const mockOnSubmit = vi.fn();
+  const mockCategories = [
+    { id: 'cat-1', name: 'Tithe', isActive: true },
+    { id: 'cat-2', name: 'Offering', isActive: true },
+  ];
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    donationCategoriesService.getActive.mockResolvedValue(mockCategories);
+  });
+
+  const renderForm = (props = {}) => {
+    return render(
+      <TestProviders>
+        <DonationForm onSubmit={mockOnSubmit} {...props} />
+      </TestProviders>
+    );
+  };
+
+  describe('Form Rendering', () => {
+    it('should render donation form with all required fields', async () => {
+      renderForm();
+      
+      await waitFor(() => {
+        expect(screen.getByLabelText(/amount/i)).toBeInTheDocument();
+        expect(screen.getByLabelText(/date/i)).toBeInTheDocument();
+        expect(screen.getByLabelText(/category/i)).toBeInTheDocument();
+        expect(screen.getByLabelText(/payment method/i)).toBeInTheDocument();
+      });
+    });
+
+    it('should render anonymous donation toggle', async () => {
+      renderForm();
+      
+      await waitFor(() => {
+        expect(screen.getByLabelText(/anonymous donation/i)).toBeInTheDocument();
+      });
+    });
+
+    it('should render batch mode when enabled', () => {
+      renderForm({ batchMode: true });
+      
+      expect(screen.getByText(/record multiple donations/i)).toBeInTheDocument();
+      expect(screen.getByText(/add entry/i)).toBeInTheDocument();
+    });
+  });
+
+  describe('Form Validation', () => {
+    it('should show validation error for invalid amount', async () => {
+      renderForm();
+      
+      const amountInput = screen.getByLabelText(/amount/i);
+      fireEvent.change(amountInput, { target: { value: '-100' } });
+      fireEvent.click(screen.getByRole('button', { name: /record donation/i }));
+      
+      await waitFor(() => {
+        expect(screen.getByText(/amount must be greater than/i)).toBeInTheDocument();
+      });
+    });
+
+    it('should show validation error for missing category', async () => {
+      renderForm();
+      
+      const categorySelect = screen.getByLabelText(/category/i);
+      fireEvent.change(categorySelect, { target: { value: '' } });
+      fireEvent.click(screen.getByRole('button', { name: /record donation/i }));
+      
+      await waitFor(() => {
+        expect(screen.getByText(/category is required/i)).toBeInTheDocument();
+      });
+    });
+
+    it('should require check number when payment method is check', async () => {
+      renderForm();
+      
+      const methodSelect = screen.getByLabelText(/payment method/i);
+      fireEvent.change(methodSelect, { target: { value: 'check' } });
+      
+      await waitFor(() => {
+        expect(screen.getByLabelText(/check number/i)).toBeInTheDocument();
+      });
+      
+      fireEvent.click(screen.getByRole('button', { name: /record donation/i }));
+      
+      await waitFor(() => {
+        expect(screen.getByText(/check number is required/i)).toBeInTheDocument();
+      });
+    });
+  });
+
+  // Additional test scenarios...
+});
+```
+
+Create `src/components/donations/__tests__/DonationForm.validation.test.tsx`:
+```typescript
+import { describe, it, expect } from 'vitest';
+import { formatCurrency, parseCurrency, isValidCurrency } from '../../../utils/currency-utils';
+
+describe('Currency Validation', () => {
+  describe('formatCurrency', () => {
+    it('should format valid amounts correctly', () => {
+      expect(formatCurrency(100)).toBe('$100.00');
+      expect(formatCurrency(1234.56)).toBe('$1,234.56');
+      expect(formatCurrency(0.01)).toBe('$0.01');
+    });
+
+    it('should handle zero amount', () => {
+      expect(formatCurrency(0)).toBe('$0.00');
+    });
+  });
+
+  describe('parseCurrency', () => {
+    it('should parse currency strings correctly', () => {
+      expect(parseCurrency('$100.00')).toBe(100);
+      expect(parseCurrency('1,234.56')).toBe(1234.56);
+      expect(parseCurrency('$1,000')).toBe(1000);
+    });
+
+    it('should handle invalid input gracefully', () => {
+      expect(parseCurrency('')).toBe(0);
+      expect(parseCurrency('abc')).toBe(0);
+      expect(parseCurrency('$')).toBe(0);
+    });
+  });
+
+  describe('isValidCurrency', () => {
+    it('should validate currency amounts', () => {
+      expect(isValidCurrency(100)).toBe(true);
+      expect(isValidCurrency('$100.00')).toBe(true);
+      expect(isValidCurrency(-100)).toBe(false);
+      expect(isValidCurrency(1000000)).toBe(true);
+      expect(isValidCurrency(1000001)).toBe(false);
+    });
+  });
+});
+```
+
+**Run Initial Tests (Should Fail):**
+```bash
+npm run test -- src/components/donations/__tests__/DonationForm.test.tsx
+# Expected: All tests fail with "component not implemented" errors
+```
 
 ### Step 1: Create Donation Form Component
 
@@ -618,6 +839,11 @@ export const DonationForm: React.FC<DonationFormProps> = ({
 };
 ```
 
+**TDD Implementation:**
+1. **RED**: Write failing test for form rendering
+2. **GREEN**: Implement component structure to pass basic rendering tests
+3. **REFACTOR**: Optimize component organization and performance
+
 ### Step 2: Create Donation Pages
 
 Create `src/pages/RecordDonation.tsx`:
@@ -682,6 +908,11 @@ export const EditDonation: React.FC = () => {
   );
 };
 ```
+
+**TDD Implementation:**
+1. **RED**: Write tests for page routing and role protection
+2. **GREEN**: Implement pages with proper role guards
+3. **REFACTOR**: Optimize routing structure
 
 ### Step 3: Create Utility Components
 
@@ -827,6 +1058,11 @@ export const MemberLookup: React.FC<MemberLookupProps> = ({
 };
 ```
 
+**TDD Implementation:**
+1. **RED**: Write tests for member search and selection
+2. **GREEN**: Implement search functionality with debouncing
+3. **REFACTOR**: Optimize performance and accessibility
+
 ### Step 4: Create Currency Utilities
 
 Create `src/utils/currency-utils.ts`:
@@ -863,16 +1099,52 @@ export const isValidCurrency = (value: string | number): boolean => {
 };
 ```
 
-### Step 5: Test Form Component
+**TDD Implementation:**
+1. **RED**: Write comprehensive tests for currency formatting/parsing
+2. **GREEN**: Implement utility functions to pass all tests
+3. **REFACTOR**: Optimize for edge cases and performance
 
-1. Test form validation with various inputs and amounts
-2. Verify member lookup functionality works correctly
-3. Test batch entry mode with multiple donations
-4. Validate currency formatting and parsing
-5. Test form submission and editing flows
-6. Validate role-based access restrictions
+### Step 5: TDD Validation & Final Testing
+
+**Comprehensive Testing:**
+```bash
+# Run all donation form tests
+npm run test -- src/components/donations
+
+# Check coverage
+npm run test:coverage -- src/components/donations
+
+# Run specific test scenarios
+npm run test -- --grep="DonationForm validation"
+npm run test -- --grep="currency utilities"
+npm run test -- --grep="member lookup"
+
+# Integration test with services
+npm run test -- --grep="integration"
+```
+
+**Coverage Validation:**
+- [ ] Overall coverage ≥ 85%
+- [ ] Form validation ≥ 90%
+- [ ] Currency utilities ≥ 95%
+- [ ] User interactions ≥ 90%
 
 ## Success Criteria
+
+**Technical Validation:**
+- [ ] TypeScript compiles without errors
+- [ ] All tests pass consistently
+- [ ] Test coverage meets targets (85%/90%/95%)
+
+**TDD Validation:**
+- [ ] Test coverage meets targets (85%/90%/95%)
+- [ ] All tests pass consistently
+- [ ] Tests written before implementation
+- [ ] Form validation scenarios comprehensively tested
+- [ ] Currency handling edge cases covered
+- [ ] Member lookup functionality fully tested
+- [ ] Integration tests validate service interactions
+- [ ] Error handling tested for all scenarios
 
 **Functional Validation:**
 - [ ] Form records single donations successfully
@@ -912,9 +1184,16 @@ export const isValidCurrency = (value: string | number): boolean => {
 - `src/pages/EditDonation.tsx`
 - `src/utils/currency-utils.ts`
 
+**Test Files:**
+- `src/components/donations/__tests__/DonationForm.test.tsx`
+- `src/components/donations/__tests__/DonationForm.validation.test.tsx`
+- `src/components/donations/__tests__/DonationForm.integration.test.tsx`
+- `src/components/donations/__tests__/MemberLookup.test.tsx`
+- `src/utils/__tests__/currency-utils.test.ts`
+
 ## Next Task
 
-After completion, proceed to **PRP-2C-006: Donation List & Management** which will implement the UI for browsing, searching, and managing recorded donations.
+After completion, proceed to **PRP-2C-006: Member Donation History** which will implement the UI for browsing, searching, and managing recorded donations.
 
 ## Notes
 
@@ -926,3 +1205,22 @@ After completion, proceed to **PRP-2C-006: Donation List & Management** which wi
 - All validation is comprehensive with helpful error messages
 - Component is fully responsive and follows accessibility best practices
 - Role-based access ensures only admin/pastor can record donations
+- **TDD implementation ensures 85%+ test coverage with comprehensive validation testing**
+
+## TDD Implementation Log
+
+**Test Development:**
+- [ ] Component tests created: [DATE] - [DEVELOPER]
+- [ ] Validation tests created: [DATE] - [DEVELOPER]
+- [ ] Integration tests created: [DATE] - [DEVELOPER]
+- [ ] Currency utility tests created: [DATE] - [DEVELOPER]
+
+**Implementation Progress:**
+- [ ] RED phase completed: [DATE] - All tests failing as expected
+- [ ] GREEN phase completed: [DATE] - All tests passing
+- [ ] REFACTOR phase completed: [DATE] - Code optimized, tests still passing
+
+**Coverage Achievement:**
+- [ ] 85% overall coverage achieved: [DATE]
+- [ ] 90% form validation coverage achieved: [DATE]
+- [ ] 95% currency utilities coverage achieved: [DATE]

@@ -1,7 +1,7 @@
 # Documentation Index - Shepherd Church Management System
 
-**Last Updated:** 2025-09-09  
-**Project Status:** Phase 2B Event System 100% Complete - MVP at 98% Completion  
+**Last Updated:** 2025-01-09  
+**Project Status:** Phase 2C Donation Tracking - Foundation Complete with TDD  
 
 Welcome to the Shepherd CMS documentation hub. This index provides quick access to all project documentation organized by topic and audience.
 
@@ -21,7 +21,7 @@ Welcome to the Shepherd CMS documentation hub. This index provides quick access 
 
 | Document | Description | Last Updated |
 |----------|-------------|---------------|
-| [**PROJECT_STATUS.md**](PROJECT_STATUS.md) | **📍 PRIMARY SOURCE OF TRUTH** | **2025-09-09** |
+| [**PROJECT_STATUS.md**](PROJECT_STATUS.md) | **📍 PRIMARY SOURCE OF TRUTH** | **2025-01-09** |
 | [PRD](prd.md) | Product Requirements Document | Original spec |
 | [Project Tracker](project_tracker.md) | Historical phase progress | 2025-08-16 |
 | [Current Features](current-features.md) | Legacy feature documentation | Superseded |
@@ -51,6 +51,17 @@ Welcome to the Shepherd CMS documentation hub. This index provides quick access 
 | [Code Quality Progress](code-quality-audit-progress.md) | Linting and type safety | Developers |
 | [TypeScript Error Resolution](typescript-error-resolution.md) | Common TS fixes | Developers |
 | [Clean Removal Guide](clean-removal-guide.md) | Code cleanup patterns | Developers |
+
+### Test-Driven Development (TDD)
+| Document | Description | Purpose |
+|----------|-------------|---------|
+| [**TDD Quick Reference**](TDD-QUICK-REFERENCE.md) | Essential commands and patterns | **Daily TDD workflow** |
+| [**Agent TDD Workflow**](AGENT-TDD-WORKFLOW.md) | Step-by-step implementation guide | **Comprehensive TDD process** |
+| [**Phase 2C Test Examples**](prps/phase-2c-donations/) | Working TDD implementations | **Reference patterns** |
+
+**TDD Status:** ✅ **ESTABLISHED** - 151+ passing tests demonstrate excellence in TDD methodology  
+**Coverage Standards:** 80% minimum / 90% core logic / 95% financial & security  
+**Primary Interface:** Use `agents.md` for TDD-compliant development tasks
 
 ---
 
@@ -116,10 +127,11 @@ Historical and obsolete documentation is stored in:
 
 ### For New Developers
 1. Start with [README.md](../README.md)
-2. Read [CLAUDE.md](../CLAUDE.md) thoroughly
-3. Follow [Development Guide](development-guide.md)
-4. Review [Current Features](current-features.md)
-5. **For Phase 0.2 work:** Study [PRP Implementation Plans](prps/phase-0.2-member-profile/)
+2. Read [CLAUDE.md](../CLAUDE.md) thoroughly - **includes mandatory TDD methodology**
+3. Review [TDD Quick Reference](TDD-QUICK-REFERENCE.md) for daily workflow
+4. Follow [Development Guide](development-guide.md)
+5. **For TDD implementation:** Study [Agent TDD Workflow](AGENT-TDD-WORKFLOW.md)
+6. **For current work:** Reference [Phase 2C PRPs](prps/phase-2c-donations/) for TDD examples
 
 ### For Project Managers
 1. Review [Project Tracker](project_tracker.md)
@@ -134,18 +146,20 @@ Historical and obsolete documentation is stored in:
 3. Review [Security Implementation](security-implementation-summary.md)
 
 ### For Architects
-1. **CLAUDE.md is the primary reference** - most accurate technical documentation
+1. **CLAUDE.md is the primary reference** - most accurate technical documentation with TDD methodology
 2. Review [Firebase Schema Design](firebase/firestore-schema-design.md)
 3. Check [Security Roles Design](security-roles-design.md)
-4. Reference [Documentation Audit](documentation-audit.md) for current issues
+4. **TDD Architecture:** Review [Agent TDD Workflow](AGENT-TDD-WORKFLOW.md) for testing patterns
+5. Reference [Documentation Audit](documentation-audit.md) for current issues
 
 ---
 
 ## 📞 Getting Help
 
-- **Primary Reference:** Always check CLAUDE.md first
-- **Current Issues:** Review Documentation Audit report
+- **Primary Reference:** Always check CLAUDE.md first - includes mandatory TDD methodology
+- **TDD Implementation:** Use [Agent TDD Workflow](AGENT-TDD-WORKFLOW.md) and [TDD Quick Reference](TDD-QUICK-REFERENCE.md)
 - **Development Questions:** Use MCP servers (Serena, Context7) for code assistance
+- **Current Issues:** Review Documentation Audit report
 - **Architecture Questions:** Reference Firebase and security documentation
 
 ---

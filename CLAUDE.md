@@ -99,6 +99,69 @@ Three main contexts manage global state:
 - Avoid magic strings/numbers — define constants where applicable
 - Prefer composition over inheritance
 
+## Test-Driven Development (TDD) Methodology
+
+**MANDATORY:** All new development must follow Test-Driven Development (TDD) practices as established in Phase 2C foundation layers.
+
+### TDD Workflow Requirements
+**RED-GREEN-REFACTOR Cycle:**
+1. **RED Phase:** Write failing tests first that define expected behavior
+2. **GREEN Phase:** Implement minimal code to make tests pass
+3. **REFACTOR Phase:** Improve code quality while keeping tests green
+
+### Coverage Targets by Feature Type
+- **Overall Application:** 80% minimum test coverage
+- **Core Business Logic:** 90% minimum test coverage (member/household/event management)
+- **Financial & Security Features:** 95% minimum test coverage (donations, authentication, role-based access)
+- **UI Components:** 85% minimum test coverage (user interaction scenarios)
+
+### Test Organization Structure
+```
+src/[feature]/
+├── __tests__/
+│   ├── [feature].unit.test.ts        # Pure business logic tests
+│   ├── [feature].integration.test.ts # Service interaction tests  
+│   ├── [feature].security.test.ts    # Role-based access & validation tests
+│   └── [Component].test.tsx          # React component tests
+├── [feature].service.ts
+├── [Component].tsx
+└── index.ts
+```
+
+### Essential TDD Commands
+```bash
+# TDD Development Workflow
+npm run test -- --watch              # Watch mode for active development
+npm run test:coverage                 # Generate coverage reports (80%+ required)
+npm run test -- --grep="[feature]"   # Run specific test group
+npm run test -- --bail               # Stop on first failure for debugging
+
+# Quality Assurance
+npm run test:coverage -- --threshold=80    # Enforce minimum coverage
+npm run test -- --grep="security"          # Run security-specific tests
+npm run test -- --grep="integration"       # Run integration tests
+```
+
+### TDD Implementation Standards
+- **Write tests first** - Always begin with failing tests that define expected behavior
+- **Test all error conditions** - Include validation errors, service failures, and edge cases
+- **Mock external dependencies** - Keep tests isolated and fast with proper mocking
+- **Test role-based access** - Verify admin/pastor/member permissions in security tests
+- **Firebase emulator integration** - Use Firebase emulators for integration testing
+
+### Quality Gates
+- All tests must pass before code completion
+- Coverage targets must be met for feature acceptance
+- Security tests must verify role-based access control
+- Integration tests must validate Firebase service interactions
+
+### TDD Documentation References
+- **Quick Reference:** `docs/TDD-QUICK-REFERENCE.md` - Essential commands and patterns
+- **Agent Workflow:** `docs/AGENT-TDD-WORKFLOW.md` - Step-by-step TDD implementation guide
+- **Test Examples:** Phase 2C foundation layers (PRP-2C-001 through PRP-2C-004) demonstrate comprehensive TDD patterns
+
+**Achievement:** Phase 2C donation system foundation implemented with 151+ passing tests demonstrating excellence in TDD methodology.
+
 ### TypeScript Type Safety (MANDATORY)
 - **NEVER use `any` types** - Always specify proper types
 - Use `unknown` for truly unknown data, then narrow with type guards
