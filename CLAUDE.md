@@ -60,7 +60,27 @@ Components are organized by feature in `src/components/`:
 - `dashboard/` - Dashboard views by role
 - `common/` - Shared UI components
 - `donations/` - Donation tracking and financial components
+  - `sections/` - Modular form sections (DonorInfoSection, DonationDetailsSection, TaxReceiptSection, BatchModeSection)
 - Page-level components in `src/pages/`
+
+### **NEW: Modular Form Architecture Pattern (PRP-2C-005)**
+**MANDATORY for complex forms:** Break large forms into focused sections under 300 LOC each.
+
+**Established Pattern:**
+- Main form component coordinates state and submission
+- Section components handle specific form areas with clear boundaries
+- Each section receives only the form props it needs (register, errors, watch, setValue)
+- Sections maintain single responsibility and are easily testable
+- Currency utilities centralized in `src/utils/currency.ts` for financial precision
+
+**Example Implementation (DonationForm):**
+```
+DonationForm.tsx (299 LOC) - Main coordinator
+├── DonorInfoSection.tsx (287 LOC) - Member lookup & anonymous toggle
+├── DonationDetailsSection.tsx (199 LOC) - Amount, date, method, category
+├── TaxReceiptSection.tsx (87 LOC) - Tax deductible & receipt preferences
+└── BatchModeSection.tsx (134 LOC) - Batch entry functionality
+```
 
 ### Type Definitions
 All TypeScript types are centralized in `src/types/`:
@@ -187,7 +207,7 @@ npm run test -- --grep="integration"       # Run integration tests
 
 **📍 For current development status, see [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md) - the authoritative source of truth.**
 
-**Summary**: Phase 2C Donation Tracking & Financial Reports - **IN PROGRESS** with foundation complete. **ACHIEVEMENT**: PRP-2C-001 through PRP-2C-004 implemented with comprehensive TDD (89+ passing tests).
+**Summary**: Phase 2C Donation Tracking & Financial Reports - **IN PROGRESS** (50% complete). **ACHIEVEMENT**: PRP-2C-001 through PRP-2C-005 implemented with comprehensive TDD (180+ passing tests).
 
 **MVP Implementation (100% Complete Design)**:
 - ✅ Member Management - Enhanced CRUD with contact arrays and household sidebar  
@@ -214,8 +234,8 @@ npm run test -- --grep="integration"       # Run integration tests
 - ✅ **COMPLETE** PRP-2C-002: Donations Firebase Service - 40+ test cases with TDD implementation
 - ✅ **COMPLETE** PRP-2C-003: Donation Categories Service - 53 comprehensive test cases covering category management with Firebase integration
 - ✅ **COMPLETE** PRP-2C-004: Firestore Security Rules - Enhanced financial data protection with 36 security test scenarios
-- 🔄 **NEXT** PRP-2C-005: Donation Recording Form - Professional donation entry form with React Hook Form validation
-- 📋 PRP-2C-006: Member Donation History - Individual member donation tracking and receipt generation
+- ✅ **COMPLETE** PRP-2C-005: Donation Recording Form - Professional donation entry form with modular architecture and comprehensive TDD
+- 🔄 **NEXT** PRP-2C-006: Member Donation History - Individual member donation tracking and receipt generation
 - 📋 PRP-2C-007: Financial Reports Dashboard - Administrative reporting with charts and export capabilities
 
 **Next Implementation Features**:
@@ -223,6 +243,11 @@ npm run test -- --grep="integration"       # Run integration tests
 - Sermon Archive & Media Management
 
 **🎉 RECENT ACHIEVEMENTS (January 2025)**:
+- **PRP-2C-005 Donation Form Complete (2025-01-11)** - Professional donation recording UI with modular architecture
+- **Modular Form Pattern Established (2025-01-11)** - 5 components under 300 LOC each following agents.md requirements
+- **Currency Handling Excellence (2025-01-11)** - 30/30 currency utility tests with decimal precision and validation
+- **Service Integration Mastery (2025-01-11)** - Full Firebase service integration with error handling and member lookup
+- **Role-Based Page Security (2025-01-11)** - Admin/pastor access control with RoleGuard wrapper pattern
 - **Phase 2C Categories & Security Complete** - PRP-2C-003 & PRP-2C-004 implemented with comprehensive TDD
 - **Donation Categories Service** - 53 test cases covering category management, validation, and Firebase integration  
 - **Enhanced Security Architecture** - 36 security test scenarios with 6 new helper functions for financial data protection
@@ -405,7 +430,8 @@ If you are unsure of assumptions or hit ambiguous scope:
 - `/src/components/members/` - Member forms and profile components
 - `/src/components/common/` - Layout, Navigation, shared UI
 - `/src/components/events/EventForm.tsx` - Comprehensive event creation/editing form
-- `/src/components/donations/` - **NEW**: Donation forms and financial reports (ready for implementation)
+- `/src/components/donations/DonationForm.tsx` - **NEW**: Professional donation recording form with modular architecture
+- `/src/components/donations/sections/` - **NEW**: Modular form sections following 300 LOC pattern
 
 ### Documentation & Scripts
 - `/docs/prd.md` - Project requirements

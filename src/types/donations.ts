@@ -1,3 +1,8 @@
+// src/types/donations.ts
+// TypeScript type definitions for the comprehensive donation tracking and financial reporting system
+// This file exists to define all donation-related types with Form 990 compliance and role-based financial data access
+// RELEVANT FILES: src/services/firebase/donations.service.ts, src/services/firebase/donation-categories.service.ts, src/types/index.ts, src/utils/converters/donation-converters.ts
+
 import { Member } from './index';
 import { Timestamp } from 'firebase/firestore';
 
@@ -317,6 +322,7 @@ export interface DonationFormData {
   sourceLabel?: string;
   note?: string;
   categoryId: string;
+  checkNumber?: string;
   
   // Form 990 fields
   form990LineItem: Form990LineItem;

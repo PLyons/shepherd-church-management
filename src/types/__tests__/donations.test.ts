@@ -1,3 +1,8 @@
+// src/types/__tests__/donations.test.ts
+// Comprehensive test suite for donation system TypeScript type definitions and interface validation
+// This file exists to ensure type safety and completeness of donation-related types with Form 990 compliance
+// RELEVANT FILES: src/types/donations.ts, src/services/firebase/__tests__/donations.service.test.ts, src/services/firebase/__tests__/donation-categories.service.test.ts, vitest.config.ts
+
 import { describe, it, expect } from 'vitest';
 import {
   // Core Types

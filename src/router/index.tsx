@@ -1,3 +1,8 @@
+// src/router/index.tsx
+// Main router configuration defining all application routes with role-based access control
+// This file exists to centralize route definitions and enforce authentication and authorization patterns
+// RELEVANT FILES: src/components/auth/AuthGuard.tsx, src/components/auth/RoleGuard.tsx, src/components/common/Layout.tsx, src/pages/Dashboard.tsx
+
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import { AuthGuard } from '../components/auth/AuthGuard';
@@ -29,6 +34,9 @@ import AuthCallback from '../pages/AuthCallback';
 import PasswordReset from '../pages/PasswordReset';
 import SetPassword from '../pages/SetPassword';
 import NotFound from '../pages/NotFound';
+import RecordDonation from '../pages/RecordDonation';
+import BatchRecordDonations from '../pages/BatchRecordDonations';
+import EditDonation from '../pages/EditDonation';
 
 // Lazy-loaded tab components
 const OverviewTab = lazy(
@@ -211,6 +219,18 @@ export const router = createBrowserRouter(
         {
           path: 'events/:id/edit',
           element: <EditEvent />,
+        },
+        {
+          path: 'donations/record',
+          element: <RecordDonation />,
+        },
+        {
+          path: 'donations/batch',
+          element: <BatchRecordDonations />,
+        },
+        {
+          path: 'donations/edit/:id',
+          element: <EditDonation />,
         },
         {
           path: 'admin/registration-tokens',
