@@ -53,20 +53,28 @@ A React + TypeScript church management system focused on core membership functio
 - **Event Filtering** ✅ - Cancelled events properly excluded from all views
 - **Event Visibility** ✅ - All events visible to congregation members for transparency
 
+## 🚀 Recently Completed Features
+
+**Phase 2C Donation Tracking & Financial Reports (September 2025):**
+- ✅ **Donation Recording** - Professional donation entry with member lookup and validation
+- ✅ **Payment Processing** - Stripe integration with recurring donations and mobile optimization
+- ✅ **Member Donation History** - Individual tracking with PDF tax statements
+- ✅ **Financial Reports Dashboard** - Administrative reporting with charts and export capabilities
+- ✅ **Donation Categories** - Flexible categorization system with Form 990 compliance
+
 ## 🚀 Features Ready for Implementation
 
 Based on PRD specifications, the following features have a solid foundation and can be systematically added:
-- **Donation Tracking** - Financial management and reporting
 - **Volunteer Scheduling** - Ministry and service coordination
 - **Sermon Archive** - File management and sermon notes
 - **Email/SMS Notifications** - Member communication system
-- **Financial Reporting** - Donation reports and exports
 
 ## Tech Stack
 
 - **Frontend**: React 18 + TypeScript + Vite
 - **Styling**: TailwindCSS
 - **Backend**: Firebase (Firestore, Auth, Storage)
+- **Payment Processing**: Stripe (Elements, Webhooks, Subscriptions)
 - **Routing**: React Router v6
 - **Forms**: React Hook Form
 - **Icons**: Lucide React
@@ -98,12 +106,23 @@ Based on PRD specifications, the following features have a solid foundation and 
    - Enable Storage
    - Copy `.env.example` to `.env.local` and add your Firebase config (optional - defaults are provided)
 
-4. **Start Development Server**
+4. **Configure Payment Processing (Optional)**
+   - Create a Stripe account at https://stripe.com
+   - Get your publishable and secret keys from Stripe Dashboard
+   - Add Stripe configuration to your `.env.local`:
+     ```bash
+     VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
+     STRIPE_SECRET_KEY=sk_test_...
+     STRIPE_WEBHOOK_SECRET=whsec_...
+     ```
+   - Configure webhook endpoint at `/api/stripe/webhook` in Stripe Dashboard
+
+5. **Start Development Server**
    ```bash
    npm run dev
    ```
 
-5. **Access Application**
+6. **Access Application**
    - **App**: http://localhost:5173
    - **Firebase Console**: https://console.firebase.google.com
    - **Default Admin**: Set up using `npm run setup-admin`
@@ -138,13 +157,14 @@ Shepherd has successfully implemented core church management functionality with 
 - **Member Directory** - Full CRUD operations, search, profiles with enhanced contact display
 - **Household Management** - Family relationships and household profiles  
 - **Event Management System (Phase 2B ✅ COMPLETE)** - Full event lifecycle with calendar views, RSVP system, data consistency, and filtering
+- **Donation Tracking & Financial Reports (Phase 2C 80% COMPLETE)** - Professional donation recording, Stripe payment processing, member history, financial reports dashboard
 - **Authentication & Security** - Firebase Auth with magic links and QR registration
 - **Role-Based Access Control** - Admin, Pastor, Member permission levels
 - **Dashboard Views** - Role-specific dashboards with member and event statistics
 - **Database Integration** - Firebase Firestore with real-time updates and field mapping
 
 **🚀 Ready for Implementation (per PRD):**
-- Donation tracking and financial reporting
+- Automated donation statements and tax receipts (Phase 2C completion)
 - Sermon archive with file management
 - Volunteer scheduling system
 

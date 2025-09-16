@@ -107,6 +107,7 @@ export type DonationMethod =
   | 'stock'
   | 'cryptocurrency'
   | 'in_kind'
+  | 'stripe' // Added for Stripe payment processing
   | 'other';
 
 export type DonationStatus = 
@@ -498,4 +499,110 @@ export interface DonationMigrationData {
 
 export interface EnhancedDonation extends Donation {
   migration?: DonationMigrationData;
+}
+
+// ============================================================================
+// PAYMENT PROCESSING TYPES (PRP-2C-008)
+// ============================================================================
+
+/**
+ * Request structure for creating a Stripe payment intent
+ */
+export interface CreatePaymentIntentRequest {
+  amount: number; // Amount in cents
+  currency: string;
+  memberId: string;
+  donationCategoryId: string;
+  paymentMethodId: string;
+  description?: string;
+  receiptEmail?: string;
+  confirmationMethod?: 'automatic' | 'manual';
+  metadata?: Record<string, string>;
+}
+
+/**
+ * Response structure from Stripe payment intent creation
+ */
+export interface PaymentIntentResponse {
+  id: string;
+  status: 'requires_payment_method' | 'requires_confirmation' | 'requires_action' | 'processing' | 'succeeded' | 'canceled';
+  clientSecret: string;
+  amount: number;
+  currency: string;
+  paymentMethodId?: string;
+  error?: {
+    code: string;
+    message: string;
+    type: 'card_error' | 'api_error' | 'authentication_error' | 'idempotency_error' | 'invalid_request_error' | 'rate_limit_error';
+  };
+}
+
+/**
+ * Response structure for Stripe setup intent (for saving payment methods)
+ */
+export interface SetupIntentResponse {
+  id: string;
+  status: 'requires_payment_method' | 'requires_confirmation' | 'requires_action' | 'processing' | 'succeeded' | 'canceled';
+  clientSecret: string;
+  paymentMethodId?: string;
+  error?: {
+    code: string;
+    message: string;
+    type: string;
+  };
+}
+
+/**
+ * Payment method information from Stripe
+ */
+export interface PaymentMethod {
+  id: string;
+  type: 'card' | 'us_bank_account';
+  customerId: string;
+  card?: {
+    brand: string;
+    last4: string;
+    expiryMonth: number;
+    expiryYear: number;
+  };
+  usBankAccount?: {
+    bankName: string;
+    accountType: 'checking' | 'savings';
+    last4: string;
+    routingNumber: string;
+  };
+}
+
+/**
+ * Recurring donation configuration
+ */
+export interface RecurringDonation {
+  id: string;
+  memberId: string;
+  amount: number; // Amount in cents
+  currency: string;
+  frequency: 'weekly' | 'monthly' | 'yearly';
+  paymentMethodId: string;
+  categoryId: string;
+  status: 'active' | 'paused' | 'cancelled';
+  startDate: string; // ISO date string
+  nextPaymentDate: string; // ISO date string
+  endDate?: string; // Optional end date
+  description?: string;
+  createdAt: string; // ISO timestamp
+  updatedAt: string; // ISO timestamp
+}
+
+/**
+ * Stripe configuration for the application
+ */
+export interface StripeConfig {
+  publicKey: string;
+  webhookSecret?: string;
+  currency: string;
+  minDonationAmount: number; // In cents
+  maxDonationAmount: number; // In cents
+  allowedCountries?: string[];
+  enableApplePay?: boolean;
+  enableGooglePay?: boolean;
 }

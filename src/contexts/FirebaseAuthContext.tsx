@@ -43,6 +43,7 @@ interface AuthContextType {
   ) => Promise<void>;
   confirmPasswordReset: (oobCode: string, newPassword: string) => Promise<void>;
   updateMember: (updates: Partial<Member>) => Promise<void>;
+  hasRole: (role: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -226,6 +227,10 @@ export function FirebaseAuthProvider({
     setMember(updatedMember);
   };
 
+  const hasRole = (role: string): boolean => {
+    return member?.role === role;
+  };
+
   const value: AuthContextType = {
     user,
     member,
@@ -238,6 +243,7 @@ export function FirebaseAuthProvider({
     updatePassword,
     confirmPasswordReset: confirmPasswordResetWithCode,
     updateMember,
+    hasRole,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -161,3 +161,6 @@ export * from './events';
 
 // Export comprehensive donation types
 export * from './donations';
+
+// Export webhook types for Stripe integration
+export * from './webhook';

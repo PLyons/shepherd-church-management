@@ -34,8 +34,9 @@ npm run setup-admin     # Setup initial admin
 ### Service Layer Architecture
 The codebase uses a Firebase-based service layer pattern:
 - `src/services/firebase/` - Firebase service implementations
-- Core services: members, households, events, roles, donations
-- All services extend BaseFirestoreService for consistent patterns
+- `src/services/payment/` - Payment processing services (Stripe integration)
+- Core services: members, households, events, roles, donations, payment processing
+- All Firebase services extend BaseFirestoreService for consistent patterns
 
 ### **CRITICAL: Data Translation & Type Conversion**
 **ALWAYS use the existing translation system - DO NOT create new ones!**
@@ -64,6 +65,8 @@ Components are organized by feature in `src/components/`:
   - `MemberDonationHistory.tsx` - Member-only donation history with PDF generation
   - `DonationFilters.tsx` - Advanced filtering component with date ranges and categories
   - `DonationStatementPDF.tsx` - jsPDF-based tax statement generation
+  - `PaymentForm.tsx` - Stripe payment processing with mobile optimization
+  - `PaymentErrorHandler.tsx` - Payment error handling with retry logic
 - Page-level components in `src/pages/`
 
 ### **NEW: Modular Form Architecture Pattern (PRP-2C-005)**
@@ -105,13 +108,50 @@ MemberDonationHistory.tsx (485 LOC) - Main component with member-only security
 └── 104+ comprehensive test cases covering security, PDF generation, and performance
 ```
 
+### **NEW: Payment Processor Integration Patterns (PRP-2C-008)**
+**MANDATORY for payment processing:** Implement secure, PCI-compliant payment flows with comprehensive error handling and mobile optimization.
+
+**Established Pattern:**
+- Stripe SDK integration with TypeScript for secure payment processing
+- Payment components separated by concern (PaymentForm, PaymentErrorHandler)
+- Webhook-based payment confirmation with idempotent processing
+- PCI compliance maintained (no card data on servers)
+- Mobile-optimized payment flows with touch-friendly interfaces
+- Comprehensive error handling with retry logic and user-friendly messaging
+- Payment method management for recurring donations
+
+**Example Implementation (Payment System):**
+```
+src/services/payment/
+├── stripe.service.ts (380 LOC) - Core Stripe integration with payment intent management
+├── stripe-client.service.ts (290 LOC) - Client-side Stripe operations and error handling
+├── donation-payment.service.ts (150 LOC) - Integration with donation recording system
+└── __tests__/ (87 test cases) - Comprehensive payment processing and security testing
+
+src/components/donations/
+├── PaymentForm.tsx (645 LOC) - Main payment interface with saved payment methods
+├── PaymentErrorHandler.tsx (78 LOC) - Error handling with retry logic
+└── __tests__/ (195 test cases) - Payment UI, error handling, and mobile testing
+
+src/api/stripe/
+└── webhook.ts (831 LOC) - Secure webhook processing for payment confirmations
+```
+
+**Security & Compliance Requirements:**
+- Environment validation for production (test vs live keys)
+- Webhook signature verification for all incoming events
+- Sensitive data sanitization in logs and analytics
+- Payment amount validation and constraint enforcement
+- Integration with Firebase Security Rules for donation recording
+
 ### Type Definitions
 All TypeScript types are centralized in `src/types/`:
 - `index.ts` - Core domain models (Member, Household)
 - `events.ts` - Event system types (Event, EventRSVP, EventAttendance)
 - `donations.ts` - Donation system types (Donation, DonationCategory, DonationReport)
+- `payment.ts` - Payment processing types (PaymentIntent, PaymentMethod, StripeConfig)
 - `firestore.ts` - Firebase/Firestore schema types
-- Clean, Firebase-focused type definitions
+- Clean, Firebase-focused type definitions with payment integration
 
 ### Data Management Patterns
 - **Firestore Converters**: `src/utils/firestore-converters.ts` - Type-safe Firestore document conversion
@@ -142,6 +182,47 @@ Three main contexts manage global state:
 - Avoid magic strings/numbers — define constants where applicable
 - Prefer composition over inheritance
 
+## Context Management Rules (MANDATORY)
+
+**CRITICAL:** These rules prevent context explosion and ensure efficient development workflows.
+
+### File Size Limits
+- **Test files**: Maximum 300 lines per file
+- **Component files**: Maximum 500 lines per file  
+- **If larger needed**: Split into multiple focused files immediately
+- **Large files PROHIBITED**: Never create files exceeding these limits
+
+### TDD Context Constraints
+- **RED phase**: Maximum 30 tests initially, never create 100+ tests upfront
+- **Incremental approach**: Build test coverage gradually (10-20 tests at a time)
+- **Focus critical path**: Test core functionality first, edge cases later
+- **Split test files**: Break large test suites into focused, smaller files
+
+### Sub-Agent Utilization (MANDATORY)
+- **Main agent role**: Planning, orchestration, and symbolic tool usage only
+- **Sub-agent delegation**: All file creation, modification, and implementation
+- **Parallel execution**: Use multiple sub-agents for independent tasks
+- **Context preservation**: Main agent never reads files >200 lines
+
+### Tool Usage Hierarchy
+1. **First priority**: `mcp__serena__find_symbol`, `mcp__serena__get_symbols_overview`, `mcp__serena__replace_symbol_body`
+2. **Second priority**: Pattern search with `grep` or `mcp__serena__search_for_pattern`
+3. **Last resort only**: `Read` entire file (>200 lines prohibited in main context)
+
+### Task Decomposition Requirements
+- **Maximum task duration**: 30 minutes per sub-task
+- **Bounded scope**: Each task <300 lines of code
+- **Clear deliverables**: Specific, measurable outcomes per task
+- **Sequential dependencies**: Define clear task order and prerequisites
+
+### Context Monitoring
+- **File read tracking**: Monitor cumulative context consumption
+- **Early intervention**: Switch to sub-agents when context >50% consumed
+- **Symbolic operations preferred**: Always attempt symbolic tools before full file reads
+- **Session boundaries**: Respect context limits, never exceed capacity
+
+**VIOLATION CONSEQUENCES**: Any violation of these rules requires immediate corrective action and workflow adjustment.
+
 ## Test-Driven Development (TDD) Methodology
 
 **MANDATORY:** All new development must follow Test-Driven Development (TDD) practices as established in Phase 2C foundation layers.
@@ -149,8 +230,15 @@ Three main contexts manage global state:
 ### TDD Workflow Requirements
 **RED-GREEN-REFACTOR Cycle:**
 1. **RED Phase:** Write failing tests first that define expected behavior
+   - **CONSTRAINT:** Maximum 30 tests initially (never 100+ upfront)
+   - **APPROACH:** Focus on core functionality, add edge cases incrementally
+   - **FILE LIMITS:** Keep test files under 300 lines, split if larger
 2. **GREEN Phase:** Implement minimal code to make tests pass
+   - **SUB-AGENT DELEGATION:** Use sub-agents for all implementation work
+   - **CONTEXT PRESERVATION:** Main agent coordinates, never implements directly
 3. **REFACTOR Phase:** Improve code quality while keeping tests green
+   - **INCREMENTAL:** Add more tests gradually (10-20 at a time)
+   - **SYMBOLIC TOOLS:** Use targeted edits, avoid reading large files
 
 ### Coverage Targets by Feature Type
 - **Overall Application:** 80% minimum test coverage
@@ -230,7 +318,7 @@ npm run test -- --grep="integration"       # Run integration tests
 
 **📍 For current development status, see [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md) - the authoritative source of truth.**
 
-**Summary**: Phase 2C Donation Tracking & Financial Reports - **IN PROGRESS** (60% complete). **ACHIEVEMENT**: PRP-2C-001 through PRP-2C-006 implemented with comprehensive TDD (284+ passing tests).
+**Summary**: Phase 2C Donation Tracking & Financial Reports - **APPROACHING COMPLETION** (80% complete). **ACHIEVEMENT**: PRP-2C-001 through PRP-2C-008 implemented with comprehensive TDD (484+ passing tests).
 
 **MVP Implementation (100% Complete Design)**:
 - ✅ Member Management - Enhanced CRUD with contact arrays and household sidebar  
@@ -252,20 +340,23 @@ npm run test -- --grep="integration"       # Run integration tests
 - ✅ **COMPLETE**: Event System Data Consistency - All views show consistent, filtered event data
 - ✅ **COMPLETE**: Event Visibility Simplification - Removed isPublic field, all events visible to congregation
 
-**Phase 2C Donation Tracking & Financial Reports - IN PROGRESS (January 2025)**:
+**Phase 2C Donation Tracking & Financial Reports - APPROACHING COMPLETION (September 2025)**:
 - ✅ **COMPLETE** PRP-2C-001: Donation Data Model & Types - 22 comprehensive test cases covering all interfaces
 - ✅ **COMPLETE** PRP-2C-002: Donations Firebase Service - 40+ test cases with TDD implementation
 - ✅ **COMPLETE** PRP-2C-003: Donation Categories Service - 53 comprehensive test cases covering category management with Firebase integration
 - ✅ **COMPLETE** PRP-2C-004: Firestore Security Rules - Enhanced financial data protection with 36 security test scenarios
 - ✅ **COMPLETE** PRP-2C-005: Donation Recording Form - Professional donation entry form with modular architecture and comprehensive TDD
 - ✅ **COMPLETE** PRP-2C-006: Member Donation History - Member-only donation tracking with PDF statements and comprehensive TDD (104+ tests)
-- 🔄 **NEXT** PRP-2C-007: Financial Reports Dashboard - Administrative reporting with charts and export capabilities
+- ✅ **COMPLETE** PRP-2C-007: Financial Reports Dashboard - Administrative reporting with charts and export capabilities (132+ tests)
+- ✅ **COMPLETE** PRP-2C-008: Payment Processor Integration - Stripe gateway implementation with comprehensive TDD and security compliance (68+ tests)
+- 🔄 **NEXT** PRP-2C-009: Donation Statements & Receipts - Automated tax receipt generation with member portal integration
 
 **Next Implementation Features**:
 - Volunteer Scheduling System
 - Sermon Archive & Media Management
 
 **🎉 RECENT ACHIEVEMENTS (September 2025)**:
+- **PRP-2C-008 Payment Processor Integration Complete (2025-09-16)** - Stripe gateway implementation with comprehensive TDD and security compliance
 - **PRP-2C-006 Member Donation History Complete (2025-09-11)** - Member-only donation tracking with PDF tax statements and comprehensive TDD
 - **PDF Generation Excellence (2025-09-11)** - jsPDF integration with tax-compliant formatting and church branding
 - **Member Privacy & Security Architecture (2025-09-11)** - Zero cross-member data access with audit logging
@@ -391,6 +482,9 @@ npm run test -- --grep="integration"       # Run integration tests
 Key environment variables (see `.env.example`):
 - `VITE_USE_FIREBASE` - Toggle between Supabase and Firebase
 - `VITE_FIREBASE_*` - Firebase configuration
+- `VITE_STRIPE_PUBLISHABLE_KEY` - Stripe publishable key for payment processing
+- `STRIPE_SECRET_KEY` - Stripe secret key for server-side operations
+- `STRIPE_WEBHOOK_SECRET` - Stripe webhook endpoint secret for security
 - `VITE_SUPABASE_*` - Supabase configuration (legacy)
 
 ## Session Management
