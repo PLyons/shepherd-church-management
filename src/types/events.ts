@@ -8,7 +8,7 @@
 // ============================================================================
 
 // Supporting enums and types
-export type EventType = 
+export type EventType =
   | 'service'
   | 'bible_study'
   | 'prayer_meeting'
@@ -36,34 +36,34 @@ export type RecurrencePattern = {
 export interface Event {
   // Core identification
   id: string;
-  
+
   // Basic information
   title: string;
   description: string;
   location: string;
-  
+
   // Temporal data
   startDate: Date;
   endDate?: Date;
   isAllDay?: boolean;
-  
+
   // Event classification
   eventType: EventType;
   requiredRoles?: Role[];
-  
+
   // Capacity management
   capacity?: number;
   currentAttendees?: number;
   enableWaitlist?: boolean;
-  
+
   // Recurrence (future enhancement foundation)
   recurrence?: RecurrencePattern;
-  
+
   // Administrative
   createdAt: Date;
   updatedAt: Date;
   createdBy: string; // Member ID
-  
+
   // Status
   isActive?: boolean;
   isCancelled?: boolean;
@@ -77,13 +77,13 @@ export interface EventRSVP {
   id: string;
   eventId: string;
   memberId: string;
-  
+
   // RSVP details
   status: RSVPStatus;
   responseDate: Date;
   numberOfGuests: number;
   notes?: string;
-  
+
   // Administrative
   createdAt: Date;
   updatedAt: Date;
@@ -94,20 +94,20 @@ export interface EventAttendance {
   id: string;
   eventId: string;
   memberId: string;
-  
+
   // Check-in details
   checkInTime: Date;
   checkInBy: string; // Member ID of person recording attendance
   checkOutTime?: Date;
-  
+
   // Attendance details
   numberOfGuests: number;
   notes?: string;
-  
+
   // Verification
   isVerified: boolean;
   verifiedBy?: string; // Member ID
-  
+
   // Administrative
   createdAt: Date;
   updatedAt: Date;

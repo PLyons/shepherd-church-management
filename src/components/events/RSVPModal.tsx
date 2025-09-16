@@ -1,6 +1,14 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { X, Users, MessageCircle, Utensils, Clock, AlertCircle, CheckCircle } from 'lucide-react';
+import {
+  X,
+  Users,
+  MessageCircle,
+  Utensils,
+  Clock,
+  AlertCircle,
+  CheckCircle,
+} from 'lucide-react';
 import { Event, EventRSVP, RSVPFormData, RSVPStatus } from '../../types/events';
 import { eventRSVPService } from '../../services/firebase/event-rsvp.service';
 import { useAuth } from '../../contexts/FirebaseAuthContext';
@@ -24,11 +32,13 @@ export function RSVPModal({
   const modalRef = useRef<HTMLDivElement>(null);
   const { user } = useAuth();
   const { showToast } = useToast();
-  
+
   // Component state
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [optimisticRSVP, setOptimisticRSVP] = useState<EventRSVP | null>(currentUserRSVP || null);
+  const [optimisticRSVP, setOptimisticRSVP] = useState<EventRSVP | null>(
+    currentUserRSVP || null
+  );
   const [capacityInfo, setCapacityInfo] = useState<{
     capacity?: number;
     currentAttending: number;
@@ -90,7 +100,7 @@ export function RSVPModal({
   // Load real-time capacity information - properly memoized
   const loadCapacityInfo = useCallback(async () => {
     if (!event.capacity) return;
-    
+
     try {
       setIsLoadingCapacity(true);
       const info = await eventRSVPService.getCapacityInfo(event.id);
@@ -104,10 +114,14 @@ export function RSVPModal({
 
   // Load waitlist position for current user - properly memoized
   const loadWaitlistPosition = useCallback(async () => {
-    if (!user || !optimisticRSVP || optimisticRSVP.status !== 'waitlist') return;
-    
+    if (!user || !optimisticRSVP || optimisticRSVP.status !== 'waitlist')
+      return;
+
     try {
-      const position = await eventRSVPService.getWaitlistPosition(event.id, user.uid);
+      const position = await eventRSVPService.getWaitlistPosition(
+        event.id,
+        user.uid
+      );
       setWaitlistPosition(position);
     } catch (err) {
       console.error('Error loading waitlist position:', err);
@@ -115,89 +129,120 @@ export function RSVPModal({
   }, [user, optimisticRSVP, event.id]);
 
   // Form submission handler with full service integration - properly memoized
-  const onSubmit = useCallback(async (formData: RSVPFormData) => {
-    if (!user) {
-      setError('You must be logged in to RSVP');
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-      setError(null);
-
-      // Create optimistic update
-      const optimisticUpdate: EventRSVP = {
-        id: optimisticRSVP?.id || '',
-        eventId: event.id,
-        memberId: user.uid,
-        status: formData.status,
-        numberOfGuests: formData.numberOfGuests,
-        notes: formData.notes,
-        responseDate: new Date(),
-        createdAt: optimisticRSVP?.createdAt || new Date(),
-        updatedAt: new Date(),
-      };
-      setOptimisticRSVP(optimisticUpdate);
-
-      let result: EventRSVP;
-
-      if (optimisticRSVP?.id) {
-        // Update existing RSVP
-        await eventRSVPService.updateRSVP(event.id, optimisticRSVP.id, formData);
-        result = { ...optimisticUpdate, id: optimisticRSVP.id };
-        showToast('RSVP updated successfully!', 'success');
-      } else {
-        // Create new RSVP
-        result = await eventRSVPService.createRSVP(event.id, user.uid, formData);
-        showToast(
-          result.status === 'waitlist' 
-            ? 'Added to waitlist - you\'ll be notified if a spot opens!' 
-            : 'RSVP submitted successfully!', 
-          'success'
-        );
+  const onSubmit = useCallback(
+    async (formData: RSVPFormData) => {
+      if (!user) {
+        setError('You must be logged in to RSVP');
+        return;
       }
 
-      // Update with real result
-      setOptimisticRSVP(result);
-      onRSVPUpdate(result);
+      try {
+        setIsSubmitting(true);
+        setError(null);
 
-      // Reload capacity info
-      await loadCapacityInfo();
-      if (result.status === 'waitlist') {
-        await loadWaitlistPosition();
-      }
+        // Create optimistic update
+        const optimisticUpdate: EventRSVP = {
+          id: optimisticRSVP?.id || '',
+          eventId: event.id,
+          memberId: user.uid,
+          status: formData.status,
+          numberOfGuests: formData.numberOfGuests,
+          notes: formData.notes,
+          responseDate: new Date(),
+          createdAt: optimisticRSVP?.createdAt || new Date(),
+          updatedAt: new Date(),
+        };
+        setOptimisticRSVP(optimisticUpdate);
 
-      onClose();
-    } catch (err) {
-      console.error('Error submitting RSVP:', err);
-      
-      // Rollback optimistic update
-      setOptimisticRSVP(currentUserRSVP || null);
-      
-      // Handle specific error cases
-      const errorMessage = err instanceof Error ? err.message : 'Failed to submit RSVP. Please try again.';
-      
-      if (errorMessage.includes('capacity')) {
-        setError('Event is at capacity. Please try selecting "Maybe" or check if waitlist is available.');
-        showToast('Event is at capacity', 'error');
-      } else if (errorMessage.includes('already exists')) {
-        setError('You have already RSVP\'d to this event. Please refresh the page.');
-        showToast('RSVP already exists', 'error');
-      } else {
-        setError(errorMessage);
-        showToast('Failed to submit RSVP', 'error');
+        let result: EventRSVP;
+
+        if (optimisticRSVP?.id) {
+          // Update existing RSVP
+          await eventRSVPService.updateRSVP(
+            event.id,
+            optimisticRSVP.id,
+            formData
+          );
+          result = { ...optimisticUpdate, id: optimisticRSVP.id };
+          showToast('RSVP updated successfully!', 'success');
+        } else {
+          // Create new RSVP
+          result = await eventRSVPService.createRSVP(
+            event.id,
+            user.uid,
+            formData
+          );
+          showToast(
+            result.status === 'waitlist'
+              ? "Added to waitlist - you'll be notified if a spot opens!"
+              : 'RSVP submitted successfully!',
+            'success'
+          );
+        }
+
+        // Update with real result
+        setOptimisticRSVP(result);
+        onRSVPUpdate(result);
+
+        // Reload capacity info
+        await loadCapacityInfo();
+        if (result.status === 'waitlist') {
+          await loadWaitlistPosition();
+        }
+
+        onClose();
+      } catch (err) {
+        console.error('Error submitting RSVP:', err);
+
+        // Rollback optimistic update
+        setOptimisticRSVP(currentUserRSVP || null);
+
+        // Handle specific error cases
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : 'Failed to submit RSVP. Please try again.';
+
+        if (errorMessage.includes('capacity')) {
+          setError(
+            'Event is at capacity. Please try selecting "Maybe" or check if waitlist is available.'
+          );
+          showToast('Event is at capacity', 'error');
+        } else if (errorMessage.includes('already exists')) {
+          setError(
+            "You have already RSVP'd to this event. Please refresh the page."
+          );
+          showToast('RSVP already exists', 'error');
+        } else {
+          setError(errorMessage);
+          showToast('Failed to submit RSVP', 'error');
+        }
+      } finally {
+        setIsSubmitting(false);
       }
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [user, optimisticRSVP, event.id, onRSVPUpdate, onClose, currentUserRSVP, loadCapacityInfo, loadWaitlistPosition, showToast]);
+    },
+    [
+      user,
+      optimisticRSVP,
+      event.id,
+      onRSVPUpdate,
+      onClose,
+      currentUserRSVP,
+      loadCapacityInfo,
+      loadWaitlistPosition,
+      showToast,
+    ]
+  );
 
   // Handle escape key press - properly memoized
-  const handleEscapeKey = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      onClose();
-    }
-  }, [onClose]);
+  const handleEscapeKey = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    },
+    [onClose]
+  );
 
   // Handle escape key press
   useEffect(() => {
@@ -220,7 +265,7 @@ export function RSVPModal({
     if (isOpen) {
       // Reset optimistic state to current RSVP
       setOptimisticRSVP(currentUserRSVP || null);
-      
+
       // Reset form with existing RSVP data
       if (currentUserRSVP) {
         reset({
@@ -233,7 +278,7 @@ export function RSVPModal({
 
       // Load real-time capacity information
       loadCapacityInfo();
-      
+
       // Load waitlist position if user is on waitlist
       if (currentUserRSVP?.status === 'waitlist') {
         loadWaitlistPosition();
@@ -247,11 +292,14 @@ export function RSVPModal({
   }, [currentUserRSVP]);
 
   // Handle backdrop click - properly memoized
-  const handleBackdropClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  }, [onClose]);
+  const handleBackdropClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (e.target === e.currentTarget) {
+        onClose();
+      }
+    },
+    [onClose]
+  );
 
   // Early return if modal is not open
   if (!isOpen) return null;
@@ -271,7 +319,10 @@ export function RSVPModal({
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 id="rsvp-modal-title" className="text-xl font-semibold text-gray-900">
+          <h2
+            id="rsvp-modal-title"
+            className="text-xl font-semibold text-gray-900"
+          >
             RSVP to {event.title}
           </h2>
           <button
@@ -315,19 +366,24 @@ export function RSVPModal({
             <div className="mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
               <div className="flex items-center space-x-2 mb-2">
                 <Users className="h-4 w-4 text-blue-600" />
-                <span className="text-sm font-medium text-blue-800">Event Capacity</span>
+                <span className="text-sm font-medium text-blue-800">
+                  Event Capacity
+                </span>
               </div>
               <div className="text-sm text-blue-700 space-y-1">
                 <div>Currently attending: {capacityInfo.currentAttending}</div>
                 {capacityInfo.capacity && (
                   <div>
-                    Spots remaining: {capacityInfo.spotsRemaining || 0} of {capacityInfo.capacity}
+                    Spots remaining: {capacityInfo.spotsRemaining || 0} of{' '}
+                    {capacityInfo.capacity}
                   </div>
                 )}
                 {capacityInfo.isAtCapacity && capacityInfo.waitlistEnabled && (
                   <div className="flex items-center space-x-2 mt-2">
                     <AlertCircle className="h-4 w-4 text-amber-600" />
-                    <span className="text-amber-700">Event is at capacity. New RSVPs will be waitlisted.</span>
+                    <span className="text-amber-700">
+                      Event is at capacity. New RSVPs will be waitlisted.
+                    </span>
                   </div>
                 )}
                 {capacityInfo.waitlistCount > 0 && (
@@ -371,24 +427,34 @@ export function RSVPModal({
                   <label
                     key={option.value}
                     className={`flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors ${
-                      watchStatus === option.value ? option.bgClass : 'bg-white border-gray-200'
+                      watchStatus === option.value
+                        ? option.bgClass
+                        : 'bg-white border-gray-200'
                     }`}
                   >
                     <input
                       type="radio"
                       value={option.value}
-                      {...register('status', { required: 'Please select your attendance status' })}
+                      {...register('status', {
+                        required: 'Please select your attendance status',
+                      })}
                       className="sr-only"
                     />
                     <div className="flex items-center flex-1">
                       <span className="text-lg mr-3">{option.icon}</span>
                       <div className="flex-1">
-                        <div className={`font-medium ${
-                          watchStatus === option.value ? option.colorClass : 'text-gray-900'
-                        }`}>
+                        <div
+                          className={`font-medium ${
+                            watchStatus === option.value
+                              ? option.colorClass
+                              : 'text-gray-900'
+                          }`}
+                        >
                           {option.label}
                         </div>
-                        <div className="text-sm text-gray-500">{option.description}</div>
+                        <div className="text-sm text-gray-500">
+                          {option.description}
+                        </div>
                       </div>
                       {watchStatus === option.value && (
                         <CheckCircle className="h-5 w-5 text-green-600" />
@@ -398,22 +464,33 @@ export function RSVPModal({
                 ))}
               </div>
               {errors.status && (
-                <p className="mt-1 text-sm text-red-600">{errors.status.message}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.status.message}
+                </p>
               )}
             </div>
 
             {/* Number of Guests */}
             {watchStatus === 'yes' && (
               <div>
-                <label htmlFor="numberOfGuests" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="numberOfGuests"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Number of additional guests (not including yourself)
                 </label>
                 <select
                   id="numberOfGuests"
                   {...register('numberOfGuests', {
                     valueAsNumber: true,
-                    min: { value: 0, message: 'Number of guests cannot be negative' },
-                    max: { value: maxGuests, message: `Maximum ${maxGuests} guests allowed` },
+                    min: {
+                      value: 0,
+                      message: 'Number of guests cannot be negative',
+                    },
+                    max: {
+                      value: maxGuests,
+                      message: `Maximum ${maxGuests} guests allowed`,
+                    },
                   })}
                   className="block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
                 >
@@ -424,14 +501,19 @@ export function RSVPModal({
                   ))}
                 </select>
                 {errors.numberOfGuests && (
-                  <p className="mt-1 text-sm text-red-600">{errors.numberOfGuests.message}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.numberOfGuests.message}
+                  </p>
                 )}
               </div>
             )}
 
             {/* Notes */}
             <div>
-              <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="notes"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 <MessageCircle className="h-4 w-4 inline mr-1" />
                 Additional notes (optional)
               </label>
@@ -447,7 +529,10 @@ export function RSVPModal({
             {/* Dietary Restrictions */}
             {watchStatus === 'yes' && (
               <div>
-                <label htmlFor="dietaryRestrictions" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="dietaryRestrictions"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   <Utensils className="h-4 w-4 inline mr-1" />
                   Dietary restrictions (optional)
                 </label>

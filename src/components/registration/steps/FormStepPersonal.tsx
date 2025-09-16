@@ -40,9 +40,7 @@ export function FormStepPersonal({
           className={`${inputClass} ${errors.birthdate ? 'border-red-500' : ''}`}
           max={new Date().toISOString().split('T')[0]}
         />
-        {errors.birthdate && (
-          <p className={errorClass}>{errors.birthdate}</p>
-        )}
+        {errors.birthdate && <p className={errorClass}>{errors.birthdate}</p>}
       </div>
 
       <div>

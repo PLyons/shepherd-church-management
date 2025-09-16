@@ -33,7 +33,10 @@ import {
 // Import composition modules
 import { MemberSearch } from './member-search';
 import { MemberBulkOperations, ImportResult } from './member-bulk-operations';
-import { MemberStatisticsCalculator, MemberStatistics } from './member-statistics';
+import {
+  MemberStatisticsCalculator,
+  MemberStatistics,
+} from './member-statistics';
 import { MemberSubscriptions } from './member-subscriptions';
 import { MemberPagination, PaginatedResult } from './member-pagination';
 
@@ -51,7 +54,8 @@ export class MembersService extends BaseFirestoreService<
     super(
       db,
       COLLECTIONS.MEMBERS,
-      (id: string, document: MemberDocument) => memberDocumentToMember(id, document),
+      (id: string, document: MemberDocument) =>
+        memberDocumentToMember(id, document),
       (client: Partial<Member>) => memberToMemberDocument(client)
     );
 
@@ -62,14 +66,21 @@ export class MembersService extends BaseFirestoreService<
     );
 
     this.statistics = new MemberStatisticsCalculator(
-      (filter) => this.count({
-        where: [{ field: filter.field, operator: filter.operator as any, value: filter.value }],
-      }),
+      (filter) =>
+        this.count({
+          where: [
+            {
+              field: filter.field,
+              operator: filter.operator as any,
+              value: filter.value,
+            },
+          ],
+        }),
       () => this.count()
     );
 
-    this.subscriptions = new MemberSubscriptions(
-      (options, callback) => this.subscribeToCollection(options, callback)
+    this.subscriptions = new MemberSubscriptions((options, callback) =>
+      this.subscribeToCollection(options, callback)
     );
 
     this.pagination = new MemberPagination(
@@ -88,7 +99,9 @@ export class MembersService extends BaseFirestoreService<
 
         // Add ordering
         if (options.orderBy) {
-          constraints.push(orderBy(options.orderBy.field, options.orderBy.direction));
+          constraints.push(
+            orderBy(options.orderBy.field, options.orderBy.direction)
+          );
         }
 
         // Add pagination
@@ -98,13 +111,13 @@ export class MembersService extends BaseFirestoreService<
 
         // Call base getPaginated method
         const queryResult = await this.getPaginated(constraints, pagination);
-        
+
         // Convert QueryResult to PaginatedResult
         const page = options.page || 1;
         const limit = options.limit || 10;
         const totalCount = queryResult.total || queryResult.items.length;
         const totalPages = Math.ceil(totalCount / limit);
-        
+
         return {
           data: queryResult.items,
           totalCount,
@@ -292,7 +305,10 @@ export class MembersService extends BaseFirestoreService<
     householdId: string,
     callback: (members: Member[]) => void
   ): () => void {
-    return this.subscriptions.subscribeToHouseholdMembers(householdId, callback);
+    return this.subscriptions.subscribeToHouseholdMembers(
+      householdId,
+      callback
+    );
   }
 
   /**

@@ -12,33 +12,47 @@ import { DonationFormData } from '../../../types/donations';
 
 // Mock child components
 vi.mock('../DonationForm', () => ({
-  DonationForm: ({ onSubmit, onCancel, isMobile }: { 
-    onSubmit: (data: DonationFormData) => void; 
-    onCancel: () => void; 
-    isMobile: boolean; 
+  DonationForm: ({
+    onSubmit,
+    onCancel,
+    isMobile,
+  }: {
+    onSubmit: (data: DonationFormData) => void;
+    onCancel: () => void;
+    isMobile: boolean;
   }) => (
     <div data-testid="donation-form">
       <div data-testid="is-mobile">{isMobile ? 'mobile' : 'desktop'}</div>
-      <button onClick={() => onSubmit({
-        amount: 50,
-        donationDate: '2025-01-15',
-        method: 'credit_card',
-        categoryId: 'category-1',
-        form990LineItem: '1a_cash_contributions',
-        isQuidProQuo: false,
-        sendReceipt: true,
-        isTaxDeductible: true,
-      })}>Submit Donation</button>
+      <button
+        onClick={() =>
+          onSubmit({
+            amount: 50,
+            donationDate: '2025-01-15',
+            method: 'credit_card',
+            categoryId: 'category-1',
+            form990LineItem: '1a_cash_contributions',
+            isQuidProQuo: false,
+            sendReceipt: true,
+            isTaxDeductible: true,
+          })
+        }
+      >
+        Submit Donation
+      </button>
       <button onClick={onCancel}>Cancel</button>
     </div>
   ),
 }));
 
 vi.mock('../PaymentForm', () => ({
-  PaymentForm: ({ donationData, onSuccess, onCancel }: { 
-    donationData: DonationFormData; 
-    onSuccess: (id: string) => void; 
-    onCancel: () => void; 
+  PaymentForm: ({
+    donationData,
+    onSuccess,
+    onCancel,
+  }: {
+    donationData: DonationFormData;
+    onSuccess: (id: string) => void;
+    onCancel: () => void;
   }) => (
     <div data-testid="payment-form">
       <div data-testid="donation-amount">${donationData.amount}</div>
@@ -177,7 +191,9 @@ describe('MobileDonationModal', () => {
       await waitFor(() => {
         expect(screen.getByText('Donation Complete')).toBeInTheDocument();
         expect(screen.getByText('Thank You!')).toBeInTheDocument();
-        expect(screen.getByText('Your donation has been processed successfully.')).toBeInTheDocument();
+        expect(
+          screen.getByText('Your donation has been processed successfully.')
+        ).toBeInTheDocument();
       });
     });
 
@@ -252,7 +268,9 @@ describe('MobileDonationModal', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        const updatedProgressBars = screen.getAllByRole('progressbar', { hidden: true });
+        const updatedProgressBars = screen.getAllByRole('progressbar', {
+          hidden: true,
+        });
         expect(updatedProgressBars[1]).toHaveClass('bg-blue-600');
       });
     });
@@ -559,8 +577,10 @@ describe('MobileDonationModal', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Thank You!')).toBeInTheDocument();
-        expect(screen.getByText('Your donation has been processed successfully.')).toBeInTheDocument();
-        
+        expect(
+          screen.getByText('Your donation has been processed successfully.')
+        ).toBeInTheDocument();
+
         // Check for success icon (checkmark SVG)
         const successIcon = screen.getByRole('img', { hidden: true });
         expect(successIcon).toBeInTheDocument();

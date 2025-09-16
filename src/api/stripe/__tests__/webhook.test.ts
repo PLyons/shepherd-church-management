@@ -5,7 +5,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import Stripe from 'stripe';
-import { 
+import {
   handleStripeWebhook,
   handlePaymentSucceeded,
   handlePaymentFailed,
@@ -14,15 +14,15 @@ import {
   handleSubscriptionCanceled,
   verifyWebhookSignature,
   processedEvents,
-  handler
+  handler,
 } from '../webhook';
 import { donationsService } from '../../../services/firebase/donations.service';
-import { 
-  StripeWebhookEvent, 
-  StripePaymentIntent, 
-  StripeInvoice, 
+import {
+  StripeWebhookEvent,
+  StripePaymentIntent,
+  StripeInvoice,
   StripeSubscription,
-  WebhookValidationError
+  WebhookValidationError,
 } from '../../../types/webhook';
 
 // Mock the donations service
@@ -32,25 +32,28 @@ vi.mock('../../../services/firebase/donations.service');
 const mockEnv = {
   STRIPE_WEBHOOK_SECRET: 'whsec_test123',
   VITE_DEFAULT_DONATION_CATEGORY_ID: 'cat_general_fund',
-  VITE_DEFAULT_DONATION_CATEGORY_NAME: 'General Fund'
+  VITE_DEFAULT_DONATION_CATEGORY_NAME: 'General Fund',
 };
 
 // Helper function to create mock events
-const createMockEvent = (type: string, data: Record<string, unknown>): StripeWebhookEvent => ({
+const createMockEvent = (
+  type: string,
+  data: Record<string, unknown>
+): StripeWebhookEvent => ({
   id: 'evt_test123',
   object: 'event',
   api_version: '2024-06-20',
   created: 1645123456,
   data: {
-    object: data
+    object: data,
   },
   livemode: false,
   pending_webhooks: 1,
   request: {
     id: 'req_test123',
-    idempotency_key: null
+    idempotency_key: null,
   },
-  type: type as any
+  type: type as any,
 });
 
 beforeEach(() => {
@@ -70,42 +73,57 @@ describe('Webhook Signature Verification', () => {
     const payload = JSON.stringify({ test: 'data' });
     const secret = 'whsec_test123';
     const signature = 'valid_signature';
-    
+
     // Mock Stripe's constructEvent method
-    const mockEvent = { id: 'evt_test', type: 'payment_intent.succeeded' } as StripeWebhookEvent;
+    const mockEvent = {
+      id: 'evt_test',
+      type: 'payment_intent.succeeded',
+    } as StripeWebhookEvent;
     vi.spyOn(Stripe.webhooks, 'constructEvent').mockReturnValue(mockEvent);
-    
+
     const result = await verifyWebhookSignature(payload, signature, secret);
-    
+
     expect(result).toEqual(mockEvent);
-    expect(Stripe.webhooks.constructEvent).toHaveBeenCalledWith(payload, signature, secret);
+    expect(Stripe.webhooks.constructEvent).toHaveBeenCalledWith(
+      payload,
+      signature,
+      secret
+    );
   });
 
   it('should throw WebhookValidationError for invalid signature', async () => {
     const payload = JSON.stringify({ test: 'data' });
     const secret = 'whsec_test123';
     const signature = 'invalid_signature';
-    
+
     // Mock Stripe's constructEvent to throw an error
     vi.spyOn(Stripe.webhooks, 'constructEvent').mockImplementation(() => {
       throw new Error('Invalid signature');
     });
-    
-    await expect(verifyWebhookSignature(payload, signature, secret)).rejects.toThrow(WebhookValidationError);
-    await expect(verifyWebhookSignature(payload, signature, secret)).rejects.toMatchObject({
+
+    await expect(
+      verifyWebhookSignature(payload, signature, secret)
+    ).rejects.toThrow(WebhookValidationError);
+    await expect(
+      verifyWebhookSignature(payload, signature, secret)
+    ).rejects.toMatchObject({
       code: 'INVALID_SIGNATURE',
-      statusCode: 400
+      statusCode: 400,
     });
   });
 
   it('should throw WebhookValidationError when webhook secret is missing', async () => {
     const payload = JSON.stringify({ test: 'data' });
     const signature = 'some_signature';
-    
-    await expect(verifyWebhookSignature(payload, signature, '')).rejects.toThrow(WebhookValidationError);
-    await expect(verifyWebhookSignature(payload, signature, '')).rejects.toMatchObject({
+
+    await expect(
+      verifyWebhookSignature(payload, signature, '')
+    ).rejects.toThrow(WebhookValidationError);
+    await expect(
+      verifyWebhookSignature(payload, signature, '')
+    ).rejects.toMatchObject({
       code: 'MISSING_SECRET',
-      statusCode: 500
+      statusCode: 500,
     });
   });
 
@@ -113,12 +131,14 @@ describe('Webhook Signature Verification', () => {
     const payload = 'invalid json';
     const secret = 'whsec_test123';
     const signature = 'valid_signature';
-    
+
     vi.spyOn(Stripe.webhooks, 'constructEvent').mockImplementation(() => {
       throw new Error('Invalid payload');
     });
-    
-    await expect(verifyWebhookSignature(payload, signature, secret)).rejects.toThrow(WebhookValidationError);
+
+    await expect(
+      verifyWebhookSignature(payload, signature, secret)
+    ).rejects.toThrow(WebhookValidationError);
   });
 });
 
@@ -133,12 +153,12 @@ describe('Payment Success Handler', () => {
       memberId: 'member_123',
       memberName: 'John Doe',
       donationCategoryId: 'cat_general_fund',
-      donationCategoryName: 'General Fund'
+      donationCategoryName: 'General Fund',
     },
     receipt_email: 'john@example.com',
     description: 'One-time donation',
     created: 1645123456,
-    customer: 'cus_customer123'
+    customer: 'cus_customer123',
   };
 
   it('should create donation record for successful payment', async () => {
@@ -146,20 +166,22 @@ describe('Payment Success Handler', () => {
       id: 'donation_123',
       amount: 100,
       memberId: 'member_123',
-      status: 'verified'
+      status: 'verified',
     };
-    
-    vi.mocked(donationsService.createDonation).mockResolvedValue(mockDonation as any);
-    
+
+    vi.mocked(donationsService.createDonation).mockResolvedValue(
+      mockDonation as any
+    );
+
     const result = await handlePaymentSucceeded(mockPaymentIntent);
-    
+
     expect(result.success).toBe(true);
     expect(result.donationId).toBe('donation_123');
     expect(donationsService.createDonation).toHaveBeenCalledWith(
       expect.objectContaining({
         amount: 100,
         memberId: 'member_123',
-        method: 'stripe'
+        method: 'stripe',
       })
     );
   });
@@ -170,23 +192,25 @@ describe('Payment Success Handler', () => {
       metadata: {
         donationCategoryId: 'cat_general_fund',
         donationCategoryName: 'General Fund',
-        isAnonymous: 'true'
-      }
+        isAnonymous: 'true',
+      },
     };
-    
+
     const mockDonation = { id: 'donation_anonymous', status: 'verified' };
-    vi.mocked(donationsService.createDonation).mockResolvedValue(mockDonation as any);
-    
+    vi.mocked(donationsService.createDonation).mockResolvedValue(
+      mockDonation as any
+    );
+
     const result = await handlePaymentSucceeded(anonymousPaymentIntent);
-    
+
     expect(result.success).toBe(true);
     expect(donationsService.createDonation).toHaveBeenCalledWith(
       expect.objectContaining({
         memberId: undefined,
         memberName: undefined,
         form990Fields: expect.objectContaining({
-          isAnonymous: true
-        })
+          isAnonymous: true,
+        }),
       })
     );
   });
@@ -196,29 +220,33 @@ describe('Payment Success Handler', () => {
       ...mockPaymentIntent,
       metadata: {
         memberId: 'member_123',
-        memberName: 'John Doe'
-      }
+        memberName: 'John Doe',
+      },
     };
-    
+
     const mockDonation = { id: 'donation_default_cat', status: 'verified' };
-    vi.mocked(donationsService.createDonation).mockResolvedValue(mockDonation as any);
-    
+    vi.mocked(donationsService.createDonation).mockResolvedValue(
+      mockDonation as any
+    );
+
     const result = await handlePaymentSucceeded(paymentIntentWithoutCategory);
-    
+
     expect(result.success).toBe(true);
     expect(donationsService.createDonation).toHaveBeenCalledWith(
       expect.objectContaining({
         categoryId: 'cat_general_fund',
-        categoryName: 'General Fund'
+        categoryName: 'General Fund',
       })
     );
   });
 
   it('should handle service errors gracefully', async () => {
-    vi.mocked(donationsService.createDonation).mockRejectedValue(new Error('Database error'));
-    
+    vi.mocked(donationsService.createDonation).mockRejectedValue(
+      new Error('Database error')
+    );
+
     const result = await handlePaymentSucceeded(mockPaymentIntent);
-    
+
     expect(result.success).toBe(false);
     expect(result.error).toContain('Database error');
   });
@@ -233,40 +261,40 @@ describe('Payment Failed Handler', () => {
     status: 'requires_payment_method',
     metadata: {
       memberId: 'member_456',
-      memberName: 'Jane Smith'
+      memberName: 'Jane Smith',
     },
-    created: 1645123456
+    created: 1645123456,
   };
 
   it('should log failed payment attempt', async () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    
+
     const result = await handlePaymentFailed(mockFailedPaymentIntent);
-    
+
     expect(result.success).toBe(true);
     expect(result.processed).toBe(true);
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining('Payment failed for member member_456')
     );
-    
+
     consoleSpy.mockRestore();
   });
 
   it('should handle payment failures without member information', async () => {
     const anonymousFailedPayment = {
       ...mockFailedPaymentIntent,
-      metadata: {}
+      metadata: {},
     };
-    
+
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    
+
     const result = await handlePaymentFailed(anonymousFailedPayment);
-    
+
     expect(result.success).toBe(true);
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining('Payment failed for anonymous user')
     );
-    
+
     consoleSpy.mockRestore();
   });
 });
@@ -283,13 +311,13 @@ describe('Recurring Payment Success Handler', () => {
       memberId: 'member_recurring',
       memberName: 'Bob Wilson',
       donationCategoryId: 'cat_tithe',
-      donationCategoryName: 'Tithe'
+      donationCategoryName: 'Tithe',
     },
     customer: 'cus_recurring123',
     subscription: 'sub_recurring456',
     created: 1645123456,
     period_start: 1645123456,
-    period_end: 1647801856
+    period_end: 1647801856,
   };
 
   it('should create donation record for successful recurring payment', async () => {
@@ -297,13 +325,15 @@ describe('Recurring Payment Success Handler', () => {
       id: 'donation_recurring_123',
       amount: 25,
       memberId: 'member_recurring',
-      status: 'verified'
+      status: 'verified',
     };
-    
-    vi.mocked(donationsService.createDonation).mockResolvedValue(mockDonation as any);
-    
+
+    vi.mocked(donationsService.createDonation).mockResolvedValue(
+      mockDonation as any
+    );
+
     const result = await handleRecurringPaymentSucceeded(mockInvoice);
-    
+
     expect(result.success).toBe(true);
     expect(result.donationId).toBe('donation_recurring_123');
     expect(donationsService.createDonation).toHaveBeenCalledWith(
@@ -312,7 +342,7 @@ describe('Recurring Payment Success Handler', () => {
         memberId: 'member_recurring',
         method: 'stripe',
         stripeInvoiceId: 'in_test123',
-        stripeSubscriptionId: 'sub_recurring456'
+        stripeSubscriptionId: 'sub_recurring456',
       })
     );
   });
@@ -321,19 +351,21 @@ describe('Recurring Payment Success Handler', () => {
     const partialInvoice = {
       ...mockInvoice,
       amount_paid: 1500, // Only $15 paid out of $25 due
-      amount_due: 2500
+      amount_due: 2500,
     };
-    
+
     const mockDonation = { id: 'donation_partial', status: 'verified' };
-    vi.mocked(donationsService.createDonation).mockResolvedValue(mockDonation as any);
-    
+    vi.mocked(donationsService.createDonation).mockResolvedValue(
+      mockDonation as any
+    );
+
     const result = await handleRecurringPaymentSucceeded(partialInvoice);
-    
+
     expect(result.success).toBe(true);
     expect(donationsService.createDonation).toHaveBeenCalledWith(
       expect.objectContaining({
         amount: 15, // Should record the amount actually paid
-        note: expect.stringContaining('Partial payment')
+        note: expect.stringContaining('Partial payment'),
       })
     );
   });
@@ -349,26 +381,26 @@ describe('Recurring Payment Failed Handler', () => {
     status: 'open',
     metadata: {
       memberId: 'member_failed_recurring',
-      memberName: 'Alice Johnson'
+      memberName: 'Alice Johnson',
     },
     customer: 'cus_failed123',
     subscription: 'sub_failed456',
     created: 1645123456,
     period_start: 1645123456,
-    period_end: 1647801856
+    period_end: 1647801856,
   };
 
   it('should log failed recurring payment', async () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    
+
     const result = await handleRecurringPaymentFailed(mockFailedInvoice);
-    
+
     expect(result.success).toBe(true);
     expect(result.processed).toBe(true);
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining('Recurring payment failed')
     );
-    
+
     consoleSpy.mockRestore();
   });
 });
@@ -381,49 +413,50 @@ describe('Subscription Canceled Handler', () => {
     customer: 'cus_canceled123',
     metadata: {
       memberId: 'member_canceled',
-      memberName: 'Charlie Brown'
+      memberName: 'Charlie Brown',
     },
     current_period_start: 1645123456,
     current_period_end: 1647801856,
     canceled_at: 1645723456,
-    created: 1645123456
+    created: 1645123456,
   };
 
   it('should log subscription cancellation', async () => {
     const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-    
+
     const result = await handleSubscriptionCanceled(mockSubscription);
-    
+
     expect(result.success).toBe(true);
     expect(result.processed).toBe(true);
     expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining('Subscription canceled for member member_canceled')
+      expect.stringContaining(
+        'Subscription canceled for member member_canceled'
+      )
     );
-    
+
     consoleSpy.mockRestore();
   });
 
   it('should handle subscription cancellation without member info', async () => {
     const anonymousSubscription = {
       ...mockSubscription,
-      metadata: {}
+      metadata: {},
     };
-    
+
     const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-    
+
     const result = await handleSubscriptionCanceled(anonymousSubscription);
-    
+
     expect(result.success).toBe(true);
     expect(consoleSpy).toHaveBeenCalledWith(
       expect.stringContaining('Subscription canceled for unknown member')
     );
-    
+
     consoleSpy.mockRestore();
   });
 });
 
 describe('Main Webhook Handler', () => {
-
   it('should handle payment_intent.succeeded events', async () => {
     const mockEvent = {
       id: 'evt_success_unique123',
@@ -437,24 +470,26 @@ describe('Main Webhook Handler', () => {
           currency: 'usd',
           status: 'succeeded',
           metadata: {
-            memberId: 'member_123'
-          }
-        }
+            memberId: 'member_123',
+          },
+        },
       },
       livemode: false,
       pending_webhooks: 1,
       request: {
         id: 'req_success123',
-        idempotency_key: null
+        idempotency_key: null,
       },
-      type: 'payment_intent.succeeded' as any
+      type: 'payment_intent.succeeded' as any,
     };
-    
+
     const mockDonation = { id: 'donation_123', status: 'verified' };
-    vi.mocked(donationsService.createDonation).mockResolvedValue(mockDonation as any);
-    
+    vi.mocked(donationsService.createDonation).mockResolvedValue(
+      mockDonation as any
+    );
+
     const result = await handleStripeWebhook(mockEvent);
-    
+
     expect(result.success).toBe(true);
     expect(result.eventType).toBe('payment_intent.succeeded');
     expect(result.donationId).toBe('donation_123');
@@ -473,27 +508,27 @@ describe('Main Webhook Handler', () => {
           currency: 'usd',
           status: 'requires_payment_method',
           metadata: {
-            memberId: 'member_456'
-          }
-        }
+            memberId: 'member_456',
+          },
+        },
       },
       livemode: false,
       pending_webhooks: 1,
       request: {
         id: 'req_failed123',
-        idempotency_key: null
+        idempotency_key: null,
       },
-      type: 'payment_intent.payment_failed' as any
+      type: 'payment_intent.payment_failed' as any,
     };
-    
+
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    
+
     const result = await handleStripeWebhook(mockEvent);
-    
+
     expect(result.success).toBe(true);
     expect(result.eventType).toBe('payment_intent.payment_failed');
     expect(result.processed).toBe(true);
-    
+
     consoleSpy.mockRestore();
   });
 
@@ -510,24 +545,26 @@ describe('Main Webhook Handler', () => {
           currency: 'usd',
           status: 'paid',
           metadata: {
-            memberId: 'member_recurring'
-          }
-        }
+            memberId: 'member_recurring',
+          },
+        },
       },
       livemode: false,
       pending_webhooks: 1,
       request: {
         id: 'req_invoice123',
-        idempotency_key: null
+        idempotency_key: null,
       },
-      type: 'invoice.payment_succeeded' as any
+      type: 'invoice.payment_succeeded' as any,
     };
-    
+
     const mockDonation = { id: 'donation_recurring_123', status: 'verified' };
-    vi.mocked(donationsService.createDonation).mockResolvedValue(mockDonation as any);
-    
+    vi.mocked(donationsService.createDonation).mockResolvedValue(
+      mockDonation as any
+    );
+
     const result = await handleStripeWebhook(mockEvent);
-    
+
     expect(result.success).toBe(true);
     expect(result.eventType).toBe('invoice.payment_succeeded');
     expect(result.donationId).toBe('donation_recurring_123');
@@ -541,23 +578,25 @@ describe('Main Webhook Handler', () => {
       created: 1645123456,
       data: {
         object: {
-          id: 'pm_test123'
-        }
+          id: 'pm_test123',
+        },
       },
       livemode: false,
       pending_webhooks: 1,
       request: {
         id: 'req_unsupported123',
-        idempotency_key: null
+        idempotency_key: null,
       },
-      type: 'payment_method.attached' as any
+      type: 'payment_method.attached' as any,
     };
-    
+
     const result = await handleStripeWebhook(mockEvent);
-    
+
     expect(result.success).toBe(true);
     expect(result.processed).toBe(false);
-    expect(result.skipReason).toBe('Unsupported event type: payment_method.attached');
+    expect(result.skipReason).toBe(
+      'Unsupported event type: payment_method.attached'
+    );
   });
 
   it('should handle processing errors gracefully', async () => {
@@ -573,23 +612,25 @@ describe('Main Webhook Handler', () => {
           currency: 'usd',
           status: 'succeeded',
           metadata: {
-            memberId: 'member_error'
-          }
-        }
+            memberId: 'member_error',
+          },
+        },
       },
       livemode: false,
       pending_webhooks: 1,
       request: {
         id: 'req_error123',
-        idempotency_key: null
+        idempotency_key: null,
       },
-      type: 'payment_intent.succeeded' as any
+      type: 'payment_intent.succeeded' as any,
     };
-    
-    vi.mocked(donationsService.createDonation).mockRejectedValue(new Error('Processing failed'));
-    
+
+    vi.mocked(donationsService.createDonation).mockRejectedValue(
+      new Error('Processing failed')
+    );
+
     const result = await handleStripeWebhook(mockEvent);
-    
+
     expect(result.success).toBe(false);
     expect(result.error).toContain('Processing failed');
   });
@@ -610,26 +651,28 @@ describe('Idempotency Handling', () => {
           currency: 'usd',
           status: 'succeeded',
           metadata: {
-            memberId: 'member_123'
-          }
-        }
+            memberId: 'member_123',
+          },
+        },
       },
       livemode: false,
       pending_webhooks: 1,
       request: {
         id: 'req_duplicate123',
-        idempotency_key: null
+        idempotency_key: null,
       },
-      type: 'payment_intent.succeeded' as any
+      type: 'payment_intent.succeeded' as any,
     };
-    
+
     const mockDonation = { id: 'donation_123', status: 'verified' };
-    vi.mocked(donationsService.createDonation).mockResolvedValue(mockDonation as any);
-    
+    vi.mocked(donationsService.createDonation).mockResolvedValue(
+      mockDonation as any
+    );
+
     // Process the same event twice
     const result1 = await handleStripeWebhook(mockEvent);
     const result2 = await handleStripeWebhook(mockEvent);
-    
+
     expect(result1.success).toBe(true);
     expect(result2.success).toBe(true);
     expect(result2.processed).toBe(false);
@@ -654,39 +697,40 @@ describe('Environment Configuration', () => {
           currency: 'usd',
           status: 'succeeded',
           metadata: {
-            memberId: 'member_123'
-          }
-        }
+            memberId: 'member_123',
+          },
+        },
       },
       livemode: false,
       pending_webhooks: 1,
       request: {
         id: 'req_env123',
-        idempotency_key: null
+        idempotency_key: null,
       },
-      type: 'payment_intent.succeeded' as any
+      type: 'payment_intent.succeeded' as any,
     };
-    
+
     const mockDonation = { id: 'donation_env_123', status: 'verified' };
-    vi.mocked(donationsService.createDonation).mockResolvedValue(mockDonation as any);
-    
+    vi.mocked(donationsService.createDonation).mockResolvedValue(
+      mockDonation as any
+    );
+
     await handleStripeWebhook(mockEvent);
-    
+
     expect(donationsService.createDonation).toHaveBeenCalledWith(
       expect.objectContaining({
         categoryId: 'cat_general_fund',
-        categoryName: 'General Fund'
+        categoryName: 'General Fund',
       })
     );
   });
 });
 
 describe('Serverless Handler', () => {
-
   it('should return 405 for non-POST requests', async () => {
     const result = await handler({
       body: '',
-      headers: {}
+      headers: {},
     });
 
     expect(result.statusCode).toBe(405);
@@ -696,11 +740,13 @@ describe('Serverless Handler', () => {
   it('should return 400 for missing signature', async () => {
     const result = await handler({
       body: JSON.stringify({ test: 'data' }),
-      headers: {}
+      headers: {},
     });
 
     expect(result.statusCode).toBe(400);
-    expect(JSON.parse(result.body)).toEqual({ error: 'Missing Stripe signature' });
+    expect(JSON.parse(result.body)).toEqual({
+      error: 'Missing Stripe signature',
+    });
   });
 
   it('should return 500 for missing webhook secret', async () => {
@@ -710,11 +756,13 @@ describe('Serverless Handler', () => {
 
     const result = await handler({
       body: JSON.stringify({ test: 'data' }),
-      headers: { 'stripe-signature': 'sig_test' }
+      headers: { 'stripe-signature': 'sig_test' },
     });
 
     expect(result.statusCode).toBe(500);
-    expect(JSON.parse(result.body)).toEqual({ error: 'Webhook secret not configured' });
+    expect(JSON.parse(result.body)).toEqual({
+      error: 'Webhook secret not configured',
+    });
 
     // Restore webhook secret
     process.env.STRIPE_WEBHOOK_SECRET = originalSecret;
@@ -728,7 +776,7 @@ describe('Serverless Handler', () => {
 
     const result = await handler({
       body: JSON.stringify({ test: 'data' }),
-      headers: { 'stripe-signature': 'invalid_sig' }
+      headers: { 'stripe-signature': 'invalid_sig' },
     });
 
     expect(result.statusCode).toBe(400);
@@ -751,22 +799,26 @@ describe('Serverless Handler', () => {
           currency: 'usd',
           status: 'succeeded',
           metadata: {
-            memberId: 'member_123'
+            memberId: 'member_123',
           },
-          created: 1645123456
-        }
-      }
+          created: 1645123456,
+        },
+      },
     };
 
     // Mock Stripe's constructEvent to return our mock event
-    vi.spyOn(Stripe.webhooks, 'constructEvent').mockReturnValue(mockEvent as any);
-    
+    vi.spyOn(Stripe.webhooks, 'constructEvent').mockReturnValue(
+      mockEvent as any
+    );
+
     const mockDonation = { id: 'donation_handler_123', status: 'verified' };
-    vi.mocked(donationsService.createDonation).mockResolvedValue(mockDonation as any);
+    vi.mocked(donationsService.createDonation).mockResolvedValue(
+      mockDonation as any
+    );
 
     const result = await handler({
       body: JSON.stringify(mockEvent),
-      headers: { 'stripe-signature': 'valid_sig' }
+      headers: { 'stripe-signature': 'valid_sig' },
     });
 
     expect(result.statusCode).toBe(200);
@@ -792,22 +844,26 @@ describe('Serverless Handler', () => {
           currency: 'usd',
           status: 'succeeded',
           metadata: {
-            memberId: 'member_error'
+            memberId: 'member_error',
           },
-          created: 1645123456
-        }
-      }
+          created: 1645123456,
+        },
+      },
     };
 
     // Mock Stripe's constructEvent to return our mock event
-    vi.spyOn(Stripe.webhooks, 'constructEvent').mockReturnValue(mockEvent as any);
-    
+    vi.spyOn(Stripe.webhooks, 'constructEvent').mockReturnValue(
+      mockEvent as any
+    );
+
     // Mock donations service to throw an error
-    vi.mocked(donationsService.createDonation).mockRejectedValue(new Error('Database error'));
+    vi.mocked(donationsService.createDonation).mockRejectedValue(
+      new Error('Database error')
+    );
 
     const result = await handler({
       body: JSON.stringify(mockEvent),
-      headers: { 'stripe-signature': 'valid_sig' }
+      headers: { 'stripe-signature': 'valid_sig' },
     });
 
     expect(result.statusCode).toBe(500);
@@ -823,7 +879,7 @@ describe('Serverless Handler', () => {
   it('should include CORS headers in all responses', async () => {
     const result = await handler({
       body: '',
-      headers: {}
+      headers: {},
     });
 
     expect(result.headers).toEqual(
@@ -831,7 +887,7 @@ describe('Serverless Handler', () => {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'POST',
         'Access-Control-Allow-Headers': 'Content-Type, Stripe-Signature',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       })
     );
   });

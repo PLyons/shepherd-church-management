@@ -30,7 +30,8 @@ vi.mock('../contexts/FirebaseAuthContext', () => ({
     },
     isLoading: false,
   })),
-  FirebaseAuthProvider: ({ children }: { children: React.ReactNode }) => children,
+  FirebaseAuthProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
 }));
 
 // Mock Toast Context

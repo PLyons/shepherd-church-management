@@ -3,13 +3,13 @@
 // Handles payment intents, setup intents, and payment method management for PRP-2C-008
 
 import { loadStripe, Stripe, StripeElements } from '@stripe/stripe-js';
-import { 
-  CreatePaymentIntentRequest, 
-  PaymentMethod, 
+import {
+  CreatePaymentIntentRequest,
+  PaymentMethod,
   RecurringDonation,
   DonationFormData,
   PaymentIntentResponse,
-  SetupIntentResponse 
+  SetupIntentResponse,
 } from '../../types/donations';
 import { auth } from '../../lib/firebase';
 
@@ -27,33 +27,37 @@ class StripeClientService {
     this.config = {
       publishableKey: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '',
       webhookSecret: import.meta.env.VITE_STRIPE_WEBHOOK_SECRET,
-      apiVersion: '2023-10-16'
+      apiVersion: '2023-10-16',
     };
-    
+
     this.stripe = loadStripe(this.config.publishableKey);
   }
 
   /**
    * Create payment intent for one-time donation
    */
-  async createPaymentIntent(data: CreatePaymentIntentRequest & { donorId: string }): Promise<PaymentIntentResponse> {
+  async createPaymentIntent(
+    data: CreatePaymentIntentRequest & { donorId: string }
+  ): Promise<PaymentIntentResponse> {
     try {
       const response = await fetch('/api/stripe/payment-intent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await auth.currentUser?.getIdToken()}`
+          Authorization: `Bearer ${await auth.currentUser?.getIdToken()}`,
         },
         body: JSON.stringify({
           amount: data.amount * 100, // Convert to cents
           currency: data.currency || 'usd',
           donorId: data.donorId,
-          metadata: data.metadata || {}
-        })
+          metadata: data.metadata || {},
+        }),
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to create payment intent: ${response.statusText}`);
+        throw new Error(
+          `Failed to create payment intent: ${response.statusText}`
+        );
       }
 
       return await response.json();
@@ -72,13 +76,15 @@ class StripeClientService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await auth.currentUser?.getIdToken()}`
+          Authorization: `Bearer ${await auth.currentUser?.getIdToken()}`,
         },
-        body: JSON.stringify({ donorId })
+        body: JSON.stringify({ donorId }),
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to create setup intent: ${response.statusText}`);
+        throw new Error(
+          `Failed to create setup intent: ${response.statusText}`
+        );
       }
 
       return await response.json();
@@ -92,8 +98,8 @@ class StripeClientService {
    * Process one-time donation payment
    */
   async processPayment(
-    elements: StripeElements, 
-    clientSecret: string, 
+    elements: StripeElements,
+    clientSecret: string,
     donationData: DonationFormData
   ): Promise<{ success: boolean; error?: string; donationId?: string }> {
     try {
@@ -117,18 +123,21 @@ class StripeClientService {
 
       if (paymentIntent?.status === 'succeeded') {
         // Payment successful - webhook will handle donation recording
-        return { 
-          success: true, 
-          donationId: paymentIntent.metadata.donationId 
+        return {
+          success: true,
+          donationId: paymentIntent.metadata.donationId,
         };
       }
 
-      return { success: false, error: 'Payment was not completed successfully' };
+      return {
+        success: false,
+        error: 'Payment was not completed successfully',
+      };
     } catch (error) {
       console.error('Payment processing error:', error);
-      return { 
-        success: false, 
-        error: 'Payment processing failed. Please try again.' 
+      return {
+        success: false,
+        error: 'Payment processing failed. Please try again.',
       };
     }
   }
@@ -166,18 +175,21 @@ class StripeClientService {
           setupIntent.payment_method as string,
           recurringData
         );
-        return { 
-          success: true, 
-          subscriptionId: subscription.subscriptionId 
+        return {
+          success: true,
+          subscriptionId: subscription.subscriptionId,
         };
       }
 
-      return { success: false, error: 'Payment method setup was not completed' };
+      return {
+        success: false,
+        error: 'Payment method setup was not completed',
+      };
     } catch (error) {
       console.error('Recurring donation setup error:', error);
-      return { 
-        success: false, 
-        error: 'Failed to setup recurring donation. Please try again.' 
+      return {
+        success: false,
+        error: 'Failed to setup recurring donation. Please try again.',
       };
     }
   }
@@ -194,16 +206,18 @@ class StripeClientService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await auth.currentUser?.getIdToken()}`
+          Authorization: `Bearer ${await auth.currentUser?.getIdToken()}`,
         },
         body: JSON.stringify({
           paymentMethodId,
-          ...recurringData
-        })
+          ...recurringData,
+        }),
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to create subscription: ${response.statusText}`);
+        throw new Error(
+          `Failed to create subscription: ${response.statusText}`
+        );
       }
 
       return await response.json();
@@ -220,12 +234,14 @@ class StripeClientService {
     try {
       const response = await fetch(`/api/stripe/payment-methods/${donorId}`, {
         headers: {
-          'Authorization': `Bearer ${await auth.currentUser?.getIdToken()}`
-        }
+          Authorization: `Bearer ${await auth.currentUser?.getIdToken()}`,
+        },
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch payment methods: ${response.statusText}`);
+        throw new Error(
+          `Failed to fetch payment methods: ${response.statusText}`
+        );
       }
 
       return await response.json();
@@ -240,12 +256,15 @@ class StripeClientService {
    */
   async deletePaymentMethod(paymentMethodId: string): Promise<boolean> {
     try {
-      const response = await fetch(`/api/stripe/payment-methods/${paymentMethodId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${await auth.currentUser?.getIdToken()}`
+      const response = await fetch(
+        `/api/stripe/payment-methods/${paymentMethodId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${await auth.currentUser?.getIdToken()}`,
+          },
         }
-      });
+      );
 
       return response.ok;
     } catch (error) {
@@ -259,12 +278,15 @@ class StripeClientService {
    */
   async cancelRecurringDonation(subscriptionId: string): Promise<boolean> {
     try {
-      const response = await fetch(`/api/stripe/subscription/${subscriptionId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${await auth.currentUser?.getIdToken()}`
+      const response = await fetch(
+        `/api/stripe/subscription/${subscriptionId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${await auth.currentUser?.getIdToken()}`,
+          },
         }
-      });
+      );
 
       return response.ok;
     } catch (error) {
@@ -276,15 +298,17 @@ class StripeClientService {
   /**
    * Retry failed payment
    */
-  async retryPayment(paymentIntentId: string): Promise<{ success: boolean; error?: string }> {
+  async retryPayment(
+    paymentIntentId: string
+  ): Promise<{ success: boolean; error?: string }> {
     try {
       const response = await fetch(`/api/stripe/retry-payment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${await auth.currentUser?.getIdToken()}`
+          Authorization: `Bearer ${await auth.currentUser?.getIdToken()}`,
         },
-        body: JSON.stringify({ paymentIntentId })
+        body: JSON.stringify({ paymentIntentId }),
       });
 
       if (!response.ok) {
@@ -295,9 +319,9 @@ class StripeClientService {
       return { success: result.success, error: result.error };
     } catch (error) {
       console.error('Error retrying payment:', error);
-      return { 
-        success: false, 
-        error: 'Failed to retry payment. Please try again.' 
+      return {
+        success: false,
+        error: 'Failed to retry payment. Please try again.',
       };
     }
   }

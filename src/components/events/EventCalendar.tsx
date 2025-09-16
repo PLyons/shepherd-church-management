@@ -8,7 +8,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { EventDetailsModal } from './EventDetailsModal';
 import { CalendarDay } from './CalendarDay';
 import { CalendarWeek } from './CalendarWeek';
-import { 
+import {
   generateCalendarGrid,
   formatMonthYear,
   formatWeekRange,
@@ -18,7 +18,7 @@ import {
   getEndOfWeek,
   getFirstDayOfMonth,
   getLastDayOfMonth,
-  DAY_NAMES
+  DAY_NAMES,
 } from '../../utils/calendar-helpers';
 
 export type CalendarView = 'month' | 'week';
@@ -34,11 +34,11 @@ export const EventCalendar: React.FC<EventCalendarProps> = ({
   onEventClick,
   onDateClick,
   onCreateEvent,
-  initialView = 'month'
+  initialView = 'month',
 }) => {
   const { member: currentUser } = useAuth();
   const { showToast } = useToast();
-  
+
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<CalendarView>(initialView);
   const [events, setEvents] = useState<Event[]>([]);
@@ -48,7 +48,9 @@ export const EventCalendar: React.FC<EventCalendarProps> = ({
   // Event Details Modal state
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
-  const [currentUserRSVP, setCurrentUserRSVP] = useState<EventRSVP | null>(null);
+  const [currentUserRSVP, setCurrentUserRSVP] = useState<EventRSVP | null>(
+    null
+  );
 
   const loadEvents = useCallback(async () => {
     if (!currentUser) {
@@ -77,7 +79,10 @@ export const EventCalendar: React.FC<EventCalendarProps> = ({
         endDate = getEndOfWeek(currentDate);
       }
 
-      const eventsData = await eventsService.getEventsInRange(startDate, endDate);
+      const eventsData = await eventsService.getEventsInRange(
+        startDate,
+        endDate
+      );
       setEvents(eventsData);
     } catch (err) {
       console.error('Error loading calendar events:', err);
@@ -89,13 +94,16 @@ export const EventCalendar: React.FC<EventCalendarProps> = ({
   }, [currentUser, view, currentDate, showToast]);
 
   // Memoize event handlers with useCallback
-  const handleNavigation = useCallback((direction: 'prev' | 'next') => {
-    if (view === 'month') {
-      setCurrentDate(getNavigationMonth(currentDate, direction));
-    } else {
-      setCurrentDate(getNavigationWeek(currentDate, direction));
-    }
-  }, [view, currentDate]);
+  const handleNavigation = useCallback(
+    (direction: 'prev' | 'next') => {
+      if (view === 'month') {
+        setCurrentDate(getNavigationMonth(currentDate, direction));
+      } else {
+        setCurrentDate(getNavigationWeek(currentDate, direction));
+      }
+    },
+    [view, currentDate]
+  );
 
   const handleToday = useCallback(() => {
     setCurrentDate(new Date());
@@ -114,7 +122,10 @@ export const EventCalendar: React.FC<EventCalendarProps> = ({
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       // Don't interfere if user is typing in an input
-      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+      if (
+        event.target instanceof HTMLInputElement ||
+        event.target instanceof HTMLTextAreaElement
+      ) {
         return;
       }
 
@@ -169,11 +180,14 @@ export const EventCalendar: React.FC<EventCalendarProps> = ({
 
     // Open event details modal for comprehensive event interaction
     setSelectedEvent(event);
-    
+
     // Load current user's RSVP if exists
     try {
       if (currentUser?.id) {
-        const userRSVP = await eventRSVPService.getRSVPByMember(event.id, currentUser.id);
+        const userRSVP = await eventRSVPService.getRSVPByMember(
+          event.id,
+          currentUser.id
+        );
         setCurrentUserRSVP(userRSVP);
       }
     } catch (err) {
@@ -210,13 +224,16 @@ export const EventCalendar: React.FC<EventCalendarProps> = ({
     return view === 'month' ? generateCalendarGrid(currentDate) : null;
   }, [view, currentDate]);
 
-  const handleDateClick = useCallback((date: Date) => {
-    if (onDateClick) {
-      onDateClick(date);
-    } else if (onCreateEvent) {
-      onCreateEvent(date);
-    }
-  }, [onDateClick, onCreateEvent]);
+  const handleDateClick = useCallback(
+    (date: Date) => {
+      if (onDateClick) {
+        onDateClick(date);
+      } else if (onCreateEvent) {
+        onCreateEvent(date);
+      }
+    },
+    [onDateClick, onCreateEvent]
+  );
 
   const renderMonthView = () => {
     if (!calendarGrid) return null;
@@ -226,7 +243,7 @@ export const EventCalendar: React.FC<EventCalendarProps> = ({
         {/* Day headers */}
         <div className="grid grid-cols-7 border-b border-gray-200">
           {DAY_NAMES.map((dayName) => (
-            <div 
+            <div
               key={dayName}
               className="p-3 text-center text-sm font-medium text-gray-500 border-r border-gray-200 last:border-r-0"
             >
@@ -294,9 +311,17 @@ export const EventCalendar: React.FC<EventCalendarProps> = ({
 
   return (
     <>
-      <div className="h-full flex flex-col bg-white relative" role="application" aria-label="Calendar">
+      <div
+        className="h-full flex flex-col bg-white relative"
+        role="application"
+        aria-label="Calendar"
+      >
         {/* Calendar header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200" role="toolbar" aria-label="Calendar navigation and controls">
+        <div
+          className="flex items-center justify-between p-4 border-b border-gray-200"
+          role="toolbar"
+          aria-label="Calendar navigation and controls"
+        >
           {/* Navigation */}
           <div className="flex items-center space-x-2">
             <button
@@ -305,16 +330,22 @@ export const EventCalendar: React.FC<EventCalendarProps> = ({
               title={`Previous ${view}`}
               aria-label={`Go to previous ${view}`}
             >
-              <ChevronLeft className="h-5 w-5 text-gray-600" aria-hidden="true" />
+              <ChevronLeft
+                className="h-5 w-5 text-gray-600"
+                aria-hidden="true"
+              />
             </button>
-            
+
             <button
               onClick={() => handleNavigation('next')}
               className="p-2 hover:bg-gray-100 rounded-md transition-colors"
               title={`Next ${view}`}
               aria-label={`Go to next ${view}`}
             >
-              <ChevronRight className="h-5 w-5 text-gray-600" aria-hidden="true" />
+              <ChevronRight
+                className="h-5 w-5 text-gray-600"
+                aria-hidden="true"
+              />
             </button>
 
             <button
@@ -327,13 +358,15 @@ export const EventCalendar: React.FC<EventCalendarProps> = ({
           </div>
 
           {/* Title */}
-          <h2 className="text-lg font-semibold text-gray-900">
-            {headerTitle}
-          </h2>
+          <h2 className="text-lg font-semibold text-gray-900">{headerTitle}</h2>
 
           {/* View controls */}
           <div className="flex items-center space-x-2">
-            <div className="flex rounded-md border border-gray-300" role="radiogroup" aria-label="Calendar view">
+            <div
+              className="flex rounded-md border border-gray-300"
+              role="radiogroup"
+              aria-label="Calendar view"
+            >
               <button
                 onClick={() => handleViewChange('month')}
                 className={`px-3 py-2 text-sm font-medium transition-colors ${
@@ -367,13 +400,17 @@ export const EventCalendar: React.FC<EventCalendarProps> = ({
         </div>
 
         {/* Calendar content */}
-        <div className="flex-1 overflow-hidden" role="main" aria-label={`${view} view of calendar`}>
+        <div
+          className="flex-1 overflow-hidden"
+          role="main"
+          aria-label={`${view} view of calendar`}
+        >
           {view === 'month' ? renderMonthView() : renderWeekView()}
         </div>
 
         {/* Keyboard shortcuts help tooltip */}
         <div className="absolute bottom-4 right-4 group">
-          <button 
+          <button
             className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-600 text-sm font-medium"
             title="Keyboard shortcuts: ← → navigate, T today, M month, W week"
             aria-label="Show keyboard shortcuts"

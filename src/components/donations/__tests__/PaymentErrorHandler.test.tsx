@@ -98,7 +98,11 @@ describe('PaymentErrorHandler', () => {
         </TestWrapper>
       );
 
-      expect(screen.getByText('Your card was declined. Please try a different payment method.')).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'Your card was declined. Please try a different payment method.'
+        )
+      ).toBeInTheDocument();
     });
 
     it('should translate insufficient_funds error', () => {
@@ -112,7 +116,11 @@ describe('PaymentErrorHandler', () => {
         </TestWrapper>
       );
 
-      expect(screen.getByText('Insufficient funds. Please try a different payment method.')).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'Insufficient funds. Please try a different payment method.'
+        )
+      ).toBeInTheDocument();
     });
 
     it('should translate expired_card error', () => {
@@ -126,7 +134,11 @@ describe('PaymentErrorHandler', () => {
         </TestWrapper>
       );
 
-      expect(screen.getByText('Your card has expired. Please use a different payment method.')).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'Your card has expired. Please use a different payment method.'
+        )
+      ).toBeInTheDocument();
     });
 
     it('should translate incorrect_cvc error', () => {
@@ -140,7 +152,11 @@ describe('PaymentErrorHandler', () => {
         </TestWrapper>
       );
 
-      expect(screen.getByText('Your card security code is incorrect. Please check and try again.')).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'Your card security code is incorrect. Please check and try again.'
+        )
+      ).toBeInTheDocument();
     });
 
     it('should use original message for unknown errors', () => {
@@ -154,7 +170,9 @@ describe('PaymentErrorHandler', () => {
         </TestWrapper>
       );
 
-      expect(screen.getByText('Unknown network error occurred')).toBeInTheDocument();
+      expect(
+        screen.getByText('Unknown network error occurred')
+      ).toBeInTheDocument();
     });
 
     it('should handle empty error message', () => {
@@ -168,7 +186,9 @@ describe('PaymentErrorHandler', () => {
         </TestWrapper>
       );
 
-      expect(screen.getByText('An unexpected error occurred. Please try again.')).toBeInTheDocument();
+      expect(
+        screen.getByText('An unexpected error occurred. Please try again.')
+      ).toBeInTheDocument();
     });
   });
 
@@ -184,7 +204,9 @@ describe('PaymentErrorHandler', () => {
         </TestWrapper>
       );
 
-      expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /try again/i })
+      ).toBeInTheDocument();
     });
 
     it('should call onRetry when Try Again is clicked without paymentIntentId', async () => {
@@ -209,7 +231,7 @@ describe('PaymentErrorHandler', () => {
 
     it('should call stripeService.retryPayment when paymentIntentId is provided', async () => {
       const user = userEvent.setup();
-      
+
       mockStripeService.retryPayment.mockResolvedValue({ success: true });
 
       render(
@@ -227,15 +249,19 @@ describe('PaymentErrorHandler', () => {
       await user.click(retryButton);
 
       await waitFor(() => {
-        expect(mockStripeService.retryPayment).toHaveBeenCalledWith('pi_test_123');
+        expect(mockStripeService.retryPayment).toHaveBeenCalledWith(
+          'pi_test_123'
+        );
         expect(mockOnRetry).toHaveBeenCalled();
       });
     });
 
     it('should handle retry failure gracefully', async () => {
       const user = userEvent.setup();
-      
-      mockStripeService.retryPayment.mockRejectedValue(new Error('Retry failed'));
+
+      mockStripeService.retryPayment.mockRejectedValue(
+        new Error('Retry failed')
+      );
 
       render(
         <TestWrapper>
@@ -252,7 +278,9 @@ describe('PaymentErrorHandler', () => {
       await user.click(retryButton);
 
       await waitFor(() => {
-        expect(mockStripeService.retryPayment).toHaveBeenCalledWith('pi_test_123');
+        expect(mockStripeService.retryPayment).toHaveBeenCalledWith(
+          'pi_test_123'
+        );
         // Should not call onRetry if stripe retry fails
         expect(mockOnRetry).not.toHaveBeenCalled();
       });
@@ -260,10 +288,13 @@ describe('PaymentErrorHandler', () => {
 
     it('should show loading state during retry', async () => {
       const user = userEvent.setup();
-      
+
       // Mock a delayed response
-      mockStripeService.retryPayment.mockImplementation(() => 
-        new Promise(resolve => setTimeout(() => resolve({ success: true }), 100))
+      mockStripeService.retryPayment.mockImplementation(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(() => resolve({ success: true }), 100)
+          )
       );
 
       render(
@@ -287,10 +318,13 @@ describe('PaymentErrorHandler', () => {
 
     it('should disable button during retry', async () => {
       const user = userEvent.setup();
-      
+
       // Mock a delayed response
-      mockStripeService.retryPayment.mockImplementation(() => 
-        new Promise(resolve => setTimeout(() => resolve({ success: true }), 100))
+      mockStripeService.retryPayment.mockImplementation(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(() => resolve({ success: true }), 100)
+          )
       );
 
       render(
@@ -323,20 +357,21 @@ describe('PaymentErrorHandler', () => {
         </TestWrapper>
       );
 
-      expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /cancel/i })
+      ).toBeInTheDocument();
     });
 
     it('should not display Cancel button when onCancel is not provided', () => {
       render(
         <TestWrapper>
-          <PaymentErrorHandler
-            error="Payment failed"
-            onRetry={mockOnRetry}
-          />
+          <PaymentErrorHandler error="Payment failed" onRetry={mockOnRetry} />
         </TestWrapper>
       );
 
-      expect(screen.queryByRole('button', { name: /cancel/i })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: /cancel/i })
+      ).not.toBeInTheDocument();
     });
 
     it('should call onCancel when Cancel button is clicked', async () => {
@@ -387,7 +422,9 @@ describe('PaymentErrorHandler', () => {
         </TestWrapper>
       );
 
-      const buttonContainer = screen.getByRole('button', { name: /try again/i }).closest('div');
+      const buttonContainer = screen
+        .getByRole('button', { name: /try again/i })
+        .closest('div');
       expect(buttonContainer).toHaveClass('flex', 'space-x-3');
     });
 
@@ -404,7 +441,7 @@ describe('PaymentErrorHandler', () => {
 
       const retryButton = screen.getByRole('button', { name: /try again/i });
       const cancelButton = screen.getByRole('button', { name: /cancel/i });
-      
+
       // Buttons should be small size
       expect(retryButton).toHaveClass('text-sm');
       expect(cancelButton).toHaveClass('text-sm');
@@ -471,7 +508,7 @@ describe('PaymentErrorHandler', () => {
 
       const retryButton = screen.getByRole('button', { name: /try again/i });
       const cancelButton = screen.getByRole('button', { name: /cancel/i });
-      
+
       expect(retryButton).toHaveAccessibleName();
       expect(cancelButton).toHaveAccessibleName();
     });
@@ -505,7 +542,10 @@ describe('PaymentErrorHandler', () => {
       );
 
       const container = screen.getByText('Payment Error').closest('div');
-      expect(container).toHaveClass('dark:bg-red-900/20', 'dark:border-red-800');
+      expect(container).toHaveClass(
+        'dark:bg-red-900/20',
+        'dark:border-red-800'
+      );
     });
 
     it('should have dark mode text colors', () => {
@@ -521,7 +561,7 @@ describe('PaymentErrorHandler', () => {
 
       const heading = screen.getByText('Payment Error');
       const errorText = screen.getByText('Payment failed');
-      
+
       expect(heading).toHaveClass('dark:text-red-200');
       expect(errorText).toHaveClass('dark:text-red-300');
     });
@@ -541,7 +581,7 @@ describe('PaymentErrorHandler', () => {
 
       const retryButton = screen.getByRole('button', { name: /try again/i });
       const cancelButton = screen.getByRole('button', { name: /cancel/i });
-      
+
       expect(retryButton).not.toBeDisabled();
       expect(cancelButton).not.toBeDisabled();
     });
@@ -549,15 +589,14 @@ describe('PaymentErrorHandler', () => {
     it('should handle missing onRetry gracefully', () => {
       render(
         <TestWrapper>
-          <PaymentErrorHandler
-            error="Payment failed"
-            onCancel={mockOnCancel}
-          />
+          <PaymentErrorHandler error="Payment failed" onCancel={mockOnCancel} />
         </TestWrapper>
       );
 
       // Should still render Try Again button even without onRetry
-      expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /try again/i })
+      ).toBeInTheDocument();
     });
 
     it('should handle missing error message gracefully', () => {
@@ -571,14 +610,16 @@ describe('PaymentErrorHandler', () => {
         </TestWrapper>
       );
 
-      expect(screen.getByText('An unexpected error occurred. Please try again.')).toBeInTheDocument();
+      expect(
+        screen.getByText('An unexpected error occurred. Please try again.')
+      ).toBeInTheDocument();
     });
   });
 
   describe('Error Scenarios', () => {
     it('should handle retry service failure without crashing', async () => {
       const user = userEvent.setup();
-      
+
       mockStripeService.retryPayment.mockImplementation(() => {
         throw new Error('Service unavailable');
       });

@@ -17,7 +17,7 @@ export const PaymentErrorHandler: React.FC<PaymentErrorHandlerProps> = ({
   error,
   paymentIntentId,
   onRetry,
-  onCancel
+  onCancel,
 }) => {
   const [isRetrying, setIsRetrying] = useState(false);
 
@@ -56,13 +56,13 @@ export const PaymentErrorHandler: React.FC<PaymentErrorHandlerProps> = ({
   };
 
   return (
-    <div 
+    <div
       className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6"
       role="alert"
     >
       <div className="flex items-start space-x-3">
-        <AlertTriangle 
-          className="w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0 mt-1" 
+        <AlertTriangle
+          className="w-6 h-6 text-red-600 dark:text-red-400 flex-shrink-0 mt-1"
           role="img"
           aria-hidden="true"
         />

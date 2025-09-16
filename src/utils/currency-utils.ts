@@ -30,14 +30,14 @@ export function parseCurrency(value: string): number {
 
   // Remove currency symbols, spaces, and commas
   const cleanValue = value.replace(/[$,\s]/g, '');
-  
+
   // Handle empty string or just symbols
   if (cleanValue === '' || cleanValue === '.') {
     return 0;
   }
 
   const parsed = parseFloat(cleanValue);
-  
+
   // Return 0 for invalid numbers
   if (isNaN(parsed)) {
     return 0;
@@ -67,13 +67,23 @@ export function isValidCurrency(value: string | number): boolean {
 
   if (typeof value === 'string') {
     numericValue = parseCurrency(value);
-    
+
     // Check if the original string was actually invalid
     // (parseCurrency returns 0 for invalid strings, but 0 is a valid amount)
-    if (numericValue === 0 && value !== '0' && value !== '$0' && value !== '$0.00' && value !== '0.00') {
+    if (
+      numericValue === 0 &&
+      value !== '0' &&
+      value !== '$0' &&
+      value !== '$0.00' &&
+      value !== '0.00'
+    ) {
       // If it parsed to 0 but wasn't actually a zero value, check if it's truly invalid
       const cleanValue = value.replace(/[$,\s]/g, '');
-      if (cleanValue === '' || cleanValue === '.' || isNaN(parseFloat(cleanValue))) {
+      if (
+        cleanValue === '' ||
+        cleanValue === '.' ||
+        isNaN(parseFloat(cleanValue))
+      ) {
         return false;
       }
     }

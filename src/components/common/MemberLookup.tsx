@@ -35,7 +35,10 @@ export const MemberLookup: React.FC<MemberLookupProps> = ({
   const debounceRef = useRef<number | null>(null);
 
   // Display value in input
-  const displayValue = selectedMember ? selectedMember.fullName || `${selectedMember.firstName} ${selectedMember.lastName}` : searchTerm;
+  const displayValue = selectedMember
+    ? selectedMember.fullName ||
+      `${selectedMember.firstName} ${selectedMember.lastName}`
+    : searchTerm;
 
   // Static members data for testing (avoiding async issues in tests)
   const allMembers: Member[] = [
@@ -119,15 +122,17 @@ export const MemberLookup: React.FC<MemberLookupProps> = ({
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchTerm(value);
-    
+
     // Clear selection if user is typing and it doesn't match current selection
     if (selectedMember) {
-      const currentDisplayValue = selectedMember.fullName || `${selectedMember.firstName} ${selectedMember.lastName}`;
+      const currentDisplayValue =
+        selectedMember.fullName ||
+        `${selectedMember.firstName} ${selectedMember.lastName}`;
       if (value !== currentDisplayValue) {
         onSelect(null);
       }
     }
-    
+
     // Clear previous timeout
     if (debounceRef.current) {
       window.clearTimeout(debounceRef.current);
@@ -158,11 +163,13 @@ export const MemberLookup: React.FC<MemberLookupProps> = ({
   // Handle member selection
   const handleMemberSelect = (member: Member | null) => {
     if (member) {
-      setSearchTerm(member.fullName || `${member.firstName} ${member.lastName}`);
+      setSearchTerm(
+        member.fullName || `${member.firstName} ${member.lastName}`
+      );
     } else {
       setSearchTerm('Anonymous');
     }
-    
+
     onSelect(member);
     setIsDropdownOpen(false);
     setHighlightedIndex(-1);
@@ -183,13 +190,17 @@ export const MemberLookup: React.FC<MemberLookupProps> = ({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!isDropdownOpen) return;
 
-    const options = error ? [] : searchResults.length === 0 && searchTerm.length < 2 ? [null] : searchResults;
+    const options = error
+      ? []
+      : searchResults.length === 0 && searchTerm.length < 2
+        ? [null]
+        : searchResults;
 
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
         if (options.length === 0) return;
-        setHighlightedIndex(prev => 
+        setHighlightedIndex((prev) =>
           prev < options.length - 1 ? prev + 1 : 0
         );
         break;
@@ -197,7 +208,7 @@ export const MemberLookup: React.FC<MemberLookupProps> = ({
       case 'ArrowUp':
         e.preventDefault();
         if (options.length === 0) return;
-        setHighlightedIndex(prev => 
+        setHighlightedIndex((prev) =>
           prev > 0 ? prev - 1 : options.length - 1
         );
         break;
@@ -256,7 +267,7 @@ export const MemberLookup: React.FC<MemberLookupProps> = ({
   // Highlight matching text
   const highlightText = (text: string, searchTerm: string) => {
     if (!searchTerm || searchTerm.length < 2) return text;
-    
+
     const index = text.toLowerCase().indexOf(searchTerm.toLowerCase());
     if (index === -1) return text;
 
@@ -267,7 +278,10 @@ export const MemberLookup: React.FC<MemberLookupProps> = ({
     return (
       <>
         {before}
-        <span data-testid="highlighted-text" className="bg-yellow-200 font-semibold">
+        <span
+          data-testid="highlighted-text"
+          className="bg-yellow-200 font-semibold"
+        >
           {match}
         </span>
         {after}
@@ -303,13 +317,13 @@ export const MemberLookup: React.FC<MemberLookupProps> = ({
           aria-expanded={isDropdownOpen}
           aria-owns={isDropdownOpen ? dropdownId : undefined}
         />
-        
+
         {required && (
           <span className="absolute right-8 top-1/2 transform -translate-y-1/2 text-red-500">
             *
           </span>
         )}
-        
+
         {selectedMember && (
           <button
             type="button"
@@ -341,11 +355,7 @@ export const MemberLookup: React.FC<MemberLookupProps> = ({
             </div>
           )}
 
-          {error && (
-            <div className="p-3 text-center text-red-600">
-              {error}
-            </div>
-          )}
+          {error && <div className="p-3 text-center text-red-600">{error}</div>}
 
           {!isLoading && !error && (
             <>
@@ -385,7 +395,8 @@ export const MemberLookup: React.FC<MemberLookupProps> = ({
                       >
                         <div className="font-medium">
                           {highlightText(
-                            member.fullName || `${member.firstName} ${member.lastName}`,
+                            member.fullName ||
+                              `${member.firstName} ${member.lastName}`,
                             searchTerm
                           )}
                         </div>

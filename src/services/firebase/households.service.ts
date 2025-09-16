@@ -31,7 +31,8 @@ export class HouseholdsService extends BaseFirestoreService<
     super(
       db,
       'households',
-      (id: string, document: HouseholdDocument) => householdDocumentToHousehold(id, document),
+      (id: string, document: HouseholdDocument) =>
+        householdDocumentToHousehold(id, document),
       (client: Partial<Household>) => householdToHouseholdDocument(client)
     );
   }
@@ -129,13 +130,15 @@ export class HouseholdsService extends BaseFirestoreService<
   /**
    * Create a new household
    */
-  async create(householdData: Omit<Household, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> {
+  async create(
+    householdData: Omit<Household, 'id' | 'createdAt' | 'updatedAt'>
+  ): Promise<string> {
     try {
       console.log('Creating household:', householdData);
-      
+
       // Normalize the family name for consistent searching
       const normalizedName = householdData.familyName.toLowerCase().trim();
-      
+
       const householdToCreate: Omit<Household, 'id'> = {
         ...householdData,
         normalizedName,
@@ -147,7 +150,7 @@ export class HouseholdsService extends BaseFirestoreService<
       const documentData = this.clientToDocument(householdToCreate);
       const householdsCollection = collection(db, this.collectionName);
       const docRef = await addDoc(householdsCollection, documentData);
-      
+
       console.log('Household created with ID:', docRef.id);
       return docRef.id;
     } catch (error) {
@@ -162,17 +165,17 @@ export class HouseholdsService extends BaseFirestoreService<
   async update(id: string, updates: Partial<Household>): Promise<void> {
     try {
       console.log('Updating household:', id, updates);
-      
+
       const updateData = this.clientToDocument(updates);
-      
+
       // If family name is being updated, also update the normalized name
       if (updates.familyName) {
         updateData.normalizedName = updates.familyName.toLowerCase().trim();
       }
-      
+
       const docRef = doc(db, this.collectionName, id);
       await updateDoc(docRef, updateData);
-      
+
       console.log('Household updated successfully');
     } catch (error) {
       console.error('Error updating household:', error);
@@ -186,31 +189,31 @@ export class HouseholdsService extends BaseFirestoreService<
   async delete(id: string): Promise<void> {
     try {
       console.log('Deleting household:', id);
-      
+
       // First, get all members in this household
       const members = await this.getMembers(id);
-      
+
       // Create a batch to update all members and delete the household
       const batch = writeBatch(db);
-      
+
       // Update all members to remove household association
       const membersCollection = collection(db, 'members');
-      members.forEach(member => {
+      members.forEach((member) => {
         const memberRef = doc(membersCollection, member.id);
         batch.update(memberRef, {
           householdId: null,
           isPrimaryContact: false,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         });
       });
-      
+
       // Delete the household
       const householdRef = doc(db, this.collectionName, id);
       batch.delete(householdRef);
-      
+
       // Execute the batch
       await batch.commit();
-      
+
       console.log('Household deleted and members updated successfully');
     } catch (error) {
       console.error('Error deleting household:', error);
@@ -221,56 +224,64 @@ export class HouseholdsService extends BaseFirestoreService<
   /**
    * Add a member to a household
    */
-  async addMember(householdId: string, memberId: string, isPrimaryContact: boolean = false): Promise<void> {
+  async addMember(
+    householdId: string,
+    memberId: string,
+    isPrimaryContact: boolean = false
+  ): Promise<void> {
     try {
-      console.log('Adding member to household:', { householdId, memberId, isPrimaryContact });
-      
+      console.log('Adding member to household:', {
+        householdId,
+        memberId,
+        isPrimaryContact,
+      });
+
       // Get current household data
       const household = await this.getById(householdId);
       if (!household) {
         throw new Error('Household not found');
       }
-      
+
       // Create batch for atomic updates
       const batch = writeBatch(db);
-      
+
       // If this member is becoming the primary contact, remove primary status from other members
       if (isPrimaryContact) {
         const currentMembers = await this.getMembers(householdId);
         const membersCollection = collection(db, 'members');
-        
-        currentMembers.forEach(member => {
+
+        currentMembers.forEach((member) => {
           if (member.isPrimaryContact) {
             const memberRef = doc(membersCollection, member.id);
             batch.update(memberRef, {
               isPrimaryContact: false,
-              updatedAt: new Date()
+              updatedAt: new Date(),
             });
           }
         });
       }
-      
+
       // Update the member
       const memberRef = doc(collection(db, 'members'), memberId);
       batch.update(memberRef, {
         householdId,
         isPrimaryContact,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       });
-      
+
       // Update household member list and count
       const updatedMemberIds = [...household.memberIds];
       if (!updatedMemberIds.includes(memberId)) {
         updatedMemberIds.push(memberId);
       }
-      
+
       const householdRef = doc(db, this.collectionName, householdId);
       const householdUpdates: Partial<HouseholdDocument> = {
         memberIds: updatedMemberIds,
         memberCount: updatedMemberIds.length,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
-      
+
       // If this is the primary contact, update household info
       if (isPrimaryContact) {
         // Get member data to update household primary contact info
@@ -281,9 +292,9 @@ export class HouseholdsService extends BaseFirestoreService<
           householdUpdates.primaryContactName = `${memberData.firstName} ${memberData.lastName}`;
         }
       }
-      
+
       batch.update(householdRef, householdUpdates);
-      
+
       await batch.commit();
       console.log('Member added to household successfully');
     } catch (error) {
@@ -298,41 +309,43 @@ export class HouseholdsService extends BaseFirestoreService<
   async removeMember(householdId: string, memberId: string): Promise<void> {
     try {
       console.log('Removing member from household:', { householdId, memberId });
-      
+
       // Get current household data
       const household = await this.getById(householdId);
       if (!household) {
         throw new Error('Household not found');
       }
-      
+
       const batch = writeBatch(db);
-      
+
       // Update the member to remove household association
       const memberRef = doc(collection(db, 'members'), memberId);
       batch.update(memberRef, {
         householdId: null,
         isPrimaryContact: false,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       });
-      
+
       // Update household member list and count
-      const updatedMemberIds = household.memberIds.filter(id => id !== memberId);
-      
+      const updatedMemberIds = household.memberIds.filter(
+        (id) => id !== memberId
+      );
+
       const householdRef = doc(db, this.collectionName, householdId);
       const householdUpdates: Partial<HouseholdDocument> = {
         memberIds: updatedMemberIds,
         memberCount: updatedMemberIds.length,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
-      
+
       // If we're removing the primary contact, clear primary contact info
       if (household.primaryContactId === memberId) {
         householdUpdates.primaryContactId = null;
         householdUpdates.primaryContactName = null;
       }
-      
+
       batch.update(householdRef, householdUpdates);
-      
+
       await batch.commit();
       console.log('Member removed from household successfully');
     } catch (error) {
@@ -348,10 +361,11 @@ export class HouseholdsService extends BaseFirestoreService<
     try {
       const allHouseholds = await this.getAll();
       const normalizedSearch = searchTerm.toLowerCase().trim();
-      
-      return allHouseholds.filter(household => 
-        household.normalizedName?.includes(normalizedSearch) ||
-        household.familyName.toLowerCase().includes(normalizedSearch)
+
+      return allHouseholds.filter(
+        (household) =>
+          household.normalizedName?.includes(normalizedSearch) ||
+          household.familyName.toLowerCase().includes(normalizedSearch)
       );
     } catch (error) {
       console.error('Error searching households:', error);
@@ -366,11 +380,11 @@ export class HouseholdsService extends BaseFirestoreService<
     try {
       const households = await this.getAll();
       const householdsWithMembers = await Promise.all(
-        households.map(async household => {
+        households.map(async (household) => {
           const members = await this.getMembers(household.id);
           return {
             ...household,
-            members
+            members,
           };
         })
       );
@@ -384,57 +398,65 @@ export class HouseholdsService extends BaseFirestoreService<
   /**
    * Change the primary contact for a household
    */
-  async setPrimaryContact(householdId: string, newPrimaryContactId: string): Promise<void> {
+  async setPrimaryContact(
+    householdId: string,
+    newPrimaryContactId: string
+  ): Promise<void> {
     try {
-      console.log('Setting primary contact:', { householdId, newPrimaryContactId });
-      
+      console.log('Setting primary contact:', {
+        householdId,
+        newPrimaryContactId,
+      });
+
       // Get current household data
       const household = await this.getById(householdId);
       if (!household) {
         throw new Error('Household not found');
       }
-      
+
       // Get current members to validate the new primary contact exists in this household
       const currentMembers = await this.getMembers(householdId);
-      const newPrimaryMember = currentMembers.find(m => m.id === newPrimaryContactId);
-      
+      const newPrimaryMember = currentMembers.find(
+        (m) => m.id === newPrimaryContactId
+      );
+
       if (!newPrimaryMember) {
         throw new Error('Selected member is not part of this household');
       }
-      
+
       // Create batch for atomic updates
       const batch = writeBatch(db);
       const membersCollection = collection(db, 'members');
-      
+
       // Remove primary contact status from all current members
-      currentMembers.forEach(member => {
+      currentMembers.forEach((member) => {
         if (member.isPrimaryContact && member.id !== newPrimaryContactId) {
           const memberRef = doc(membersCollection, member.id);
           batch.update(memberRef, {
             isPrimaryContact: false,
-            updatedAt: new Date()
+            updatedAt: new Date(),
           });
         }
       });
-      
+
       // Set the new primary contact
       const newPrimaryRef = doc(membersCollection, newPrimaryContactId);
       batch.update(newPrimaryRef, {
         isPrimaryContact: true,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       });
-      
+
       // Update the household document with new primary contact info
       const householdRef = doc(db, this.collectionName, householdId);
       batch.update(householdRef, {
         primaryContactId: newPrimaryContactId,
         primaryContactName: `${newPrimaryMember.firstName} ${newPrimaryMember.lastName}`,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       });
-      
+
       // Execute the batch
       await batch.commit();
-      
+
       console.log('Primary contact updated successfully');
     } catch (error) {
       console.error('Error setting primary contact:', error);

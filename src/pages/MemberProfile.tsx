@@ -11,6 +11,7 @@ import { membersService } from '../services/firebase';
 import MemberProfileHeader from '../components/members/profile/MemberProfileHeader';
 import MemberProfileTabs from '../components/members/profile/MemberProfileTabs';
 import HouseholdSidebar from '../components/members/profile/HouseholdSidebar';
+import QuickDonationModal from '../components/donations/QuickDonationModal';
 import { User } from 'lucide-react';
 
 // Create context to pass member data to tabs
@@ -24,6 +25,7 @@ export default function MemberProfile() {
   const navigate = useNavigate();
   const [member, setMember] = useState<Member | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showDonationModal, setShowDonationModal] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -82,6 +84,15 @@ export default function MemberProfile() {
     }
   };
 
+  const handleRecordDonation = () => {
+    setShowDonationModal(true);
+  };
+
+  const handleDonationSuccess = () => {
+    // Refresh member data or trigger a refresh of donation-related components
+    fetchMemberData();
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-64">
@@ -127,6 +138,7 @@ export default function MemberProfile() {
           canDelete={canDelete}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          onRecordDonation={handleRecordDonation}
         />
         <MemberProfileTabs memberId={id!} />
 
@@ -149,6 +161,17 @@ export default function MemberProfile() {
           </div>
         </div>
       </div>
+
+      {/* Quick Donation Modal */}
+      {member && (
+        <QuickDonationModal
+          isOpen={showDonationModal}
+          onClose={() => setShowDonationModal(false)}
+          memberId={member.id}
+          memberName={`${member.firstName} ${member.lastName}`}
+          onSuccess={handleDonationSuccess}
+        />
+      )}
     </MemberContext.Provider>
   );
 }

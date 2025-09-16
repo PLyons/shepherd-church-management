@@ -20,19 +20,23 @@ const mockPDF = {
   internal: {
     pageSize: {
       getWidth: vi.fn().mockReturnValue(210),
-      getHeight: vi.fn().mockReturnValue(297)
-    }
-  }
+      getHeight: vi.fn().mockReturnValue(297),
+    },
+  },
 };
 
 vi.mock('jspdf', () => ({
   default: vi.fn().mockImplementation(() => mockPDF),
-  jsPDF: vi.fn().mockImplementation(() => mockPDF)
+  jsPDF: vi.fn().mockImplementation(() => mockPDF),
 }));
 
 // Import PDFGeneratorService and types
 import { PDFGeneratorService } from '../pdfGenerator.service';
-import { DonationStatement, DonationReceipt, StatementTemplate } from '../../types/donations';
+import {
+  DonationStatement,
+  DonationReceipt,
+  StatementTemplate,
+} from '../../types/donations';
 
 // Mock types for testing compatibility
 type ChurchTemplate = {
@@ -64,16 +68,16 @@ type ReceiptPDFOptions = {
 const mockDonation = {
   id: 'donation-123',
   memberId: 'member-456',
-  amount: 500.00,
-  deductibleAmount: 450.00,
+  amount: 500.0,
+  deductibleAmount: 450.0,
   donationDate: '2025-01-15T10:30:00Z',
   donationMethod: 'credit_card',
   category: 'tithe',
   description: 'Weekly tithe donation',
   isRecurring: false,
   hasQuidProQuo: true,
-  quidProQuoValue: 50.00,
-  quidProQuoDescription: 'Church dinner ticket'
+  quidProQuoValue: 50.0,
+  quidProQuoDescription: 'Church dinner ticket',
 };
 
 const mockStatementData: DonationStatement = {
@@ -85,15 +89,15 @@ const mockStatementData: DonationStatement = {
     line1: '123 Main St',
     city: 'Anytown',
     state: 'CA',
-    postalCode: '12345'
+    postalCode: '12345',
   },
   statementType: 'annual_tax_statement',
   taxYear: 2025,
   periodStart: '2025-01-01T00:00:00Z',
   periodEnd: '2025-12-31T23:59:59Z',
   donationIds: ['donation-123'],
-  totalAmount: 12500.00,
-  totalDeductibleAmount: 11750.00,
+  totalAmount: 12500.0,
+  totalDeductibleAmount: 11750.0,
   donationCount: 25,
   includesQuidProQuo: true,
   churchName: 'Grace Community Church',
@@ -105,7 +109,7 @@ const mockStatementData: DonationStatement = {
   format: 'pdf',
   deliveryMethod: 'download',
   createdAt: '2025-09-16T12:00:00Z',
-  updatedAt: '2025-09-16T12:00:00Z'
+  updatedAt: '2025-09-16T12:00:00Z',
 };
 
 const mockReceiptData: DonationReceipt = {
@@ -114,19 +118,19 @@ const mockReceiptData: DonationReceipt = {
   memberId: 'member-456',
   memberName: 'John Smith',
   receiptNumber: 'RCP-2025-001',
-  donationAmount: 500.00,
-  deductibleAmount: 450.00,
+  donationAmount: 500.0,
+  deductibleAmount: 450.0,
   donationDate: '2025-01-15T10:30:00Z',
   donationMethod: 'credit_card',
   categoryName: 'Tithe',
   isQuidProQuo: true,
-  quidProQuoValue: 50.00,
+  quidProQuoValue: 50.0,
   quidProQuoDescription: 'Church dinner ticket',
   churchName: 'Grace Community Church',
   churchEIN: '12-3456789',
   generatedAt: '2025-09-16T12:00:00Z',
   status: 'generated',
-  format: 'pdf'
+  format: 'pdf',
 };
 
 const mockStatementTemplate: StatementTemplate = {
@@ -138,22 +142,23 @@ const mockStatementTemplate: StatementTemplate = {
   headerContent: {
     churchName: 'Grace Community Church',
     churchEIN: '12-3456789',
-    churchLogo: 'https://example.com/logo.png'
+    churchLogo: 'https://example.com/logo.png',
   },
   bodyContent: {
     greeting: 'Dear {{memberName}},',
-    introText: 'Thank you for your generous support during the {{taxYear}} tax year.'
+    introText:
+      'Thank you for your generous support during the {{taxYear}} tax year.',
   },
   styling: {
     primaryColor: '#1e3a8a',
-    fontFamily: 'helvetica'
+    fontFamily: 'helvetica',
   },
   includeSections: {
     donationSummary: true,
     donationDetails: true,
-    quidProQuoDetails: true
+    quidProQuoDetails: true,
   },
-  version: '1.0.0'
+  version: '1.0.0',
 };
 
 const mockChurchTemplate: ChurchTemplate = {
@@ -164,7 +169,8 @@ const mockChurchTemplate: ChurchTemplate = {
   logoUrl: 'https://example.com/logo.png',
   headerColor: '#1e3a8a',
   fontFamily: 'helvetica',
-  legalText: 'No goods or services were provided in exchange for this contribution except as noted.'
+  legalText:
+    'No goods or services were provided in exchange for this contribution except as noted.',
 };
 
 describe('PDFGeneratorService - PRP-2C-009', () => {
@@ -181,15 +187,18 @@ describe('PDFGeneratorService - PRP-2C-009', () => {
         template: mockStatementTemplate,
         includeQuidProQuo: true,
         includeDonationDetails: true,
-        customMessage: 'Thank you for your generous support!'
+        customMessage: 'Thank you for your generous support!',
       };
 
-      const pdfResult = pdfGeneratorService.generateStatementPDF(mockStatementData, options);
+      const pdfResult = pdfGeneratorService.generateStatementPDF(
+        mockStatementData,
+        options
+      );
 
       expect(pdfResult).toBeDefined();
       expect(mockPDF.setFontSize).toHaveBeenCalled();
       expect(mockPDF.text).toHaveBeenCalled();
-      
+
       // Verify IRS-compliant formatting calls
       expect(mockPDF.text).toHaveBeenCalledWith(
         expect.stringContaining('Annual Donation Statement - 2025'),
@@ -202,14 +211,17 @@ describe('PDFGeneratorService - PRP-2C-009', () => {
       const options = {
         template: mockStatementTemplate,
         includeQuidProQuo: false,
-        includeDonationDetails: true
+        includeDonationDetails: true,
       };
 
-      const pdfResult = pdfGeneratorService.generateStatementPDF(mockStatementData, options);
+      const pdfResult = pdfGeneratorService.generateStatementPDF(
+        mockStatementData,
+        options
+      );
 
       expect(pdfResult).toBeDefined();
       expect(mockPDF.setFont).toHaveBeenCalled();
-      
+
       // Verify church information is added
       expect(mockPDF.text).toHaveBeenCalledWith(
         expect.stringContaining('John Smith'),
@@ -222,13 +234,16 @@ describe('PDFGeneratorService - PRP-2C-009', () => {
       const options = {
         template: mockStatementTemplate,
         includeQuidProQuo: true,
-        includeDonationDetails: true
+        includeDonationDetails: true,
       };
 
-      const pdfResult = pdfGeneratorService.generateStatementPDF(mockStatementData, options);
+      const pdfResult = pdfGeneratorService.generateStatementPDF(
+        mockStatementData,
+        options
+      );
 
       expect(pdfResult).toBeDefined();
-      
+
       // Verify legal text is added with small font size
       expect(mockPDF.setFontSize).toHaveBeenCalledWith(8);
       expect(mockPDF.text).toHaveBeenCalledWith(
@@ -241,19 +256,22 @@ describe('PDFGeneratorService - PRP-2C-009', () => {
     it('should handle multiple donation items with pagination', () => {
       const largeStatementData = {
         ...mockStatementData,
-        donationCount: 50
+        donationCount: 50,
       };
 
       const options = {
         template: mockStatementTemplate,
         includeQuidProQuo: false,
-        includeDonationDetails: true
+        includeDonationDetails: true,
       };
 
-      const pdfResult = pdfGeneratorService.generateStatementPDF(largeStatementData, options);
+      const pdfResult = pdfGeneratorService.generateStatementPDF(
+        largeStatementData,
+        options
+      );
 
       expect(pdfResult).toBeDefined();
-      
+
       // Verify pagination is handled for large donation counts
       expect(mockPDF.addPage).toHaveBeenCalled();
     });
@@ -265,15 +283,18 @@ describe('PDFGeneratorService - PRP-2C-009', () => {
         template: mockStatementTemplate,
         receiptNumber: 'RCP-2025-001',
         includeQuidProQuo: true,
-        quidProQuoValue: 50.00
+        quidProQuoValue: 50.0,
       };
 
-      const pdfResult = pdfGeneratorService.generateReceiptPDF(mockReceiptData, options);
+      const pdfResult = pdfGeneratorService.generateReceiptPDF(
+        mockReceiptData,
+        options
+      );
 
       expect(pdfResult).toBeDefined();
       expect(mockPDF.setFontSize).toHaveBeenCalled();
       expect(mockPDF.text).toHaveBeenCalled();
-      
+
       // Verify receipt header
       expect(mockPDF.text).toHaveBeenCalledWith(
         'Donation Receipt',
@@ -287,13 +308,16 @@ describe('PDFGeneratorService - PRP-2C-009', () => {
         template: mockStatementTemplate,
         receiptNumber: 'RCP-2025-002',
         includeQuidProQuo: true,
-        quidProQuoValue: 25.00
+        quidProQuoValue: 25.0,
       };
 
-      const pdfResult = pdfGeneratorService.generateReceiptPDF(mockReceiptData, options);
+      const pdfResult = pdfGeneratorService.generateReceiptPDF(
+        mockReceiptData,
+        options
+      );
 
       expect(pdfResult).toBeDefined();
-      
+
       // Verify quid pro quo disclosure is added
       expect(mockPDF.text).toHaveBeenCalledWith(
         expect.stringContaining('goods or services valued at $25.00'),
@@ -306,13 +330,16 @@ describe('PDFGeneratorService - PRP-2C-009', () => {
       const options = {
         template: mockStatementTemplate,
         receiptNumber: 'RCP-2025-003',
-        includeQuidProQuo: false
+        includeQuidProQuo: false,
       };
 
-      const pdfResult = pdfGeneratorService.generateReceiptPDF(mockReceiptData, options);
+      const pdfResult = pdfGeneratorService.generateReceiptPDF(
+        mockReceiptData,
+        options
+      );
 
       expect(pdfResult).toBeDefined();
-      
+
       // Verify receipt numbering
       expect(mockPDF.text).toHaveBeenCalledWith(
         'Receipt #: RCP-2025-003',
@@ -328,29 +355,33 @@ describe('PDFGeneratorService - PRP-2C-009', () => {
         ...mockStatementTemplate,
         styling: {
           primaryColor: '#dc2626',
-          fontFamily: 'times'
-        }
+          fontFamily: 'times',
+        },
       };
 
       const options = {
         template: customTemplate,
         includeQuidProQuo: false,
-        includeDonationDetails: false
+        includeDonationDetails: false,
       };
 
-      const pdfResult = pdfGeneratorService.generateStatementPDF(mockStatementData, options);
+      const pdfResult = pdfGeneratorService.generateStatementPDF(
+        mockStatementData,
+        options
+      );
 
       expect(pdfResult).toBeDefined();
-      
+
       // Verify custom font is applied
       expect(mockPDF.setFont).toHaveBeenCalledWith('times');
     });
 
     it('should use default template when none provided', () => {
-      const pdfResult = pdfGeneratorService.generateStatementPDF(mockStatementData);
+      const pdfResult =
+        pdfGeneratorService.generateStatementPDF(mockStatementData);
 
       expect(pdfResult).toBeDefined();
-      
+
       // Verify default template is used
       expect(mockPDF.setFont).toHaveBeenCalledWith('helvetica');
     });
@@ -360,18 +391,18 @@ describe('PDFGeneratorService - PRP-2C-009', () => {
     it('should provide download PDF functionality', () => {
       const pdf = pdfGeneratorService.generateStatementPDF(mockStatementData);
       const filename = 'annual-statement-2025.pdf';
-      
+
       pdfGeneratorService.downloadPDF(pdf, filename);
-      
+
       // Verify download functionality
       expect(mockPDF.save).toHaveBeenCalledWith(filename);
     });
 
     it('should get PDF as blob for email attachment', () => {
       const pdf = pdfGeneratorService.generateStatementPDF(mockStatementData);
-      
+
       const blob = pdfGeneratorService.getPDFBlob(pdf);
-      
+
       expect(blob).toBeDefined();
       expect(mockPDF.output).toHaveBeenCalledWith('blob');
     });

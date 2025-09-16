@@ -1,5 +1,5 @@
 // src/components/donations/sections/BatchModeSection.tsx
-// Batch donation entry mode controls and status display for processing multiple donations efficiently  
+// Batch donation entry mode controls and status display for processing multiple donations efficiently
 // Provides toggle controls and batch entry counter with action buttons for bulk donation processing
 // RELEVANT FILES: src/types/donations.ts, src/components/donations/DonationForm.tsx
 
@@ -19,7 +19,7 @@ export const BatchModeSection: React.FC<BatchModeSectionProps> = ({
   batchMode,
   batchEntries,
   onBatchModeToggle,
-  onAddBatchEntry
+  onAddBatchEntry,
 }) => {
   if (!enableBatchMode) {
     return null;
@@ -42,7 +42,9 @@ export const BatchModeSection: React.FC<BatchModeSectionProps> = ({
       {batchMode && (
         <div className="bg-blue-50 p-4 rounded-lg mt-4">
           <div className="flex justify-between items-center mb-4">
-            <span className="font-medium">Batch Entries: {batchEntries.length}</span>
+            <span className="font-medium">
+              Batch Entries: {batchEntries.length}
+            </span>
             <button
               type="button"
               onClick={onAddBatchEntry}

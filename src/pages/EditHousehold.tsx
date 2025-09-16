@@ -13,7 +13,7 @@ export default function EditHousehold() {
   const navigate = useNavigate();
   const { member: currentUser } = useAuth();
   const { showToast } = useToast();
-  
+
   const [household, setHousehold] = useState<Household | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -31,13 +31,13 @@ export default function EditHousehold() {
     try {
       setLoading(true);
       const data = await householdsService.getById(id);
-      
+
       if (!data) {
         showToast('Household not found', 'error');
         navigate('/households');
         return;
       }
-      
+
       setHousehold(data);
     } catch (error) {
       console.error('Error loading household:', error);
@@ -79,7 +79,9 @@ export default function EditHousehold() {
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900">Household Not Found</h2>
+          <h2 className="text-2xl font-bold text-gray-900">
+            Household Not Found
+          </h2>
           <p className="mt-2 text-gray-600">
             The household you're trying to edit doesn't exist.
           </p>

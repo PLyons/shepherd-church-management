@@ -30,7 +30,7 @@ export function useQRRegistration() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { showToast } = useToast();
-  
+
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -248,7 +248,7 @@ export function useQRRegistration() {
     steps,
     isFirstStep,
     isLastStep,
-    
+
     // Actions
     nextStep,
     prevStep,

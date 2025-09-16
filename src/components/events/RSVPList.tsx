@@ -1,5 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Users, Clock, MessageCircle, AlertCircle, ChevronDown, ChevronRight } from 'lucide-react';
+import {
+  Users,
+  Clock,
+  MessageCircle,
+  AlertCircle,
+  ChevronDown,
+  ChevronRight,
+} from 'lucide-react';
 import { EventRSVP, RSVPStatus } from '../../types/events';
 import { Member } from '../../types';
 import { eventRSVPService } from '../../services/firebase/event-rsvp.service';
@@ -17,17 +24,19 @@ interface RSVPWithMember extends EventRSVP {
   member?: Member;
 }
 
-export function RSVPList({ 
-  eventId, 
-  className = '', 
+export function RSVPList({
+  eventId,
+  className = '',
   variant = 'full',
-  showNotes = false 
+  showNotes = false,
 }: RSVPListProps) {
   const { user } = useAuth();
   const [rsvps, setRSVPs] = useState<RSVPWithMember[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [expandedSections, setExpandedSections] = useState<Record<RSVPStatus, boolean>>({
+  const [expandedSections, setExpandedSections] = useState<
+    Record<RSVPStatus, boolean>
+  >({
     yes: true,
     maybe: false,
     no: false,
@@ -48,7 +57,7 @@ export function RSVPList({
 
         // Get all RSVPs for the event
         const eventRSVPs = await eventRSVPService.getRSVPsByEvent(eventId);
-        
+
         // Load member information for each RSVP
         const rsvpsWithMembers = await Promise.all(
           eventRSVPs.map(async (rsvp) => {
@@ -75,18 +84,21 @@ export function RSVPList({
   }, [eventId]);
 
   const toggleSection = (status: RSVPStatus) => {
-    setExpandedSections(prev => ({
+    setExpandedSections((prev) => ({
       ...prev,
-      [status]: !prev[status]
+      [status]: !prev[status],
     }));
   };
 
   // Group RSVPs by status
-  const groupedRSVPs = rsvps.reduce((acc, rsvp) => {
-    if (!acc[rsvp.status]) acc[rsvp.status] = [];
-    acc[rsvp.status].push(rsvp);
-    return acc;
-  }, {} as Record<RSVPStatus, RSVPWithMember[]>);
+  const groupedRSVPs = rsvps.reduce(
+    (acc, rsvp) => {
+      if (!acc[rsvp.status]) acc[rsvp.status] = [];
+      acc[rsvp.status].push(rsvp);
+      return acc;
+    },
+    {} as Record<RSVPStatus, RSVPWithMember[]>
+  );
 
   // Status configurations
   const statusConfig = {
@@ -134,7 +146,9 @@ export function RSVPList({
 
   if (error) {
     return (
-      <div className={`p-4 bg-red-50 border border-red-200 rounded-lg ${className}`}>
+      <div
+        className={`p-4 bg-red-50 border border-red-200 rounded-lg ${className}`}
+      >
         <div className="flex items-center space-x-2">
           <AlertCircle className="h-4 w-4 text-red-600" />
           <span className="text-sm text-red-700">{error}</span>
@@ -178,7 +192,10 @@ export function RSVPList({
           if (statusRSVPs.length === 0) return null;
 
           return (
-            <div key={status} className="flex items-center justify-between text-sm">
+            <div
+              key={status}
+              className="flex items-center justify-between text-sm"
+            >
               <div className="flex items-center space-x-2">
                 <span>{config.icon}</span>
                 <span className={config.textClass}>{config.label}</span>
@@ -222,31 +239,38 @@ export function RSVPList({
             {isExpanded && (
               <div className="px-3 pb-3 space-y-2">
                 {statusRSVPs.map((rsvp) => (
-                  <div key={rsvp.id} className="bg-white rounded p-3 border border-gray-200">
+                  <div
+                    key={rsvp.id}
+                    className="bg-white rounded p-3 border border-gray-200"
+                  >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center space-x-2">
                           <span className="font-medium text-gray-900">
-                            {canViewNames 
-                              ? (rsvp.member ? `${rsvp.member.firstName} ${rsvp.member.lastName}` : 'Unknown Member')
-                              : 'Member'
-                            }
+                            {canViewNames
+                              ? rsvp.member
+                                ? `${rsvp.member.firstName} ${rsvp.member.lastName}`
+                                : 'Unknown Member'
+                              : 'Member'}
                           </span>
                           {rsvp.numberOfGuests > 0 && (
                             <span className="text-sm text-gray-500">
-                              +{rsvp.numberOfGuests} guest{rsvp.numberOfGuests === 1 ? '' : 's'}
+                              +{rsvp.numberOfGuests} guest
+                              {rsvp.numberOfGuests === 1 ? '' : 's'}
                             </span>
                           )}
                         </div>
-                        
+
                         {canViewDetails && rsvp.notes && showNotes && (
                           <div className="mt-2 flex items-start space-x-2">
                             <MessageCircle className="h-3 w-3 text-gray-400 mt-0.5 flex-shrink-0" />
-                            <span className="text-sm text-gray-600">{rsvp.notes}</span>
+                            <span className="text-sm text-gray-600">
+                              {rsvp.notes}
+                            </span>
                           </div>
                         )}
                       </div>
-                      
+
                       <div className="flex items-center space-x-2 text-xs text-gray-500">
                         <Clock className="h-3 w-3" />
                         <span>

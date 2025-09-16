@@ -1,5 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { X, Clock, MapPin, Edit, Trash2, Users, Calendar, Tag } from 'lucide-react';
+import {
+  X,
+  Clock,
+  MapPin,
+  Edit,
+  Trash2,
+  Users,
+  Calendar,
+  Tag,
+} from 'lucide-react';
 import { Event, EventRSVP, RSVPStatus } from '../../types/events';
 import { eventRSVPService } from '../../services/firebase/event-rsvp.service';
 import { useAuth } from '../../hooks/useUnifiedAuth';
@@ -48,10 +57,14 @@ export function EventDetailsModal({
   const { showToast } = useToast();
 
   // Component state
-  const [activeTab, setActiveTab] = useState<'details' | 'rsvp' | 'attendees'>('details');
+  const [activeTab, setActiveTab] = useState<'details' | 'rsvp' | 'attendees'>(
+    'details'
+  );
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [optimisticRSVP, setOptimisticRSVP] = useState<EventRSVP | null>(currentUserRSVP || null);
+  const [optimisticRSVP, setOptimisticRSVP] = useState<EventRSVP | null>(
+    currentUserRSVP || null
+  );
   const [capacityInfo, setCapacityInfo] = useState<CapacityInfo | null>(null);
   const [waitlistPosition, setWaitlistPosition] = useState<number | null>(null);
 
@@ -61,7 +74,7 @@ export function EventDetailsModal({
   // Load real-time capacity information
   const loadCapacityInfo = useCallback(async () => {
     if (!event.capacity) return;
-    
+
     try {
       const info = await eventRSVPService.getCapacityInfo(event.id);
       setCapacityInfo(info);
@@ -72,10 +85,14 @@ export function EventDetailsModal({
 
   // Load waitlist position for current user
   const loadWaitlistPosition = useCallback(async () => {
-    if (!user || !optimisticRSVP || optimisticRSVP.status !== 'waitlist') return;
-    
+    if (!user || !optimisticRSVP || optimisticRSVP.status !== 'waitlist')
+      return;
+
     try {
-      const position = await eventRSVPService.getWaitlistPosition(event.id, user.uid);
+      const position = await eventRSVPService.getWaitlistPosition(
+        event.id,
+        user.uid
+      );
       setWaitlistPosition(position);
     } catch (err) {
       console.error('Error loading waitlist position:', err);
@@ -83,97 +100,130 @@ export function EventDetailsModal({
   }, [user, optimisticRSVP, event.id]);
 
   // Form submission handler
-  const handleRSVPSubmit = useCallback(async (formData: RSVPFormData) => {
-    if (!user) {
-      setError('You must be logged in to RSVP');
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-      setError(null);
-
-      // Create optimistic update
-      const optimisticUpdate: EventRSVP = {
-        id: optimisticRSVP?.id || '',
-        eventId: event.id,
-        memberId: user.uid,
-        status: formData.status,
-        numberOfGuests: formData.numberOfGuests,
-        notes: formData.notes,
-        responseDate: new Date(),
-        createdAt: optimisticRSVP?.createdAt || new Date(),
-        updatedAt: new Date(),
-      };
-      setOptimisticRSVP(optimisticUpdate);
-
-      let result: EventRSVP;
-
-      if (optimisticRSVP?.id) {
-        // Update existing RSVP
-        await eventRSVPService.updateRSVP(event.id, optimisticRSVP.id, formData);
-        result = { ...optimisticUpdate, id: optimisticRSVP.id };
-        showToast('RSVP updated successfully!', 'success');
-      } else {
-        // Create new RSVP
-        result = await eventRSVPService.createRSVP(event.id, user.uid, formData);
-        showToast(
-          result.status === 'waitlist' 
-            ? 'Added to waitlist - you\'ll be notified if a spot opens!' 
-            : 'RSVP submitted successfully!', 
-          'success'
-        );
+  const handleRSVPSubmit = useCallback(
+    async (formData: RSVPFormData) => {
+      if (!user) {
+        setError('You must be logged in to RSVP');
+        return;
       }
 
-      // Update with real result
-      setOptimisticRSVP(result);
-      onRSVPUpdate(result);
+      try {
+        setIsSubmitting(true);
+        setError(null);
 
-      // Reload capacity info
-      await loadCapacityInfo();
-      if (result.status === 'waitlist') {
-        await loadWaitlistPosition();
-      }
+        // Create optimistic update
+        const optimisticUpdate: EventRSVP = {
+          id: optimisticRSVP?.id || '',
+          eventId: event.id,
+          memberId: user.uid,
+          status: formData.status,
+          numberOfGuests: formData.numberOfGuests,
+          notes: formData.notes,
+          responseDate: new Date(),
+          createdAt: optimisticRSVP?.createdAt || new Date(),
+          updatedAt: new Date(),
+        };
+        setOptimisticRSVP(optimisticUpdate);
 
-      // Switch to details tab after successful RSVP
-      setActiveTab('details');
-    } catch (err) {
-      console.error('Error submitting RSVP:', err);
-      
-      // Rollback optimistic update
-      setOptimisticRSVP(currentUserRSVP || null);
-      
-      // Handle specific error cases
-      const errorMessage = err instanceof Error ? err.message : 'Failed to submit RSVP. Please try again.';
-      
-      if (errorMessage.includes('capacity')) {
-        setError('Event is at capacity. Please try selecting "Maybe" or check if waitlist is available.');
-        showToast('Event is at capacity', 'error');
-      } else if (errorMessage.includes('already exists')) {
-        setError('You have already RSVP\'d to this event. Please refresh the page.');
-        showToast('RSVP already exists', 'error');
-      } else {
-        setError(errorMessage);
-        showToast('Failed to submit RSVP', 'error');
+        let result: EventRSVP;
+
+        if (optimisticRSVP?.id) {
+          // Update existing RSVP
+          await eventRSVPService.updateRSVP(
+            event.id,
+            optimisticRSVP.id,
+            formData
+          );
+          result = { ...optimisticUpdate, id: optimisticRSVP.id };
+          showToast('RSVP updated successfully!', 'success');
+        } else {
+          // Create new RSVP
+          result = await eventRSVPService.createRSVP(
+            event.id,
+            user.uid,
+            formData
+          );
+          showToast(
+            result.status === 'waitlist'
+              ? "Added to waitlist - you'll be notified if a spot opens!"
+              : 'RSVP submitted successfully!',
+            'success'
+          );
+        }
+
+        // Update with real result
+        setOptimisticRSVP(result);
+        onRSVPUpdate(result);
+
+        // Reload capacity info
+        await loadCapacityInfo();
+        if (result.status === 'waitlist') {
+          await loadWaitlistPosition();
+        }
+
+        // Switch to details tab after successful RSVP
+        setActiveTab('details');
+      } catch (err) {
+        console.error('Error submitting RSVP:', err);
+
+        // Rollback optimistic update
+        setOptimisticRSVP(currentUserRSVP || null);
+
+        // Handle specific error cases
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : 'Failed to submit RSVP. Please try again.';
+
+        if (errorMessage.includes('capacity')) {
+          setError(
+            'Event is at capacity. Please try selecting "Maybe" or check if waitlist is available.'
+          );
+          showToast('Event is at capacity', 'error');
+        } else if (errorMessage.includes('already exists')) {
+          setError(
+            "You have already RSVP'd to this event. Please refresh the page."
+          );
+          showToast('RSVP already exists', 'error');
+        } else {
+          setError(errorMessage);
+          showToast('Failed to submit RSVP', 'error');
+        }
+      } finally {
+        setIsSubmitting(false);
       }
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [user, optimisticRSVP, event.id, onRSVPUpdate, currentUserRSVP, loadCapacityInfo, loadWaitlistPosition, showToast]);
+    },
+    [
+      user,
+      optimisticRSVP,
+      event.id,
+      onRSVPUpdate,
+      currentUserRSVP,
+      loadCapacityInfo,
+      loadWaitlistPosition,
+      showToast,
+    ]
+  );
 
   // Handle escape key press
-  const handleEscapeKey = useCallback((e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      onClose();
-    }
-  }, [onClose]);
+  const handleEscapeKey = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    },
+    [onClose]
+  );
 
   // Handle backdrop click
-  const handleBackdropClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
-  }, [onClose]);
+  const handleBackdropClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (e.target === e.currentTarget) {
+        onClose();
+      }
+    },
+    [onClose]
+  );
 
   // Modal lifecycle effects
   useEffect(() => {
@@ -181,10 +231,10 @@ export function EventDetailsModal({
       document.addEventListener('keydown', handleEscapeKey);
       document.body.style.overflow = 'hidden';
       setTimeout(() => modalRef.current?.focus(), 100);
-      
+
       // Load capacity info when modal opens
       loadCapacityInfo();
-      
+
       // Load waitlist position if user is on waitlist
       if (currentUserRSVP?.status === 'waitlist') {
         loadWaitlistPosition();
@@ -195,7 +245,13 @@ export function EventDetailsModal({
       document.removeEventListener('keydown', handleEscapeKey);
       document.body.style.overflow = 'auto';
     };
-  }, [isOpen, handleEscapeKey, loadCapacityInfo, loadWaitlistPosition, currentUserRSVP]);
+  }, [
+    isOpen,
+    handleEscapeKey,
+    loadCapacityInfo,
+    loadWaitlistPosition,
+    currentUserRSVP,
+  ]);
 
   // Update optimistic state when currentUserRSVP changes
   useEffect(() => {
@@ -241,7 +297,10 @@ export function EventDetailsModal({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex-1">
-            <h1 id="event-details-modal-title" className="text-2xl font-bold text-gray-900 mb-1">
+            <h1
+              id="event-details-modal-title"
+              className="text-2xl font-bold text-gray-900 mb-1"
+            >
               {event.title}
             </h1>
             <div className="flex items-center space-x-4 text-sm text-gray-500">
@@ -257,7 +316,7 @@ export function EventDetailsModal({
               )}
             </div>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             {/* Admin Actions */}
             {isAdmin && (
@@ -282,7 +341,7 @@ export function EventDetailsModal({
                 )}
               </>
             )}
-            
+
             <button
               onClick={onClose}
               className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
@@ -299,11 +358,13 @@ export function EventDetailsModal({
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeTab === tab.id;
-              
+
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id as 'details' | 'rsvp' | 'attendees')}
+                  onClick={() =>
+                    setActiveTab(tab.id as 'details' | 'rsvp' | 'attendees')
+                  }
                   className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-2 transition-colors ${
                     isActive
                       ? 'border-blue-500 text-blue-600'
@@ -325,8 +386,12 @@ export function EventDetailsModal({
               {/* Event Description */}
               {event.description && (
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">Description</h3>
-                  <p className="text-gray-600 whitespace-pre-wrap">{event.description}</p>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    Description
+                  </h3>
+                  <p className="text-gray-600 whitespace-pre-wrap">
+                    {event.description}
+                  </p>
                 </div>
               )}
 
@@ -334,19 +399,27 @@ export function EventDetailsModal({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">Event Type</h4>
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">
+                      Event Type
+                    </h4>
                     <div className="flex items-center space-x-2">
                       <Tag className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm text-gray-900 capitalize">{event.eventType}</span>
+                      <span className="text-sm text-gray-900 capitalize">
+                        {event.eventType}
+                      </span>
                     </div>
                   </div>
 
                   {event.endDate && (
                     <div>
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">End Time</h4>
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">
+                        End Time
+                      </h4>
                       <div className="flex items-center space-x-2">
                         <Clock className="h-4 w-4 text-gray-500" />
-                        <span className="text-sm text-gray-900">{formatEventDate(event.endDate)}</span>
+                        <span className="text-sm text-gray-900">
+                          {formatEventDate(event.endDate)}
+                        </span>
                       </div>
                     </div>
                   )}
@@ -356,30 +429,46 @@ export function EventDetailsModal({
                   {/* Capacity Information */}
                   {capacityInfo && (
                     <div>
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">Capacity</h4>
-                      <CapacityIndicator capacityInfo={capacityInfo} variant="detailed" />
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">
+                        Capacity
+                      </h4>
+                      <CapacityIndicator
+                        capacityInfo={capacityInfo}
+                        variant="detailed"
+                      />
                     </div>
                   )}
 
                   {/* Current User RSVP Status */}
                   {optimisticRSVP && (
                     <div>
-                      <h4 className="text-sm font-medium text-gray-700 mb-2">Your RSVP</h4>
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">
+                        Your RSVP
+                      </h4>
                       <div className="p-3 bg-gray-50 rounded-lg">
                         <div className="flex items-center space-x-2">
                           <span className="text-lg">
-                            {optimisticRSVP.status === 'yes' ? '✅' : 
-                             optimisticRSVP.status === 'maybe' ? '❓' : 
-                             optimisticRSVP.status === 'no' ? '❌' : '⏳'}
+                            {optimisticRSVP.status === 'yes'
+                              ? '✅'
+                              : optimisticRSVP.status === 'maybe'
+                                ? '❓'
+                                : optimisticRSVP.status === 'no'
+                                  ? '❌'
+                                  : '⏳'}
                           </span>
                           <span className="text-sm font-medium text-gray-900">
-                            {optimisticRSVP.status === 'yes' ? 'Attending' :
-                             optimisticRSVP.status === 'maybe' ? 'Maybe Attending' :
-                             optimisticRSVP.status === 'no' ? 'Not Attending' : 'On Waitlist'}
+                            {optimisticRSVP.status === 'yes'
+                              ? 'Attending'
+                              : optimisticRSVP.status === 'maybe'
+                                ? 'Maybe Attending'
+                                : optimisticRSVP.status === 'no'
+                                  ? 'Not Attending'
+                                  : 'On Waitlist'}
                           </span>
                           {optimisticRSVP.numberOfGuests > 0 && (
                             <span className="text-sm text-gray-500">
-                              +{optimisticRSVP.numberOfGuests} guest{optimisticRSVP.numberOfGuests === 1 ? '' : 's'}
+                              +{optimisticRSVP.numberOfGuests} guest
+                              {optimisticRSVP.numberOfGuests === 1 ? '' : 's'}
                             </span>
                           )}
                         </div>
@@ -406,11 +495,7 @@ export function EventDetailsModal({
 
           {activeTab === 'attendees' && isAdmin && (
             <div className="p-6">
-              <RSVPList
-                eventId={event.id}
-                variant="full"
-                showNotes={true}
-              />
+              <RSVPList eventId={event.id} variant="full" showNotes={true} />
             </div>
           )}
         </div>

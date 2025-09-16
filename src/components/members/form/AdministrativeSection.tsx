@@ -24,9 +24,7 @@ export function AdministrativeSection({
         onClick={onToggle}
         className="w-full px-4 py-3 flex items-center justify-between bg-gray-50 hover:bg-gray-100 rounded-t-lg"
       >
-        <h3 className="text-lg font-medium text-gray-900">
-          Administrative
-        </h3>
+        <h3 className="text-lg font-medium text-gray-900">Administrative</h3>
         {isExpanded ? (
           <ChevronUp className="h-5 w-5 text-gray-500" />
         ) : (

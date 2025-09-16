@@ -38,8 +38,12 @@ export function useRegistrationManagement() {
     approved: 0,
     rejected: 0,
   });
-  const [selectedRegistrations, setSelectedRegistrations] = useState<string[]>([]);
-  const [expandedRegistration, setExpandedRegistration] = useState<string | null>(null);
+  const [selectedRegistrations, setSelectedRegistrations] = useState<string[]>(
+    []
+  );
+  const [expandedRegistration, setExpandedRegistration] = useState<
+    string | null
+  >(null);
   const [duplicates, setDuplicates] = useState<{
     [key: string]: PendingRegistration[];
   }>({});
@@ -285,7 +289,7 @@ export function useRegistrationManagement() {
     expandedRegistration,
     duplicates,
     filters,
-    
+
     // Actions
     setFilters,
     setExpandedRegistration,

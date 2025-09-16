@@ -4,9 +4,17 @@
 // RELEVANT FILES: src/pages/MemberProfile.tsx, src/components/members/profile/MembershipTypeSelector.tsx, src/types/index.ts, src/components/common/Dropdown.tsx
 
 import { useState } from 'react';
-import { Edit, MoreVertical, Trash2, ArrowLeft, User } from 'lucide-react';
+import {
+  Edit,
+  MoreVertical,
+  Trash2,
+  ArrowLeft,
+  User,
+  DollarSign,
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Member } from '../../../types';
+import { useAuth } from '../../../hooks/useUnifiedAuth';
 import Tooltip from '../../common/Tooltip';
 import { EnhancedDropdown, DropdownItem } from '../../common/Dropdown';
 import { MembershipTypeSelector } from './MembershipTypeSelector';
@@ -17,6 +25,7 @@ interface MemberProfileHeaderProps {
   canDelete: boolean;
   onEdit: () => void;
   onDelete: () => void;
+  onRecordDonation?: () => void;
 }
 
 export default function MemberProfileHeader({
@@ -25,14 +34,16 @@ export default function MemberProfileHeader({
   canDelete,
   onEdit,
   onDelete,
+  onRecordDonation,
 }: MemberProfileHeaderProps) {
   const [currentMember, setCurrentMember] = useState(member);
+  const { member: currentUser } = useAuth();
 
   const handleStatusChange = (newStatus: string) => {
     // Optimistic update for immediate UI feedback
-    setCurrentMember((prev) => ({ 
-      ...prev, 
-      memberStatus: newStatus as typeof prev.memberStatus
+    setCurrentMember((prev) => ({
+      ...prev,
+      memberStatus: newStatus as typeof prev.memberStatus,
     }));
   };
 
@@ -127,6 +138,20 @@ export default function MemberProfileHeader({
 
         {/* Actions */}
         <div className="flex items-center gap-2">
+          {/* Record Donation button for admin/pastor */}
+          {(currentUser?.role === 'admin' || currentUser?.role === 'pastor') &&
+            onRecordDonation && (
+              <Tooltip content="Record Donation">
+                <button
+                  onClick={onRecordDonation}
+                  className="px-4 py-2 text-sm font-medium text-green-600 bg-green-50 hover:bg-green-100 rounded-lg transition-colors flex items-center gap-2"
+                >
+                  <DollarSign className="h-4 w-4" />
+                  Record Donation
+                </button>
+              </Tooltip>
+            )}
+
           {/* Edit button */}
           {canEdit && (
             <Tooltip content="Edit Profile">

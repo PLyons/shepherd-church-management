@@ -50,7 +50,9 @@ export function toFirestoreFields<T extends Record<string, unknown>>(
 /**
  * Converts snake_case Firestore document to camelCase for TypeScript
  */
-export function fromFirestoreFields<T = Record<string, unknown>>(data: Record<string, unknown>): T {
+export function fromFirestoreFields<T = Record<string, unknown>>(
+  data: Record<string, unknown>
+): T {
   const converted: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(data)) {
@@ -71,7 +73,9 @@ export function fromFirestoreFields<T = Record<string, unknown>>(data: Record<st
           typeof item === 'object' ? fromFirestoreFields(item) : item
         );
       } else {
-        converted[camelKey] = fromFirestoreFields(value as Record<string, unknown>);
+        converted[camelKey] = fromFirestoreFields(
+          value as Record<string, unknown>
+        );
       }
     } else {
       converted[camelKey] = value;
@@ -159,7 +163,9 @@ export function toFirestoreFieldsDeep<T extends Record<string, unknown>>(
       !(value as Record<string, unknown>)._seconds
     ) {
       // Recursively convert nested objects
-      converted[snakeKey] = toFirestoreFieldsDeep(value as Record<string, unknown>);
+      converted[snakeKey] = toFirestoreFieldsDeep(
+        value as Record<string, unknown>
+      );
     } else {
       converted[snakeKey] = value;
     }
@@ -172,7 +178,9 @@ export function toFirestoreFieldsDeep<T extends Record<string, unknown>>(
  * Enhanced deep field mapper from Firestore that uses explicit mappings with fallback
  * Handles nested arrays of objects (emails, phones, addresses)
  */
-export function fromFirestoreFieldsDeep<T = Record<string, unknown>>(data: Record<string, unknown>): T {
+export function fromFirestoreFieldsDeep<T = Record<string, unknown>>(
+  data: Record<string, unknown>
+): T {
   const converted: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(data)) {
@@ -196,7 +204,9 @@ export function fromFirestoreFieldsDeep<T = Record<string, unknown>>(data: Recor
       !(value as Record<string, unknown>)._seconds
     ) {
       // Recursively convert nested objects
-      converted[camelKey] = fromFirestoreFieldsDeep(value as Record<string, unknown>);
+      converted[camelKey] = fromFirestoreFieldsDeep(
+        value as Record<string, unknown>
+      );
     } else {
       converted[camelKey] = value;
     }

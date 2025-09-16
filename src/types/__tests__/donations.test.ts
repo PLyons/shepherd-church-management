@@ -10,32 +10,32 @@ import {
   DonationDocument,
   DonationCategory,
   DonationCategoryDocument,
-  
+
   // Enums and Type Unions
   DonationMethod,
   DonationStatus,
   Form990LineItem,
   RestrictionType,
-  
+
   // Form 990 Fields
   Form990Fields,
   Form990FieldsDocument,
-  
+
   // Reporting Types
   FinancialSummary,
   TaxReceiptData,
   DonationReportFilters,
-  
+
   // Form Data Types
   DonationFormData,
   DonationCategoryFormData,
   BulkDonationImportData,
-  
+
   // Validation Types
   DonationValidationRules,
   DonationValidationError,
   DonationValidationResult,
-  
+
   // Migration Types
   DonationMigrationData,
   EnhancedDonation,
@@ -48,7 +48,7 @@ describe('Donation Types', () => {
         id: 'donation-123',
         memberId: 'member-456',
         memberName: 'John Smith',
-        amount: 100.00,
+        amount: 100.0,
         donationDate: '2025-01-15T10:00:00Z',
         method: 'credit_card',
         sourceLabel: 'Online Portal',
@@ -76,7 +76,7 @@ describe('Donation Types', () => {
       };
 
       expect(donation.id).toBe('donation-123');
-      expect(donation.amount).toBe(100.00);
+      expect(donation.amount).toBe(100.0);
       expect(donation.method).toBe('credit_card');
       expect(donation.status).toBe('verified');
       expect(donation.isTaxDeductible).toBe(true);
@@ -85,7 +85,7 @@ describe('Donation Types', () => {
     it('should support anonymous donations without member information', () => {
       const anonymousDonation: Donation = {
         id: 'donation-anonymous-123',
-        amount: 50.00,
+        amount: 50.0,
         donationDate: '2025-01-15T10:00:00Z',
         method: 'cash',
         categoryId: 'category-789',
@@ -116,7 +116,7 @@ describe('Donation Types', () => {
         id: 'donation-123',
         memberId: 'member-456',
         memberName: 'John Smith',
-        amount: 100.00,
+        amount: 100.0,
         donationDate: '2025-01-15T10:00:00Z',
         method: 'credit_card',
         categoryId: 'category-789',
@@ -162,7 +162,7 @@ describe('Donation Types', () => {
           createdAt: '2020-01-01T00:00:00Z',
           updatedAt: '2025-01-15T00:00:00Z',
           createdBy: 'admin-123',
-        }
+        },
       };
 
       expect(donationWithPopulatedData.member).toBeDefined();
@@ -184,10 +184,10 @@ describe('Donation Types', () => {
         'stock',
         'cryptocurrency',
         'in_kind',
-        'other'
+        'other',
       ];
 
-      validMethods.forEach(method => {
+      validMethods.forEach((method) => {
         const donation: Pick<Donation, 'method'> = { method };
         expect(donation.method).toBe(method);
       });
@@ -200,10 +200,10 @@ describe('Donation Types', () => {
         'pending',
         'verified',
         'rejected',
-        'refunded'
+        'refunded',
       ];
 
-      validStatuses.forEach(status => {
+      validStatuses.forEach((status) => {
         const donation: Pick<Donation, 'status'> = { status };
         expect(donation.status).toBe(status);
       });
@@ -222,15 +222,15 @@ describe('Donation Types', () => {
         '2_program_service_revenue',
         '3_investment_income',
         '4_other_revenue',
-        'not_applicable'
+        'not_applicable',
       ];
 
-      validLineItems.forEach(lineItem => {
+      validLineItems.forEach((lineItem) => {
         const form990Fields: Form990Fields = {
           lineItem,
           isQuidProQuo: false,
           isAnonymous: false,
-          restrictionType: 'unrestricted'
+          restrictionType: 'unrestricted',
         };
         expect(form990Fields.lineItem).toBe(lineItem);
       });
@@ -244,15 +244,15 @@ describe('Donation Types', () => {
         'temporarily_restricted',
         'permanently_restricted',
         'program_restricted',
-        'capital_campaign'
+        'capital_campaign',
       ];
 
-      validRestrictions.forEach(restriction => {
+      validRestrictions.forEach((restriction) => {
         const form990Fields: Form990Fields = {
           lineItem: '1a_cash_contributions',
           isQuidProQuo: false,
           isAnonymous: false,
-          restrictionType: restriction
+          restrictionType: restriction,
         };
         expect(form990Fields.restrictionType).toBe(restriction);
       });
@@ -264,19 +264,21 @@ describe('Donation Types', () => {
       const form990Fields: Form990Fields = {
         lineItem: '1a_cash_contributions',
         isQuidProQuo: true,
-        quidProQuoValue: 25.00,
+        quidProQuoValue: 25.0,
         isAnonymous: false,
         restrictionType: 'temporarily_restricted',
         restrictionDescription: 'Building fund contribution',
-        fairMarketValue: 500.00,
-        donorProvidedValue: 480.00
+        fairMarketValue: 500.0,
+        donorProvidedValue: 480.0,
       };
 
       expect(form990Fields.lineItem).toBe('1a_cash_contributions');
       expect(form990Fields.isQuidProQuo).toBe(true);
-      expect(form990Fields.quidProQuoValue).toBe(25.00);
-      expect(form990Fields.fairMarketValue).toBe(500.00);
-      expect(form990Fields.restrictionDescription).toBe('Building fund contribution');
+      expect(form990Fields.quidProQuoValue).toBe(25.0);
+      expect(form990Fields.fairMarketValue).toBe(500.0);
+      expect(form990Fields.restrictionDescription).toBe(
+        'Building fund contribution'
+      );
     });
 
     it('should handle minimal Form 990 fields for simple donations', () => {
@@ -284,7 +286,7 @@ describe('Donation Types', () => {
         lineItem: '1a_cash_contributions',
         isQuidProQuo: false,
         isAnonymous: false,
-        restrictionType: 'unrestricted'
+        restrictionType: 'unrestricted',
       };
 
       expect(minimalForm990Fields.quidProQuoValue).toBeUndefined();
@@ -314,7 +316,7 @@ describe('Donation Types', () => {
         displayOrder: 3,
         createdAt: '2020-01-01T00:00:00Z',
         updatedAt: '2025-01-15T00:00:00Z',
-        createdBy: 'admin-123'
+        createdBy: 'admin-123',
       };
 
       expect(category.name).toBe('Building Fund');
@@ -333,43 +335,43 @@ describe('Donation Types', () => {
         periodStart: '2025-01-01T00:00:00Z',
         periodEnd: '2025-12-31T23:59:59Z',
         byMethod: {
-          'credit_card': { amount: 75000, count: 150, percentage: 60 },
-          'cash': { amount: 25000, count: 75, percentage: 20 },
-          'check': { amount: 25000, count: 25, percentage: 20 }
+          credit_card: { amount: 75000, count: 150, percentage: 60 },
+          cash: { amount: 25000, count: 75, percentage: 20 },
+          check: { amount: 25000, count: 25, percentage: 20 },
         },
         byCategory: {
-          'tithes': {
+          tithes: {
             categoryName: 'Tithes & Offerings',
             amount: 100000,
             count: 200,
             percentage: 80,
-            goalProgress: 75
-          }
+            goalProgress: 75,
+          },
         },
         form990Breakdown: {
           '1a_cash_contributions': {
             amount: 120000,
             count: 240,
-            percentage: 96
+            percentage: 96,
           },
           '1b_noncash_contributions': {
             amount: 5000,
             count: 10,
-            percentage: 4
-          }
+            percentage: 4,
+          },
         },
         topDonorRanges: [
           {
             range: '$1000-$2499',
             count: 15,
-            totalAmount: 22500
+            totalAmount: 22500,
           },
           {
             range: '$500-$999',
             count: 25,
-            totalAmount: 18750
-          }
-        ]
+            totalAmount: 18750,
+          },
+        ],
       };
 
       expect(summary.totalDonations).toBe(125000);
@@ -389,7 +391,7 @@ describe('Donation Types', () => {
           line2: 'Apt 4B',
           city: 'Anytown',
           state: 'CA',
-          postalCode: '12345'
+          postalCode: '12345',
         },
         amount: 1000,
         donationDate: '2025-01-15T10:00:00Z',
@@ -404,7 +406,7 @@ describe('Donation Types', () => {
         churchAddress: '456 Church St, Anytown, CA 12345',
         churchEIN: '12-3456789',
         generatedAt: '2025-01-15T10:05:00Z',
-        generatedBy: 'admin-123'
+        generatedBy: 'admin-123',
       };
 
       expect(receipt.deductibleAmount).toBe(950);
@@ -429,7 +431,7 @@ describe('Donation Types', () => {
         restrictionType: 'unrestricted',
         sendReceipt: true,
         receiptEmail: 'john@example.com',
-        isTaxDeductible: true
+        isTaxDeductible: true,
       };
 
       expect(formData.amount).toBe(100);
@@ -446,7 +448,7 @@ describe('Donation Types', () => {
         method: 'check',
         category: 'Missions',
         note: 'Quarterly missions support',
-        receiptNumber: 'R-2025-003'
+        receiptNumber: 'R-2025-003',
       };
 
       expect(importData.memberName).toBe('Jane Doe');
@@ -460,23 +462,23 @@ describe('Donation Types', () => {
         amount: {
           min: 0.01,
           max: 1000000,
-          required: true
+          required: true,
         },
         donationDate: {
           required: true,
           maxDate: '2025-12-31',
-          minDate: '2020-01-01'
+          minDate: '2020-01-01',
         },
         method: {
           required: true,
-          allowedMethods: ['cash', 'check', 'credit_card', 'online']
+          allowedMethods: ['cash', 'check', 'credit_card', 'online'],
         },
         categoryId: {
-          required: true
+          required: true,
         },
         form990Fields: {
-          required: true
-        }
+          required: true,
+        },
       };
 
       expect(rules.amount.min).toBe(0.01);
@@ -490,16 +492,16 @@ describe('Donation Types', () => {
           {
             field: 'amount',
             message: 'Amount must be greater than 0',
-            code: 'MIN_VALUE'
-          }
+            code: 'MIN_VALUE',
+          },
         ],
         warnings: [
           {
             field: 'donationDate',
             message: 'Donation date is more than 1 year old',
-            code: 'OLD_DATE'
-          }
-        ]
+            code: 'OLD_DATE',
+          },
+        ],
       };
 
       expect(result.isValid).toBe(false);
@@ -516,7 +518,7 @@ describe('Donation Types', () => {
         migrationDate: '2025-01-15T00:00:00Z',
         migrationNotes: 'Imported from legacy system with manual validation',
         dataQualityScore: 85,
-        requiresReview: true
+        requiresReview: true,
       };
 
       expect(migration.dataQualityScore).toBe(85);
@@ -535,7 +537,7 @@ describe('Donation Types', () => {
           lineItem: '1a_cash_contributions',
           isQuidProQuo: false,
           isAnonymous: false,
-          restrictionType: 'unrestricted'
+          restrictionType: 'unrestricted',
         },
         receiptNumber: 'R-2025-001',
         isReceiptSent: true,
@@ -550,8 +552,8 @@ describe('Donation Types', () => {
           migrationSource: 'Old Church DB',
           migrationDate: '2025-01-01T00:00:00Z',
           dataQualityScore: 90,
-          requiresReview: false
-        }
+          requiresReview: false,
+        },
       };
 
       expect(enhancedDonation.migration?.legacyId).toBe('legacy-456');
@@ -562,7 +564,7 @@ describe('Donation Types', () => {
   describe('Edge Cases and Boundary Values', () => {
     it('should handle zero amounts (edge case)', () => {
       const donation: Pick<Donation, 'amount'> = {
-        amount: 0
+        amount: 0,
       };
 
       expect(donation.amount).toBe(0);
@@ -570,7 +572,7 @@ describe('Donation Types', () => {
 
     it('should handle very large donation amounts', () => {
       const largeDonation: Pick<Donation, 'amount'> = {
-        amount: 999999.99
+        amount: 999999.99,
       };
 
       expect(largeDonation.amount).toBe(999999.99);
@@ -578,7 +580,7 @@ describe('Donation Types', () => {
 
     it('should handle donations with decimal precision', () => {
       const precisionDonation: Pick<Donation, 'amount'> = {
-        amount: 123.45
+        amount: 123.45,
       };
 
       expect(precisionDonation.amount).toBe(123.45);
@@ -596,7 +598,7 @@ describe('Donation Types', () => {
           lineItem: '1a_cash_contributions',
           isQuidProQuo: false,
           isAnonymous: false,
-          restrictionType: 'unrestricted'
+          restrictionType: 'unrestricted',
         },
         receiptNumber: 'R-2025-004',
         isReceiptSent: false,
@@ -605,7 +607,7 @@ describe('Donation Types', () => {
         createdAt: '2025-01-15T10:00:00Z',
         createdBy: 'admin-123',
         updatedAt: '2025-01-15T10:00:00Z',
-        status: 'pending'
+        status: 'pending',
       };
 
       expect(minimalDonation.memberId).toBeUndefined();

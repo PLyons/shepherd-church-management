@@ -35,7 +35,7 @@ const defaultFilters: EventFiltersState = {
   type: 'all',
   dateRange: 'upcoming',
   rsvpStatus: 'all',
-  isPublic: 'all'
+  isPublic: 'all',
 };
 
 export function EventList({
@@ -52,9 +52,10 @@ export function EventList({
   className = '',
   emptyStateTitle = 'No events found',
   emptyStateDescription = 'Try adjusting your search or filter criteria.',
-  showRSVPButtons = true
+  showRSVPButtons = true,
 }: EventListProps) {
-  const [currentDisplayMode, setCurrentDisplayMode] = useState<DisplayMode>(displayMode);
+  const [currentDisplayMode, setCurrentDisplayMode] =
+    useState<DisplayMode>(displayMode);
 
   const filteredEvents = useMemo(() => {
     let filtered = [...events];
@@ -62,16 +63,17 @@ export function EventList({
     // Search filter
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(event =>
-        event.title.toLowerCase().includes(term) ||
-        event.description?.toLowerCase().includes(term) ||
-        event.location?.toLowerCase().includes(term)
+      filtered = filtered.filter(
+        (event) =>
+          event.title.toLowerCase().includes(term) ||
+          event.description?.toLowerCase().includes(term) ||
+          event.location?.toLowerCase().includes(term)
       );
     }
 
     // Type filter
     if (filters.type !== 'all') {
-      filtered = filtered.filter(event => event.eventType === filters.type);
+      filtered = filtered.filter((event) => event.eventType === filters.type);
     }
 
     // Date range filter
@@ -85,27 +87,29 @@ export function EventList({
 
     switch (filters.dateRange) {
       case 'upcoming':
-        filtered = filtered.filter(event => event.startDate >= now);
+        filtered = filtered.filter((event) => event.startDate >= now);
         break;
       case 'this_week':
-        filtered = filtered.filter(event => 
-          event.startDate >= startOfWeek && event.startDate <= endOfWeek
+        filtered = filtered.filter(
+          (event) =>
+            event.startDate >= startOfWeek && event.startDate <= endOfWeek
         );
         break;
       case 'this_month':
-        filtered = filtered.filter(event => 
-          event.startDate >= startOfMonth && event.startDate <= endOfMonth
+        filtered = filtered.filter(
+          (event) =>
+            event.startDate >= startOfMonth && event.startDate <= endOfMonth
         );
         break;
       case 'past':
-        filtered = filtered.filter(event => event.startDate < now);
+        filtered = filtered.filter((event) => event.startDate < now);
         break;
     }
 
     // Public/Private filter
     if (filters.isPublic !== 'all') {
       const isPublic = filters.isPublic === 'public';
-      filtered = filtered.filter(event => event.isPublic === isPublic);
+      filtered = filtered.filter((event) => event.isPublic === isPublic);
     }
 
     // Sort events by start date
@@ -140,9 +144,7 @@ export function EventList({
         <h3 className="mt-2 text-sm font-medium text-gray-900">
           {emptyStateTitle}
         </h3>
-        <p className="mt-1 text-sm text-gray-500">
-          {emptyStateDescription}
-        </p>
+        <p className="mt-1 text-sm text-gray-500">{emptyStateDescription}</p>
       </div>
     );
   }
@@ -185,14 +187,17 @@ export function EventList({
 
       case 'agenda': {
         // Group events by date for agenda view
-        const eventsByDate = filteredEvents.reduce((acc, event) => {
-          const dateKey = event.startDate.toDateString();
-          if (!acc[dateKey]) {
-            acc[dateKey] = [];
-          }
-          acc[dateKey].push(event);
-          return acc;
-        }, {} as Record<string, Event[]>);
+        const eventsByDate = filteredEvents.reduce(
+          (acc, event) => {
+            const dateKey = event.startDate.toDateString();
+            if (!acc[dateKey]) {
+              acc[dateKey] = [];
+            }
+            acc[dateKey].push(event);
+            return acc;
+          },
+          {} as Record<string, Event[]>
+        );
 
         return (
           <div className="space-y-6">
@@ -204,7 +209,7 @@ export function EventList({
                       weekday: 'long',
                       year: 'numeric',
                       month: 'long',
-                      day: 'numeric'
+                      day: 'numeric',
                     })}
                   </h3>
                 </div>
@@ -255,10 +260,12 @@ export function EventList({
       {showDisplayModeToggle && (
         <div className="flex justify-between items-center">
           <div className="text-sm text-gray-600">
-            {filteredEvents.length} {filteredEvents.length === 1 ? 'event' : 'events'}
+            {filteredEvents.length}{' '}
+            {filteredEvents.length === 1 ? 'event' : 'events'}
             {maxEvents && events.length > maxEvents && (
               <span className="text-gray-500 ml-2">
-                (showing {Math.min(maxEvents, filteredEvents.length)} of {events.length})
+                (showing {Math.min(maxEvents, filteredEvents.length)} of{' '}
+                {events.length})
               </span>
             )}
           </div>

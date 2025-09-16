@@ -17,7 +17,11 @@ export function AddressesSection({
   onToggle,
 }: AddressesSectionProps) {
   const { register } = form;
-  const { fields: addressFields, append: appendAddress, remove: removeAddress } = addressFieldArray;
+  const {
+    fields: addressFields,
+    append: appendAddress,
+    remove: removeAddress,
+  } = addressFieldArray;
 
   return (
     <div className="border border-gray-200 rounded-lg">

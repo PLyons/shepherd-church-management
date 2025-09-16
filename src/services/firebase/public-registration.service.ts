@@ -41,25 +41,28 @@ class PublicRegistrationService extends BaseFirestoreService<
         rejectionReason: document.rejectionReason,
         memberId: document.memberId,
       }),
-      (client: Partial<PendingRegistration>) => removeUndefined({
-        tokenId: client.tokenId,
-        firstName: client.firstName,
-        lastName: client.lastName,
-        email: client.email,
-        phone: client.phone,
-        birthdate: stringToTimestamp(client.birthdate),
-        gender: client.gender,
-        address: client.address,
-        memberStatus: client.memberStatus,
-        submittedAt: client.submittedAt ? stringToTimestamp(client.submittedAt) : undefined,
-        ipAddress: client.ipAddress,
-        userAgent: client.userAgent,
-        approvalStatus: client.approvalStatus || 'pending',
-        approvedBy: client.approvedBy,
-        approvedAt: stringToTimestamp(client.approvedAt),
-        rejectionReason: client.rejectionReason,
-        memberId: client.memberId,
-      })
+      (client: Partial<PendingRegistration>) =>
+        removeUndefined({
+          tokenId: client.tokenId,
+          firstName: client.firstName,
+          lastName: client.lastName,
+          email: client.email,
+          phone: client.phone,
+          birthdate: stringToTimestamp(client.birthdate),
+          gender: client.gender,
+          address: client.address,
+          memberStatus: client.memberStatus,
+          submittedAt: client.submittedAt
+            ? stringToTimestamp(client.submittedAt)
+            : undefined,
+          ipAddress: client.ipAddress,
+          userAgent: client.userAgent,
+          approvalStatus: client.approvalStatus || 'pending',
+          approvedBy: client.approvedBy,
+          approvedAt: stringToTimestamp(client.approvedAt),
+          rejectionReason: client.rejectionReason,
+          memberId: client.memberId,
+        })
     );
   }
 

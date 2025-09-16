@@ -26,7 +26,9 @@ const mockStripe = {
 };
 
 vi.mock('@stripe/react-stripe-js', () => ({
-  Elements: ({ children }: { children: React.ReactNode }) => <div data-testid="stripe-elements">{children}</div>,
+  Elements: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="stripe-elements">{children}</div>
+  ),
   CardElement: () => <div data-testid="card-element">Mock Card Element</div>,
   useElements: () => mockUseElements(),
   useStripe: () => mockUseStripe(),
@@ -114,7 +116,7 @@ describe('PaymentForm', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     mockUseAuth.mockReturnValue({
       user: mockUser,
       loading: false,
@@ -163,8 +165,12 @@ describe('PaymentForm', () => {
 
       expect(screen.getByTestId('stripe-elements')).toBeInTheDocument();
       expect(screen.getByTestId('card-element')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /donate/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /donate/i })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /cancel/i })
+      ).toBeInTheDocument();
     });
 
     it('should display saved payment methods when available', async () => {
@@ -180,8 +186,12 @@ describe('PaymentForm', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Payment Method')).toBeInTheDocument();
-        expect(screen.getByText(/\*\*\*\* \*\*\*\* \*\*\*\* 4242 \(VISA\)/)).toBeInTheDocument();
-        expect(screen.getByText(/\*\*\*\* \*\*\*\* \*\*\*\* 5555 \(MASTERCARD\)/)).toBeInTheDocument();
+        expect(
+          screen.getByText(/\*\*\*\* \*\*\*\* \*\*\*\* 4242 \(VISA\)/)
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText(/\*\*\*\* \*\*\*\* \*\*\*\* 5555 \(MASTERCARD\)/)
+        ).toBeInTheDocument();
         expect(screen.getByText('Use a new card')).toBeInTheDocument();
       });
     });
@@ -218,7 +228,9 @@ describe('PaymentForm', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Save this payment method for future donations')).toBeInTheDocument();
+        expect(
+          screen.getByText('Save this payment method for future donations')
+        ).toBeInTheDocument();
       });
     });
   });
@@ -297,7 +309,7 @@ describe('PaymentForm', () => {
   describe('One-time Payment Processing', () => {
     it('should process one-time payment successfully', async () => {
       const user = userEvent.setup();
-      
+
       mockElements.submit.mockResolvedValue({ error: null });
       mockStripeService.processPayment.mockResolvedValue({
         success: true,
@@ -315,10 +327,14 @@ describe('PaymentForm', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /donate \$100/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /donate \$100/i })
+        ).toBeInTheDocument();
       });
 
-      const submitButton = screen.getByRole('button', { name: /donate \$100/i });
+      const submitButton = screen.getByRole('button', {
+        name: /donate \$100/i,
+      });
       await user.click(submitButton);
 
       await waitFor(() => {
@@ -328,13 +344,16 @@ describe('PaymentForm', () => {
           mockDonationData
         );
         expect(mockOnSuccess).toHaveBeenCalledWith('donation-123');
-        expect(mockShowToast).toHaveBeenCalledWith('Donation processed successfully!', 'success');
+        expect(mockShowToast).toHaveBeenCalledWith(
+          'Donation processed successfully!',
+          'success'
+        );
       });
     });
 
     it('should handle payment processing errors', async () => {
       const user = userEvent.setup();
-      
+
       mockElements.submit.mockResolvedValue({ error: null });
       mockStripeService.processPayment.mockResolvedValue({
         success: false,
@@ -352,7 +371,9 @@ describe('PaymentForm', () => {
       );
 
       await waitFor(() => {
-        const submitButton = screen.getByRole('button', { name: /donate \$100/i });
+        const submitButton = screen.getByRole('button', {
+          name: /donate \$100/i,
+        });
         user.click(submitButton);
       });
 
@@ -389,11 +410,15 @@ describe('PaymentForm', () => {
       });
 
       // This should trigger validation error
-      const submitButton = screen.getByRole('button', { name: /donate \$100/i });
+      const submitButton = screen.getByRole('button', {
+        name: /donate \$100/i,
+      });
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Please select a payment method or use a new card.')).toBeInTheDocument();
+        expect(
+          screen.getByText('Please select a payment method or use a new card.')
+        ).toBeInTheDocument();
       });
     });
   });
@@ -401,7 +426,7 @@ describe('PaymentForm', () => {
   describe('Recurring Payment Setup', () => {
     it('should setup recurring donation successfully', async () => {
       const user = userEvent.setup();
-      
+
       mockStripeService.createSetupIntent.mockResolvedValue({
         clientSecret: 'seti_test_client_secret',
         setupIntentId: 'seti_test_123',
@@ -425,22 +450,29 @@ describe('PaymentForm', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /setup recurring gift/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /setup recurring gift/i })
+        ).toBeInTheDocument();
       });
 
-      const submitButton = screen.getByRole('button', { name: /setup recurring gift/i });
+      const submitButton = screen.getByRole('button', {
+        name: /setup recurring gift/i,
+      });
       await user.click(submitButton);
 
       await waitFor(() => {
         expect(mockStripeService.setupRecurringDonation).toHaveBeenCalled();
         expect(mockOnSuccess).toHaveBeenCalledWith('sub_123');
-        expect(mockShowToast).toHaveBeenCalledWith('Recurring donation setup successfully!', 'success');
+        expect(mockShowToast).toHaveBeenCalledWith(
+          'Recurring donation setup successfully!',
+          'success'
+        );
       });
     });
 
     it('should handle recurring setup errors', async () => {
       const user = userEvent.setup();
-      
+
       mockStripeService.createSetupIntent.mockResolvedValue({
         clientSecret: 'seti_test_client_secret',
         setupIntentId: 'seti_test_123',
@@ -464,12 +496,16 @@ describe('PaymentForm', () => {
       );
 
       await waitFor(() => {
-        const submitButton = screen.getByRole('button', { name: /setup recurring gift/i });
+        const submitButton = screen.getByRole('button', {
+          name: /setup recurring gift/i,
+        });
         user.click(submitButton);
       });
 
       await waitFor(() => {
-        expect(screen.getByText('Setup failed. Please try again.')).toBeInTheDocument();
+        expect(
+          screen.getByText('Setup failed. Please try again.')
+        ).toBeInTheDocument();
         expect(mockOnSuccess).not.toHaveBeenCalled();
       });
     });
@@ -478,11 +514,14 @@ describe('PaymentForm', () => {
   describe('Loading States', () => {
     it('should show processing state during payment', async () => {
       const user = userEvent.setup();
-      
+
       // Mock a delayed response
-      mockElements.submit.mockImplementation(() => new Promise(resolve => 
-        setTimeout(() => resolve({ error: null }), 100)
-      ));
+      mockElements.submit.mockImplementation(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(() => resolve({ error: null }), 100)
+          )
+      );
 
       render(
         <TestWrapper>
@@ -494,20 +533,27 @@ describe('PaymentForm', () => {
         </TestWrapper>
       );
 
-      const submitButton = screen.getByRole('button', { name: /donate \$100/i });
+      const submitButton = screen.getByRole('button', {
+        name: /donate \$100/i,
+      });
       await user.click(submitButton);
 
-      expect(screen.getByRole('button', { name: /processing.../i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /processing.../i })
+      ).toBeInTheDocument();
       expect(submitButton).toBeDisabled();
     });
 
     it('should disable form during processing', async () => {
       const user = userEvent.setup();
-      
+
       // Mock a delayed response
-      mockElements.submit.mockImplementation(() => new Promise(resolve => 
-        setTimeout(() => resolve({ error: null }), 100)
-      ));
+      mockElements.submit.mockImplementation(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(() => resolve({ error: null }), 100)
+          )
+      );
 
       render(
         <TestWrapper>
@@ -519,9 +565,11 @@ describe('PaymentForm', () => {
         </TestWrapper>
       );
 
-      const submitButton = screen.getByRole('button', { name: /donate \$100/i });
+      const submitButton = screen.getByRole('button', {
+        name: /donate \$100/i,
+      });
       const cancelButton = screen.getByRole('button', { name: /cancel/i });
-      
+
       await user.click(submitButton);
 
       expect(submitButton).toBeDisabled();
@@ -546,13 +594,15 @@ describe('PaymentForm', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Failed to initialize payment. Please try again.')).toBeInTheDocument();
+        expect(
+          screen.getByText('Failed to initialize payment. Please try again.')
+        ).toBeInTheDocument();
       });
     });
 
     it('should handle network errors gracefully', async () => {
       const user = userEvent.setup();
-      
+
       mockElements.submit.mockResolvedValue({ error: null });
       mockStripeService.processPayment.mockRejectedValue(
         new Error('Network error')
@@ -569,20 +619,24 @@ describe('PaymentForm', () => {
       );
 
       await waitFor(() => {
-        const submitButton = screen.getByRole('button', { name: /donate \$100/i });
+        const submitButton = screen.getByRole('button', {
+          name: /donate \$100/i,
+        });
         user.click(submitButton);
       });
 
       await waitFor(() => {
-        expect(screen.getByText('Payment processing failed. Please try again.')).toBeInTheDocument();
+        expect(
+          screen.getByText('Payment processing failed. Please try again.')
+        ).toBeInTheDocument();
       });
     });
 
     it('should handle Stripe elements submit errors', async () => {
       const user = userEvent.setup();
-      
-      mockElements.submit.mockResolvedValue({ 
-        error: { message: 'Your card number is incomplete.' }
+
+      mockElements.submit.mockResolvedValue({
+        error: { message: 'Your card number is incomplete.' },
       });
 
       render(
@@ -596,12 +650,16 @@ describe('PaymentForm', () => {
       );
 
       await waitFor(() => {
-        const submitButton = screen.getByRole('button', { name: /donate \$100/i });
+        const submitButton = screen.getByRole('button', {
+          name: /donate \$100/i,
+        });
         user.click(submitButton);
       });
 
       await waitFor(() => {
-        expect(screen.getByText('Your card number is incomplete.')).toBeInTheDocument();
+        expect(
+          screen.getByText('Your card number is incomplete.')
+        ).toBeInTheDocument();
       });
     });
   });
@@ -609,7 +667,7 @@ describe('PaymentForm', () => {
   describe('Form Validation', () => {
     it('should prevent submission without Stripe initialization', async () => {
       const user = userEvent.setup();
-      
+
       mockUseStripe.mockReturnValue(null);
 
       render(
@@ -622,7 +680,9 @@ describe('PaymentForm', () => {
         </TestWrapper>
       );
 
-      const submitButton = screen.getByRole('button', { name: /donate \$100/i });
+      const submitButton = screen.getByRole('button', {
+        name: /donate \$100/i,
+      });
       expect(submitButton).toBeDisabled();
 
       await user.click(submitButton);
@@ -631,7 +691,7 @@ describe('PaymentForm', () => {
 
     it('should prevent submission without elements initialization', async () => {
       const user = userEvent.setup();
-      
+
       mockUseElements.mockReturnValue(null);
 
       render(
@@ -644,13 +704,15 @@ describe('PaymentForm', () => {
         </TestWrapper>
       );
 
-      const submitButton = screen.getByRole('button', { name: /donate \$100/i });
+      const submitButton = screen.getByRole('button', {
+        name: /donate \$100/i,
+      });
       expect(submitButton).toBeDisabled();
     });
 
     it('should prevent submission without client secret', async () => {
       const user = userEvent.setup();
-      
+
       mockStripeService.createPaymentIntent.mockResolvedValue({
         clientSecret: '',
         paymentIntentId: 'pi_test_123',
@@ -669,7 +731,9 @@ describe('PaymentForm', () => {
       );
 
       await waitFor(() => {
-        const submitButton = screen.getByRole('button', { name: /donate \$100/i });
+        const submitButton = screen.getByRole('button', {
+          name: /donate \$100/i,
+        });
         expect(submitButton).toBeDisabled();
       });
     });
@@ -740,11 +804,14 @@ describe('PaymentForm', () => {
 
     it('should disable cancel during processing', async () => {
       const user = userEvent.setup();
-      
+
       // Mock a delayed response
-      mockElements.submit.mockImplementation(() => new Promise(resolve => 
-        setTimeout(() => resolve({ error: null }), 100)
-      ));
+      mockElements.submit.mockImplementation(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(() => resolve({ error: null }), 100)
+          )
+      );
 
       render(
         <TestWrapper>
@@ -756,7 +823,9 @@ describe('PaymentForm', () => {
         </TestWrapper>
       );
 
-      const submitButton = screen.getByRole('button', { name: /donate \$100/i });
+      const submitButton = screen.getByRole('button', {
+        name: /donate \$100/i,
+      });
       await user.click(submitButton);
 
       const cancelButton = screen.getByRole('button', { name: /cancel/i });

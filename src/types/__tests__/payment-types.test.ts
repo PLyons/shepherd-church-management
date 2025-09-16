@@ -1,10 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 // Import existing types for compatibility testing
-import type {
-  DonationMethod,
-  DonationFormData,
-} from '../donations';
+import type { DonationMethod, DonationFormData } from '../donations';
 
 // Import payment processing types
 import type {
@@ -275,7 +272,7 @@ describe('Payment Processing Types', () => {
       const stripeMethod: DonationMethod = 'stripe';
       const existingMethods: DonationMethod[] = [
         'cash',
-        'check', 
+        'check',
         'credit_card',
         'stripe', // Now successfully added to DonationMethod
       ];

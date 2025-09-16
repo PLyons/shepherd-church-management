@@ -25,12 +25,12 @@ vi.mock('jspdf', () => ({
     internal: {
       pageSize: {
         width: 210,
-        height: 297
-      }
+        height: 297,
+      },
     },
     save: vi.fn(),
     output: vi.fn(() => 'pdf-blob-data'),
-  }))
+  })),
 }));
 
 vi.mock('react-pdf', () => ({
@@ -39,17 +39,22 @@ vi.mock('react-pdf', () => ({
   Text: vi.fn(),
   View: vi.fn(),
   StyleSheet: {
-    create: vi.fn(() => ({}))
+    create: vi.fn(() => ({})),
   },
   pdf: vi.fn(() => ({
-    toBlob: vi.fn(() => Promise.resolve(new Blob(['pdf-data'], { type: 'application/pdf' }))),
-    updateContainer: vi.fn()
-  }))
+    toBlob: vi.fn(() =>
+      Promise.resolve(new Blob(['pdf-data'], { type: 'application/pdf' }))
+    ),
+    updateContainer: vi.fn(),
+  })),
 }));
 
 // Mock CSV generation
 vi.mock('papaparse', () => ({
-  unparse: vi.fn((data) => 'member_name,amount,date,method,category\nJohn Doe,100.00,2024-01-15,cash,tithe')
+  unparse: vi.fn(
+    (data) =>
+      'member_name,amount,date,method,category\nJohn Doe,100.00,2024-01-15,cash,tithe'
+  ),
 }));
 
 // Mock file download
@@ -58,10 +63,10 @@ const mockRevokeObjectURL = vi.fn();
 const mockClick = vi.fn();
 
 Object.defineProperty(window.URL, 'createObjectURL', {
-  value: mockCreateObjectURL
+  value: mockCreateObjectURL,
 });
 Object.defineProperty(window.URL, 'revokeObjectURL', {
-  value: mockRevokeObjectURL
+  value: mockRevokeObjectURL,
 });
 
 // Mock document.createElement for download links
@@ -69,7 +74,7 @@ const mockAnchorElement = {
   click: mockClick,
   href: '',
   download: '',
-  style: { display: '' }
+  style: { display: '' },
 };
 
 const originalCreateElement = document.createElement;
@@ -130,12 +135,12 @@ const mockMember: Member = {
     line1: '123 Main Street',
     city: 'Springfield',
     state: 'IL',
-    postalCode: '62701'
+    postalCode: '62701',
   },
   role: 'member',
   householdId: 'household-456',
   createdAt: '2020-01-15T00:00:00Z',
-  updatedAt: '2024-01-11T00:00:00Z'
+  updatedAt: '2024-01-11T00:00:00Z',
 };
 
 const mockDonations: Donation[] = [
@@ -143,7 +148,7 @@ const mockDonations: Donation[] = [
     id: 'donation-1',
     memberId: 'member-123',
     memberName: 'John Doe',
-    amount: 500.00,
+    amount: 500.0,
     donationDate: '2024-01-15',
     method: 'check',
     sourceLabel: 'Check #1234',
@@ -152,7 +157,7 @@ const mockDonations: Donation[] = [
     form990Fields: {
       lineItem: '1a_cash_contributions',
       isQuidProQuo: false,
-      isAnonymous: false
+      isAnonymous: false,
     },
     receiptNumber: 'RCP-2024-001',
     isReceiptSent: true,
@@ -163,13 +168,13 @@ const mockDonations: Donation[] = [
     createdBy: 'admin-1',
     updatedAt: '2024-01-15T09:00:00Z',
     status: 'verified',
-    member: mockMember
+    member: mockMember,
   },
   {
     id: 'donation-2',
     memberId: 'member-123',
     memberName: 'John Doe',
-    amount: 250.00,
+    amount: 250.0,
     donationDate: '2024-02-01',
     method: 'cash',
     categoryId: 'cat-2',
@@ -177,7 +182,7 @@ const mockDonations: Donation[] = [
     form990Fields: {
       lineItem: '1a_cash_contributions',
       isQuidProQuo: false,
-      isAnonymous: false
+      isAnonymous: false,
     },
     receiptNumber: 'RCP-2024-015',
     isReceiptSent: true,
@@ -187,8 +192,8 @@ const mockDonations: Donation[] = [
     createdBy: 'admin-1',
     updatedAt: '2024-02-01T09:00:00Z',
     status: 'verified',
-    member: mockMember
-  }
+    member: mockMember,
+  },
 ];
 
 const mockTaxReceiptData: TaxReceiptData = {
@@ -199,39 +204,41 @@ const mockTaxReceiptData: TaxReceiptData = {
     line1: '123 Main Street',
     city: 'Springfield',
     state: 'IL',
-    postalCode: '62701'
+    postalCode: '62701',
   },
-  amount: 500.00,
+  amount: 500.0,
   donationDate: '2024-01-15',
   method: 'check',
   category: 'Tithe',
   isTaxDeductible: true,
   taxYear: 2024,
   isQuidProQuo: false,
-  deductibleAmount: 500.00,
+  deductibleAmount: 500.0,
   churchName: 'Shepherd Church',
   churchAddress: '456 Church St, Springfield, IL 62701',
   churchEIN: '12-3456789',
   generatedAt: '2024-01-15T10:00:00Z',
-  generatedBy: 'admin-1'
+  generatedBy: 'admin-1',
 };
 
 describe('MemberDonationHistory Export Functionality', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     mockUseAuth.mockReturnValue({
       user: { uid: 'admin-1', email: 'admin@church.com' },
       member: { id: 'admin-1', role: 'admin' },
-      isLoading: false
+      isLoading: false,
     });
-    
+
     mockUseToast.mockReturnValue(mockToast);
-    
+
     mockMembersService.getById.mockResolvedValue(mockMember);
     mockDonationsService.getMemberDonations.mockResolvedValue(mockDonations);
-    mockDonationsService.generateTaxReceipt.mockResolvedValue(mockTaxReceiptData);
-    
+    mockDonationsService.generateTaxReceipt.mockResolvedValue(
+      mockTaxReceiptData
+    );
+
     mockCreateObjectURL.mockReturnValue('blob:mock-url');
   });
 
@@ -248,13 +255,15 @@ describe('MemberDonationHistory Export Functionality', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Generate Tax Statement (PDF)')).toBeInTheDocument();
+        expect(
+          screen.getByText('Generate Tax Statement (PDF)')
+        ).toBeInTheDocument();
       });
     });
 
     it('should generate PDF with member donation data', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -262,7 +271,9 @@ describe('MemberDonationHistory Export Functionality', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Generate Tax Statement (PDF)')).toBeInTheDocument();
+        expect(
+          screen.getByText('Generate Tax Statement (PDF)')
+        ).toBeInTheDocument();
       });
 
       const pdfButton = screen.getByText('Generate Tax Statement (PDF)');
@@ -280,7 +291,7 @@ describe('MemberDonationHistory Export Functionality', () => {
 
     it('should include tax-compliant formatting in PDF', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -295,7 +306,7 @@ describe('MemberDonationHistory Export Functionality', () => {
           expect.objectContaining({
             memberId: 'member-123',
             taxYear: expect.any(Number),
-            includeIRSCompliantLanguage: true
+            includeIRSCompliantLanguage: true,
           })
         );
       });
@@ -303,7 +314,7 @@ describe('MemberDonationHistory Export Functionality', () => {
 
     it('should include church letterhead and contact information in PDF', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -315,14 +326,16 @@ describe('MemberDonationHistory Export Functionality', () => {
 
       await waitFor(() => {
         expect(mockTaxReceiptData.churchName).toBe('Shepherd Church');
-        expect(mockTaxReceiptData.churchAddress).toBe('456 Church St, Springfield, IL 62701');
+        expect(mockTaxReceiptData.churchAddress).toBe(
+          '456 Church St, Springfield, IL 62701'
+        );
         expect(mockTaxReceiptData.churchEIN).toBe('12-3456789');
       });
     });
 
     it('should display proper member information in PDF', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -343,7 +356,7 @@ describe('MemberDonationHistory Export Functionality', () => {
 
     it('should include year-to-date summaries in PDF', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -354,11 +367,13 @@ describe('MemberDonationHistory Export Functionality', () => {
       await user.click(pdfButton);
 
       await waitFor(() => {
-        expect(mockDonationsService.getDonationsByDateRange).toHaveBeenCalledWith(
+        expect(
+          mockDonationsService.getDonationsByDateRange
+        ).toHaveBeenCalledWith(
           expect.objectContaining({
             memberId: 'member-123',
             startDate: expect.stringContaining('2024-01-01'),
-            endDate: expect.stringContaining('2024-12-31')
+            endDate: expect.stringContaining('2024-12-31'),
           })
         );
       });
@@ -366,7 +381,7 @@ describe('MemberDonationHistory Export Functionality', () => {
 
     it('should calculate tax-deductible amounts correctly in PDF', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -377,14 +392,14 @@ describe('MemberDonationHistory Export Functionality', () => {
       await user.click(pdfButton);
 
       await waitFor(() => {
-        expect(mockTaxReceiptData.deductibleAmount).toBe(500.00);
+        expect(mockTaxReceiptData.deductibleAmount).toBe(500.0);
         expect(mockTaxReceiptData.isQuidProQuo).toBe(false);
       });
     });
 
     it('should trigger PDF download with proper filename', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -395,15 +410,19 @@ describe('MemberDonationHistory Export Functionality', () => {
       await user.click(pdfButton);
 
       await waitFor(() => {
-        expect(mockAnchorElement.download).toBe('tax-statement-john-doe-2024.pdf');
+        expect(mockAnchorElement.download).toBe(
+          'tax-statement-john-doe-2024.pdf'
+        );
         expect(mockClick).toHaveBeenCalled();
       });
     });
 
     it('should handle PDF generation errors gracefully', async () => {
-      mockDonationsService.generateTaxReceipt.mockRejectedValue(new Error('PDF generation failed'));
+      mockDonationsService.generateTaxReceipt.mockRejectedValue(
+        new Error('PDF generation failed')
+      );
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -441,7 +460,7 @@ describe('MemberDonationHistory Export Functionality', () => {
 
     it('should export CSV with all donation fields', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -453,14 +472,20 @@ describe('MemberDonationHistory Export Functionality', () => {
 
       await waitFor(() => {
         const expectedHeaders = [
-          'Date', 'Amount', 'Method', 'Category', 'Receipt Number',
-          'Tax Deductible', 'Notes', 'Status'
+          'Date',
+          'Amount',
+          'Method',
+          'Category',
+          'Receipt Number',
+          'Tax Deductible',
+          'Notes',
+          'Status',
         ];
-        
+
         // Verify CSV contains expected headers
         expect(mockCreateObjectURL).toHaveBeenCalledWith(
           expect.objectContaining({
-            type: 'text/csv'
+            type: 'text/csv',
           })
         );
       });
@@ -468,7 +493,7 @@ describe('MemberDonationHistory Export Functionality', () => {
 
     it('should format dates properly in CSV export', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -486,7 +511,7 @@ describe('MemberDonationHistory Export Functionality', () => {
 
     it('should format currency properly in CSV export', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -504,7 +529,7 @@ describe('MemberDonationHistory Export Functionality', () => {
 
     it('should trigger CSV download with proper filename', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -526,12 +551,14 @@ describe('MemberDonationHistory Export Functionality', () => {
       const largeDonationSet = Array.from({ length: 1000 }, (_, i) => ({
         ...mockDonations[0],
         id: `donation-${i}`,
-        amount: Math.random() * 1000
+        amount: Math.random() * 1000,
       }));
-      
-      mockDonationsService.getMemberDonations.mockResolvedValue(largeDonationSet);
+
+      mockDonationsService.getMemberDonations.mockResolvedValue(
+        largeDonationSet
+      );
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -541,10 +568,13 @@ describe('MemberDonationHistory Export Functionality', () => {
       const csvButton = await screen.findByText('Export to CSV');
       await user.click(csvButton);
 
-      await waitFor(() => {
-        expect(mockCreateObjectURL).toHaveBeenCalled();
-        expect(mockClick).toHaveBeenCalled();
-      }, { timeout: 10000 }); // Allow extra time for large export
+      await waitFor(
+        () => {
+          expect(mockCreateObjectURL).toHaveBeenCalled();
+          expect(mockClick).toHaveBeenCalled();
+        },
+        { timeout: 10000 }
+      ); // Allow extra time for large export
     });
 
     it('should handle CSV export errors gracefully', async () => {
@@ -555,7 +585,7 @@ describe('MemberDonationHistory Export Functionality', () => {
       });
 
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -596,7 +626,7 @@ describe('MemberDonationHistory Export Functionality', () => {
       Object.defineProperty(window, 'print', { value: mockPrint });
 
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -622,8 +652,10 @@ describe('MemberDonationHistory Export Functionality', () => {
         </BrowserRouter>
       );
 
-      const printSection = await screen.findByTestId('donation-history-print-section');
-      
+      const printSection = await screen.findByTestId(
+        'donation-history-print-section'
+      );
+
       // Verify print-specific layout classes
       expect(printSection).toHaveClass('print:text-black');
       expect(printSection).toHaveClass('print:bg-white');
@@ -633,26 +665,30 @@ describe('MemberDonationHistory Export Functionality', () => {
       // Mock large donation history
       const longDonationSet = Array.from({ length: 100 }, (_, i) => ({
         ...mockDonations[0],
-        id: `donation-${i}`
+        id: `donation-${i}`,
       }));
-      
-      mockDonationsService.getMemberDonations.mockResolvedValue(longDonationSet);
-      
+
+      mockDonationsService.getMemberDonations.mockResolvedValue(
+        longDonationSet
+      );
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
         </BrowserRouter>
       );
 
-      const printSection = await screen.findByTestId('donation-history-print-section');
-      
+      const printSection = await screen.findByTestId(
+        'donation-history-print-section'
+      );
+
       // Verify page break classes are applied
       expect(printSection).toHaveClass('print:break-inside-avoid');
     });
 
     it('should show print preview functionality', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -681,13 +717,15 @@ describe('MemberDonationHistory Export Functionality', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Generate Annual Statement')).toBeInTheDocument();
+        expect(
+          screen.getByText('Generate Annual Statement')
+        ).toBeInTheDocument();
       });
     });
 
     it('should generate annual giving statement', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -698,10 +736,12 @@ describe('MemberDonationHistory Export Functionality', () => {
       await user.click(annualButton);
 
       await waitFor(() => {
-        expect(mockDonationsService.getDonationsByDateRange).toHaveBeenCalledWith(
+        expect(
+          mockDonationsService.getDonationsByDateRange
+        ).toHaveBeenCalledWith(
           expect.objectContaining({
             startDate: '2024-01-01',
-            endDate: '2024-12-31'
+            endDate: '2024-12-31',
           })
         );
       });
@@ -709,7 +749,7 @@ describe('MemberDonationHistory Export Functionality', () => {
 
     it('should filter by tax year for annual statements', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -724,10 +764,12 @@ describe('MemberDonationHistory Export Functionality', () => {
       await user.click(annualButton);
 
       await waitFor(() => {
-        expect(mockDonationsService.getDonationsByDateRange).toHaveBeenCalledWith(
+        expect(
+          mockDonationsService.getDonationsByDateRange
+        ).toHaveBeenCalledWith(
           expect.objectContaining({
             startDate: '2023-01-01',
-            endDate: '2023-12-31'
+            endDate: '2023-12-31',
           })
         );
       });
@@ -742,7 +784,7 @@ describe('MemberDonationHistory Export Functionality', () => {
 
       const yearSelect = await screen.findByLabelText('Tax Year');
       const options = screen.getAllByRole('option');
-      
+
       // Verify multiple years are available
       expect(options).toHaveLength(5); // Current year + 4 previous years
       expect(screen.getByDisplayValue('2024')).toBeInTheDocument();
@@ -751,7 +793,7 @@ describe('MemberDonationHistory Export Functionality', () => {
 
     it('should include IRS-compliant language in annual statements', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -765,7 +807,7 @@ describe('MemberDonationHistory Export Functionality', () => {
         expect(mockDonationsService.generateTaxReceipt).toHaveBeenCalledWith(
           expect.objectContaining({
             includeIRSCompliantLanguage: true,
-            statementType: 'annual'
+            statementType: 'annual',
           })
         );
       });
@@ -773,7 +815,7 @@ describe('MemberDonationHistory Export Functionality', () => {
 
     it('should include verification codes in digital statements', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -797,7 +839,7 @@ describe('MemberDonationHistory Export Functionality', () => {
     it('should generate PDF within 5 seconds', async () => {
       const startTime = Date.now();
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -807,11 +849,14 @@ describe('MemberDonationHistory Export Functionality', () => {
       const pdfButton = await screen.findByText('Generate Tax Statement (PDF)');
       await user.click(pdfButton);
 
-      await waitFor(() => {
-        expect(mockCreateObjectURL).toHaveBeenCalled();
-        const endTime = Date.now();
-        expect(endTime - startTime).toBeLessThan(5000);
-      }, { timeout: 6000 });
+      await waitFor(
+        () => {
+          expect(mockCreateObjectURL).toHaveBeenCalled();
+          const endTime = Date.now();
+          expect(endTime - startTime).toBeLessThan(5000);
+        },
+        { timeout: 6000 }
+      );
     });
 
     it('should handle large dataset export efficiently', async () => {
@@ -819,12 +864,14 @@ describe('MemberDonationHistory Export Functionality', () => {
       const massiveDonationSet = Array.from({ length: 10000 }, (_, i) => ({
         ...mockDonations[0],
         id: `donation-${i}`,
-        amount: Math.random() * 1000
+        amount: Math.random() * 1000,
       }));
-      
-      mockDonationsService.getMemberDonations.mockResolvedValue(massiveDonationSet);
+
+      mockDonationsService.getMemberDonations.mockResolvedValue(
+        massiveDonationSet
+      );
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -833,19 +880,22 @@ describe('MemberDonationHistory Export Functionality', () => {
 
       const csvButton = await screen.findByText('Export to CSV');
       const startTime = Date.now();
-      
+
       await user.click(csvButton);
 
-      await waitFor(() => {
-        expect(mockCreateObjectURL).toHaveBeenCalled();
-        const endTime = Date.now();
-        expect(endTime - startTime).toBeLessThan(10000); // 10 second limit for large datasets
-      }, { timeout: 15000 });
+      await waitFor(
+        () => {
+          expect(mockCreateObjectURL).toHaveBeenCalled();
+          const endTime = Date.now();
+          expect(endTime - startTime).toBeLessThan(10000); // 10 second limit for large datasets
+        },
+        { timeout: 15000 }
+      );
     });
 
     it('should manage memory usage during export', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -862,7 +912,7 @@ describe('MemberDonationHistory Export Functionality', () => {
 
     it('should handle concurrent export requests', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -873,10 +923,7 @@ describe('MemberDonationHistory Export Functionality', () => {
       const csvButton = await screen.findByText('Export to CSV');
 
       // Trigger concurrent exports
-      await Promise.all([
-        user.click(pdfButton),
-        user.click(csvButton)
-      ]);
+      await Promise.all([user.click(pdfButton), user.click(csvButton)]);
 
       await waitFor(() => {
         expect(mockCreateObjectURL).toHaveBeenCalledTimes(2);
@@ -892,7 +939,7 @@ describe('MemberDonationHistory Export Functionality', () => {
   describe('Export Security', () => {
     it('should not store files server-side during PDF generation', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -904,9 +951,11 @@ describe('MemberDonationHistory Export Functionality', () => {
 
       await waitFor(() => {
         // Verify no server upload calls are made
-        expect(mockDonationsService.generateTaxReceipt).not.toHaveBeenCalledWith(
+        expect(
+          mockDonationsService.generateTaxReceipt
+        ).not.toHaveBeenCalledWith(
           expect.objectContaining({
-            uploadToServer: true
+            uploadToServer: true,
           })
         );
       });
@@ -914,7 +963,7 @@ describe('MemberDonationHistory Export Functionality', () => {
 
     it('should generate secure PDF without data leaks', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -928,7 +977,7 @@ describe('MemberDonationHistory Export Functionality', () => {
         expect(mockDonationsService.generateTaxReceipt).toHaveBeenCalledWith(
           expect.objectContaining({
             secureGeneration: true,
-            excludeSensitiveData: true
+            excludeSensitiveData: true,
           })
         );
       });
@@ -936,7 +985,7 @@ describe('MemberDonationHistory Export Functionality', () => {
 
     it('should clean up temporary export data', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -956,9 +1005,9 @@ describe('MemberDonationHistory Export Functionality', () => {
       mockUseAuth.mockReturnValue({
         user: { uid: 'member-1', email: 'member@church.com' },
         member: { id: 'member-1', role: 'member' },
-        isLoading: false
+        isLoading: false,
       });
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -967,14 +1016,18 @@ describe('MemberDonationHistory Export Functionality', () => {
 
       // Member should only see their own data export options
       await waitFor(() => {
-        expect(screen.getByText('Export My Donations (CSV)')).toBeInTheDocument();
-        expect(screen.queryByText('Export All Donations')).not.toBeInTheDocument();
+        expect(
+          screen.getByText('Export My Donations (CSV)')
+        ).toBeInTheDocument();
+        expect(
+          screen.queryByText('Export All Donations')
+        ).not.toBeInTheDocument();
       });
     });
 
     it('should validate member access before export', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -988,7 +1041,7 @@ describe('MemberDonationHistory Export Functionality', () => {
         expect(mockDonationsService.getMemberDonations).toHaveBeenCalledWith(
           'member-123',
           expect.objectContaining({
-            requestingUserId: 'admin-1'
+            requestingUserId: 'admin-1',
           })
         );
       });
@@ -998,9 +1051,9 @@ describe('MemberDonationHistory Export Functionality', () => {
       mockDonationsService.generateTaxReceipt.mockRejectedValue(
         new Error('Database connection failed - user table corrupted')
       );
-      
+
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -1036,7 +1089,7 @@ describe('MemberDonationHistory Export Functionality', () => {
       });
 
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -1060,7 +1113,7 @@ describe('MemberDonationHistory Export Functionality', () => {
       });
 
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -1081,11 +1134,11 @@ describe('MemberDonationHistory Export Functionality', () => {
     it('should show loading state during export generation', async () => {
       // Mock slow PDF generation
       mockDonationsService.generateTaxReceipt.mockImplementation(
-        () => new Promise(resolve => setTimeout(resolve, 2000))
+        () => new Promise((resolve) => setTimeout(resolve, 2000))
       );
 
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -1105,7 +1158,7 @@ describe('MemberDonationHistory Export Functionality', () => {
       Object.defineProperty(window, 'Blob', { value: undefined });
 
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -1134,7 +1187,7 @@ describe('MemberDonationHistory Export Functionality', () => {
       });
 
       const user = userEvent.setup();
-      
+
       render(
         <BrowserRouter>
           <MemberDonationHistory />
@@ -1144,10 +1197,15 @@ describe('MemberDonationHistory Export Functionality', () => {
       const pdfButton = await screen.findByText('Generate Tax Statement (PDF)');
       await user.click(pdfButton);
 
-      await waitFor(() => {
-        expect(mockDonationsService.generateTaxReceipt).toHaveBeenCalledTimes(3);
-        expect(mockCreateObjectURL).toHaveBeenCalled();
-      }, { timeout: 5000 });
+      await waitFor(
+        () => {
+          expect(mockDonationsService.generateTaxReceipt).toHaveBeenCalledTimes(
+            3
+          );
+          expect(mockCreateObjectURL).toHaveBeenCalled();
+        },
+        { timeout: 5000 }
+      );
     });
   });
 });

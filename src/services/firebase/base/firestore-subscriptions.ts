@@ -42,17 +42,18 @@ export class FirestoreSubscriptions<TDocument, TClient> {
     subscriptionId?: string
   ): string {
     const id = subscriptionId || `collection_${Date.now()}`;
-    
+
     try {
-      const q = constraints.length > 0 
-        ? query(this.getCollectionRef(), ...constraints)
-        : this.getCollectionRef();
+      const q =
+        constraints.length > 0
+          ? query(this.getCollectionRef(), ...constraints)
+          : this.getCollectionRef();
 
       const unsubscribe = onSnapshot(
         q,
         (querySnapshot) => {
           try {
-            const items = querySnapshot.docs.map(doc =>
+            const items = querySnapshot.docs.map((doc) =>
               this.documentToClient(doc.id, doc.data() as TDocument)
             );
             callback(items);
@@ -85,7 +86,7 @@ export class FirestoreSubscriptions<TDocument, TClient> {
     subscriptionId?: string
   ): string {
     const subId = subscriptionId || `document_${id}_${Date.now()}`;
-    
+
     try {
       const docRef = this.getDocRef(id);
 
@@ -153,14 +154,14 @@ export class FirestoreSubscriptions<TDocument, TClient> {
             callback([], error);
             return;
           }
-          
+
           const wasInitialized = documentCallbacks.has(id);
           documentCallbacks.set(id, data);
-          
+
           if (!wasInitialized) {
             completedCount++;
           }
-          
+
           checkAndCallback();
         },
         `${subId}_doc_${id}`
@@ -170,7 +171,7 @@ export class FirestoreSubscriptions<TDocument, TClient> {
 
     // Store a composite unsubscribe function
     const compositeUnsubscribe = () => {
-      documentSubscriptions.forEach(docSubId => {
+      documentSubscriptions.forEach((docSubId) => {
         this.unsubscribe(docSubId);
       });
     };

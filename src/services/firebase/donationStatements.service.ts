@@ -5,15 +5,15 @@
 
 import { db } from '../../lib/firebase';
 import { BaseFirestoreService } from './base/base-firestore-service';
-import { 
-  DonationStatement, 
+import {
+  DonationStatement,
   DonationReceipt,
   StatementTemplate,
   BulkStatementJob,
   StatementStatus,
   StatementType,
   StatementFormat,
-  StatementDeliveryMethod
+  StatementDeliveryMethod,
 } from '../../types/donations';
 import { DonationsService } from './donations.service';
 
@@ -136,12 +136,16 @@ interface BulkStatementJobDocument {
 }
 
 // Concrete service classes that extend BaseFirestoreService
-class DonationStatementService extends BaseFirestoreService<DonationStatementDocument, DonationStatement> {
+class DonationStatementService extends BaseFirestoreService<
+  DonationStatementDocument,
+  DonationStatement
+> {
   constructor() {
     super(
       db,
       'donationStatements',
-      (id: string, doc: DonationStatementDocument) => ({ id, ...doc } as DonationStatement),
+      (id: string, doc: DonationStatementDocument) =>
+        ({ id, ...doc }) as DonationStatement,
       (client: Partial<DonationStatement>) => {
         const { id, ...rest } = client;
         return rest as Partial<DonationStatementDocument>;
@@ -150,12 +154,16 @@ class DonationStatementService extends BaseFirestoreService<DonationStatementDoc
   }
 }
 
-class DonationReceiptService extends BaseFirestoreService<DonationReceiptDocument, DonationReceipt> {
+class DonationReceiptService extends BaseFirestoreService<
+  DonationReceiptDocument,
+  DonationReceipt
+> {
   constructor() {
     super(
       db,
       'donationReceipts',
-      (id: string, doc: DonationReceiptDocument) => ({ id, ...doc } as DonationReceipt),
+      (id: string, doc: DonationReceiptDocument) =>
+        ({ id, ...doc }) as DonationReceipt,
       (client: Partial<DonationReceipt>) => {
         const { id, ...rest } = client;
         return rest as Partial<DonationReceiptDocument>;
@@ -164,12 +172,16 @@ class DonationReceiptService extends BaseFirestoreService<DonationReceiptDocumen
   }
 }
 
-class StatementTemplateService extends BaseFirestoreService<StatementTemplateDocument, StatementTemplate> {
+class StatementTemplateService extends BaseFirestoreService<
+  StatementTemplateDocument,
+  StatementTemplate
+> {
   constructor() {
     super(
       db,
       'statementTemplates',
-      (id: string, doc: StatementTemplateDocument) => ({ id, ...doc } as StatementTemplate),
+      (id: string, doc: StatementTemplateDocument) =>
+        ({ id, ...doc }) as StatementTemplate,
       (client: Partial<StatementTemplate>) => {
         const { id, ...rest } = client;
         return rest as Partial<StatementTemplateDocument>;
@@ -178,12 +190,16 @@ class StatementTemplateService extends BaseFirestoreService<StatementTemplateDoc
   }
 }
 
-class BulkStatementJobService extends BaseFirestoreService<BulkStatementJobDocument, BulkStatementJob> {
+class BulkStatementJobService extends BaseFirestoreService<
+  BulkStatementJobDocument,
+  BulkStatementJob
+> {
   constructor() {
     super(
       db,
       'bulkStatementJobs',
-      (id: string, doc: BulkStatementJobDocument) => ({ id, ...doc } as BulkStatementJob),
+      (id: string, doc: BulkStatementJobDocument) =>
+        ({ id, ...doc }) as BulkStatementJob,
       (client: Partial<BulkStatementJob>) => {
         const { id, ...rest } = client;
         return rest as Partial<BulkStatementJobDocument>;
@@ -214,7 +230,11 @@ export class DonationStatementsService {
   /**
    * Generate annual statement for a member with donations in the specified tax year
    */
-  async generateAnnualStatement(memberId: string, taxYear: number, createdBy?: string): Promise<DonationStatement> {
+  async generateAnnualStatement(
+    memberId: string,
+    taxYear: number,
+    createdBy?: string
+  ): Promise<DonationStatement> {
     // Validate tax year
     const currentYear = new Date().getFullYear();
     if (taxYear > currentYear || taxYear < 2000) {
@@ -222,15 +242,21 @@ export class DonationStatementsService {
     }
 
     // Get member donations for the tax year - first get all member donations, then filter by tax year
-    const allMemberDonations = await this.donationsService.getDonationsByMember(memberId);
-    const donations = allMemberDonations.filter(donation => donation.taxYear === taxYear);
+    const allMemberDonations =
+      await this.donationsService.getDonationsByMember(memberId);
+    const donations = allMemberDonations.filter(
+      (donation) => donation.taxYear === taxYear
+    );
 
     if (!donations || donations.length === 0) {
       throw new Error(`No donations found for member in tax year ${taxYear}`);
     }
 
     // Calculate totals
-    const totalAmount = donations.reduce((sum, donation) => sum + donation.amount, 0);
+    const totalAmount = donations.reduce(
+      (sum, donation) => sum + donation.amount,
+      0
+    );
     const donationCount = donations.length;
 
     // Create category breakdown
@@ -245,17 +271,17 @@ export class DonationStatementsService {
         line1: '',
         city: '',
         state: '',
-        postalCode: ''
+        postalCode: '',
       },
       statementType: 'annual_tax_statement',
       taxYear,
       periodStart: `${taxYear}-01-01`,
       periodEnd: `${taxYear}-12-31`,
-      donationIds: donations.map(d => d.id),
+      donationIds: donations.map((d) => d.id),
       totalAmount,
       totalDeductibleAmount: totalAmount,
       donationCount,
-      includesQuidProQuo: donations.some(d => d.form990Fields?.isQuidProQuo),
+      includesQuidProQuo: donations.some((d) => d.form990Fields?.isQuidProQuo),
       churchName: 'Shepherd Church',
       churchAddress: '123 Church St, City, State 12345',
       churchEIN: '12-3456789',
@@ -265,14 +291,14 @@ export class DonationStatementsService {
       format: 'pdf',
       deliveryMethod: 'download',
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
     };
 
     // Add category breakdown to the document data (not the interface)
     const documentData = {
       ...statementData,
       categoryBreakdown,
-      isEmailSent: false
+      isEmailSent: false,
     };
 
     return this.statementsService.create(documentData);
@@ -285,9 +311,12 @@ export class DonationStatementsService {
   /**
    * Generate receipt for a specific donation
    */
-  async generateDonationReceipt(donationId: string, createdBy?: string): Promise<DonationReceipt> {
+  async generateDonationReceipt(
+    donationId: string,
+    createdBy?: string
+  ): Promise<DonationReceipt> {
     const donation = await this.donationsService.getById(donationId);
-    
+
     if (!donation) {
       throw new Error(`Donation not found: ${donationId}`);
     }
@@ -302,9 +331,9 @@ export class DonationStatementsService {
       memberName: donation.memberName || 'Anonymous',
       receiptNumber,
       donationAmount: donation.amount,
-      deductibleAmount: donation.form990Fields?.isQuidProQuo ? 
-        donation.amount - (donation.form990Fields.quidProQuoValue || 0) : 
-        donation.amount,
+      deductibleAmount: donation.form990Fields?.isQuidProQuo
+        ? donation.amount - (donation.form990Fields.quidProQuoValue || 0)
+        : donation.amount,
       donationDate: donation.donationDate,
       donationMethod: donation.method,
       categoryName: donation.categoryName,
@@ -315,13 +344,13 @@ export class DonationStatementsService {
       generatedAt: now,
       status: 'generated',
       format: 'pdf',
-      isEmailSent: false
+      isEmailSent: false,
     };
 
     // Add quid pro quo details if applicable
     if (donation.form990Fields?.isQuidProQuo) {
       receiptData.quidProQuoDetails = {
-        deductibleAmount: receiptData.deductibleAmount
+        deductibleAmount: receiptData.deductibleAmount,
       };
     }
 
@@ -336,22 +365,34 @@ export class DonationStatementsService {
    * Get template by type
    */
   async getTemplate(templateType: string): Promise<StatementTemplate | null> {
-    const templates = await this.templatesService.getWhere('type', '==', templateType);
+    const templates = await this.templatesService.getWhere(
+      'type',
+      '==',
+      templateType
+    );
     return templates.length > 0 ? templates[0] : null;
   }
 
   /**
    * Update template with validation
    */
-  async updateTemplate(templateId: string, updates: Partial<StatementTemplate>): Promise<StatementTemplate> {
+  async updateTemplate(
+    templateId: string,
+    updates: Partial<StatementTemplate>
+  ): Promise<StatementTemplate> {
     // Validate template introText if provided (since content property doesn't exist in interface)
-    if (updates.bodyContent?.introText && !updates.bodyContent.introText.includes('{memberName}')) {
-      throw new Error('Template must contain required placeholders: {memberName}');
+    if (
+      updates.bodyContent?.introText &&
+      !updates.bodyContent.introText.includes('{memberName}')
+    ) {
+      throw new Error(
+        'Template must contain required placeholders: {memberName}'
+      );
     }
 
     const updateData = {
       ...updates,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
 
     return this.templatesService.update(templateId, updateData);
@@ -364,7 +405,10 @@ export class DonationStatementsService {
   /**
    * Start bulk statement generation job
    */
-  async startBulkStatementJob(taxYear: number, createdBy: string): Promise<BulkStatementJob> {
+  async startBulkStatementJob(
+    taxYear: number,
+    createdBy: string
+  ): Promise<BulkStatementJob> {
     const jobData: any = {
       jobName: `Bulk Annual Statements ${taxYear}`,
       jobType: 'bulk_annual_statements',
@@ -377,7 +421,7 @@ export class DonationStatementsService {
       status: 'queued',
       deliveryMethod: 'email',
       sendImmediately: false,
-      createdBy
+      createdBy,
     };
 
     return this.bulkJobsService.create(jobData);
@@ -388,10 +432,12 @@ export class DonationStatementsService {
    */
   async getBulkJobStatus(jobId: string): Promise<BulkStatementJob | null> {
     const job = await this.bulkJobsService.getById(jobId);
-    
+
     if (job && job.processedMembers !== undefined && job.totalMembers) {
       // Add progress calculation to the returned object
-      (job as any).progressPercentage = Math.round((job.processedMembers / job.totalMembers) * 100);
+      (job as any).progressPercentage = Math.round(
+        (job.processedMembers / job.totalMembers) * 100
+      );
     }
 
     return job;
@@ -404,10 +450,12 @@ export class DonationStatementsService {
   /**
    * Mark statement as emailed
    */
-  async markStatementEmailSent(statementId: string): Promise<DonationStatement> {
+  async markStatementEmailSent(
+    statementId: string
+  ): Promise<DonationStatement> {
     const updateData: any = {
       isEmailSent: true,
-      emailSentAt: new Date().toISOString()
+      emailSentAt: new Date().toISOString(),
     };
 
     return this.statementsService.update(statementId, updateData);
@@ -419,7 +467,7 @@ export class DonationStatementsService {
   async markReceiptEmailSent(receiptId: string): Promise<DonationReceipt> {
     const updateData: any = {
       isEmailSent: true,
-      emailSentAt: new Date().toISOString()
+      emailSentAt: new Date().toISOString(),
     };
 
     return this.receiptsService.update(receiptId, updateData);
@@ -429,10 +477,14 @@ export class DonationStatementsService {
    * Validate email delivery status
    */
   async validateEmailDelivery(statementId: string): Promise<void> {
-    const statement = await this.statementsService.getById(statementId) as any;
-    
+    const statement = (await this.statementsService.getById(
+      statementId
+    )) as any;
+
     if (!statement?.isEmailSent) {
-      throw new Error('Email delivery validation failed: statement not marked as sent');
+      throw new Error(
+        'Email delivery validation failed: statement not marked as sent'
+      );
     }
   }
 
@@ -445,8 +497,13 @@ export class DonationStatementsService {
    */
   private async generateReceiptNumber(taxYear: number): Promise<string> {
     // Get existing receipts to find the next number
-    const existingReceipts = await this.receiptsService.getWhere('receiptNumber', '>=', `R-${taxYear}-000`) || [];
-    
+    const existingReceipts =
+      (await this.receiptsService.getWhere(
+        'receiptNumber',
+        '>=',
+        `R-${taxYear}-000`
+      )) || [];
+
     let nextNumber = 1;
     if (existingReceipts.length > 0) {
       const lastReceipt = existingReceipts[existingReceipts.length - 1];
@@ -464,10 +521,12 @@ export class DonationStatementsService {
   /**
    * Create category breakdown from donations
    */
-  private createCategoryBreakdown(donations: any[]): Array<{ categoryName: string; amount: number }> {
+  private createCategoryBreakdown(
+    donations: any[]
+  ): Array<{ categoryName: string; amount: number }> {
     const breakdown = new Map<string, number>();
-    
-    donations.forEach(donation => {
+
+    donations.forEach((donation) => {
       const categoryName = donation.categoryName || 'Uncategorized';
       const currentAmount = breakdown.get(categoryName) || 0;
       breakdown.set(categoryName, currentAmount + donation.amount);
@@ -475,7 +534,7 @@ export class DonationStatementsService {
 
     return Array.from(breakdown.entries()).map(([categoryName, amount]) => ({
       categoryName,
-      amount
+      amount,
     }));
   }
 }

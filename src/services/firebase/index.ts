@@ -15,8 +15,14 @@ export { HouseholdsService, householdsService } from './households.service';
 export { EventsService, eventsService } from './events.service';
 export { EventRSVPService, eventRSVPService } from './event-rsvp.service';
 export { DonationsService, donationsService } from './donations.service';
-export { DonationCategoriesService, donationCategoriesService } from './donation-categories.service';
-export { DonationStatementsService, donationStatementsService } from './donationStatements.service';
+export {
+  DonationCategoriesService,
+  donationCategoriesService,
+} from './donation-categories.service';
+export {
+  DonationStatementsService,
+  donationStatementsService,
+} from './donationStatements.service';
 
 // Import classes for FirebaseService constructor
 import { MembersService } from './members.service';
@@ -107,7 +113,7 @@ export class FirebaseService {
    */
   async getDashboardStats(): Promise<DashboardStatistics> {
     const memberStats = await this.members.getStatistics();
-    
+
     // Get upcoming events for stats
     const upcomingEvents = await this.events.getUpcomingPublicEvents(100);
     const now = new Date();
@@ -117,8 +123,10 @@ export class FirebaseService {
     const eventStats: EventStatistics = {
       total: upcomingEvents.length,
       upcoming: upcomingEvents.length,
-      thisWeek: upcomingEvents.filter(event => event.startDate <= oneWeek).length,
-      thisMonth: upcomingEvents.filter(event => event.startDate <= oneMonth).length,
+      thisWeek: upcomingEvents.filter((event) => event.startDate <= oneWeek)
+        .length,
+      thisMonth: upcomingEvents.filter((event) => event.startDate <= oneMonth)
+        .length,
     };
 
     const overview = {
@@ -158,7 +166,11 @@ export class FirebaseService {
     events: Event[];
     total: number;
   }> {
-    const { includeMembers = true, includeEvents = true, limit = 20 } = options || {};
+    const {
+      includeMembers = true,
+      includeEvents = true,
+      limit = 20,
+    } = options || {};
 
     const [members, events] = await Promise.all([
       includeMembers ? this.members.search(searchTerm, { limit }) : [],
@@ -177,17 +189,21 @@ export class FirebaseService {
   /**
    * Search events by title, description, or location
    */
-  private async searchEvents(searchTerm: string, limitCount: number): Promise<Event[]> {
+  private async searchEvents(
+    searchTerm: string,
+    limitCount: number
+  ): Promise<Event[]> {
     // For now, get all upcoming events and filter client-side
     // In production, you might want to implement server-side text search
     const allEvents = await this.events.getUpcomingPublicEvents(100);
-    
+
     const searchLower = searchTerm.toLowerCase();
     return allEvents
-      .filter(event => 
-        event.title.toLowerCase().includes(searchLower) ||
-        event.description.toLowerCase().includes(searchLower) ||
-        event.location.toLowerCase().includes(searchLower)
+      .filter(
+        (event) =>
+          event.title.toLowerCase().includes(searchLower) ||
+          event.description.toLowerCase().includes(searchLower) ||
+          event.location.toLowerCase().includes(searchLower)
       )
       .slice(0, limitCount);
   }
@@ -251,9 +267,9 @@ export class FirebaseService {
       this.events.getUpcomingPublicEvents(1000), // Get a large number to count
     ]);
 
-    return { 
-      members, 
-      events: allEvents.length 
+    return {
+      members,
+      events: allEvents.length,
     };
   }
 

@@ -8,13 +8,14 @@ interface ActivityCardProps {
 
 export function ActivityCard({ activity }: ActivityCardProps) {
   const config = ACTIVITY_CONFIG[activity.type];
-  
+
   const renderActivityContent = () => {
     switch (activity.type) {
       case 'profile_update':
         return (
           <div className="text-sm text-gray-600">
-            Updated <span className="font-medium">{activity.metadata?.field}</span>
+            Updated{' '}
+            <span className="font-medium">{activity.metadata?.field}</span>
             {activity.metadata?.oldValue && activity.metadata?.newValue && (
               <div className="mt-1 text-xs text-gray-500">
                 "{activity.metadata.oldValue}" → "{activity.metadata.newValue}"
@@ -26,7 +27,11 @@ export function ActivityCard({ activity }: ActivityCardProps) {
       case 'status_change':
         return (
           <div className="text-sm text-gray-600">
-            Changed from <span className="font-medium">{activity.metadata?.previousStatus}</span> to{' '}
+            Changed from{' '}
+            <span className="font-medium">
+              {activity.metadata?.previousStatus}
+            </span>{' '}
+            to{' '}
             <span className="font-medium">{activity.metadata?.newStatus}</span>
             {activity.metadata?.reason && (
               <div className="mt-1 text-xs text-gray-500 italic">
@@ -39,7 +44,9 @@ export function ActivityCard({ activity }: ActivityCardProps) {
       case 'event_attendance':
         return (
           <div className="text-sm text-gray-600">
-            {activity.metadata?.attendanceStatus === 'attended' ? 'Attended' : 'Registered for'}{' '}
+            {activity.metadata?.attendanceStatus === 'attended'
+              ? 'Attended'
+              : 'Registered for'}{' '}
             <span className="font-medium">{activity.metadata?.eventName}</span>
             {activity.metadata?.eventDate && (
               <div className="mt-1 text-xs text-gray-500">
@@ -52,8 +59,9 @@ export function ActivityCard({ activity }: ActivityCardProps) {
       case 'volunteer_service':
         return (
           <div className="text-sm text-gray-600">
-            Volunteered as <span className="font-medium">{activity.metadata?.role}</span>{' '}
-            in {activity.metadata?.department}
+            Volunteered as{' '}
+            <span className="font-medium">{activity.metadata?.role}</span> in{' '}
+            {activity.metadata?.department}
             {activity.metadata?.hours && (
               <div className="mt-1 text-xs text-gray-500">
                 {activity.metadata.hours} hours of service
@@ -87,7 +95,9 @@ export function ActivityCard({ activity }: ActivityCardProps) {
   return (
     <div className="flex gap-3 p-4 bg-white rounded-lg border border-gray-200 hover:shadow-sm transition-shadow">
       {/* Activity Icon */}
-      <div className={`flex-shrink-0 h-8 w-8 rounded-full ${config.bgColor} flex items-center justify-center`}>
+      <div
+        className={`flex-shrink-0 h-8 w-8 rounded-full ${config.bgColor} flex items-center justify-center`}
+      >
         <span className="text-sm">{config.icon}</span>
       </div>
 
@@ -100,7 +110,7 @@ export function ActivityCard({ activity }: ActivityCardProps) {
             </h4>
             {renderActivityContent()}
           </div>
-          
+
           <div className="flex-shrink-0 ml-4">
             <time className="text-xs text-gray-500">
               {format(activity.timestamp, 'h:mm a')}

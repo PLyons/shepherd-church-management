@@ -72,12 +72,12 @@ describe('EventForm', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     mockUseAuth.mockReturnValue({
       user: mockUser,
       isLoading: false,
     });
-    
+
     mockUseToast.mockReturnValue({
       showToast: mockShowToast,
     });
@@ -110,14 +110,16 @@ describe('EventForm', () => {
 
     it('should show loading spinner when loading event data', () => {
       mockEventsService.getById.mockImplementation(() => new Promise(() => {})); // Never resolves
-      
+
       render(
         <TestWrapper>
           <EventForm eventId="event-1" />
         </TestWrapper>
       );
 
-      expect(screen.getByTestId('loading-spinner') || screen.getByRole('status')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('loading-spinner') || screen.getByRole('status')
+      ).toBeInTheDocument();
     });
   });
 
@@ -154,8 +156,12 @@ describe('EventForm', () => {
         </TestWrapper>
       );
 
-      const eventTypeSelect = screen.getByLabelText(/event type/i) as HTMLSelectElement;
-      const options = Array.from(eventTypeSelect.options).map(option => option.value);
+      const eventTypeSelect = screen.getByLabelText(
+        /event type/i
+      ) as HTMLSelectElement;
+      const options = Array.from(eventTypeSelect.options).map(
+        (option) => option.value
+      );
 
       expect(options).toContain('service');
       expect(options).toContain('bible_study');
@@ -167,7 +173,7 @@ describe('EventForm', () => {
 
     it('should show waitlist option when capacity is set', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <EventForm />
@@ -186,7 +192,7 @@ describe('EventForm', () => {
   describe('Date/Time Handling', () => {
     it('should switch input type when all-day is toggled', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <EventForm />
@@ -211,7 +217,7 @@ describe('EventForm', () => {
   describe('Form Validation', () => {
     it('should show required field errors on empty submission', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <EventForm />
@@ -222,7 +228,9 @@ describe('EventForm', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/event title is required/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/event title is required/i)
+        ).toBeInTheDocument();
         expect(screen.getByText(/location is required/i)).toBeInTheDocument();
         expect(screen.getByText(/start date is required/i)).toBeInTheDocument();
         expect(screen.getByText(/end date is required/i)).toBeInTheDocument();
@@ -231,7 +239,7 @@ describe('EventForm', () => {
 
     it('should validate minimum title length', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <EventForm />
@@ -240,18 +248,20 @@ describe('EventForm', () => {
 
       const titleInput = screen.getByLabelText(/event title/i);
       await user.type(titleInput, 'ab'); // Only 2 characters
-      
+
       const submitButton = screen.getByText('Create Event');
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/title must be at least 3 characters long/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/title must be at least 3 characters long/i)
+        ).toBeInTheDocument();
       });
     });
 
     it('should validate capacity is positive', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <EventForm />
@@ -260,18 +270,20 @@ describe('EventForm', () => {
 
       const capacityInput = screen.getByLabelText(/maximum capacity/i);
       await user.type(capacityInput, '0');
-      
+
       const submitButton = screen.getByText('Create Event');
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/capacity must be at least 1/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/capacity must be at least 1/i)
+        ).toBeInTheDocument();
       });
     });
 
     it('should validate end date is after start date', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <EventForm />
@@ -283,12 +295,14 @@ describe('EventForm', () => {
 
       await user.type(startDateInput, '2025-12-01T10:00');
       await user.type(endDateInput, '2025-12-01T09:00'); // Earlier than start
-      
+
       const submitButton = screen.getByText('Create Event');
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/end date must be after start date/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/end date must be after start date/i)
+        ).toBeInTheDocument();
       });
     });
   });
@@ -305,7 +319,7 @@ describe('EventForm', () => {
     it('should call create service for new events', async () => {
       const user = userEvent.setup();
       mockEventsService.createEvent.mockResolvedValueOnce('new-event-id');
-      
+
       render(
         <TestWrapper>
           <EventForm />
@@ -313,11 +327,23 @@ describe('EventForm', () => {
       );
 
       // Fill out form
-      await user.type(screen.getByLabelText(/event title/i), validFormData.title);
-      await user.type(screen.getByLabelText(/location/i), validFormData.location);
-      await user.type(screen.getByLabelText(/start.*date/i), validFormData.startDate);
-      await user.type(screen.getByLabelText(/end.*date/i), validFormData.endDate);
-      
+      await user.type(
+        screen.getByLabelText(/event title/i),
+        validFormData.title
+      );
+      await user.type(
+        screen.getByLabelText(/location/i),
+        validFormData.location
+      );
+      await user.type(
+        screen.getByLabelText(/start.*date/i),
+        validFormData.startDate
+      );
+      await user.type(
+        screen.getByLabelText(/end.*date/i),
+        validFormData.endDate
+      );
+
       const submitButton = screen.getByText('Create Event');
       await user.click(submitButton);
 
@@ -329,7 +355,10 @@ describe('EventForm', () => {
             createdBy: mockUser.uid,
           })
         );
-        expect(mockShowToast).toHaveBeenCalledWith('Event created successfully!', 'success');
+        expect(mockShowToast).toHaveBeenCalledWith(
+          'Event created successfully!',
+          'success'
+        );
       });
     });
 
@@ -337,7 +366,7 @@ describe('EventForm', () => {
       const user = userEvent.setup();
       mockEventsService.getById.mockResolvedValueOnce(mockEventData);
       mockEventsService.updateEvent.mockResolvedValueOnce(undefined);
-      
+
       render(
         <TestWrapper>
           <EventForm eventId="event-1" />
@@ -360,14 +389,19 @@ describe('EventForm', () => {
             location: 'Test Location',
           })
         );
-        expect(mockShowToast).toHaveBeenCalledWith('Event updated successfully!', 'success');
+        expect(mockShowToast).toHaveBeenCalledWith(
+          'Event updated successfully!',
+          'success'
+        );
       });
     });
 
     it('should show loading state during submission', async () => {
       const user = userEvent.setup();
-      mockEventsService.createEvent.mockImplementation(() => new Promise(() => {})); // Never resolves
-      
+      mockEventsService.createEvent.mockImplementation(
+        () => new Promise(() => {})
+      ); // Never resolves
+
       render(
         <TestWrapper>
           <EventForm />
@@ -375,11 +409,23 @@ describe('EventForm', () => {
       );
 
       // Fill out form
-      await user.type(screen.getByLabelText(/event title/i), validFormData.title);
-      await user.type(screen.getByLabelText(/location/i), validFormData.location);
-      await user.type(screen.getByLabelText(/start.*date/i), validFormData.startDate);
-      await user.type(screen.getByLabelText(/end.*date/i), validFormData.endDate);
-      
+      await user.type(
+        screen.getByLabelText(/event title/i),
+        validFormData.title
+      );
+      await user.type(
+        screen.getByLabelText(/location/i),
+        validFormData.location
+      );
+      await user.type(
+        screen.getByLabelText(/start.*date/i),
+        validFormData.startDate
+      );
+      await user.type(
+        screen.getByLabelText(/end.*date/i),
+        validFormData.endDate
+      );
+
       const submitButton = screen.getByText('Create Event');
       await user.click(submitButton);
 
@@ -391,8 +437,10 @@ describe('EventForm', () => {
 
     it('should handle submission errors gracefully', async () => {
       const user = userEvent.setup();
-      mockEventsService.createEvent.mockRejectedValueOnce(new Error('Network error'));
-      
+      mockEventsService.createEvent.mockRejectedValueOnce(
+        new Error('Network error')
+      );
+
       render(
         <TestWrapper>
           <EventForm />
@@ -400,11 +448,23 @@ describe('EventForm', () => {
       );
 
       // Fill out form
-      await user.type(screen.getByLabelText(/event title/i), validFormData.title);
-      await user.type(screen.getByLabelText(/location/i), validFormData.location);
-      await user.type(screen.getByLabelText(/start.*date/i), validFormData.startDate);
-      await user.type(screen.getByLabelText(/end.*date/i), validFormData.endDate);
-      
+      await user.type(
+        screen.getByLabelText(/event title/i),
+        validFormData.title
+      );
+      await user.type(
+        screen.getByLabelText(/location/i),
+        validFormData.location
+      );
+      await user.type(
+        screen.getByLabelText(/start.*date/i),
+        validFormData.startDate
+      );
+      await user.type(
+        screen.getByLabelText(/end.*date/i),
+        validFormData.endDate
+      );
+
       const submitButton = screen.getByText('Create Event');
       await user.click(submitButton);
 
@@ -420,7 +480,7 @@ describe('EventForm', () => {
   describe('Event Loading', () => {
     it('should populate form with existing event data', async () => {
       mockEventsService.getById.mockResolvedValueOnce(mockEventData);
-      
+
       render(
         <TestWrapper>
           <EventForm eventId="event-1" />
@@ -430,14 +490,18 @@ describe('EventForm', () => {
       await waitFor(() => {
         expect(screen.getByDisplayValue('Test Event')).toBeInTheDocument();
         expect(screen.getByDisplayValue('Test Location')).toBeInTheDocument();
-        expect(screen.getByDisplayValue('Test Description')).toBeInTheDocument();
+        expect(
+          screen.getByDisplayValue('Test Description')
+        ).toBeInTheDocument();
         expect(screen.getByDisplayValue('service')).toBeInTheDocument();
       });
     });
 
     it('should handle event loading errors', async () => {
-      mockEventsService.getById.mockRejectedValueOnce(new Error('Event not found'));
-      
+      mockEventsService.getById.mockRejectedValueOnce(
+        new Error('Event not found')
+      );
+
       render(
         <TestWrapper>
           <EventForm eventId="event-1" />
@@ -445,7 +509,10 @@ describe('EventForm', () => {
       );
 
       await waitFor(() => {
-        expect(mockShowToast).toHaveBeenCalledWith('Error loading event details', 'error');
+        expect(mockShowToast).toHaveBeenCalledWith(
+          'Error loading event details',
+          'error'
+        );
       });
     });
   });
@@ -462,7 +529,7 @@ describe('EventForm', () => {
     it('should call onSubmit prop when provided', async () => {
       const user = userEvent.setup();
       const mockOnSubmit = vi.fn();
-      
+
       render(
         <TestWrapper>
           <EventForm onSubmit={mockOnSubmit} />
@@ -470,11 +537,23 @@ describe('EventForm', () => {
       );
 
       // Fill out form
-      await user.type(screen.getByLabelText(/event title/i), validFormData.title);
-      await user.type(screen.getByLabelText(/location/i), validFormData.location);
-      await user.type(screen.getByLabelText(/start.*date/i), validFormData.startDate);
-      await user.type(screen.getByLabelText(/end.*date/i), validFormData.endDate);
-      
+      await user.type(
+        screen.getByLabelText(/event title/i),
+        validFormData.title
+      );
+      await user.type(
+        screen.getByLabelText(/location/i),
+        validFormData.location
+      );
+      await user.type(
+        screen.getByLabelText(/start.*date/i),
+        validFormData.startDate
+      );
+      await user.type(
+        screen.getByLabelText(/end.*date/i),
+        validFormData.endDate
+      );
+
       const submitButton = screen.getByText('Create Event');
       await user.click(submitButton);
 
@@ -491,7 +570,7 @@ describe('EventForm', () => {
     it('should call onCancel prop when cancel button is clicked', async () => {
       const user = userEvent.setup();
       const mockOnCancel = vi.fn();
-      
+
       render(
         <TestWrapper>
           <EventForm onCancel={mockOnCancel} />

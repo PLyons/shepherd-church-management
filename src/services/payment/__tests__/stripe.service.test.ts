@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import type Stripe from 'stripe';
-import type { 
-  CreatePaymentIntentRequest, 
-  StripeConfig 
+import type {
+  CreatePaymentIntentRequest,
+  StripeConfig,
 } from '../../../types/donations';
 
 // Mock Stripe SDK
@@ -181,7 +181,9 @@ describe('StripeService', () => {
 
       const result = await stripeService.processPayment('pi_test_123');
 
-      expect(mockStripe.paymentIntents.confirm).toHaveBeenCalledWith('pi_test_123');
+      expect(mockStripe.paymentIntents.confirm).toHaveBeenCalledWith(
+        'pi_test_123'
+      );
       expect(result.status).toBe('succeeded');
     });
 
@@ -219,13 +221,15 @@ describe('StripeService', () => {
         id: 'sub_test_123',
         status: 'active',
         items: {
-          data: [{
-            price: {
-              unit_amount: 10000,
-              currency: 'usd',
-              recurring: { interval: 'month' },
+          data: [
+            {
+              price: {
+                unit_amount: 10000,
+                currency: 'usd',
+                recurring: { interval: 'month' },
+              },
             },
-          }],
+          ],
         },
         current_period_start: 1640995200, // 2022-01-01
         current_period_end: 1643673600, // 2022-02-01
@@ -237,20 +241,22 @@ describe('StripeService', () => {
 
       expect(mockStripe.subscriptions.create).toHaveBeenCalledWith({
         customer: expect.any(String),
-        items: [{
-          price_data: {
-            currency: 'usd',
-            unit_amount: 10000,
-            recurring: { interval: 'month' },
-            product_data: {
-              name: 'Monthly tithe',
-              metadata: {
-                categoryId: 'category-456',
-                source: 'shepherd-cms',
+        items: [
+          {
+            price_data: {
+              currency: 'usd',
+              unit_amount: 10000,
+              recurring: { interval: 'month' },
+              product_data: {
+                name: 'Monthly tithe',
+                metadata: {
+                  categoryId: 'category-456',
+                  source: 'shepherd-cms',
+                },
               },
             },
           },
-        }],
+        ],
         default_payment_method: 'pm_test_123',
         metadata: {
           memberId: 'member-123',
@@ -307,12 +313,16 @@ describe('StripeService', () => {
 
       const result = await stripeService.deletePaymentMethod('pm_test_123');
 
-      expect(mockStripe.paymentMethods.detach).toHaveBeenCalledWith('pm_test_123');
+      expect(mockStripe.paymentMethods.detach).toHaveBeenCalledWith(
+        'pm_test_123'
+      );
       expect(result).toBe(true);
     });
 
     it('should handle deletion errors gracefully', async () => {
-      mockStripe.paymentMethods.detach.mockRejectedValue(new Error('Payment method not found'));
+      mockStripe.paymentMethods.detach.mockRejectedValue(
+        new Error('Payment method not found')
+      );
 
       const result = await stripeService.deletePaymentMethod('pm_invalid');
 
@@ -327,9 +337,12 @@ describe('StripeService', () => {
         status: 'canceled',
       });
 
-      const result = await stripeService.cancelRecurringDonation('sub_test_123');
+      const result =
+        await stripeService.cancelRecurringDonation('sub_test_123');
 
-      expect(mockStripe.subscriptions.cancel).toHaveBeenCalledWith('sub_test_123');
+      expect(mockStripe.subscriptions.cancel).toHaveBeenCalledWith(
+        'sub_test_123'
+      );
       expect(result).toBe(true);
     });
   });
@@ -347,13 +360,15 @@ describe('StripeService', () => {
         current_period_end: 1643673600,
         default_payment_method: 'pm_test_123',
         items: {
-          data: [{
-            id: 'si_test_123',
-            price: {
-              unit_amount: 15000,
-              currency: 'usd',
+          data: [
+            {
+              id: 'si_test_123',
+              price: {
+                unit_amount: 15000,
+                currency: 'usd',
+              },
             },
-          }],
+          ],
         },
       };
 
@@ -361,17 +376,24 @@ describe('StripeService', () => {
       mockStripe.subscriptions.retrieve.mockResolvedValue({
         id: 'sub_test_123',
         items: {
-          data: [{
-            id: 'si_test_123',
-          }],
+          data: [
+            {
+              id: 'si_test_123',
+            },
+          ],
         },
       });
 
-      mockStripe.subscriptions.update.mockResolvedValue(mockUpdatedSubscription);
+      mockStripe.subscriptions.update.mockResolvedValue(
+        mockUpdatedSubscription
+      );
 
-      const result = await stripeService.updateRecurringDonation('sub_test_123', {
-        amount: 15000, // $150.00
-      });
+      const result = await stripeService.updateRecurringDonation(
+        'sub_test_123',
+        {
+          amount: 15000, // $150.00
+        }
+      );
 
       expect(result.id).toBe('sub_test_123');
       expect(result.status).toBe('active');
@@ -391,7 +413,9 @@ describe('StripeService', () => {
 
       const result = await stripeService.retryPayment('pi_test_123');
 
-      expect(mockStripe.paymentIntents.confirm).toHaveBeenCalledWith('pi_test_123');
+      expect(mockStripe.paymentIntents.confirm).toHaveBeenCalledWith(
+        'pi_test_123'
+      );
       expect(result.status).toBe('succeeded');
     });
   });
@@ -403,9 +427,14 @@ describe('StripeService', () => {
 
     it('should throw error for invalid configuration', () => {
       const invalidConfig = { ...mockConfig, publicKey: '' };
-      const invalidService = new StripeService(invalidConfig, mockStripe as Stripe);
+      const invalidService = new StripeService(
+        invalidConfig,
+        mockStripe as Stripe
+      );
 
-      expect(() => invalidService.validateConfig()).toThrow('Invalid Stripe configuration');
+      expect(() => invalidService.validateConfig()).toThrow(
+        'Invalid Stripe configuration'
+      );
     });
   });
 });

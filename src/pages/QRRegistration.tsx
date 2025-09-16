@@ -1,9 +1,4 @@
-import {
-  UserPlus,
-  CheckCircle,
-  ChevronRight,
-  ChevronLeft,
-} from 'lucide-react';
+import { UserPlus, CheckCircle, ChevronRight, ChevronLeft } from 'lucide-react';
 import { useQRRegistration } from '../hooks/useQRRegistration';
 import { RegistrationStates } from '../components/registration/RegistrationStates';
 import { FormStepBasic } from '../components/registration/steps/FormStepBasic';
@@ -40,22 +35,33 @@ export default function QRRegistration() {
 
   // Loading state
   if (loading) {
-    return <RegistrationStates state="loading" onReturnHome={handleReturnHome} />;
+    return (
+      <RegistrationStates state="loading" onReturnHome={handleReturnHome} />
+    );
   }
 
   // No token parameter
   if (!tokenParam) {
-    return <RegistrationStates state="no-token" onReturnHome={handleReturnHome} />;
+    return (
+      <RegistrationStates state="no-token" onReturnHome={handleReturnHome} />
+    );
   }
 
   // Invalid token
   if (!token) {
-    return <RegistrationStates state="invalid-token" onReturnHome={handleReturnHome} />;
+    return (
+      <RegistrationStates
+        state="invalid-token"
+        onReturnHome={handleReturnHome}
+      />
+    );
   }
 
   // Success state
   if (submitted) {
-    return <RegistrationStates state="success" onReturnHome={handleReturnHome} />;
+    return (
+      <RegistrationStates state="success" onReturnHome={handleReturnHome} />
+    );
   }
 
   // Progressive form renderer
@@ -93,18 +99,12 @@ export default function QRRegistration() {
 
       case 'address':
         return (
-          <FormStepAddress
-            formData={formData}
-            updateAddress={updateAddress}
-          />
+          <FormStepAddress formData={formData} updateAddress={updateAddress} />
         );
 
       case 'status':
         return (
-          <FormStepStatus
-            formData={formData}
-            updateFormData={updateFormData}
-          />
+          <FormStepStatus formData={formData} updateFormData={updateFormData} />
         );
 
       case 'review':

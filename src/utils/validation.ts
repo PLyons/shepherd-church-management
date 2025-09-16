@@ -30,7 +30,10 @@ export const validateName = (value: string): string | null => {
 // Payment validation functions for donations and financial transactions
 // These functions provide PCI compliant validation and formatting for payment data
 
-export const validatePaymentAmount = (amount: number, paymentType?: 'card' | 'ach'): string | null => {
+export const validatePaymentAmount = (
+  amount: number,
+  paymentType?: 'card' | 'ach'
+): string | null => {
   if (isNaN(amount) || !isFinite(amount)) {
     return 'Invalid payment amount';
   }
@@ -46,10 +49,10 @@ export const validatePaymentAmount = (amount: number, paymentType?: 'card' | 'ac
   }
 
   // Payment type specific minimums
-  if (paymentType === 'card' && amount < 0.50) {
+  if (paymentType === 'card' && amount < 0.5) {
     return 'Minimum card payment amount is $0.50';
   }
-  if (paymentType === 'ach' && amount < 1.00) {
+  if (paymentType === 'ach' && amount < 1.0) {
     return 'Minimum ACH payment amount is $1.00';
   }
 
@@ -63,7 +66,7 @@ export const validatePaymentAmount = (amount: number, paymentType?: 'card' | 'ac
 
 export const validateCreditCardNumber = (cardNumber: string): string | null => {
   const trimmed = cardNumber.replace(/[\s-]/g, '').trim();
-  
+
   if (!trimmed) {
     return 'Credit card number is required';
   }
@@ -76,17 +79,17 @@ export const validateCreditCardNumber = (cardNumber: string): string | null => {
   // Luhn algorithm validation first
   let sum = 0;
   let isEven = false;
-  
+
   for (let i = trimmed.length - 1; i >= 0; i--) {
     let digit = parseInt(trimmed.charAt(i), 10);
-    
+
     if (isEven) {
       digit *= 2;
       if (digit > 9) {
         digit -= 9;
       }
     }
-    
+
     sum += digit;
     isEven = !isEven;
   }
@@ -104,29 +107,38 @@ export const validateCreditCardNumber = (cardNumber: string): string | null => {
   // Additional brand-specific length validation
   const firstDigit = trimmed[0];
   const firstTwoDigits = trimmed.substring(0, 2);
-  
+
   // Visa: 13, 16, 19 digits starting with 4
   if (firstDigit === '4' && ![13, 16, 19].includes(trimmed.length)) {
     return 'Invalid credit card number';
   }
-  
+
   // Mastercard: 16 digits starting with 51-55 or 2221-2720
-  if ((parseInt(firstTwoDigits) >= 51 && parseInt(firstTwoDigits) <= 55) || 
-      (parseInt(trimmed.substring(0, 4)) >= 2221 && parseInt(trimmed.substring(0, 4)) <= 2720)) {
+  if (
+    (parseInt(firstTwoDigits) >= 51 && parseInt(firstTwoDigits) <= 55) ||
+    (parseInt(trimmed.substring(0, 4)) >= 2221 &&
+      parseInt(trimmed.substring(0, 4)) <= 2720)
+  ) {
     if (trimmed.length !== 16) {
       return 'Invalid credit card number';
     }
   }
-  
+
   // American Express: 15 digits starting with 34 or 37
-  if ((firstTwoDigits === '34' || firstTwoDigits === '37') && trimmed.length !== 15) {
+  if (
+    (firstTwoDigits === '34' || firstTwoDigits === '37') &&
+    trimmed.length !== 15
+  ) {
     return 'Invalid credit card number';
   }
 
   return null;
 };
 
-export const validateExpiryDate = (month: number, year: number): string | null => {
+export const validateExpiryDate = (
+  month: number,
+  year: number
+): string | null => {
   if (month < 1 || month > 12) {
     return 'Invalid expiry month';
   }
@@ -152,7 +164,7 @@ export const validateExpiryDate = (month: number, year: number): string | null =
 
 export const validateCVV = (cvv: string, cardType?: string): string | null => {
   const trimmed = cvv.trim();
-  
+
   if (!trimmed) {
     return 'CVV is required';
   }
@@ -163,9 +175,9 @@ export const validateCVV = (cvv: string, cardType?: string): string | null => {
 
   const isAmex = cardType === 'amex' || cardType === 'american_express';
   const expectedLength = isAmex ? 4 : 3;
-  
+
   if (trimmed.length !== expectedLength) {
-    return isAmex 
+    return isAmex
       ? 'CVV must be 4 digits for American Express'
       : 'CVV must be 3 digits for this card type';
   }
@@ -175,7 +187,7 @@ export const validateCVV = (cvv: string, cardType?: string): string | null => {
 
 export const validateRoutingNumber = (routingNumber: string): string | null => {
   const trimmed = routingNumber.trim();
-  
+
   if (!trimmed) {
     return 'Routing number is required';
   }
@@ -190,11 +202,11 @@ export const validateRoutingNumber = (routingNumber: string): string | null => {
 
   // ABA routing number checksum validation
   const digits = trimmed.split('').map(Number);
-  const checksum = (
-    3 * (digits[0] + digits[3] + digits[6]) +
-    7 * (digits[1] + digits[4] + digits[7]) +
-    1 * (digits[2] + digits[5] + digits[8])
-  ) % 10;
+  const checksum =
+    (3 * (digits[0] + digits[3] + digits[6]) +
+      7 * (digits[1] + digits[4] + digits[7]) +
+      1 * (digits[2] + digits[5] + digits[8])) %
+    10;
 
   if (checksum !== 0) {
     return 'Invalid routing number';
@@ -205,7 +217,7 @@ export const validateRoutingNumber = (routingNumber: string): string | null => {
 
 export const validateAccountNumber = (accountNumber: string): string | null => {
   const trimmed = accountNumber.trim();
-  
+
   if (!trimmed) {
     return 'Account number is required';
   }
@@ -221,9 +233,11 @@ export const validateAccountNumber = (accountNumber: string): string | null => {
   return null;
 };
 
-export const validateRecurringFrequency = (frequency: string): string | null => {
+export const validateRecurringFrequency = (
+  frequency: string
+): string | null => {
   const validFrequencies = ['weekly', 'monthly', 'quarterly', 'annually'];
-  
+
   if (!frequency.trim()) {
     return 'Recurring frequency is required';
   }
@@ -237,7 +251,7 @@ export const validateRecurringFrequency = (frequency: string): string | null => 
 
 export const validateCurrency = (currency: string): string | null => {
   const supportedCurrencies = ['USD', 'CAD', 'EUR'];
-  
+
   if (!currency.trim()) {
     return 'Currency is required';
   }
@@ -253,8 +267,13 @@ export const validateCurrency = (currency: string): string | null => {
 
 export const sanitizePaymentData = (data: unknown): unknown => {
   const sensitiveFields = [
-    'cardNumber', 'card_number', 'number',
-    'cvv', 'cvc', 'securityCode', 'security_code'
+    'cardNumber',
+    'card_number',
+    'number',
+    'cvv',
+    'cvc',
+    'securityCode',
+    'security_code',
   ];
 
   if (data === null || data === undefined) {
@@ -262,14 +281,14 @@ export const sanitizePaymentData = (data: unknown): unknown => {
   }
 
   if (Array.isArray(data)) {
-    return data.map(item => sanitizePaymentData(item));
+    return data.map((item) => sanitizePaymentData(item));
   }
 
   if (typeof data === 'object') {
     const sanitized: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data)) {
       const lowerKey = key.toLowerCase();
-      if (sensitiveFields.some(field => lowerKey.includes(field))) {
+      if (sensitiveFields.some((field) => lowerKey.includes(field))) {
         sanitized[key] = '[REDACTED]';
       } else {
         sanitized[key] = sanitizePaymentData(value);
@@ -281,12 +300,15 @@ export const sanitizePaymentData = (data: unknown): unknown => {
   return data;
 };
 
-export const formatCurrencyForDisplay = (amount: number, currency: string = 'USD'): string => {
+export const formatCurrencyForDisplay = (
+  amount: number,
+  currency: string = 'USD'
+): string => {
   const formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: currency,
     minimumFractionDigits: 2,
-    maximumFractionDigits: 2
+    maximumFractionDigits: 2,
   });
 
   return formatter.format(amount);

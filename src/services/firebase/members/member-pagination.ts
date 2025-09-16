@@ -167,7 +167,9 @@ export class MemberPagination {
   /**
    * Map frontend order by options to database field names
    */
-  private getOrderByField(orderBy?: 'name' | 'lastName' | 'firstName' | 'email' | 'status' | 'role'): string {
+  private getOrderByField(
+    orderBy?: 'name' | 'lastName' | 'firstName' | 'email' | 'status' | 'role'
+  ): string {
     switch (orderBy) {
       case 'name':
       case 'lastName':

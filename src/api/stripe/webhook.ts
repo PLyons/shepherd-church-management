@@ -12,7 +12,7 @@ import {
   StripeSubscription,
   WebhookProcessingResult,
   WebhookValidationError,
-  DonationFromWebhook
+  DonationFromWebhook,
 } from '../../types/webhook';
 import { Donation } from '../../types/donations';
 
@@ -28,7 +28,9 @@ export async function verifyWebhookSignature(
   secret: string
 ): Promise<StripeWebhookEvent> {
   if (!secret) {
-    const error = new Error('Webhook secret is missing') as WebhookValidationError;
+    const error = new Error(
+      'Webhook secret is missing'
+    ) as WebhookValidationError;
     error.code = 'MISSING_SECRET';
     error.statusCode = 500;
     throw error;
@@ -38,7 +40,9 @@ export async function verifyWebhookSignature(
     const event = Stripe.webhooks.constructEvent(payload, signature, secret);
     return event as StripeWebhookEvent;
   } catch (err) {
-    const error = new Error(`Webhook signature verification failed: ${(err as Error).message}`) as WebhookValidationError;
+    const error = new Error(
+      `Webhook signature verification failed: ${(err as Error).message}`
+    ) as WebhookValidationError;
     error.code = 'INVALID_SIGNATURE';
     error.statusCode = 400;
     throw error;
@@ -59,14 +63,14 @@ export async function handlePaymentSucceeded(
       success: true,
       donationId: donation.id,
       eventType: 'payment_intent.succeeded',
-      processed: true
+      processed: true,
     };
   } catch (error) {
     return {
       success: false,
       error: `Failed to process payment success: ${(error as Error).message}`,
       eventType: 'payment_intent.succeeded',
-      processed: false
+      processed: false,
     };
   }
 }
@@ -83,9 +87,13 @@ export async function handlePaymentFailed(
   const amount = paymentIntent.amount / 100; // Convert from cents
 
   if (memberId) {
-    console.error(`Payment failed for member ${memberId} (${memberName}): $${amount} - Payment Intent: ${paymentIntent.id}`);
+    console.error(
+      `Payment failed for member ${memberId} (${memberName}): $${amount} - Payment Intent: ${paymentIntent.id}`
+    );
   } else {
-    console.error(`Payment failed for anonymous user: $${amount} - Payment Intent: ${paymentIntent.id}`);
+    console.error(
+      `Payment failed for anonymous user: $${amount} - Payment Intent: ${paymentIntent.id}`
+    );
   }
 
   // For now, we just log failures. In the future, we might:
@@ -96,7 +104,7 @@ export async function handlePaymentFailed(
   return {
     success: true,
     eventType: 'payment_intent.payment_failed',
-    processed: true
+    processed: true,
   };
 }
 
@@ -114,14 +122,14 @@ export async function handleRecurringPaymentSucceeded(
       success: true,
       donationId: donation.id,
       eventType: 'invoice.payment_succeeded',
-      processed: true
+      processed: true,
     };
   } catch (error) {
     return {
       success: false,
       error: `Failed to process recurring payment: ${(error as Error).message}`,
       eventType: 'invoice.payment_succeeded',
-      processed: false
+      processed: false,
     };
   }
 }
@@ -137,7 +145,9 @@ export async function handleRecurringPaymentFailed(
   const memberName = invoice.metadata?.memberName;
   const amount = invoice.amount_due / 100; // Convert from cents
 
-  console.error(`Recurring payment failed for ${memberId ? `member ${memberId} (${memberName})` : 'unknown member'}: $${amount} - Invoice: ${invoice.id}`);
+  console.error(
+    `Recurring payment failed for ${memberId ? `member ${memberId} (${memberName})` : 'unknown member'}: $${amount} - Invoice: ${invoice.id}`
+  );
 
   // In the future, we might:
   // - Pause the subscription after multiple failures
@@ -147,7 +157,7 @@ export async function handleRecurringPaymentFailed(
   return {
     success: true,
     eventType: 'invoice.payment_failed',
-    processed: true
+    processed: true,
   };
 }
 
@@ -162,9 +172,13 @@ export async function handleSubscriptionCanceled(
   const memberName = subscription.metadata?.memberName;
 
   if (memberId) {
-    console.log(`Subscription canceled for member ${memberId} (${memberName}) - Subscription: ${subscription.id}`);
+    console.log(
+      `Subscription canceled for member ${memberId} (${memberName}) - Subscription: ${subscription.id}`
+    );
   } else {
-    console.log(`Subscription canceled for unknown member - Subscription: ${subscription.id}`);
+    console.log(
+      `Subscription canceled for unknown member - Subscription: ${subscription.id}`
+    );
   }
 
   // In the future, we might:
@@ -175,7 +189,7 @@ export async function handleSubscriptionCanceled(
   return {
     success: true,
     eventType: 'customer.subscription.deleted',
-    processed: true
+    processed: true,
   };
 }
 
@@ -191,7 +205,7 @@ export async function handleStripeWebhook(
       success: true,
       eventType: event.type,
       processed: false,
-      skipReason: `Event ${event.id} already processed`
+      skipReason: `Event ${event.id} already processed`,
     };
   }
 
@@ -200,23 +214,33 @@ export async function handleStripeWebhook(
 
     switch (event.type) {
       case 'payment_intent.succeeded':
-        result = await handlePaymentSucceeded(event.data.object as StripePaymentIntent);
+        result = await handlePaymentSucceeded(
+          event.data.object as StripePaymentIntent
+        );
         break;
 
       case 'payment_intent.payment_failed':
-        result = await handlePaymentFailed(event.data.object as StripePaymentIntent);
+        result = await handlePaymentFailed(
+          event.data.object as StripePaymentIntent
+        );
         break;
 
       case 'invoice.payment_succeeded':
-        result = await handleRecurringPaymentSucceeded(event.data.object as StripeInvoice);
+        result = await handleRecurringPaymentSucceeded(
+          event.data.object as StripeInvoice
+        );
         break;
 
       case 'invoice.payment_failed':
-        result = await handleRecurringPaymentFailed(event.data.object as StripeInvoice);
+        result = await handleRecurringPaymentFailed(
+          event.data.object as StripeInvoice
+        );
         break;
 
       case 'customer.subscription.deleted':
-        result = await handleSubscriptionCanceled(event.data.object as StripeSubscription);
+        result = await handleSubscriptionCanceled(
+          event.data.object as StripeSubscription
+        );
         break;
 
       default:
@@ -225,7 +249,7 @@ export async function handleStripeWebhook(
           success: true,
           eventType: event.type,
           processed: false,
-          skipReason: `Unsupported event type: ${event.type}`
+          skipReason: `Unsupported event type: ${event.type}`,
         };
     }
 
@@ -240,7 +264,7 @@ export async function handleStripeWebhook(
       success: false,
       error: `Webhook processing failed: ${(error as Error).message}`,
       eventType: event.type,
-      processed: false
+      processed: false,
     };
   }
 }
@@ -248,22 +272,29 @@ export async function handleStripeWebhook(
 /**
  * Create donation object from Stripe payment intent
  */
-function createDonationFromPaymentIntent(paymentIntent: StripePaymentIntent): Omit<Donation, 'id' | 'createdAt' | 'updatedAt' | 'status'> {
+function createDonationFromPaymentIntent(
+  paymentIntent: StripePaymentIntent
+): Omit<Donation, 'id' | 'createdAt' | 'updatedAt' | 'status'> {
   const amount = paymentIntent.amount / 100; // Convert from cents to dollars
   const isAnonymous = paymentIntent.metadata?.isAnonymous === 'true';
   const memberId = paymentIntent.metadata?.memberId;
   const memberName = paymentIntent.metadata?.memberName;
-  
+
   // Use category from metadata or fall back to environment defaults
-  const categoryId = paymentIntent.metadata?.donationCategoryId || 
-                   process.env.VITE_DEFAULT_DONATION_CATEGORY_ID || 
-                   'cat_general_fund';
-  const categoryName = paymentIntent.metadata?.donationCategoryName || 
-                      process.env.VITE_DEFAULT_DONATION_CATEGORY_NAME || 
-                      'General Fund';
+  const categoryId =
+    paymentIntent.metadata?.donationCategoryId ||
+    process.env.VITE_DEFAULT_DONATION_CATEGORY_ID ||
+    'cat_general_fund';
+  const categoryName =
+    paymentIntent.metadata?.donationCategoryName ||
+    process.env.VITE_DEFAULT_DONATION_CATEGORY_NAME ||
+    'General Fund';
 
   // Ensure created is a valid number
-  const createdTimestamp = typeof paymentIntent.created === 'number' ? paymentIntent.created : Math.floor(Date.now() / 1000);
+  const createdTimestamp =
+    typeof paymentIntent.created === 'number'
+      ? paymentIntent.created
+      : Math.floor(Date.now() / 1000);
   const donationDate = new Date(createdTimestamp * 1000).toISOString();
   const taxYear = new Date(createdTimestamp * 1000).getFullYear();
 
@@ -271,61 +302,68 @@ function createDonationFromPaymentIntent(paymentIntent: StripePaymentIntent): Om
     // Core identification
     memberId: isAnonymous ? undefined : memberId,
     memberName: isAnonymous ? undefined : memberName,
-    
+
     // Basic donation details
     amount,
     donationDate,
     method: 'stripe',
     note: paymentIntent.description || undefined,
-    
+
     // Category classification
     categoryId,
     categoryName,
-    
+
     // Form 990 compliance fields
     form990Fields: {
       lineItem: 'one_time_cash_donation',
       isAnonymous,
       isQuidProQuo: false,
-      restrictionType: 'unrestricted'
+      restrictionType: 'unrestricted',
     },
-    
+
     // Receipt and tracking
     isReceiptSent: false,
-    
+
     // Tax information
     isTaxDeductible: true,
     taxYear,
-    
+
     // Administrative - using 'system' for webhook-created donations
     createdBy: 'system_webhook',
-    
+
     // Stripe-specific tracking
-    stripePaymentIntentId: paymentIntent.id
+    stripePaymentIntentId: paymentIntent.id,
   };
 }
 
 /**
  * Create donation object from Stripe invoice (recurring payment)
  */
-function createDonationFromInvoice(invoice: StripeInvoice): Omit<Donation, 'id' | 'createdAt' | 'updatedAt' | 'status'> {
+function createDonationFromInvoice(
+  invoice: StripeInvoice
+): Omit<Donation, 'id' | 'createdAt' | 'updatedAt' | 'status'> {
   const amount = invoice.amount_paid / 100; // Convert from cents to dollars, use amount actually paid
   const memberId = invoice.metadata?.memberId;
   const memberName = invoice.metadata?.memberName;
-  
+
   // Use category from metadata or fall back to environment defaults
-  const categoryId = invoice.metadata?.donationCategoryId || 
-                   process.env.VITE_DEFAULT_DONATION_CATEGORY_ID || 
-                   'cat_general_fund';
-  const categoryName = invoice.metadata?.donationCategoryName || 
-                      process.env.VITE_DEFAULT_DONATION_CATEGORY_NAME || 
-                      'General Fund';
+  const categoryId =
+    invoice.metadata?.donationCategoryId ||
+    process.env.VITE_DEFAULT_DONATION_CATEGORY_ID ||
+    'cat_general_fund';
+  const categoryName =
+    invoice.metadata?.donationCategoryName ||
+    process.env.VITE_DEFAULT_DONATION_CATEGORY_NAME ||
+    'General Fund';
 
   // Ensure created is a valid number
-  const createdTimestamp = typeof invoice.created === 'number' ? invoice.created : Math.floor(Date.now() / 1000);
+  const createdTimestamp =
+    typeof invoice.created === 'number'
+      ? invoice.created
+      : Math.floor(Date.now() / 1000);
   const donationDate = new Date(createdTimestamp * 1000).toISOString();
   const taxYear = new Date(createdTimestamp * 1000).getFullYear();
-  
+
   // Create note for partial payments
   let note = 'Recurring donation';
   if (invoice.amount_paid < invoice.amount_due) {
@@ -336,38 +374,38 @@ function createDonationFromInvoice(invoice: StripeInvoice): Omit<Donation, 'id' 
     // Core identification
     memberId,
     memberName,
-    
+
     // Basic donation details
     amount,
     donationDate,
     method: 'stripe',
     note,
-    
+
     // Category classification
     categoryId,
     categoryName,
-    
+
     // Form 990 compliance fields
     form990Fields: {
       lineItem: 'one_time_cash_donation',
       isAnonymous: false, // Recurring donations typically have known members
       isQuidProQuo: false,
-      restrictionType: 'unrestricted'
+      restrictionType: 'unrestricted',
     },
-    
+
     // Receipt and tracking
     isReceiptSent: false,
-    
+
     // Tax information
     isTaxDeductible: true,
     taxYear,
-    
+
     // Administrative - using 'system' for webhook-created donations
     createdBy: 'system_webhook',
-    
+
     // Stripe-specific tracking
     stripeInvoiceId: invoice.id,
-    stripeSubscriptionId: invoice.subscription
+    stripeSubscriptionId: invoice.subscription,
   };
 }
 
@@ -387,7 +425,7 @@ export async function handler(req: {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'POST',
     'Access-Control-Allow-Headers': 'Content-Type, Stripe-Signature',
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
   };
 
   try {
@@ -396,7 +434,7 @@ export async function handler(req: {
       return {
         statusCode: 405,
         body: JSON.stringify({ error: 'Method not allowed' }),
-        headers: corsHeaders
+        headers: corsHeaders,
       };
     }
 
@@ -407,7 +445,7 @@ export async function handler(req: {
       return {
         statusCode: 400,
         body: JSON.stringify({ error: 'Missing Stripe signature' }),
-        headers: corsHeaders
+        headers: corsHeaders,
       };
     }
 
@@ -415,12 +453,16 @@ export async function handler(req: {
       return {
         statusCode: 500,
         body: JSON.stringify({ error: 'Webhook secret not configured' }),
-        headers: corsHeaders
+        headers: corsHeaders,
       };
     }
 
     // Verify the webhook signature
-    const event = await verifyWebhookSignature(req.body, signature, webhookSecret);
+    const event = await verifyWebhookSignature(
+      req.body,
+      signature,
+      webhookSecret
+    );
 
     // Process the webhook event
     const result = await handleStripeWebhook(event);
@@ -434,9 +476,9 @@ export async function handler(req: {
           eventType: event.type,
           processed: result.processed,
           donationId: result.donationId,
-          skipReason: result.skipReason
+          skipReason: result.skipReason,
         }),
-        headers: corsHeaders
+        headers: corsHeaders,
       };
     } else {
       console.error('Webhook processing failed:', result.error);
@@ -446,9 +488,9 @@ export async function handler(req: {
           error: 'Webhook processing failed',
           eventId: event.id,
           eventType: event.type,
-          details: result.error
+          details: result.error,
         }),
-        headers: corsHeaders
+        headers: corsHeaders,
       };
     }
   } catch (error) {
@@ -458,9 +500,9 @@ export async function handler(req: {
         statusCode: webhookError.statusCode,
         body: JSON.stringify({
           error: webhookError.message,
-          code: webhookError.code
+          code: webhookError.code,
         }),
-        headers: corsHeaders
+        headers: corsHeaders,
       };
     }
 
@@ -468,9 +510,9 @@ export async function handler(req: {
     return {
       statusCode: 500,
       body: JSON.stringify({
-        error: 'Internal server error'
+        error: 'Internal server error',
       }),
-      headers: corsHeaders
+      headers: corsHeaders,
     };
   }
 }

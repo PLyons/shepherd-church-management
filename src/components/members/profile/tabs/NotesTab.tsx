@@ -13,8 +13,10 @@ import { CommunicationLogger } from '../components/CommunicationLogger';
 export default function NotesTab() {
   const { member } = useContext(MemberContext);
   const { member: currentUser } = useAuth();
-  
-  const [activeView, setActiveView] = useState<'notes' | 'communications'>('notes');
+
+  const [activeView, setActiveView] = useState<'notes' | 'communications'>(
+    'notes'
+  );
   const [notes, setNotes] = useState<MemberNote[]>([]);
   const [communications, setCommunications] = useState<Communication[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,17 +24,18 @@ export default function NotesTab() {
   const [editingNote, setEditingNote] = useState<MemberNote | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [showCommunicationLogger, setShowCommunicationLogger] = useState(false);
-  
+
   const [filters, setFilters] = useState<NoteFilter>({
     categories: [],
     priorities: [],
     tags: [],
     dateRange: { start: null, end: null },
     search: '',
-    createdBy: []
+    createdBy: [],
   });
 
-  const canAccessNotes = currentUser?.role === 'admin' || currentUser?.role === 'pastor';
+  const canAccessNotes =
+    currentUser?.role === 'admin' || currentUser?.role === 'pastor';
 
   useEffect(() => {
     if (!member?.id || !canAccessNotes) return;
@@ -46,9 +49,9 @@ export default function NotesTab() {
       setLoading(true);
       const [notesResult, communicationsData] = await Promise.all([
         notesService.getNotes(member.id, filters),
-        notesService.getCommunications(member.id)
+        notesService.getCommunications(member.id),
       ]);
-      
+
       setNotes(notesResult.notes);
       setCommunications(communicationsData);
     } catch (error) {
@@ -72,11 +75,11 @@ export default function NotesTab() {
   };
 
   const handleNoteDeleted = (noteId: string) => {
-    setNotes(prev => prev.filter(note => note.id !== noteId));
+    setNotes((prev) => prev.filter((note) => note.id !== noteId));
   };
 
   const handleCommunicationLogged = (communication: Communication) => {
-    setCommunications(prev => [communication, ...prev]);
+    setCommunications((prev) => [communication, ...prev]);
     setShowCommunicationLogger(false);
   };
 
@@ -84,7 +87,9 @@ export default function NotesTab() {
     return (
       <div className="text-center py-12">
         <MessageSquare className="mx-auto h-12 w-12 text-gray-400" />
-        <h3 className="mt-2 text-sm font-medium text-gray-900">Access Restricted</h3>
+        <h3 className="mt-2 text-sm font-medium text-gray-900">
+          Access Restricted
+        </h3>
         <p className="mt-1 text-sm text-gray-500">
           You don't have permission to view notes and communications.
         </p>
@@ -108,7 +113,7 @@ export default function NotesTab() {
             Private pastoral care notes and communication history
           </p>
         </div>
-        
+
         <div className="flex items-center gap-2">
           {activeView === 'notes' ? (
             <button
@@ -127,7 +132,7 @@ export default function NotesTab() {
               Log Communication
             </button>
           )}
-          
+
           <button
             onClick={() => setShowFilters(!showFilters)}
             className="inline-flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
@@ -166,10 +171,7 @@ export default function NotesTab() {
 
       {/* Filters */}
       {showFilters && activeView === 'notes' && (
-        <NotesFilters
-          filters={filters}
-          onFiltersChange={setFilters}
-        />
+        <NotesFilters filters={filters} onFiltersChange={setFilters} />
       )}
 
       {/* Content */}
@@ -222,7 +224,7 @@ export default function NotesTab() {
 function NotesLoadingState() {
   return (
     <div className="space-y-4">
-      {[1, 2, 3].map(i => (
+      {[1, 2, 3].map((i) => (
         <div key={i} className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="animate-pulse">
             <div className="flex items-center gap-3 mb-3">

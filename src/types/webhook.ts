@@ -36,7 +36,14 @@ export interface StripePaymentIntent {
   object: 'payment_intent';
   amount: number;
   currency: string;
-  status: 'succeeded' | 'requires_payment_method' | 'requires_confirmation' | 'requires_action' | 'processing' | 'requires_capture' | 'canceled';
+  status:
+    | 'succeeded'
+    | 'requires_payment_method'
+    | 'requires_confirmation'
+    | 'requires_action'
+    | 'processing'
+    | 'requires_capture'
+    | 'canceled';
   metadata: Record<string, string>;
   receipt_email?: string;
   description?: string;
@@ -63,7 +70,15 @@ export interface StripeInvoice {
 export interface StripeSubscription {
   id: string;
   object: 'subscription';
-  status: 'incomplete' | 'incomplete_expired' | 'trialing' | 'active' | 'past_due' | 'canceled' | 'unpaid' | 'paused';
+  status:
+    | 'incomplete'
+    | 'incomplete_expired'
+    | 'trialing'
+    | 'active'
+    | 'past_due'
+    | 'canceled'
+    | 'unpaid'
+    | 'paused';
   customer: string;
   metadata: Record<string, string>;
   current_period_start: number;
@@ -115,6 +130,10 @@ export interface DonationFromWebhook {
 }
 
 export interface WebhookValidationError extends Error {
-  code: 'INVALID_SIGNATURE' | 'INVALID_PAYLOAD' | 'MISSING_SECRET' | 'PROCESSING_FAILED';
+  code:
+    | 'INVALID_SIGNATURE'
+    | 'INVALID_PAYLOAD'
+    | 'MISSING_SECRET'
+    | 'PROCESSING_FAILED';
   statusCode: number;
 }

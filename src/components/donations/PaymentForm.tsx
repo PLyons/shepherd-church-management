@@ -30,18 +30,21 @@ const PaymentFormContent: React.FC<PaymentFormProps> = ({
   donationData,
   onSuccess,
   onCancel,
-  isRecurring = false
+  isRecurring = false,
 }) => {
   const stripe = useStripe();
   const elements = useElements();
   const { user } = useAuth();
   const { showToast } = useToast();
-  
+
   const [isProcessing, setIsProcessing] = useState(false);
   const [clientSecret, setClientSecret] = useState<string>('');
-  const [savedPaymentMethods, setSavedPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [savedPaymentMethods, setSavedPaymentMethods] = useState<
+    PaymentMethod[]
+  >([]);
   const [useNewCard, setUseNewCard] = useState(true);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] =
+    useState<string>('');
   const [savePaymentMethod, setSavePaymentMethod] = useState(false);
   const [error, setError] = useState<string>('');
 
@@ -56,12 +59,14 @@ const PaymentFormContent: React.FC<PaymentFormProps> = ({
 
         // Create payment intent or setup intent
         if (isRecurring) {
-          const { clientSecret } = await stripeService.createSetupIntent(user.uid);
+          const { clientSecret } = await stripeService.createSetupIntent(
+            user.uid
+          );
           setClientSecret(clientSecret);
         } else {
           const { clientSecret } = await stripeService.createPaymentIntent({
             ...donationData,
-            donorId: user.uid
+            donorId: user.uid,
           } as any);
           setClientSecret(clientSecret);
         }
@@ -76,7 +81,7 @@ const PaymentFormContent: React.FC<PaymentFormProps> = ({
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    
+
     if (!stripe || !elements || !clientSecret) {
       setError('Payment system not ready. Please try again.');
       return;
@@ -159,7 +164,7 @@ const PaymentFormContent: React.FC<PaymentFormProps> = ({
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">
             Payment Method
           </h3>
-          
+
           {/* Saved Payment Methods */}
           <div className="space-y-2">
             {savedPaymentMethods.map((method) => (
@@ -176,7 +181,8 @@ const PaymentFormContent: React.FC<PaymentFormProps> = ({
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500"
                 />
                 <span className="text-sm text-gray-900 dark:text-white">
-                  **** **** **** {method.card?.last4} ({method.card?.brand.toUpperCase()})
+                  **** **** **** {method.card?.last4} (
+                  {method.card?.brand.toUpperCase()})
                 </span>
               </label>
             ))}
@@ -246,10 +252,13 @@ const PaymentFormContent: React.FC<PaymentFormProps> = ({
           disabled={!stripe || isProcessing || !clientSecret}
           className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isProcessing 
-            ? (isRecurring ? 'Setting up...' : 'Processing...') 
-            : (isRecurring ? 'Setup Recurring Gift' : `Donate $${donationData.amount}`)
-          }
+          {isProcessing
+            ? isRecurring
+              ? 'Setting up...'
+              : 'Processing...'
+            : isRecurring
+              ? 'Setup Recurring Gift'
+              : `Donate $${donationData.amount}`}
         </button>
       </div>
     </form>

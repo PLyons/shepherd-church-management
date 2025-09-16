@@ -90,12 +90,12 @@ describe('MemberLookup', () => {
   // Component rendering and initial state tests
   describe('Component Rendering', () => {
     it('should render with default props', () => {
-      render(
-        <MemberLookup onSelect={mockOnSelect} selectedMember={null} />
-      );
+      render(<MemberLookup onSelect={mockOnSelect} selectedMember={null} />);
 
       expect(screen.getByRole('textbox')).toBeInTheDocument();
-      expect(screen.getByPlaceholderText('Search for a member...')).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText('Search for a member...')
+      ).toBeInTheDocument();
       expect(screen.queryByTestId('member-dropdown')).not.toBeInTheDocument();
     });
 
@@ -109,15 +109,14 @@ describe('MemberLookup', () => {
         />
       );
 
-      expect(screen.getByPlaceholderText(customPlaceholder)).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText(customPlaceholder)
+      ).toBeInTheDocument();
     });
 
     it('should display selected member when provided', () => {
       render(
-        <MemberLookup
-          onSelect={mockOnSelect}
-          selectedMember={mockMembers[0]}
-        />
+        <MemberLookup onSelect={mockOnSelect} selectedMember={mockMembers[0]} />
       );
 
       expect(screen.getByDisplayValue('John Doe')).toBeInTheDocument();
@@ -137,22 +136,19 @@ describe('MemberLookup', () => {
 
     it('should show clear button when member is selected', () => {
       render(
-        <MemberLookup
-          onSelect={mockOnSelect}
-          selectedMember={mockMembers[0]}
-        />
+        <MemberLookup onSelect={mockOnSelect} selectedMember={mockMembers[0]} />
       );
 
-      expect(screen.getByRole('button', { name: /clear/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /clear/i })
+      ).toBeInTheDocument();
     });
   });
 
   // Search input functionality tests
   describe('Search Input Functionality', () => {
     it('should not search with less than 2 characters', async () => {
-      render(
-        <MemberLookup onSelect={mockOnSelect} selectedMember={null} />
-      );
+      render(<MemberLookup onSelect={mockOnSelect} selectedMember={null} />);
 
       const input = screen.getByRole('textbox');
       await user.type(input, 'j');
@@ -165,21 +161,19 @@ describe('MemberLookup', () => {
     });
 
     it('should debounce search queries', async () => {
-      render(
-        <MemberLookup onSelect={mockOnSelect} selectedMember={null} />
-      );
+      render(<MemberLookup onSelect={mockOnSelect} selectedMember={null} />);
 
       const input = screen.getByRole('textbox');
-      
+
       // Type multiple characters quickly
       await user.type(input, 'joh');
-      
+
       // Should not search immediately
       expect(mockMemberSearch.searchMembers).not.toHaveBeenCalled();
-      
+
       // Fast-forward timers to simulate debounce completion
       vi.advanceTimersByTime(300);
-      
+
       expect(mockMemberSearch.searchMembers).toHaveBeenCalledWith(
         expect.any(Array),
         'joh'
@@ -187,9 +181,7 @@ describe('MemberLookup', () => {
     });
 
     it('should search after typing stops for debounce period', async () => {
-      render(
-        <MemberLookup onSelect={mockOnSelect} selectedMember={null} />
-      );
+      render(<MemberLookup onSelect={mockOnSelect} selectedMember={null} />);
 
       const input = screen.getByRole('textbox');
       await user.type(input, 'john');
@@ -203,16 +195,14 @@ describe('MemberLookup', () => {
     });
 
     it('should cancel previous search when typing continues', async () => {
-      render(
-        <MemberLookup onSelect={mockOnSelect} selectedMember={null} />
-      );
+      render(<MemberLookup onSelect={mockOnSelect} selectedMember={null} />);
 
       const input = screen.getByRole('textbox');
-      
+
       // Start typing
       await user.type(input, 'jo');
       vi.advanceTimersByTime(200);
-      
+
       // Continue typing before debounce completes
       await user.type(input, 'hn');
       vi.advanceTimersByTime(300);
@@ -229,9 +219,7 @@ describe('MemberLookup', () => {
   // Dropdown display and interactions tests
   describe('Dropdown Display and Interactions', () => {
     it('should show dropdown with search results', async () => {
-      render(
-        <MemberLookup onSelect={mockOnSelect} selectedMember={null} />
-      );
+      render(<MemberLookup onSelect={mockOnSelect} selectedMember={null} />);
 
       const input = screen.getByRole('textbox');
       await user.type(input, 'john');
@@ -246,9 +234,7 @@ describe('MemberLookup', () => {
     });
 
     it('should display member information correctly in dropdown items', async () => {
-      render(
-        <MemberLookup onSelect={mockOnSelect} selectedMember={null} />
-      );
+      render(<MemberLookup onSelect={mockOnSelect} selectedMember={null} />);
 
       const input = screen.getByRole('textbox');
       await user.type(input, 'jane');
@@ -262,9 +248,7 @@ describe('MemberLookup', () => {
     });
 
     it('should highlight matching search terms in results', async () => {
-      render(
-        <MemberLookup onSelect={mockOnSelect} selectedMember={null} />
-      );
+      render(<MemberLookup onSelect={mockOnSelect} selectedMember={null} />);
 
       const input = screen.getByRole('textbox');
       await user.type(input, 'john');
@@ -276,9 +260,7 @@ describe('MemberLookup', () => {
     });
 
     it('should show "Anonymous" option when no search term is entered', async () => {
-      render(
-        <MemberLookup onSelect={mockOnSelect} selectedMember={null} />
-      );
+      render(<MemberLookup onSelect={mockOnSelect} selectedMember={null} />);
 
       const input = screen.getByRole('textbox');
       await user.click(input); // Focus input without typing
@@ -291,9 +273,7 @@ describe('MemberLookup', () => {
     it('should show "No members found" when search returns empty results', async () => {
       mockMemberSearch.searchMembers.mockReturnValue([]);
 
-      render(
-        <MemberLookup onSelect={mockOnSelect} selectedMember={null} />
-      );
+      render(<MemberLookup onSelect={mockOnSelect} selectedMember={null} />);
 
       const input = screen.getByRole('textbox');
       await user.type(input, 'nonexistent');
@@ -308,9 +288,7 @@ describe('MemberLookup', () => {
   // Member selection tests
   describe('Member Selection', () => {
     it('should select member when clicked in dropdown', async () => {
-      render(
-        <MemberLookup onSelect={mockOnSelect} selectedMember={null} />
-      );
+      render(<MemberLookup onSelect={mockOnSelect} selectedMember={null} />);
 
       const input = screen.getByRole('textbox');
       await user.type(input, 'john');
@@ -328,9 +306,7 @@ describe('MemberLookup', () => {
     });
 
     it('should select anonymous when Anonymous option is clicked', async () => {
-      render(
-        <MemberLookup onSelect={mockOnSelect} selectedMember={null} />
-      );
+      render(<MemberLookup onSelect={mockOnSelect} selectedMember={null} />);
 
       const input = screen.getByRole('textbox');
       await user.click(input);
@@ -347,9 +323,7 @@ describe('MemberLookup', () => {
     });
 
     it('should update input value when member is selected', async () => {
-      render(
-        <MemberLookup onSelect={mockOnSelect} selectedMember={null} />
-      );
+      render(<MemberLookup onSelect={mockOnSelect} selectedMember={null} />);
 
       const input = screen.getByRole('textbox') as HTMLInputElement;
       await user.type(input, 'jane');
@@ -369,10 +343,7 @@ describe('MemberLookup', () => {
   describe('Clear Button Functionality', () => {
     it('should clear selection when clear button is clicked', async () => {
       render(
-        <MemberLookup
-          onSelect={mockOnSelect}
-          selectedMember={mockMembers[0]}
-        />
+        <MemberLookup onSelect={mockOnSelect} selectedMember={mockMembers[0]} />
       );
 
       const clearButton = screen.getByRole('button', { name: /clear/i });
@@ -383,10 +354,7 @@ describe('MemberLookup', () => {
 
     it('should focus input after clearing selection', async () => {
       render(
-        <MemberLookup
-          onSelect={mockOnSelect}
-          selectedMember={mockMembers[0]}
-        />
+        <MemberLookup onSelect={mockOnSelect} selectedMember={mockMembers[0]} />
       );
 
       const clearButton = screen.getByRole('button', { name: /clear/i });
@@ -396,11 +364,11 @@ describe('MemberLookup', () => {
     });
 
     it('should hide clear button when no member is selected', () => {
-      render(
-        <MemberLookup onSelect={mockOnSelect} selectedMember={null} />
-      );
+      render(<MemberLookup onSelect={mockOnSelect} selectedMember={null} />);
 
-      expect(screen.queryByRole('button', { name: /clear/i })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: /clear/i })
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -428,9 +396,7 @@ describe('MemberLookup', () => {
     });
 
     it('should not close dropdown when clicking inside dropdown', async () => {
-      render(
-        <MemberLookup onSelect={mockOnSelect} selectedMember={null} />
-      );
+      render(<MemberLookup onSelect={mockOnSelect} selectedMember={null} />);
 
       const input = screen.getByRole('textbox');
       await user.type(input, 'john');
@@ -450,9 +416,7 @@ describe('MemberLookup', () => {
   // Keyboard navigation tests
   describe('Keyboard Navigation', () => {
     it('should navigate dropdown with arrow keys', async () => {
-      render(
-        <MemberLookup onSelect={mockOnSelect} selectedMember={null} />
-      );
+      render(<MemberLookup onSelect={mockOnSelect} selectedMember={null} />);
 
       const input = screen.getByRole('textbox');
       await user.type(input, 'jo');
@@ -464,19 +428,17 @@ describe('MemberLookup', () => {
 
       // Press Arrow Down to select first item
       fireEvent.keyDown(input, { key: 'ArrowDown', code: 'ArrowDown' });
-      
+
       expect(screen.getByTestId('dropdown-item-0')).toHaveClass('bg-blue-50');
 
       // Press Arrow Down again to select second item
       fireEvent.keyDown(input, { key: 'ArrowDown', code: 'ArrowDown' });
-      
+
       expect(screen.getByTestId('dropdown-item-1')).toHaveClass('bg-blue-50');
     });
 
     it('should select member with Enter key', async () => {
-      render(
-        <MemberLookup onSelect={mockOnSelect} selectedMember={null} />
-      );
+      render(<MemberLookup onSelect={mockOnSelect} selectedMember={null} />);
 
       const input = screen.getByRole('textbox');
       await user.type(input, 'john');
@@ -494,9 +456,7 @@ describe('MemberLookup', () => {
     });
 
     it('should close dropdown with Escape key', async () => {
-      render(
-        <MemberLookup onSelect={mockOnSelect} selectedMember={null} />
-      );
+      render(<MemberLookup onSelect={mockOnSelect} selectedMember={null} />);
 
       const input = screen.getByRole('textbox');
       await user.type(input, 'john');
@@ -512,9 +472,7 @@ describe('MemberLookup', () => {
     });
 
     it('should wrap navigation at dropdown boundaries', async () => {
-      render(
-        <MemberLookup onSelect={mockOnSelect} selectedMember={null} />
-      );
+      render(<MemberLookup onSelect={mockOnSelect} selectedMember={null} />);
 
       const input = screen.getByRole('textbox');
       await user.type(input, 'jo');
@@ -526,10 +484,12 @@ describe('MemberLookup', () => {
 
       // Press Arrow Up from first position should go to last
       fireEvent.keyDown(input, { key: 'ArrowUp', code: 'ArrowUp' });
-      
+
       const dropdownItems = screen.getAllByTestId(/dropdown-item-/);
       const lastItemIndex = dropdownItems.length - 1;
-      expect(screen.getByTestId(`dropdown-item-${lastItemIndex}`)).toHaveClass('bg-blue-50');
+      expect(screen.getByTestId(`dropdown-item-${lastItemIndex}`)).toHaveClass(
+        'bg-blue-50'
+      );
     });
   });
 
@@ -538,12 +498,12 @@ describe('MemberLookup', () => {
     it('should show loading indicator during search', async () => {
       // Mock a delayed search response
       mockMemberSearch.searchMembers.mockImplementation(() => {
-        return new Promise(resolve => setTimeout(() => resolve(mockMembers), 100));
+        return new Promise((resolve) =>
+          setTimeout(() => resolve(mockMembers), 100)
+        );
       });
 
-      render(
-        <MemberLookup onSelect={mockOnSelect} selectedMember={null} />
-      );
+      render(<MemberLookup onSelect={mockOnSelect} selectedMember={null} />);
 
       const input = screen.getByRole('textbox');
       await user.type(input, 'john');
@@ -553,9 +513,7 @@ describe('MemberLookup', () => {
     });
 
     it('should hide loading indicator after search completes', async () => {
-      render(
-        <MemberLookup onSelect={mockOnSelect} selectedMember={null} />
-      );
+      render(<MemberLookup onSelect={mockOnSelect} selectedMember={null} />);
 
       const input = screen.getByRole('textbox');
       await user.type(input, 'john');
@@ -570,14 +528,14 @@ describe('MemberLookup', () => {
   // Error handling tests
   describe('Error Handling', () => {
     it('should handle search service errors gracefully', async () => {
-      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleError = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
       mockMemberSearch.searchMembers.mockImplementation(() => {
         throw new Error('Search service unavailable');
       });
 
-      render(
-        <MemberLookup onSelect={mockOnSelect} selectedMember={null} />
-      );
+      render(<MemberLookup onSelect={mockOnSelect} selectedMember={null} />);
 
       const input = screen.getByRole('textbox');
       await user.type(input, 'john');
@@ -592,16 +550,16 @@ describe('MemberLookup', () => {
     });
 
     it('should recover from error state on new search', async () => {
-      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
-      
+      const consoleError = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
       // First search fails
       mockMemberSearch.searchMembers.mockImplementationOnce(() => {
         throw new Error('Search service unavailable');
       });
 
-      render(
-        <MemberLookup onSelect={mockOnSelect} selectedMember={null} />
-      );
+      render(<MemberLookup onSelect={mockOnSelect} selectedMember={null} />);
 
       const input = screen.getByRole('textbox');
       await user.type(input, 'john');
@@ -613,13 +571,15 @@ describe('MemberLookup', () => {
 
       // Second search succeeds
       mockMemberSearch.searchMembers.mockReturnValue(mockMembers);
-      
+
       await user.clear(input);
       await user.type(input, 'jane');
       vi.advanceTimersByTime(300);
 
       await waitFor(() => {
-        expect(screen.queryByText('Error searching members')).not.toBeInTheDocument();
+        expect(
+          screen.queryByText('Error searching members')
+        ).not.toBeInTheDocument();
         expect(screen.getByText('Jane Smith')).toBeInTheDocument();
       });
 
@@ -670,7 +630,9 @@ describe('MemberLookup', () => {
 
       await user.click(screen.getByText('John Doe'));
 
-      expect(screen.queryByText('Please select a member')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Please select a member')
+      ).not.toBeInTheDocument();
     });
 
     it('should not show validation error when not required', async () => {
@@ -686,16 +648,16 @@ describe('MemberLookup', () => {
       await user.click(input);
       await user.tab();
 
-      expect(screen.queryByText('Please select a member')).not.toBeInTheDocument();
+      expect(
+        screen.queryByText('Please select a member')
+      ).not.toBeInTheDocument();
     });
   });
 
   // Accessibility tests
   describe('Accessibility', () => {
     it('should have proper ARIA attributes', () => {
-      render(
-        <MemberLookup onSelect={mockOnSelect} selectedMember={null} />
-      );
+      render(<MemberLookup onSelect={mockOnSelect} selectedMember={null} />);
 
       const input = screen.getByRole('textbox');
       expect(input).toHaveAttribute('aria-autocomplete', 'list');
@@ -703,9 +665,7 @@ describe('MemberLookup', () => {
     });
 
     it('should update ARIA attributes when dropdown is open', async () => {
-      render(
-        <MemberLookup onSelect={mockOnSelect} selectedMember={null} />
-      );
+      render(<MemberLookup onSelect={mockOnSelect} selectedMember={null} />);
 
       const input = screen.getByRole('textbox');
       await user.type(input, 'john');
@@ -713,14 +673,15 @@ describe('MemberLookup', () => {
 
       await waitFor(() => {
         expect(input).toHaveAttribute('aria-expanded', 'true');
-        expect(input).toHaveAttribute('aria-owns', expect.stringContaining('member-dropdown'));
+        expect(input).toHaveAttribute(
+          'aria-owns',
+          expect.stringContaining('member-dropdown')
+        );
       });
     });
 
     it('should have proper role and aria-label for dropdown items', async () => {
-      render(
-        <MemberLookup onSelect={mockOnSelect} selectedMember={null} />
-      );
+      render(<MemberLookup onSelect={mockOnSelect} selectedMember={null} />);
 
       const input = screen.getByRole('textbox');
       await user.type(input, 'john');
@@ -728,7 +689,10 @@ describe('MemberLookup', () => {
 
       await waitFor(() => {
         const dropdownItems = screen.getAllByRole('option');
-        expect(dropdownItems[0]).toHaveAttribute('aria-label', 'John Doe - john.doe@example.com');
+        expect(dropdownItems[0]).toHaveAttribute(
+          'aria-label',
+          'John Doe - john.doe@example.com'
+        );
       });
     });
   });

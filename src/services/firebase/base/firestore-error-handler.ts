@@ -27,12 +27,24 @@ export class FirestoreErrorHandler {
   private static readonly USER_FRIENDLY_MESSAGES = new Map<string, string>([
     ['not-found', 'The requested item could not be found.'],
     ['permission-denied', 'You do not have permission to perform this action.'],
-    ['unavailable', 'The service is temporarily unavailable. Please try again later.'],
+    [
+      'unavailable',
+      'The service is temporarily unavailable. Please try again later.',
+    ],
     ['deadline-exceeded', 'The operation timed out. Please try again.'],
-    ['resource-exhausted', 'Too many requests. Please wait a moment and try again.'],
-    ['invalid-argument', 'The provided data is invalid. Please check and try again.'],
+    [
+      'resource-exhausted',
+      'Too many requests. Please wait a moment and try again.',
+    ],
+    [
+      'invalid-argument',
+      'The provided data is invalid. Please check and try again.',
+    ],
     ['already-exists', 'An item with this identifier already exists.'],
-    ['failed-precondition', 'The operation cannot be completed due to current conditions.'],
+    [
+      'failed-precondition',
+      'The operation cannot be completed due to current conditions.',
+    ],
     ['out-of-range', 'The requested data is outside the valid range.'],
     ['unauthenticated', 'Please sign in to continue.'],
     ['cancelled', 'The operation was cancelled. Please try again.'],
@@ -64,10 +76,14 @@ export class FirestoreErrorHandler {
   /**
    * Handle Firebase-specific errors
    */
-  private static handleFirebaseError(error: FirebaseError, context: ErrorContext): ErrorDetails {
+  private static handleFirebaseError(
+    error: FirebaseError,
+    context: ErrorContext
+  ): ErrorDetails {
     const code = error.code;
-    const userMessage = this.USER_FRIENDLY_MESSAGES.get(code) || 
-                       'An unexpected error occurred. Please try again.';
+    const userMessage =
+      this.USER_FRIENDLY_MESSAGES.get(code) ||
+      'An unexpected error occurred. Please try again.';
     const isRetryable = this.RETRYABLE_CODES.has(code);
 
     let suggestedAction: string | undefined;
@@ -104,7 +120,10 @@ export class FirestoreErrorHandler {
   /**
    * Handle generic JavaScript errors
    */
-  private static handleGenericError(error: Error, context: ErrorContext): ErrorDetails {
+  private static handleGenericError(
+    error: Error,
+    context: ErrorContext
+  ): ErrorDetails {
     return {
       code: 'generic-error',
       message: error.message,
@@ -117,7 +136,10 @@ export class FirestoreErrorHandler {
   /**
    * Handle unknown error types
    */
-  private static handleUnknownError(error: unknown, context: ErrorContext): ErrorDetails {
+  private static handleUnknownError(
+    error: unknown,
+    context: ErrorContext
+  ): ErrorDetails {
     return {
       code: 'unknown-error',
       message: String(error),
@@ -132,7 +154,7 @@ export class FirestoreErrorHandler {
    */
   static logError(error: unknown, context: ErrorContext): void {
     const errorDetails = this.handleError(error, context);
-    
+
     console.error('Firestore Operation Error:', {
       operation: context.operation,
       collection: context.collectionName,
@@ -149,7 +171,11 @@ export class FirestoreErrorHandler {
   /**
    * Create a standardized error for throwing
    */
-  static createError(message: string, code: string, originalError?: Error): Error {
+  static createError(
+    message: string,
+    code: string,
+    originalError?: Error
+  ): Error {
     const error = new Error(message);
     (error as any).code = code;
     (error as any).originalError = originalError;
@@ -168,17 +194,17 @@ export class FirestoreErrorHandler {
     } catch (error) {
       const errorDetails = this.handleError(error, context);
       this.logError(error, context);
-      
+
       // Re-throw with enhanced error information
       const enhancedError = this.createError(
         errorDetails.userMessage,
         errorDetails.code,
         error instanceof Error ? error : undefined
       );
-      
+
       (enhancedError as any).isRetryable = errorDetails.isRetryable;
       (enhancedError as any).suggestedAction = errorDetails.suggestedAction;
-      
+
       throw enhancedError;
     }
   }
@@ -209,10 +235,13 @@ export class FirestoreErrorHandler {
         }
 
         // Exponential backoff with jitter
-        const delay = baseDelay * Math.pow(2, attempt - 1) + Math.random() * 1000;
-        console.log(`Retrying operation after ${delay}ms (attempt ${attempt}/${maxRetries})`);
-        
-        await new Promise(resolve => setTimeout(resolve, delay));
+        const delay =
+          baseDelay * Math.pow(2, attempt - 1) + Math.random() * 1000;
+        console.log(
+          `Retrying operation after ${delay}ms (attempt ${attempt}/${maxRetries})`
+        );
+
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
 

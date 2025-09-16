@@ -33,7 +33,7 @@ const PAYMENT_METHODS: { value: DonationMethod; label: string }[] = [
   { value: 'online', label: 'Online' },
   { value: 'mobile_app', label: 'Mobile App' },
   { value: 'crypto', label: 'Cryptocurrency' },
-  { value: 'other', label: 'Other' }
+  { value: 'other', label: 'Other' },
 ];
 
 const DATE_PRESETS = [
@@ -41,13 +41,13 @@ const DATE_PRESETS = [
   { label: 'Last Year', value: 'last_year' },
   { label: 'Last 6 Months', value: 'last_6_months' },
   { label: 'Last 3 Months', value: 'last_3_months' },
-  { label: 'Custom Range', value: 'custom' }
+  { label: 'Custom Range', value: 'custom' },
 ];
 
 export const DonationFilters: React.FC<DonationFiltersProps> = ({
   filters,
   onFiltersChange,
-  className = ''
+  className = '',
 }) => {
   const [categories, setCategories] = useState<DonationCategory[]>([]);
   const [loading, setLoading] = useState(false);
@@ -61,7 +61,8 @@ export const DonationFilters: React.FC<DonationFiltersProps> = ({
     const loadCategories = async () => {
       try {
         setLoading(true);
-        const categoryData = await donationCategoriesService.getActiveCategories();
+        const categoryData =
+          await donationCategoriesService.getActiveCategories();
         setCategories(categoryData);
       } catch (error) {
         console.error('Failed to load donation categories:', error);
@@ -74,56 +75,59 @@ export const DonationFilters: React.FC<DonationFiltersProps> = ({
   }, []);
 
   // Handle date preset changes
-  const handleDatePresetChange = useCallback((preset: string) => {
-    setDatePreset(preset);
-    
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    
-    let dateRange: { start: string; end: string } | undefined;
-    
-    switch (preset) {
-      case 'ytd': {
-        dateRange = {
-          start: `${currentYear}-01-01`,
-          end: now.toISOString().split('T')[0]
-        };
-        break;
+  const handleDatePresetChange = useCallback(
+    (preset: string) => {
+      setDatePreset(preset);
+
+      const now = new Date();
+      const currentYear = now.getFullYear();
+
+      let dateRange: { start: string; end: string } | undefined;
+
+      switch (preset) {
+        case 'ytd': {
+          dateRange = {
+            start: `${currentYear}-01-01`,
+            end: now.toISOString().split('T')[0],
+          };
+          break;
+        }
+        case 'last_year': {
+          dateRange = {
+            start: `${currentYear - 1}-01-01`,
+            end: `${currentYear - 1}-12-31`,
+          };
+          break;
+        }
+        case 'last_6_months': {
+          const sixMonthsAgo = new Date(now);
+          sixMonthsAgo.setMonth(now.getMonth() - 6);
+          dateRange = {
+            start: sixMonthsAgo.toISOString().split('T')[0],
+            end: now.toISOString().split('T')[0],
+          };
+          break;
+        }
+        case 'last_3_months': {
+          const threeMonthsAgo = new Date(now);
+          threeMonthsAgo.setMonth(now.getMonth() - 3);
+          dateRange = {
+            start: threeMonthsAgo.toISOString().split('T')[0],
+            end: now.toISOString().split('T')[0],
+          };
+          break;
+        }
+        case 'custom':
+          // Don't set dateRange, let user set custom dates
+          return;
+        default:
+          dateRange = undefined;
       }
-      case 'last_year': {
-        dateRange = {
-          start: `${currentYear - 1}-01-01`,
-          end: `${currentYear - 1}-12-31`
-        };
-        break;
-      }
-      case 'last_6_months': {
-        const sixMonthsAgo = new Date(now);
-        sixMonthsAgo.setMonth(now.getMonth() - 6);
-        dateRange = {
-          start: sixMonthsAgo.toISOString().split('T')[0],
-          end: now.toISOString().split('T')[0]
-        };
-        break;
-      }
-      case 'last_3_months': {
-        const threeMonthsAgo = new Date(now);
-        threeMonthsAgo.setMonth(now.getMonth() - 3);
-        dateRange = {
-          start: threeMonthsAgo.toISOString().split('T')[0],
-          end: now.toISOString().split('T')[0]
-        };
-        break;
-      }
-      case 'custom':
-        // Don't set dateRange, let user set custom dates
-        return;
-      default:
-        dateRange = undefined;
-    }
-    
-    onFiltersChange({ dateRange });
-  }, [onFiltersChange]);
+
+      onFiltersChange({ dateRange });
+    },
+    [onFiltersChange]
+  );
 
   // Handle custom date range
   const handleCustomDateChange = useCallback(() => {
@@ -132,12 +136,12 @@ export const DonationFilters: React.FC<DonationFiltersProps> = ({
         // Show error - start date must be before end date
         return;
       }
-      
+
       onFiltersChange({
         dateRange: {
           start: customStartDate,
-          end: customEndDate
-        }
+          end: customEndDate,
+        },
       });
     }
   }, [customStartDate, customEndDate, onFiltersChange]);
@@ -150,27 +154,36 @@ export const DonationFilters: React.FC<DonationFiltersProps> = ({
   }, [datePreset, customStartDate, customEndDate, handleCustomDateChange]);
 
   // Handle category filter toggle
-  const handleCategoryToggle = useCallback((categoryId: string) => {
-    const newCategoryIds = filters.categoryIds.includes(categoryId)
-      ? filters.categoryIds.filter(id => id !== categoryId)
-      : [...filters.categoryIds, categoryId];
-    
-    onFiltersChange({ categoryIds: newCategoryIds });
-  }, [filters.categoryIds, onFiltersChange]);
+  const handleCategoryToggle = useCallback(
+    (categoryId: string) => {
+      const newCategoryIds = filters.categoryIds.includes(categoryId)
+        ? filters.categoryIds.filter((id) => id !== categoryId)
+        : [...filters.categoryIds, categoryId];
+
+      onFiltersChange({ categoryIds: newCategoryIds });
+    },
+    [filters.categoryIds, onFiltersChange]
+  );
 
   // Handle payment method toggle
-  const handleMethodToggle = useCallback((method: DonationMethod) => {
-    const newMethods = filters.methods.includes(method)
-      ? filters.methods.filter(m => m !== method)
-      : [...filters.methods, method];
-    
-    onFiltersChange({ methods: newMethods });
-  }, [filters.methods, onFiltersChange]);
+  const handleMethodToggle = useCallback(
+    (method: DonationMethod) => {
+      const newMethods = filters.methods.includes(method)
+        ? filters.methods.filter((m) => m !== method)
+        : [...filters.methods, method];
+
+      onFiltersChange({ methods: newMethods });
+    },
+    [filters.methods, onFiltersChange]
+  );
 
   // Handle search with debouncing
-  const handleSearchChange = useCallback((value: string) => {
-    onFiltersChange({ searchTerm: value });
-  }, [onFiltersChange]);
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      onFiltersChange({ searchTerm: value });
+    },
+    [onFiltersChange]
+  );
 
   // Clear all filters
   const clearFilters = useCallback(() => {
@@ -182,12 +195,14 @@ export const DonationFilters: React.FC<DonationFiltersProps> = ({
       categoryIds: [],
       methods: [],
       searchTerm: '',
-      page: 1
+      page: 1,
     });
   }, [onFiltersChange]);
 
   return (
-    <div className={`bg-white rounded-lg border border-gray-200 p-4 space-y-4 ${className}`}>
+    <div
+      className={`bg-white rounded-lg border border-gray-200 p-4 space-y-4 ${className}`}
+    >
       {/* Search and Basic Controls */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="flex-1 max-w-md">
@@ -204,7 +219,7 @@ export const DonationFilters: React.FC<DonationFiltersProps> = ({
             aria-label="Search donations by description or receipt number"
           />
         </div>
-        
+
         <div className="flex gap-2">
           <button
             onClick={() => setShowAdvanced(!showAdvanced)}
@@ -214,7 +229,7 @@ export const DonationFilters: React.FC<DonationFiltersProps> = ({
           >
             {showAdvanced ? 'Hide' : 'Show'} Filters
           </button>
-          
+
           <button
             onClick={clearFilters}
             className="px-3 py-2 text-sm text-red-600 border border-red-200 rounded-md hover:bg-red-50"
@@ -230,7 +245,9 @@ export const DonationFilters: React.FC<DonationFiltersProps> = ({
         <div className="border-t border-gray-200 pt-4 space-y-6">
           {/* Date Range Filter */}
           <div>
-            <h4 className="text-sm font-medium text-gray-900 mb-3">Date Range</h4>
+            <h4 className="text-sm font-medium text-gray-900 mb-3">
+              Date Range
+            </h4>
             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2">
               {DATE_PRESETS.map((preset) => (
                 <button
@@ -247,12 +264,15 @@ export const DonationFilters: React.FC<DonationFiltersProps> = ({
                 </button>
               ))}
             </div>
-            
+
             {/* Custom Date Range */}
             {datePreset === 'custom' && (
               <div className="mt-3 flex gap-3 items-center">
                 <div>
-                  <label htmlFor="start-date" className="block text-xs text-gray-600 mb-1">
+                  <label
+                    htmlFor="start-date"
+                    className="block text-xs text-gray-600 mb-1"
+                  >
                     Start Date
                   </label>
                   <input
@@ -264,7 +284,10 @@ export const DonationFilters: React.FC<DonationFiltersProps> = ({
                   />
                 </div>
                 <div>
-                  <label htmlFor="end-date" className="block text-xs text-gray-600 mb-1">
+                  <label
+                    htmlFor="end-date"
+                    className="block text-xs text-gray-600 mb-1"
+                  >
                     End Date
                   </label>
                   <input
@@ -286,7 +309,9 @@ export const DonationFilters: React.FC<DonationFiltersProps> = ({
 
           {/* Category Filter */}
           <div>
-            <h4 className="text-sm font-medium text-gray-900 mb-3">Categories</h4>
+            <h4 className="text-sm font-medium text-gray-900 mb-3">
+              Categories
+            </h4>
             {loading ? (
               <p className="text-sm text-gray-500">Loading categories...</p>
             ) : (
@@ -303,10 +328,12 @@ export const DonationFilters: React.FC<DonationFiltersProps> = ({
                       className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                       aria-describedby={`category-${category.id}-desc`}
                     />
-                    <span className="flex-1 text-gray-700">{category.name}</span>
+                    <span className="flex-1 text-gray-700">
+                      {category.name}
+                    </span>
                   </label>
                 ))}
-                
+
                 {filters.categoryIds.length > 0 && (
                   <button
                     onClick={() => onFiltersChange({ categoryIds: [] })}
@@ -322,7 +349,9 @@ export const DonationFilters: React.FC<DonationFiltersProps> = ({
 
           {/* Payment Method Filter */}
           <div>
-            <h4 className="text-sm font-medium text-gray-900 mb-3">Payment Methods</h4>
+            <h4 className="text-sm font-medium text-gray-900 mb-3">
+              Payment Methods
+            </h4>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
               {PAYMENT_METHODS.map((method) => (
                 <label
@@ -338,7 +367,7 @@ export const DonationFilters: React.FC<DonationFiltersProps> = ({
                   <span className="flex-1 text-gray-700">{method.label}</span>
                 </label>
               ))}
-              
+
               {filters.methods.length > 0 && (
                 <button
                   onClick={() => onFiltersChange({ methods: [] })}
@@ -354,11 +383,16 @@ export const DonationFilters: React.FC<DonationFiltersProps> = ({
       )}
 
       {/* Active Filters Summary */}
-      {(filters.categoryIds.length > 0 || filters.methods.length > 0 || filters.searchTerm || filters.dateRange) && (
+      {(filters.categoryIds.length > 0 ||
+        filters.methods.length > 0 ||
+        filters.searchTerm ||
+        filters.dateRange) && (
         <div className="border-t border-gray-200 pt-3">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-medium text-gray-700">Active filters:</span>
-            
+            <span className="text-sm font-medium text-gray-700">
+              Active filters:
+            </span>
+
             {filters.searchTerm && (
               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-blue-100 text-blue-700">
                 Search: "{filters.searchTerm}"
@@ -371,7 +405,7 @@ export const DonationFilters: React.FC<DonationFiltersProps> = ({
                 </button>
               </span>
             )}
-            
+
             {filters.dateRange && (
               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">
                 {filters.dateRange.start} to {filters.dateRange.end}
@@ -384,10 +418,11 @@ export const DonationFilters: React.FC<DonationFiltersProps> = ({
                 </button>
               </span>
             )}
-            
+
             {filters.categoryIds.length > 0 && (
               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-700">
-                {filters.categoryIds.length} {filters.categoryIds.length === 1 ? 'category' : 'categories'}
+                {filters.categoryIds.length}{' '}
+                {filters.categoryIds.length === 1 ? 'category' : 'categories'}
                 <button
                   onClick={() => onFiltersChange({ categoryIds: [] })}
                   className="ml-1 text-purple-600 hover:text-purple-800"
@@ -397,10 +432,11 @@ export const DonationFilters: React.FC<DonationFiltersProps> = ({
                 </button>
               </span>
             )}
-            
+
             {filters.methods.length > 0 && (
               <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-orange-100 text-orange-700">
-                {filters.methods.length} payment {filters.methods.length === 1 ? 'method' : 'methods'}
+                {filters.methods.length} payment{' '}
+                {filters.methods.length === 1 ? 'method' : 'methods'}
                 <button
                   onClick={() => onFiltersChange({ methods: [] })}
                   className="ml-1 text-orange-600 hover:text-orange-800"

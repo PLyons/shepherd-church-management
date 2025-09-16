@@ -38,12 +38,22 @@ import RecordDonation from '../pages/RecordDonation';
 import BatchRecordDonations from '../pages/BatchRecordDonations';
 import EditDonation from '../pages/EditDonation';
 
+// New donation-related pages
+import Donations from '../pages/Donations';
+import CreateDonation from '../pages/CreateDonation';
+import MyGiving from '../pages/MyGiving';
+import GivingOverview from '../pages/GivingOverview';
+import DonationDetail from '../pages/DonationDetail';
+
 // Lazy-loaded tab components
 const OverviewTab = lazy(
   () => import('../components/members/profile/tabs/OverviewTab')
 );
 const ActivityTab = lazy(
   () => import('../components/members/profile/tabs/ActivityTab')
+);
+const MemberGivingTab = lazy(
+  () => import('../components/members/profile/tabs/MemberGivingTab')
 );
 const CommunicationsTab = lazy(
   () => import('../components/members/profile/tabs/CommunicationsTab')
@@ -64,248 +74,308 @@ function TabLoadingSpinner() {
   );
 }
 
-export const router = createBrowserRouter(
-  [
-    {
-      path: '/',
-      element: <Navigate to="/dashboard" replace />,
-    },
-    {
-      path: '/login',
-      element: (
-        <AuthGuard requireAuth={false}>
-          <Login />
-        </AuthGuard>
-      ),
-    },
-    {
-      path: '/register',
-      element: (
-        <AuthGuard requireAuth={false}>
-          <Register />
-        </AuthGuard>
-      ),
-    },
-    {
-      path: '/',
-      element: (
-        <AuthGuard>
-          <Layout />
-        </AuthGuard>
-      ),
-      children: [
-        {
-          path: 'dashboard',
-          element: <Dashboard />,
-        },
-        {
-          path: 'members',
-          element: <Members />,
-        },
-        {
-          path: 'members/new',
-          element: (
-            <RoleGuard allowedRoles={['admin', 'pastor']}>
-              <MemberFormEnhanced />
-            </RoleGuard>
-          ),
-        },
-        {
-          path: 'members/edit/:id',
-          element: (
-            <RoleGuard allowedRoles={['admin', 'pastor']}>
-              <MemberFormEnhanced />
-            </RoleGuard>
-          ),
-        },
-        {
-          path: 'members/:id',
-          element: <MemberProfile />,
-          children: [
-            {
-              index: true,
-              element: <Navigate to="overview" replace />,
-            },
-            {
-              path: 'overview',
-              element: (
-                <Suspense fallback={<TabLoadingSpinner />}>
-                  <OverviewTab />
-                </Suspense>
-              ),
-            },
-            {
-              path: 'activity',
-              element: (
-                <Suspense fallback={<TabLoadingSpinner />}>
-                  <ActivityTab />
-                </Suspense>
-              ),
-            },
-            {
-              path: 'communications',
-              element: (
-                <Suspense fallback={<TabLoadingSpinner />}>
-                  <CommunicationsTab />
-                </Suspense>
-              ),
-            },
-            {
-              path: 'notes',
-              element: (
-                <RoleGuard allowedRoles={['admin', 'pastor']}>
-                  <Suspense fallback={<TabLoadingSpinner />}>
-                    <NotesTab />
-                  </Suspense>
-                </RoleGuard>
-              ),
-            },
-            {
-              path: 'settings',
-              element: (
-                <RoleGuard allowedRoles={['admin']}>
-                  <Suspense fallback={<TabLoadingSpinner />}>
-                    <SettingsTab />
-                  </Suspense>
-                </RoleGuard>
-              ),
-            },
-          ],
-        },
-        {
-          path: 'households',
-          element: <Households />,
-        },
-        {
-          path: 'households/new',
-          element: (
-            <RoleGuard allowedRoles={['admin', 'pastor']}>
-              <CreateHousehold />
-            </RoleGuard>
-          ),
-        },
-        {
-          path: 'households/:id',
-          element: <HouseholdProfile />,
-        },
-        {
-          path: 'households/:id/edit',
-          element: (
-            <RoleGuard allowedRoles={['admin', 'pastor']}>
-              <EditHousehold />
-            </RoleGuard>
-          ),
-        },
-        {
-          path: 'households/:id/members',
-          element: (
-            <RoleGuard allowedRoles={['admin', 'pastor']}>
-              <HouseholdMembers />
-            </RoleGuard>
-          ),
-        },
-        {
-          path: 'events',
-          element: <Events />,
-        },
-        {
-          path: 'calendar',
-          element: <Calendar />,
-        },
-        {
-          path: 'events/new',
-          element: <CreateEvent />,
-        },
-        {
-          path: 'events/:id/edit',
-          element: <EditEvent />,
-        },
-        {
-          path: 'donations/record',
-          element: <RecordDonation />,
-        },
-        {
-          path: 'donations/batch',
-          element: <BatchRecordDonations />,
-        },
-        {
-          path: 'donations/edit/:id',
-          element: <EditDonation />,
-        },
-        {
-          path: 'admin/registration-tokens',
-          element: (
-            <RoleGuard allowedRoles={['admin', 'pastor']}>
-              <RegistrationTokens />
-            </RoleGuard>
-          ),
-        },
-        {
-          path: 'admin/pending-registrations',
-          element: (
-            <RoleGuard allowedRoles={['admin', 'pastor']}>
-              <PendingRegistrations />
-            </RoleGuard>
-          ),
-        },
-        {
-          path: 'admin/registration-analytics',
-          element: (
-            <RoleGuard allowedRoles={['admin', 'pastor']}>
-              <RegistrationAnalytics />
-            </RoleGuard>
-          ),
-        },
-        {
-          path: 'settings',
-          element: (
-            <RoleGuard allowedRoles={['admin', 'pastor']}>
-              <Settings />
-            </RoleGuard>
-          ),
-        },
-      ],
-    },
-    {
-      path: '/auth/callback',
-      element: (
-        <AuthGuard requireAuth={false}>
-          <AuthCallback />
-        </AuthGuard>
-      ),
-    },
-    {
-      path: '/reset-password',
-      element: (
-        <AuthGuard requireAuth={false}>
-          <PasswordReset />
-        </AuthGuard>
-      ),
-    },
-    {
-      path: '/set-password',
-      element: <SetPassword />,
-    },
-    {
-      path: '/register/qr',
-      element: (
-        <AuthGuard requireAuth={false}>
-          <QRRegistration />
-        </AuthGuard>
-      ),
-    },
-    {
-      path: '*',
-      element: <NotFound />,
-    },
-  ],
+// Route configuration for testing and router creation
+export const routes = [
   {
-    future: {
-      v7_relativeSplatPath: true,
-      v7_fetcherPersist: true,
-      v7_normalizeFormMethod: true,
-      v7_partialHydration: true,
-      v7_skipActionErrorRevalidation: true,
-    },
-  }
-);
+    path: '/',
+    element: <Navigate to="/dashboard" replace />,
+  },
+  {
+    path: '/login',
+    element: (
+      <AuthGuard requireAuth={false}>
+        <Login />
+      </AuthGuard>
+    ),
+  },
+  {
+    path: '/register',
+    element: (
+      <AuthGuard requireAuth={false}>
+        <Register />
+      </AuthGuard>
+    ),
+  },
+  {
+    path: '/',
+    element: (
+      <AuthGuard>
+        <Layout />
+      </AuthGuard>
+    ),
+    children: [
+      {
+        path: 'dashboard',
+        element: <Dashboard />,
+      },
+      {
+        path: 'members',
+        element: <Members />,
+      },
+      {
+        path: 'members/new',
+        element: (
+          <RoleGuard allowedRoles={['admin', 'pastor']}>
+            <MemberFormEnhanced />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'members/edit/:id',
+        element: (
+          <RoleGuard allowedRoles={['admin', 'pastor']}>
+            <MemberFormEnhanced />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'members/:id',
+        element: <MemberProfile />,
+        children: [
+          {
+            index: true,
+            element: <Navigate to="overview" replace />,
+          },
+          {
+            path: 'overview',
+            element: (
+              <Suspense fallback={<TabLoadingSpinner />}>
+                <OverviewTab />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'activity',
+            element: (
+              <Suspense fallback={<TabLoadingSpinner />}>
+                <ActivityTab />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'giving',
+            element: (
+              <Suspense fallback={<TabLoadingSpinner />}>
+                <MemberGivingTab />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'communications',
+            element: (
+              <Suspense fallback={<TabLoadingSpinner />}>
+                <CommunicationsTab />
+              </Suspense>
+            ),
+          },
+          {
+            path: 'notes',
+            element: (
+              <RoleGuard allowedRoles={['admin', 'pastor']}>
+                <Suspense fallback={<TabLoadingSpinner />}>
+                  <NotesTab />
+                </Suspense>
+              </RoleGuard>
+            ),
+          },
+          {
+            path: 'settings',
+            element: (
+              <RoleGuard allowedRoles={['admin']}>
+                <Suspense fallback={<TabLoadingSpinner />}>
+                  <SettingsTab />
+                </Suspense>
+              </RoleGuard>
+            ),
+          },
+        ],
+      },
+      {
+        path: 'households',
+        element: <Households />,
+      },
+      {
+        path: 'households/new',
+        element: (
+          <RoleGuard allowedRoles={['admin', 'pastor']}>
+            <CreateHousehold />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'households/:id',
+        element: <HouseholdProfile />,
+      },
+      {
+        path: 'households/:id/edit',
+        element: (
+          <RoleGuard allowedRoles={['admin', 'pastor']}>
+            <EditHousehold />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'households/:id/members',
+        element: (
+          <RoleGuard allowedRoles={['admin', 'pastor']}>
+            <HouseholdMembers />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'events',
+        element: <Events />,
+      },
+      {
+        path: 'calendar',
+        element: <Calendar />,
+      },
+      {
+        path: 'events/new',
+        element: <CreateEvent />,
+      },
+      {
+        path: 'events/:id/edit',
+        element: <EditEvent />,
+      },
+      // Donation Routes - Admin Only
+      {
+        path: 'donations',
+        element: (
+          <RoleGuard allowedRoles={['admin']}>
+            <Donations />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'donations/create',
+        element: (
+          <RoleGuard allowedRoles={['admin']}>
+            <CreateDonation />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'donations/:id',
+        element: (
+          <RoleGuard allowedRoles={['admin']}>
+            <DonationDetail />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'donations/:id/edit',
+        element: (
+          <RoleGuard allowedRoles={['admin']}>
+            <EditDonation />
+          </RoleGuard>
+        ),
+      },
+      // Existing donation routes
+      {
+        path: 'donations/record',
+        element: <RecordDonation />,
+      },
+      {
+        path: 'donations/batch',
+        element: <BatchRecordDonations />,
+      },
+      {
+        path: 'donations/edit/:id',
+        element: <EditDonation />,
+      },
+      // Pastor Route - Giving Overview
+      {
+        path: 'giving-overview',
+        element: (
+          <RoleGuard allowedRoles={['pastor']}>
+            <GivingOverview />
+          </RoleGuard>
+        ),
+      },
+      // Member Route - My Giving
+      {
+        path: 'my-giving',
+        element: (
+          <RoleGuard allowedRoles={['member']}>
+            <MyGiving />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'admin/registration-tokens',
+        element: (
+          <RoleGuard allowedRoles={['admin', 'pastor']}>
+            <RegistrationTokens />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'admin/pending-registrations',
+        element: (
+          <RoleGuard allowedRoles={['admin', 'pastor']}>
+            <PendingRegistrations />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'admin/registration-analytics',
+        element: (
+          <RoleGuard allowedRoles={['admin', 'pastor']}>
+            <RegistrationAnalytics />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'settings',
+        element: (
+          <RoleGuard allowedRoles={['admin', 'pastor']}>
+            <Settings />
+          </RoleGuard>
+        ),
+      },
+    ],
+  },
+  {
+    path: '/auth/callback',
+    element: (
+      <AuthGuard requireAuth={false}>
+        <AuthCallback />
+      </AuthGuard>
+    ),
+  },
+  {
+    path: '/reset-password',
+    element: (
+      <AuthGuard requireAuth={false}>
+        <PasswordReset />
+      </AuthGuard>
+    ),
+  },
+  {
+    path: '/set-password',
+    element: <SetPassword />,
+  },
+  {
+    path: '/register/qr',
+    element: (
+      <AuthGuard requireAuth={false}>
+        <QRRegistration />
+      </AuthGuard>
+    ),
+  },
+  {
+    path: '*',
+    element: <NotFound />,
+  },
+];
+
+export const router = createBrowserRouter(routes, {
+  future: {
+    v7_relativeSplatPath: true,
+    v7_fetcherPersist: true,
+    v7_normalizeFormMethod: true,
+    v7_partialHydration: true,
+    v7_skipActionErrorRevalidation: true,
+  },
+});

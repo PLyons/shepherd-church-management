@@ -70,12 +70,12 @@ describe('RSVPModal - Service Integration', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     mockUseAuth.mockReturnValue({
       user: mockUser,
       isLoading: false,
     });
-    
+
     mockUseToast.mockReturnValue({
       showToast: mockShowToast,
     });
@@ -100,21 +100,29 @@ describe('RSVPModal - Service Integration', () => {
       );
 
       await waitFor(() => {
-        expect(mockEventRSVPService.getCapacityInfo).toHaveBeenCalledWith('event-1');
+        expect(mockEventRSVPService.getCapacityInfo).toHaveBeenCalledWith(
+          'event-1'
+        );
       });
 
       // Check if capacity information is displayed
       expect(screen.getByText('Event Capacity')).toBeInTheDocument();
-      await waitFor(() => {
-        expect(screen.getByText(/25 people/)).toBeInTheDocument(); // Current attending
-        expect(screen.getByText(/25 spots/)).toBeInTheDocument(); // Available spots
-      }, { timeout: 3000 });
+      await waitFor(
+        () => {
+          expect(screen.getByText(/25 people/)).toBeInTheDocument(); // Current attending
+          expect(screen.getByText(/25 spots/)).toBeInTheDocument(); // Available spots
+        },
+        { timeout: 3000 }
+      );
     });
 
     it('should show loading state while fetching capacity', async () => {
       // Mock a delayed response
       mockEventRSVPService.getCapacityInfo.mockImplementation(
-        () => new Promise(resolve => setTimeout(() => resolve(mockCapacityInfo), 100))
+        () =>
+          new Promise((resolve) =>
+            setTimeout(() => resolve(mockCapacityInfo), 100)
+          )
       );
 
       render(
@@ -127,16 +135,27 @@ describe('RSVPModal - Service Integration', () => {
         />
       );
 
-      expect(screen.getByText('Loading capacity information...')).toBeInTheDocument();
+      expect(
+        screen.getByText('Loading capacity information...')
+      ).toBeInTheDocument();
 
-      await waitFor(() => {
-        expect(screen.queryByText('Loading capacity information...')).not.toBeInTheDocument();
-      }, { timeout: 1000 });
+      await waitFor(
+        () => {
+          expect(
+            screen.queryByText('Loading capacity information...')
+          ).not.toBeInTheDocument();
+        },
+        { timeout: 1000 }
+      );
     });
 
     it('should handle capacity loading errors gracefully', async () => {
-      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
-      mockEventRSVPService.getCapacityInfo.mockRejectedValue(new Error('Network error'));
+      const consoleError = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+      mockEventRSVPService.getCapacityInfo.mockRejectedValue(
+        new Error('Network error')
+      );
 
       render(
         <RSVPModal
@@ -149,7 +168,10 @@ describe('RSVPModal - Service Integration', () => {
       );
 
       await waitFor(() => {
-        expect(consoleError).toHaveBeenCalledWith('Error loading capacity info:', expect.any(Error));
+        expect(consoleError).toHaveBeenCalledWith(
+          'Error loading capacity info:',
+          expect.any(Error)
+        );
       });
 
       consoleError.mockRestore();
@@ -177,7 +199,11 @@ describe('RSVPModal - Service Integration', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Event is at capacity. New RSVPs will be added to the waitlist.')).toBeInTheDocument();
+        expect(
+          screen.getByText(
+            'Event is at capacity. New RSVPs will be added to the waitlist.'
+          )
+        ).toBeInTheDocument();
       });
     });
 
@@ -202,7 +228,9 @@ describe('RSVPModal - Service Integration', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Event is at capacity. No new RSVPs accepted.')).toBeInTheDocument();
+        expect(
+          screen.getByText('Event is at capacity. No new RSVPs accepted.')
+        ).toBeInTheDocument();
       });
     });
   });
@@ -223,7 +251,10 @@ describe('RSVPModal - Service Integration', () => {
       );
 
       await waitFor(() => {
-        expect(mockEventRSVPService.getWaitlistPosition).toHaveBeenCalledWith('event-1', 'test-user-id');
+        expect(mockEventRSVPService.getWaitlistPosition).toHaveBeenCalledWith(
+          'event-1',
+          'test-user-id'
+        );
       });
 
       await waitFor(() => {
@@ -289,7 +320,10 @@ describe('RSVPModal - Service Integration', () => {
         );
       });
 
-      expect(mockShowToast).toHaveBeenCalledWith('RSVP submitted successfully!', 'success');
+      expect(mockShowToast).toHaveBeenCalledWith(
+        'RSVP submitted successfully!',
+        'success'
+      );
       expect(onRSVPUpdate).toHaveBeenCalledWith(mockRSVP);
       expect(onClose).toHaveBeenCalled();
     });
@@ -314,7 +348,7 @@ describe('RSVPModal - Service Integration', () => {
 
       await waitFor(() => {
         expect(mockShowToast).toHaveBeenCalledWith(
-          'Added to waitlist - you\'ll be notified if a spot opens!',
+          "Added to waitlist - you'll be notified if a spot opens!",
           'success'
         );
       });
@@ -353,17 +387,20 @@ describe('RSVPModal - Service Integration', () => {
         );
       });
 
-      expect(mockShowToast).toHaveBeenCalledWith('RSVP updated successfully!', 'success');
+      expect(mockShowToast).toHaveBeenCalledWith(
+        'RSVP updated successfully!',
+        'success'
+      );
     });
   });
 
   describe('Optimistic Updates and Rollback', () => {
     it('should show optimistic updates during submission', async () => {
       const user = userEvent.setup();
-      
+
       // Mock a delayed response to test optimistic updates
       mockEventRSVPService.createRSVP.mockImplementation(
-        () => new Promise(resolve => setTimeout(() => resolve(mockRSVP), 100))
+        () => new Promise((resolve) => setTimeout(() => resolve(mockRSVP), 100))
       );
 
       render(
@@ -383,14 +420,19 @@ describe('RSVPModal - Service Integration', () => {
       expect(screen.getByText('Submitting...')).toBeInTheDocument();
       expect(submitButton).toBeDisabled();
 
-      await waitFor(() => {
-        expect(screen.queryByText('Submitting...')).not.toBeInTheDocument();
-      }, { timeout: 1000 });
+      await waitFor(
+        () => {
+          expect(screen.queryByText('Submitting...')).not.toBeInTheDocument();
+        },
+        { timeout: 1000 }
+      );
     });
 
     it('should rollback optimistic updates on error', async () => {
       const user = userEvent.setup();
-      mockEventRSVPService.createRSVP.mockRejectedValue(new Error('Network error'));
+      mockEventRSVPService.createRSVP.mockRejectedValue(
+        new Error('Network error')
+      );
 
       render(
         <RSVPModal
@@ -406,15 +448,22 @@ describe('RSVPModal - Service Integration', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Failed to submit RSVP. Please try again.')).toBeInTheDocument();
+        expect(
+          screen.getByText('Failed to submit RSVP. Please try again.')
+        ).toBeInTheDocument();
       });
 
-      expect(mockShowToast).toHaveBeenCalledWith('Failed to submit RSVP', 'error');
+      expect(mockShowToast).toHaveBeenCalledWith(
+        'Failed to submit RSVP',
+        'error'
+      );
     });
 
     it('should handle capacity exceeded errors', async () => {
       const user = userEvent.setup();
-      mockEventRSVPService.createRSVP.mockRejectedValue(new Error('Event at capacity'));
+      mockEventRSVPService.createRSVP.mockRejectedValue(
+        new Error('Event at capacity')
+      );
 
       render(
         <RSVPModal
@@ -430,10 +479,17 @@ describe('RSVPModal - Service Integration', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Event is at capacity. Please try selecting "Maybe" or check if waitlist is available.')).toBeInTheDocument();
+        expect(
+          screen.getByText(
+            'Event is at capacity. Please try selecting "Maybe" or check if waitlist is available.'
+          )
+        ).toBeInTheDocument();
       });
 
-      expect(mockShowToast).toHaveBeenCalledWith('Event is at capacity', 'error');
+      expect(mockShowToast).toHaveBeenCalledWith(
+        'Event is at capacity',
+        'error'
+      );
     });
   });
 
@@ -506,7 +562,9 @@ describe('RSVPModal - Service Integration', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText('You must be logged in to RSVP')).toBeInTheDocument();
+        expect(
+          screen.getByText('You must be logged in to RSVP')
+        ).toBeInTheDocument();
       });
 
       expect(mockEventRSVPService.createRSVP).not.toHaveBeenCalled();
@@ -533,7 +591,9 @@ describe('RSVPModal - Service Integration', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Maximum 10 guests allowed')).toBeInTheDocument();
+        expect(
+          screen.getByText('Maximum 10 guests allowed')
+        ).toBeInTheDocument();
       });
 
       expect(mockEventRSVPService.createRSVP).not.toHaveBeenCalled();

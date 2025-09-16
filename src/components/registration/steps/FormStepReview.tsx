@@ -26,9 +26,7 @@ export function FormStepReview({ formData }: FormStepReviewProps) {
 
         {(formData.email || formData.phone) && (
           <div>
-            <h4 className="font-medium text-gray-900">
-              Contact Information
-            </h4>
+            <h4 className="font-medium text-gray-900">Contact Information</h4>
             {formData.email && (
               <p className="text-gray-600">{formData.email}</p>
             )}
@@ -40,9 +38,7 @@ export function FormStepReview({ formData }: FormStepReviewProps) {
 
         {(formData.birthdate || formData.gender) && (
           <div>
-            <h4 className="font-medium text-gray-900">
-              Personal Information
-            </h4>
+            <h4 className="font-medium text-gray-900">Personal Information</h4>
             {formData.birthdate && (
               <p className="text-gray-600">
                 Born: {new Date(formData.birthdate).toLocaleDateString()}
@@ -78,9 +74,7 @@ export function FormStepReview({ formData }: FormStepReviewProps) {
 
         <div>
           <h4 className="font-medium text-gray-900">Status</h4>
-          <p className="text-gray-600 capitalize">
-            {formData.memberStatus}
-          </p>
+          <p className="text-gray-600 capitalize">{formData.memberStatus}</p>
         </div>
       </div>
     </div>

@@ -37,7 +37,7 @@ const dateRangeLabels = {
 const rsvpStatusLabels = {
   all: 'All Events',
   yes: 'Going',
-  no: 'Not Going', 
+  no: 'Not Going',
   maybe: 'Maybe',
   not_responded: 'No Response',
 };
@@ -48,14 +48,14 @@ const publicPrivateLabels = {
   private: 'Private Events',
 };
 
-export function EventFilters({ 
-  filters, 
-  onFiltersChange, 
+export function EventFilters({
+  filters,
+  onFiltersChange,
   onClear,
-  canManageEvents 
+  canManageEvents,
 }: EventFiltersProps) {
   const updateFilter = <K extends keyof EventFiltersState>(
-    key: K, 
+    key: K,
     value: EventFiltersState[K]
   ) => {
     onFiltersChange({ ...filters, [key]: value });
@@ -70,11 +70,15 @@ export function EventFilters({
           <div className="relative">
             <select
               value={filters.type}
-              onChange={(e) => updateFilter('type', e.target.value as EventType | 'all')}
+              onChange={(e) =>
+                updateFilter('type', e.target.value as EventType | 'all')
+              }
               className="appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-8 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               {Object.entries(eventTypeLabels).map(([value, label]) => (
-                <option key={value} value={value}>{label}</option>
+                <option key={value} value={value}>
+                  {label}
+                </option>
               ))}
             </select>
             <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
@@ -87,11 +91,18 @@ export function EventFilters({
           <div className="relative">
             <select
               value={filters.dateRange}
-              onChange={(e) => updateFilter('dateRange', e.target.value as EventFiltersState['dateRange'])}
+              onChange={(e) =>
+                updateFilter(
+                  'dateRange',
+                  e.target.value as EventFiltersState['dateRange']
+                )
+              }
               className="appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-8 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               {Object.entries(dateRangeLabels).map(([value, label]) => (
-                <option key={value} value={value}>{label}</option>
+                <option key={value} value={value}>
+                  {label}
+                </option>
               ))}
             </select>
             <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
@@ -104,11 +115,18 @@ export function EventFilters({
           <div className="relative">
             <select
               value={filters.rsvpStatus}
-              onChange={(e) => updateFilter('rsvpStatus', e.target.value as EventFiltersState['rsvpStatus'])}
+              onChange={(e) =>
+                updateFilter(
+                  'rsvpStatus',
+                  e.target.value as EventFiltersState['rsvpStatus']
+                )
+              }
               className="appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-8 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               {Object.entries(rsvpStatusLabels).map(([value, label]) => (
-                <option key={value} value={value}>{label}</option>
+                <option key={value} value={value}>
+                  {label}
+                </option>
               ))}
             </select>
             <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
@@ -118,15 +136,24 @@ export function EventFilters({
         {/* Public/Private Filter - Only for admin/pastor */}
         {canManageEvents && (
           <div className="flex items-center space-x-2">
-            <label className="text-sm font-medium text-gray-700">Visibility:</label>
+            <label className="text-sm font-medium text-gray-700">
+              Visibility:
+            </label>
             <div className="relative">
               <select
                 value={filters.isPublic}
-                onChange={(e) => updateFilter('isPublic', e.target.value as EventFiltersState['isPublic'])}
+                onChange={(e) =>
+                  updateFilter(
+                    'isPublic',
+                    e.target.value as EventFiltersState['isPublic']
+                  )
+                }
                 className="appearance-none bg-white border border-gray-300 rounded-md pl-3 pr-8 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 {Object.entries(publicPrivateLabels).map(([value, label]) => (
-                  <option key={value} value={value}>{label}</option>
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
                 ))}
               </select>
               <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />

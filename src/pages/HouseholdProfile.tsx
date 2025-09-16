@@ -43,7 +43,7 @@ export default function HouseholdProfile() {
       setLoading(true);
       const [householdData, membersData] = await Promise.all([
         householdsService.getById(id),
-        householdsService.getMembers(id)
+        householdsService.getMembers(id),
       ]);
 
       if (!householdData) {
@@ -105,7 +105,10 @@ export default function HouseholdProfile() {
 
     try {
       await householdsService.setPrimaryContact(household.id, member.id);
-      showToast(`${member.firstName} ${member.lastName} set as primary contact`, 'success');
+      showToast(
+        `${member.firstName} ${member.lastName} set as primary contact`,
+        'success'
+      );
       loadHousehold(); // Reload to get updated data
     } catch (error) {
       console.error('Error setting primary contact:', error);
@@ -115,29 +118,32 @@ export default function HouseholdProfile() {
 
   const formatAddress = (household: Household) => {
     if (!household.address) return null;
-    
-    const { addressLine1, addressLine2, city, state, postalCode, country } = household.address;
+
+    const { addressLine1, addressLine2, city, state, postalCode, country } =
+      household.address;
     const addressParts = [
       addressLine1,
       addressLine2,
       [city, state].filter(Boolean).join(', '),
       postalCode,
-      country
+      country,
     ].filter(Boolean);
 
     return addressParts.length > 0 ? addressParts : null;
   };
 
   const getPrimaryContact = () => {
-    return members.find(member => member.isPrimaryContact);
+    return members.find((member) => member.isPrimaryContact);
   };
 
   const getContactInfo = (member: Member) => {
-    const primaryEmail = member.emails?.find(email => email.type === 'home')?.address || 
-                        member.emails?.[0]?.address;
-    const primaryPhone = member.phones?.find(phone => phone.type === 'home')?.number ||
-                        member.phones?.[0]?.number;
-    
+    const primaryEmail =
+      member.emails?.find((email) => email.type === 'home')?.address ||
+      member.emails?.[0]?.address;
+    const primaryPhone =
+      member.phones?.find((phone) => phone.type === 'home')?.number ||
+      member.phones?.[0]?.number;
+
     return { email: primaryEmail, phone: primaryPhone };
   };
 
@@ -150,8 +156,12 @@ export default function HouseholdProfile() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center">
           <Home className="mx-auto h-12 w-12 text-gray-400" />
-          <h3 className="mt-2 text-sm font-medium text-gray-900">Household not found</h3>
-          <p className="mt-1 text-sm text-gray-500">The household you're looking for doesn't exist.</p>
+          <h3 className="mt-2 text-sm font-medium text-gray-900">
+            Household not found
+          </h3>
+          <p className="mt-1 text-sm text-gray-500">
+            The household you're looking for doesn't exist.
+          </p>
           <div className="mt-6">
             <Link
               to="/households"
@@ -166,7 +176,8 @@ export default function HouseholdProfile() {
     );
   }
 
-  const canManage = currentUser?.role === 'admin' || currentUser?.role === 'pastor';
+  const canManage =
+    currentUser?.role === 'admin' || currentUser?.role === 'pastor';
   const addressParts = formatAddress(household);
   const primaryContact = getPrimaryContact();
 
@@ -209,7 +220,9 @@ export default function HouseholdProfile() {
             <Home className="h-8 w-8 text-blue-600" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">{household.familyName} Family</h1>
+            <h1 className="text-3xl font-bold text-gray-900">
+              {household.familyName} Family
+            </h1>
             <div className="flex items-center space-x-4 mt-1">
               <span className="text-gray-600">
                 {members.length} {members.length === 1 ? 'member' : 'members'}
@@ -229,7 +242,9 @@ export default function HouseholdProfile() {
           {/* Household Information */}
           <div className="bg-white shadow-sm rounded-lg">
             <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-medium text-gray-900">Household Information</h2>
+              <h2 className="text-lg font-medium text-gray-900">
+                Household Information
+              </h2>
             </div>
             <div className="px-6 py-6">
               {/* Address */}
@@ -237,7 +252,9 @@ export default function HouseholdProfile() {
                 <div className="flex items-start space-x-3 mb-6">
                   <MapPin className="h-5 w-5 text-gray-400 mt-0.5" />
                   <div>
-                    <h3 className="text-sm font-medium text-gray-900">Address</h3>
+                    <h3 className="text-sm font-medium text-gray-900">
+                      Address
+                    </h3>
                     <div className="mt-1 text-sm text-gray-600">
                       {addressParts.map((part, index) => (
                         <div key={index}>{part}</div>
@@ -252,7 +269,9 @@ export default function HouseholdProfile() {
                 <div className="flex items-start space-x-3">
                   <Crown className="h-5 w-5 text-yellow-500 mt-0.5" />
                   <div>
-                    <h3 className="text-sm font-medium text-gray-900">Primary Contact</h3>
+                    <h3 className="text-sm font-medium text-gray-900">
+                      Primary Contact
+                    </h3>
                     <div className="mt-1">
                       <Link
                         to={`/members/${primaryContact.id}`}
@@ -318,7 +337,8 @@ export default function HouseholdProfile() {
                       <div className="flex items-center space-x-4">
                         <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
                           <span className="text-gray-600 font-medium">
-                            {member.firstName[0]}{member.lastName[0]}
+                            {member.firstName[0]}
+                            {member.lastName[0]}
                           </span>
                         </div>
                         <div>
@@ -352,7 +372,10 @@ export default function HouseholdProfile() {
                               <div className="flex items-center space-x-2 text-sm text-gray-600">
                                 <Calendar className="h-3 w-3" />
                                 <span>
-                                  Born {new Date(member.birthDate).toLocaleDateString()}
+                                  Born{' '}
+                                  {new Date(
+                                    member.birthDate
+                                  ).toLocaleDateString()}
                                 </span>
                               </div>
                             )}
@@ -393,30 +416,42 @@ export default function HouseholdProfile() {
         <div className="space-y-6">
           {/* Quick Stats */}
           <div className="bg-white shadow-sm rounded-lg p-6">
-            <h3 className="text-sm font-medium text-gray-900 mb-4">Quick Stats</h3>
+            <h3 className="text-sm font-medium text-gray-900 mb-4">
+              Quick Stats
+            </h3>
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600">Total Members</span>
-                <span className="text-sm font-medium text-gray-900">{members.length}</span>
+                <span className="text-sm font-medium text-gray-900">
+                  {members.length}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600">Adults</span>
                 <span className="text-sm font-medium text-gray-900">
-                  {members.filter(m => {
-                    if (!m.birthDate) return true; // Assume adult if no birth date
-                    const age = new Date().getFullYear() - new Date(m.birthDate).getFullYear();
-                    return age >= 18;
-                  }).length}
+                  {
+                    members.filter((m) => {
+                      if (!m.birthDate) return true; // Assume adult if no birth date
+                      const age =
+                        new Date().getFullYear() -
+                        new Date(m.birthDate).getFullYear();
+                      return age >= 18;
+                    }).length
+                  }
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-600">Children</span>
                 <span className="text-sm font-medium text-gray-900">
-                  {members.filter(m => {
-                    if (!m.birthDate) return false;
-                    const age = new Date().getFullYear() - new Date(m.birthDate).getFullYear();
-                    return age < 18;
-                  }).length}
+                  {
+                    members.filter((m) => {
+                      if (!m.birthDate) return false;
+                      const age =
+                        new Date().getFullYear() -
+                        new Date(m.birthDate).getFullYear();
+                      return age < 18;
+                    }).length
+                  }
                 </span>
               </div>
             </div>
@@ -425,7 +460,9 @@ export default function HouseholdProfile() {
           {/* Quick Actions */}
           {canManage && (
             <div className="bg-white shadow-sm rounded-lg p-6">
-              <h3 className="text-sm font-medium text-gray-900 mb-4">Quick Actions</h3>
+              <h3 className="text-sm font-medium text-gray-900 mb-4">
+                Quick Actions
+              </h3>
               <div className="space-y-2">
                 <Link
                   to={`/households/${household.id}/edit`}

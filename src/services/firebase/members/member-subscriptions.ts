@@ -105,7 +105,13 @@ export class MemberSubscriptions {
 
     return this.subscribeToCollection(
       {
-        where: [{ field: 'joinedAt', operator: '>=', value: cutoffDate.toISOString() }],
+        where: [
+          {
+            field: 'joinedAt',
+            operator: '>=',
+            value: cutoffDate.toISOString(),
+          },
+        ],
         orderBy: { field: 'joinedAt', direction: 'desc' },
         limit: 50,
       },
@@ -127,7 +133,7 @@ export class MemberSubscriptions {
       },
       (members) => {
         const currentMonth = new Date().getMonth();
-        const filteredMembers = members.filter(member => {
+        const filteredMembers = members.filter((member) => {
           if (!member.birthdate) return false;
           const birthMonth = new Date(member.birthdate).getMonth();
           return birthMonth === currentMonth;

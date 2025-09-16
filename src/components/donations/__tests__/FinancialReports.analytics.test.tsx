@@ -30,7 +30,7 @@ const mockTrendData: Donation[] = [
     notes: '',
     receipt: { requested: true, email: 'test@example.com', mailed: false },
     createdAt: Timestamp.now(),
-    updatedAt: Timestamp.now()
+    updatedAt: Timestamp.now(),
   },
   {
     id: 'donation2',
@@ -44,7 +44,7 @@ const mockTrendData: Donation[] = [
     notes: '',
     receipt: { requested: false },
     createdAt: Timestamp.now(),
-    updatedAt: Timestamp.now()
+    updatedAt: Timestamp.now(),
   },
   {
     id: 'donation3',
@@ -58,7 +58,7 @@ const mockTrendData: Donation[] = [
     notes: '',
     receipt: { requested: true, email: 'test@example.com', mailed: false },
     createdAt: Timestamp.now(),
-    updatedAt: Timestamp.now()
+    updatedAt: Timestamp.now(),
   },
   {
     id: 'donation4',
@@ -72,7 +72,7 @@ const mockTrendData: Donation[] = [
     notes: '',
     receipt: { requested: false },
     createdAt: Timestamp.now(),
-    updatedAt: Timestamp.now()
+    updatedAt: Timestamp.now(),
   },
   {
     id: 'donation5',
@@ -86,7 +86,7 @@ const mockTrendData: Donation[] = [
     notes: '',
     receipt: { requested: true, email: 'donor2@example.com', mailed: false },
     createdAt: Timestamp.now(),
-    updatedAt: Timestamp.now()
+    updatedAt: Timestamp.now(),
   },
   {
     id: 'donation6',
@@ -100,15 +100,47 @@ const mockTrendData: Donation[] = [
     notes: 'Capital campaign',
     receipt: { requested: true, email: 'donor4@example.com', mailed: true },
     createdAt: Timestamp.now(),
-    updatedAt: Timestamp.now()
-  }
+    updatedAt: Timestamp.now(),
+  },
 ];
 
 const mockCategories: DonationCategory[] = [
-  { id: 'tithe', name: 'Tithe', description: 'Regular tithe', isActive: true, isTaxDeductible: true, createdAt: Timestamp.now(), updatedAt: Timestamp.now() },
-  { id: 'offering', name: 'Offering', description: 'Special offerings', isActive: true, isTaxDeductible: true, createdAt: Timestamp.now(), updatedAt: Timestamp.now() },
-  { id: 'missions', name: 'Missions', description: 'Missions support', isActive: true, isTaxDeductible: true, createdAt: Timestamp.now(), updatedAt: Timestamp.now() },
-  { id: 'building', name: 'Building Fund', description: 'Building fund', isActive: true, isTaxDeductible: true, createdAt: Timestamp.now(), updatedAt: Timestamp.now() }
+  {
+    id: 'tithe',
+    name: 'Tithe',
+    description: 'Regular tithe',
+    isActive: true,
+    isTaxDeductible: true,
+    createdAt: Timestamp.now(),
+    updatedAt: Timestamp.now(),
+  },
+  {
+    id: 'offering',
+    name: 'Offering',
+    description: 'Special offerings',
+    isActive: true,
+    isTaxDeductible: true,
+    createdAt: Timestamp.now(),
+    updatedAt: Timestamp.now(),
+  },
+  {
+    id: 'missions',
+    name: 'Missions',
+    description: 'Missions support',
+    isActive: true,
+    isTaxDeductible: true,
+    createdAt: Timestamp.now(),
+    updatedAt: Timestamp.now(),
+  },
+  {
+    id: 'building',
+    name: 'Building Fund',
+    description: 'Building fund',
+    isActive: true,
+    isTaxDeductible: true,
+    createdAt: Timestamp.now(),
+    updatedAt: Timestamp.now(),
+  },
 ];
 
 // Previous year data for YoY comparisons
@@ -125,7 +157,7 @@ const mockPreviousYearData: Donation[] = [
     notes: '',
     receipt: { requested: true, email: 'test@example.com', mailed: false },
     createdAt: Timestamp.now(),
-    updatedAt: Timestamp.now()
+    updatedAt: Timestamp.now(),
   },
   {
     id: 'prev2',
@@ -139,8 +171,8 @@ const mockPreviousYearData: Donation[] = [
     notes: '',
     receipt: { requested: false },
     createdAt: Timestamp.now(),
-    updatedAt: Timestamp.now()
-  }
+    updatedAt: Timestamp.now(),
+  },
 ];
 
 describe('FinancialReports - Advanced Analytics', () => {
@@ -190,10 +222,14 @@ describe('FinancialReports - Advanced Analytics', () => {
           isAnonymous: false,
           isTaxDeductible: true,
           notes: 'Year-end giving',
-          receipt: { requested: true, email: 'test@example.com', mailed: false },
+          receipt: {
+            requested: true,
+            email: 'test@example.com',
+            mailed: false,
+          },
           createdAt: Timestamp.now(),
-          updatedAt: Timestamp.now()
-        }
+          updatedAt: Timestamp.now(),
+        },
       ];
 
       mockDonationsService.getAll.mockResolvedValue(seasonalData);
@@ -205,7 +241,9 @@ describe('FinancialReports - Advanced Analytics', () => {
 
       // Should identify December as peak season
       expect(screen.getByText('Peak Season: December')).toBeInTheDocument();
-      expect(screen.getByText('Year-end giving surge detected')).toBeInTheDocument();
+      expect(
+        screen.getByText('Year-end giving surge detected')
+      ).toBeInTheDocument();
     });
 
     it('should compute growth rate percentages correctly', async () => {
@@ -231,7 +269,9 @@ describe('FinancialReports - Advanced Analytics', () => {
       // member2 gave in Jan and Mar (retained)
       // Retention rate should be calculated correctly
       expect(screen.getByText('Donor Retention: 66.7%')).toBeInTheDocument();
-      expect(screen.getByText('2 of 3 donors gave multiple times')).toBeInTheDocument();
+      expect(
+        screen.getByText('2 of 3 donors gave multiple times')
+      ).toBeInTheDocument();
     });
 
     it('should track category performance over time', async () => {
@@ -243,10 +283,10 @@ describe('FinancialReports - Advanced Analytics', () => {
 
       // Tithe: $2,450 total across 3 donations
       expect(screen.getByText('Tithe: $2,450')).toBeInTheDocument();
-      
+
       // Building Fund: $2,000 from 1 large donation
       expect(screen.getByText('Building Fund: $2,000')).toBeInTheDocument();
-      
+
       // Should show tithe as most consistent category
       expect(screen.getByText('Most Consistent: Tithe')).toBeInTheDocument();
     });
@@ -272,10 +312,12 @@ describe('FinancialReports - Advanced Analytics', () => {
       });
 
       // member1: 2 donations, $1,250 total = high engagement
-      // member2: 2 donations, $2,200 total = highest engagement  
+      // member2: 2 donations, $2,200 total = highest engagement
       // member3: 1 donation, $300 total = low engagement
       expect(screen.getByText('High Engagement: 2 donors')).toBeInTheDocument();
-      expect(screen.getByText('Average Engagement Score: 7.3')).toBeInTheDocument();
+      expect(
+        screen.getByText('Average Engagement Score: 7.3')
+      ).toBeInTheDocument();
     });
 
     it('should identify top giving periods', async () => {
@@ -298,7 +340,9 @@ describe('FinancialReports - Advanced Analytics', () => {
       });
 
       // Should show weekly/monthly patterns
-      expect(screen.getByText('Average Frequency: 1.5 donations/month')).toBeInTheDocument();
+      expect(
+        screen.getByText('Average Frequency: 1.5 donations/month')
+      ).toBeInTheDocument();
       expect(screen.getByText('Most Active Day: Sunday')).toBeInTheDocument();
     });
 
@@ -312,7 +356,9 @@ describe('FinancialReports - Advanced Analytics', () => {
       // member1: $500 → $750 (50% increase)
       // member2: $1000 → $1200 (20% increase)
       expect(screen.getByText('Average Gift Growth: 35%')).toBeInTheDocument();
-      expect(screen.getByText('Donors showing positive progression')).toBeInTheDocument();
+      expect(
+        screen.getByText('Donors showing positive progression')
+      ).toBeInTheDocument();
     });
 
     it('should detect giving anomalies', async () => {
@@ -330,8 +376,8 @@ describe('FinancialReports - Advanced Analytics', () => {
           notes: 'Major gift',
           receipt: { requested: true, email: 'test@example.com', mailed: true },
           createdAt: Timestamp.now(),
-          updatedAt: Timestamp.now()
-        }
+          updatedAt: Timestamp.now(),
+        },
       ];
 
       mockDonationsService.getAll.mockResolvedValue(anomalyData);
@@ -342,7 +388,9 @@ describe('FinancialReports - Advanced Analytics', () => {
       });
 
       expect(screen.getByText('Anomaly Detected')).toBeInTheDocument();
-      expect(screen.getByText('Unusually large gift: $50,000')).toBeInTheDocument();
+      expect(
+        screen.getByText('Unusually large gift: $50,000')
+      ).toBeInTheDocument();
     });
 
     it('should calculate donor lifecycle metrics', async () => {
@@ -355,25 +403,31 @@ describe('FinancialReports - Advanced Analytics', () => {
       // Should track new vs returning donors
       expect(screen.getByText('New Donors: 4')).toBeInTheDocument();
       expect(screen.getByText('Returning Donors: 2')).toBeInTheDocument();
-      expect(screen.getByText('Average Donor Lifespan: 2.3 months')).toBeInTheDocument();
+      expect(
+        screen.getByText('Average Donor Lifespan: 2.3 months')
+      ).toBeInTheDocument();
     });
   });
 
   describe('Comparative Reporting', () => {
     beforeEach(() => {
       // Mock date range queries for comparisons
-      mockDonationsService.getByDateRange.mockImplementation((startDate, endDate) => {
-        const start = startDate.toDate();
-        const end = endDate.toDate();
-        
-        if (start.getFullYear() === 2023) {
-          return Promise.resolve(mockPreviousYearData);
+      mockDonationsService.getByDateRange.mockImplementation(
+        (startDate, endDate) => {
+          const start = startDate.toDate();
+          const end = endDate.toDate();
+
+          if (start.getFullYear() === 2023) {
+            return Promise.resolve(mockPreviousYearData);
+          }
+          return Promise.resolve(
+            mockTrendData.filter((d) => {
+              const donationDate = d.date.toDate();
+              return donationDate >= start && donationDate <= end;
+            })
+          );
         }
-        return Promise.resolve(mockTrendData.filter(d => {
-          const donationDate = d.date.toDate();
-          return donationDate >= start && donationDate <= end;
-        }));
-      });
+      );
     });
 
     it('should perform year-over-year comparisons', async () => {
@@ -385,7 +439,9 @@ describe('FinancialReports - Advanced Analytics', () => {
 
       // 2024: $5,750 vs 2023: $1,200 = 379% increase
       expect(screen.getByText('YoY Growth: +379%')).toBeInTheDocument();
-      expect(screen.getByText('$4,550 increase from last year')).toBeInTheDocument();
+      expect(
+        screen.getByText('$4,550 increase from last year')
+      ).toBeInTheDocument();
     });
 
     it('should calculate month-over-month changes', async () => {
@@ -397,7 +453,9 @@ describe('FinancialReports - Advanced Analytics', () => {
 
       // March vs February: $3,200 vs $1,050
       expect(screen.getByText('MoM Change: +204.8%')).toBeInTheDocument();
-      expect(screen.getByText('Significant growth this month')).toBeInTheDocument();
+      expect(
+        screen.getByText('Significant growth this month')
+      ).toBeInTheDocument();
     });
 
     it('should benchmark category performance', async () => {
@@ -409,7 +467,9 @@ describe('FinancialReports - Advanced Analytics', () => {
 
       // Should compare categories against targets/averages
       expect(screen.getByText('Tithe: Above Average')).toBeInTheDocument();
-      expect(screen.getByText('Building Fund: Exceptional')).toBeInTheDocument();
+      expect(
+        screen.getByText('Building Fund: Exceptional')
+      ).toBeInTheDocument();
       expect(screen.getByText('Missions: Below Target')).toBeInTheDocument();
     });
 
@@ -420,8 +480,8 @@ describe('FinancialReports - Advanced Analytics', () => {
         monthly: 8333,
         categories: {
           tithe: 60000,
-          building: 30000
-        }
+          building: 30000,
+        },
       };
 
       render(<FinancialReports goals={mockGoals} />);
@@ -461,20 +521,27 @@ describe('FinancialReports - Advanced Analytics', () => {
     });
 
     it('should evaluate campaign effectiveness', async () => {
-      const campaignData = mockTrendData.map(d => ({
+      const campaignData = mockTrendData.map((d) => ({
         ...d,
-        campaign: d.categoryId === 'building' ? 'Building Campaign 2024' : undefined
+        campaign:
+          d.categoryId === 'building' ? 'Building Campaign 2024' : undefined,
       }));
 
       mockDonationsService.getAll.mockResolvedValue(campaignData);
       render(<FinancialReports />);
 
       await waitFor(() => {
-        expect(screen.getByTestId('campaign-effectiveness')).toBeInTheDocument();
+        expect(
+          screen.getByTestId('campaign-effectiveness')
+        ).toBeInTheDocument();
       });
 
-      expect(screen.getByText('Building Campaign 2024: $2,000')).toBeInTheDocument();
-      expect(screen.getByText('Campaign Success Rate: 100%')).toBeInTheDocument();
+      expect(
+        screen.getByText('Building Campaign 2024: $2,000')
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('Campaign Success Rate: 100%')
+      ).toBeInTheDocument();
     });
 
     it('should measure seasonal variations', async () => {
@@ -485,7 +552,9 @@ describe('FinancialReports - Advanced Analytics', () => {
       });
 
       // Should show Q1 performance vs historical Q1
-      expect(screen.getByText('Q1 Performance: Above Average')).toBeInTheDocument();
+      expect(
+        screen.getByText('Q1 Performance: Above Average')
+      ).toBeInTheDocument();
       expect(screen.getByText('Seasonal Index: 1.2')).toBeInTheDocument();
     });
   });
@@ -504,8 +573,12 @@ describe('FinancialReports - Advanced Analytics', () => {
       render(<FinancialReports />);
 
       await waitFor(() => {
-        expect(mockDonationsService.subscribeToChanges).toHaveBeenCalledTimes(1);
-        expect(typeof mockDonationsService.subscribeToChanges.mock.calls[0][0]).toBe('function');
+        expect(mockDonationsService.subscribeToChanges).toHaveBeenCalledTimes(
+          1
+        );
+        expect(
+          typeof mockDonationsService.subscribeToChanges.mock.calls[0][0]
+        ).toBe('function');
       });
     });
 
@@ -529,7 +602,7 @@ describe('FinancialReports - Advanced Analytics', () => {
         notes: '',
         receipt: { requested: true, email: 'new@example.com', mailed: false },
         createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now()
+        updatedAt: Timestamp.now(),
       };
 
       act(() => {
@@ -561,10 +634,14 @@ describe('FinancialReports - Advanced Analytics', () => {
             isAnonymous: false,
             isTaxDeductible: true,
             notes: '',
-            receipt: { requested: true, email: 'test@example.com', mailed: false },
+            receipt: {
+              requested: true,
+              email: 'test@example.com',
+              mailed: false,
+            },
             createdAt: Timestamp.now(),
-            updatedAt: Timestamp.now()
-          }
+            updatedAt: Timestamp.now(),
+          },
         ]);
       });
 
@@ -574,8 +651,10 @@ describe('FinancialReports - Advanced Analytics', () => {
     });
 
     it('should handle real-time data errors gracefully', async () => {
-      const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
-      
+      const consoleError = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
       mockDonationsService.subscribeToChanges.mockImplementation((callback) => {
         // Simulate error in callback
         setTimeout(() => callback(null as any), 100);
@@ -585,7 +664,9 @@ describe('FinancialReports - Advanced Analytics', () => {
       render(<FinancialReports />);
 
       await waitFor(() => {
-        expect(screen.getByText('Error loading financial data')).toBeInTheDocument();
+        expect(
+          screen.getByText('Error loading financial data')
+        ).toBeInTheDocument();
       });
 
       consoleError.mockRestore();
@@ -605,7 +686,7 @@ describe('FinancialReports - Advanced Analytics', () => {
 
     it('should throttle frequent updates', async () => {
       vi.useFakeTimers();
-      
+
       render(<FinancialReports />);
 
       // Simulate rapid updates
@@ -623,7 +704,9 @@ describe('FinancialReports - Advanced Analytics', () => {
       });
 
       await waitFor(() => {
-        expect(screen.queryByText('Processing updates...')).not.toBeInTheDocument();
+        expect(
+          screen.queryByText('Processing updates...')
+        ).not.toBeInTheDocument();
       });
 
       vi.useRealTimers();
@@ -674,10 +757,14 @@ describe('FinancialReports - Advanced Analytics', () => {
             isAnonymous: false,
             isTaxDeductible: true,
             notes: '',
-            receipt: { requested: true, email: 'test@example.com', mailed: false },
+            receipt: {
+              requested: true,
+              email: 'test@example.com',
+              mailed: false,
+            },
             createdAt: Timestamp.now(),
-            updatedAt: Timestamp.now()
-          }
+            updatedAt: Timestamp.now(),
+          },
         ]);
       });
 
@@ -701,7 +788,7 @@ describe('FinancialReports - Advanced Analytics', () => {
         notes: '',
         receipt: { requested: true, email: 'test@example.com', mailed: false },
         createdAt: Timestamp.now(),
-        updatedAt: Timestamp.now()
+        updatedAt: Timestamp.now(),
       };
 
       act(() => {
@@ -709,13 +796,20 @@ describe('FinancialReports - Advanced Analytics', () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByText('New donation received: $500')).toBeInTheDocument();
+        expect(
+          screen.getByText('New donation received: $500')
+        ).toBeInTheDocument();
       });
 
       // Notification should auto-dismiss
-      await waitFor(() => {
-        expect(screen.queryByText('New donation received: $500')).not.toBeInTheDocument();
-      }, { timeout: 5000 });
+      await waitFor(
+        () => {
+          expect(
+            screen.queryByText('New donation received: $500')
+          ).not.toBeInTheDocument();
+        },
+        { timeout: 5000 }
+      );
     });
 
     it('should handle network connectivity issues', async () => {
@@ -730,11 +824,15 @@ describe('FinancialReports - Advanced Analytics', () => {
       render(<FinancialReports />);
 
       await waitFor(() => {
-        expect(screen.getByText('Connection lost - attempting to reconnect...')).toBeInTheDocument();
+        expect(
+          screen.getByText('Connection lost - attempting to reconnect...')
+        ).toBeInTheDocument();
       });
 
       // Should show retry mechanism
-      expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /retry/i })
+      ).toBeInTheDocument();
     });
   });
 });

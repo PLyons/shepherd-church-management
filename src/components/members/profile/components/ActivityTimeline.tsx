@@ -10,15 +10,20 @@ interface ActivityTimelineProps {
   onLoadMore: () => void;
 }
 
-export function ActivityTimeline({ activities, hasMore, loadingMore, onLoadMore }: ActivityTimelineProps) {
+export function ActivityTimeline({
+  activities,
+  hasMore,
+  loadingMore,
+  onLoadMore,
+}: ActivityTimelineProps) {
   // Group activities by date
   const groupedActivities = useMemo(() => {
     const groups: Record<string, MemberActivity[]> = {};
-    
-    activities.forEach(activity => {
+
+    activities.forEach((activity) => {
       const date = startOfDay(activity.timestamp);
       const dateKey = date.toISOString();
-      
+
       if (!groups[dateKey]) {
         groups[dateKey] = [];
       }
@@ -30,7 +35,9 @@ export function ActivityTimeline({ activities, hasMore, loadingMore, onLoadMore 
       .sort(([a], [b]) => new Date(b).getTime() - new Date(a).getTime())
       .map(([dateKey, activities]) => ({
         date: new Date(dateKey),
-        activities: activities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+        activities: activities.sort(
+          (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
+        ),
       }));
   }, [activities]);
 
@@ -51,13 +58,14 @@ export function ActivityTimeline({ activities, hasMore, loadingMore, onLoadMore 
             </h3>
             <div className="flex-1 h-px bg-gray-200" />
             <span className="text-xs text-gray-500">
-              {activities.length} {activities.length === 1 ? 'activity' : 'activities'}
+              {activities.length}{' '}
+              {activities.length === 1 ? 'activity' : 'activities'}
             </span>
           </div>
 
           {/* Activities for this date */}
           <div className="space-y-3 pl-4">
-            {activities.map(activity => (
+            {activities.map((activity) => (
               <ActivityCard key={activity.id} activity={activity} />
             ))}
           </div>

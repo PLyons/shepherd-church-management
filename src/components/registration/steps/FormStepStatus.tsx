@@ -39,12 +39,8 @@ export function FormStepStatus({
               className="h-5 w-5 text-blue-600 focus:ring-blue-500"
             />
             <div className="ml-3">
-              <div className="text-lg font-medium text-gray-900">
-                Visitor
-              </div>
-              <div className="text-gray-600">
-                I'm visiting this church
-              </div>
+              <div className="text-lg font-medium text-gray-900">Visitor</div>
+              <div className="text-gray-600">I'm visiting this church</div>
             </div>
           </div>
         </div>
@@ -67,9 +63,7 @@ export function FormStepStatus({
               className="h-5 w-5 text-blue-600 focus:ring-blue-500"
             />
             <div className="ml-3">
-              <div className="text-lg font-medium text-gray-900">
-                Member
-              </div>
+              <div className="text-lg font-medium text-gray-900">Member</div>
               <div className="text-gray-600">
                 I'm already a member of this church
               </div>

@@ -20,20 +20,29 @@ const COMMUNICATION_TYPES: { value: CommunicationType; label: string }[] = [
   { value: 'emergency', label: 'Emergency' },
   { value: 'routine_check_in', label: 'Routine Check-in' },
   { value: 'event_coordination', label: 'Event Coordination' },
-  { value: 'volunteer_coordination', label: 'Volunteer Coordination' }
+  { value: 'volunteer_coordination', label: 'Volunteer Coordination' },
 ];
 
-const COMMUNICATION_METHODS: { value: Communication['method']; label: string }[] = [
+const COMMUNICATION_METHODS: {
+  value: Communication['method'];
+  label: string;
+}[] = [
   { value: 'phone', label: 'Phone Call' },
   { value: 'email', label: 'Email' },
   { value: 'text', label: 'Text/SMS' },
   { value: 'video_call', label: 'Video Call' },
-  { value: 'in_person', label: 'In Person' }
+  { value: 'in_person', label: 'In Person' },
 ];
 
-export function CommunicationLogger({ isOpen, onClose, memberId, onSave }: CommunicationLoggerProps) {
+export function CommunicationLogger({
+  isOpen,
+  onClose,
+  memberId,
+  onSave,
+}: CommunicationLoggerProps) {
   const [type, setType] = useState<CommunicationType>('pastoral_call');
-  const [direction, setDirection] = useState<Communication['direction']>('outgoing');
+  const [direction, setDirection] =
+    useState<Communication['direction']>('outgoing');
   const [method, setMethod] = useState<Communication['method']>('phone');
   const [subject, setSubject] = useState('');
   const [summary, setSummary] = useState('');
@@ -91,16 +100,19 @@ export function CommunicationLogger({ isOpen, onClose, memberId, onSave }: Commu
         recordedByName: `${currentUser.firstName} ${currentUser.lastName}`,
         requiresFollowUp,
         followUpDate: followUpDate ? new Date(followUpDate) : undefined,
-        followUpCompleted: false
+        followUpCompleted: false,
       };
 
-      const communicationId = await notesService.logCommunication(memberId, communication);
+      const communicationId = await notesService.logCommunication(
+        memberId,
+        communication
+      );
 
       // Create communication object for UI update with real ID
       const savedCommunication: Communication = {
         ...communication,
         id: communicationId,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       onSave(savedCommunication);
@@ -161,7 +173,9 @@ export function CommunicationLogger({ isOpen, onClose, memberId, onSave }: Commu
                 </label>
                 <select
                   value={direction}
-                  onChange={(e) => setDirection(e.target.value as Communication['direction'])}
+                  onChange={(e) =>
+                    setDirection(e.target.value as Communication['direction'])
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <option value="outgoing">Outgoing</option>
@@ -175,7 +189,9 @@ export function CommunicationLogger({ isOpen, onClose, memberId, onSave }: Commu
                 </label>
                 <select
                   value={method}
-                  onChange={(e) => setMethod(e.target.value as Communication['method'])}
+                  onChange={(e) =>
+                    setMethod(e.target.value as Communication['method'])
+                  }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   {COMMUNICATION_METHODS.map(({ value, label }) => (
@@ -251,7 +267,11 @@ export function CommunicationLogger({ isOpen, onClose, memberId, onSave }: Commu
                 <input
                   type="number"
                   value={duration || ''}
-                  onChange={(e) => setDuration(e.target.value ? parseInt(e.target.value) : undefined)}
+                  onChange={(e) =>
+                    setDuration(
+                      e.target.value ? parseInt(e.target.value) : undefined
+                    )
+                  }
                   min="1"
                   placeholder="Duration in minutes"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"

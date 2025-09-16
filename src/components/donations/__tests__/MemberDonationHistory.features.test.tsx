@@ -3,7 +3,13 @@
 // These tests define expected behavior for filtering, search, sorting, and pagination features
 
 import React from 'react';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { vi, describe, it, expect, beforeEach, Mock } from 'vitest';
 
@@ -13,7 +19,12 @@ import { DonationCategoriesService } from '../../../services/firebase/donation-c
 import { AuthContext } from '../../../contexts/FirebaseAuthContext';
 import { ToastContext } from '../../../contexts/ToastContext';
 
-import type { Donation, DonationCategory, DonationMethod, DonationStatus } from '../../../types/donations';
+import type {
+  Donation,
+  DonationCategory,
+  DonationMethod,
+  DonationStatus,
+} from '../../../types/donations';
 import type { Member } from '../../../types';
 
 // Mock the Firebase services
@@ -21,14 +32,15 @@ vi.mock('../../../services/firebase/donations.service');
 vi.mock('../../../services/firebase/donation-categories.service');
 
 const MockedDonationsService = DonationsService as unknown as Mock;
-const MockedDonationCategoriesService = DonationCategoriesService as unknown as Mock;
+const MockedDonationCategoriesService =
+  DonationCategoriesService as unknown as Mock;
 
 // Test data generators
 const createMockDonation = (overrides: Partial<Donation> = {}): Donation => ({
   id: `donation-${Date.now()}-${Math.random()}`,
   memberId: 'member-123',
   memberName: 'John Doe',
-  amount: 100.00,
+  amount: 100.0,
   donationDate: '2024-01-15T00:00:00.000Z',
   method: 'check' as DonationMethod,
   sourceLabel: 'Offering',
@@ -52,7 +64,9 @@ const createMockDonation = (overrides: Partial<Donation> = {}): Donation => ({
   ...overrides,
 });
 
-const createMockCategory = (overrides: Partial<DonationCategory> = {}): DonationCategory => ({
+const createMockCategory = (
+  overrides: Partial<DonationCategory> = {}
+): DonationCategory => ({
   id: `category-${Date.now()}`,
   name: 'General Fund',
   description: 'General church operations',
@@ -75,27 +89,44 @@ const createMockCategory = (overrides: Partial<DonationCategory> = {}): Donation
 // Generate large dataset for pagination testing
 const generateLargeDonationDataset = (count: number): Donation[] => {
   const donations: Donation[] = [];
-  const categories = ['General Fund', 'Building Fund', 'Missions', 'Youth Ministry', 'Music Ministry'];
-  const methods: DonationMethod[] = ['cash', 'check', 'credit_card', 'bank_transfer', 'online'];
-  
+  const categories = [
+    'General Fund',
+    'Building Fund',
+    'Missions',
+    'Youth Ministry',
+    'Music Ministry',
+  ];
+  const methods: DonationMethod[] = [
+    'cash',
+    'check',
+    'credit_card',
+    'bank_transfer',
+    'online',
+  ];
+
   for (let i = 0; i < count; i++) {
     const date = new Date(2024, 0, 1);
     date.setDate(date.getDate() + (i % 365)); // Spread across year
-    
-    donations.push(createMockDonation({
-      id: `donation-${i}`,
-      memberName: `Member ${i % 20}`, // 20 different members
-      amount: Math.round((Math.random() * 500 + 25) * 100) / 100, // $25-$525
-      donationDate: date.toISOString(),
-      method: methods[i % methods.length],
-      categoryName: categories[i % categories.length],
-      categoryId: `category-${i % categories.length}`,
-      note: `Donation ${i} - ${categories[i % categories.length]}`,
-      receiptNumber: `R-2024-${String(i + 1).padStart(3, '0')}`,
-    }));
+
+    donations.push(
+      createMockDonation({
+        id: `donation-${i}`,
+        memberName: `Member ${i % 20}`, // 20 different members
+        amount: Math.round((Math.random() * 500 + 25) * 100) / 100, // $25-$525
+        donationDate: date.toISOString(),
+        method: methods[i % methods.length],
+        categoryName: categories[i % categories.length],
+        categoryId: `category-${i % categories.length}`,
+        note: `Donation ${i} - ${categories[i % categories.length]}`,
+        receiptNumber: `R-2024-${String(i + 1).padStart(3, '0')}`,
+      })
+    );
   }
-  
-  return donations.sort((a, b) => new Date(b.donationDate).getTime() - new Date(a.donationDate).getTime());
+
+  return donations.sort(
+    (a, b) =>
+      new Date(b.donationDate).getTime() - new Date(a.donationDate).getTime()
+  );
 };
 
 // Mock context providers
@@ -127,7 +158,7 @@ describe('MemberDonationHistory - Feature Tests', () => {
     getDonationsByMember: Mock;
     searchDonations: Mock;
   };
-  
+
   let mockCategoriesService: {
     getActiveCategories: Mock;
   };
@@ -143,23 +174,29 @@ describe('MemberDonationHistory - Feature Tests', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Setup service mocks
     mockDonationsService = {
       getDonationsByMember: vi.fn(),
       searchDonations: vi.fn(),
     };
-    
+
     mockCategoriesService = {
       getActiveCategories: vi.fn().mockResolvedValue(mockCategories),
     };
-    
+
     MockedDonationsService.mockImplementation(() => mockDonationsService);
-    MockedDonationCategoriesService.mockImplementation(() => mockCategoriesService);
-    
+    MockedDonationCategoriesService.mockImplementation(
+      () => mockCategoriesService
+    );
+
     // Default service responses
-    mockDonationsService.getDonationsByMember.mockResolvedValue(largeDonationDataset);
-    mockDonationsService.searchDonations.mockResolvedValue(largeDonationDataset);
+    mockDonationsService.getDonationsByMember.mockResolvedValue(
+      largeDonationDataset
+    );
+    mockDonationsService.searchDonations.mockResolvedValue(
+      largeDonationDataset
+    );
   });
 
   describe('Date Range Filtering Tests', () => {
@@ -167,7 +204,7 @@ describe('MemberDonationHistory - Feature Tests', () => {
       const user = userEvent.setup();
       const startDate = '2024-03-01';
       const endDate = '2024-03-31';
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory memberId="member-123" />
@@ -179,16 +216,18 @@ describe('MemberDonationHistory - Feature Tests', () => {
       });
 
       // Open date range filter
-      const dateFilterButton = screen.getByRole('button', { name: /date range/i });
+      const dateFilterButton = screen.getByRole('button', {
+        name: /date range/i,
+      });
       await user.click(dateFilterButton);
 
       // Set custom date range
       const startDateInput = screen.getByLabelText(/start date/i);
       const endDateInput = screen.getByLabelText(/end date/i);
-      
+
       await user.clear(startDateInput);
       await user.type(startDateInput, startDate);
-      
+
       await user.clear(endDateInput);
       await user.type(endDateInput, endDate);
 
@@ -208,7 +247,7 @@ describe('MemberDonationHistory - Feature Tests', () => {
 
     it('should handle preset date filters (YTD, last year, last 6 months)', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory memberId="member-123" />
@@ -220,9 +259,11 @@ describe('MemberDonationHistory - Feature Tests', () => {
       });
 
       // Test YTD preset
-      const dateFilterButton = screen.getByRole('button', { name: /date range/i });
+      const dateFilterButton = screen.getByRole('button', {
+        name: /date range/i,
+      });
       await user.click(dateFilterButton);
-      
+
       const ytdButton = screen.getByRole('button', { name: /year to date/i });
       await user.click(ytdButton);
 
@@ -236,7 +277,9 @@ describe('MemberDonationHistory - Feature Tests', () => {
 
       // Test Last 6 months preset
       await user.click(dateFilterButton);
-      const last6MonthsButton = screen.getByRole('button', { name: /last 6 months/i });
+      const last6MonthsButton = screen.getByRole('button', {
+        name: /last 6 months/i,
+      });
       await user.click(last6MonthsButton);
 
       await waitFor(() => {
@@ -250,7 +293,7 @@ describe('MemberDonationHistory - Feature Tests', () => {
 
     it('should validate date inputs and show error messages', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory memberId="member-123" />
@@ -261,16 +304,18 @@ describe('MemberDonationHistory - Feature Tests', () => {
         expect(screen.getByText(/donation history/i)).toBeInTheDocument();
       });
 
-      const dateFilterButton = screen.getByRole('button', { name: /date range/i });
+      const dateFilterButton = screen.getByRole('button', {
+        name: /date range/i,
+      });
       await user.click(dateFilterButton);
 
       // Test invalid date range (end before start)
       const startDateInput = screen.getByLabelText(/start date/i);
       const endDateInput = screen.getByLabelText(/end date/i);
-      
+
       await user.clear(startDateInput);
       await user.type(startDateInput, '2024-06-01');
-      
+
       await user.clear(endDateInput);
       await user.type(endDateInput, '2024-05-01');
 
@@ -278,13 +323,15 @@ describe('MemberDonationHistory - Feature Tests', () => {
       await user.click(applyButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/end date must be after start date/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/end date must be after start date/i)
+        ).toBeInTheDocument();
       });
     });
 
     it('should clear date filters and reset to show all donations', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory memberId="member-123" />
@@ -296,18 +343,24 @@ describe('MemberDonationHistory - Feature Tests', () => {
       });
 
       // Apply a date filter first
-      const dateFilterButton = screen.getByRole('button', { name: /date range/i });
+      const dateFilterButton = screen.getByRole('button', {
+        name: /date range/i,
+      });
       await user.click(dateFilterButton);
-      
+
       const ytdButton = screen.getByRole('button', { name: /year to date/i });
       await user.click(ytdButton);
 
       // Clear filter
-      const clearButton = screen.getByRole('button', { name: /clear filters/i });
+      const clearButton = screen.getByRole('button', {
+        name: /clear filters/i,
+      });
       await user.click(clearButton);
 
       await waitFor(() => {
-        expect(mockDonationsService.getDonationsByMember).toHaveBeenCalledWith('member-123');
+        expect(mockDonationsService.getDonationsByMember).toHaveBeenCalledWith(
+          'member-123'
+        );
       });
     });
   });
@@ -315,7 +368,7 @@ describe('MemberDonationHistory - Feature Tests', () => {
   describe('Category Filtering Tests', () => {
     it('should filter by single donation category', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory memberId="member-123" />
@@ -327,11 +380,15 @@ describe('MemberDonationHistory - Feature Tests', () => {
       });
 
       // Open category filter
-      const categoryFilterButton = screen.getByRole('button', { name: /category/i });
+      const categoryFilterButton = screen.getByRole('button', {
+        name: /category/i,
+      });
       await user.click(categoryFilterButton);
 
       // Select General Fund
-      const generalFundOption = screen.getByRole('option', { name: /general fund/i });
+      const generalFundOption = screen.getByRole('option', {
+        name: /general fund/i,
+      });
       await user.click(generalFundOption);
 
       await waitFor(() => {
@@ -345,7 +402,7 @@ describe('MemberDonationHistory - Feature Tests', () => {
 
     it('should handle multiple category selection', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory memberId="member-123" />
@@ -357,13 +414,19 @@ describe('MemberDonationHistory - Feature Tests', () => {
       });
 
       // Open category filter
-      const categoryFilterButton = screen.getByRole('button', { name: /category/i });
+      const categoryFilterButton = screen.getByRole('button', {
+        name: /category/i,
+      });
       await user.click(categoryFilterButton);
 
       // Select multiple categories
-      const generalFundOption = screen.getByRole('option', { name: /general fund/i });
-      const buildingFundOption = screen.getByRole('option', { name: /building fund/i });
-      
+      const generalFundOption = screen.getByRole('option', {
+        name: /general fund/i,
+      });
+      const buildingFundOption = screen.getByRole('option', {
+        name: /building fund/i,
+      });
+
       await user.click(generalFundOption);
       await user.click(buildingFundOption);
 
@@ -378,7 +441,7 @@ describe('MemberDonationHistory - Feature Tests', () => {
 
     it('should handle "All Categories" option to clear category filters', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory memberId="member-123" />
@@ -390,28 +453,36 @@ describe('MemberDonationHistory - Feature Tests', () => {
       });
 
       // First select a specific category
-      const categoryFilterButton = screen.getByRole('button', { name: /category/i });
+      const categoryFilterButton = screen.getByRole('button', {
+        name: /category/i,
+      });
       await user.click(categoryFilterButton);
-      
-      const generalFundOption = screen.getByRole('option', { name: /general fund/i });
+
+      const generalFundOption = screen.getByRole('option', {
+        name: /general fund/i,
+      });
       await user.click(generalFundOption);
 
       // Then select "All Categories"
       await user.click(categoryFilterButton);
-      const allCategoriesOption = screen.getByRole('option', { name: /all categories/i });
+      const allCategoriesOption = screen.getByRole('option', {
+        name: /all categories/i,
+      });
       await user.click(allCategoriesOption);
 
       await waitFor(() => {
-        expect(mockDonationsService.getDonationsByMember).toHaveBeenCalledWith('member-123');
+        expect(mockDonationsService.getDonationsByMember).toHaveBeenCalledWith(
+          'member-123'
+        );
       });
     });
 
     it('should show empty state when category filter returns no results', async () => {
       const user = userEvent.setup();
-      
+
       // Mock empty result for specific category
       mockDonationsService.searchDonations.mockResolvedValueOnce([]);
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory memberId="member-123" />
@@ -422,15 +493,19 @@ describe('MemberDonationHistory - Feature Tests', () => {
         expect(screen.getByText(/donation history/i)).toBeInTheDocument();
       });
 
-      const categoryFilterButton = screen.getByRole('button', { name: /category/i });
+      const categoryFilterButton = screen.getByRole('button', {
+        name: /category/i,
+      });
       await user.click(categoryFilterButton);
-      
+
       const missionsOption = screen.getByRole('option', { name: /missions/i });
       await user.click(missionsOption);
 
       await waitFor(() => {
         expect(screen.getByText(/no donations found/i)).toBeInTheDocument();
-        expect(screen.getByText(/try adjusting your filters/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/try adjusting your filters/i)
+        ).toBeInTheDocument();
       });
     });
   });
@@ -438,7 +513,7 @@ describe('MemberDonationHistory - Feature Tests', () => {
   describe('Payment Method Filtering Tests', () => {
     it('should filter by single payment method', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory memberId="member-123" />
@@ -450,7 +525,9 @@ describe('MemberDonationHistory - Feature Tests', () => {
       });
 
       // Open payment method filter
-      const methodFilterButton = screen.getByRole('button', { name: /payment method/i });
+      const methodFilterButton = screen.getByRole('button', {
+        name: /payment method/i,
+      });
       await user.click(methodFilterButton);
 
       // Select check method
@@ -468,7 +545,7 @@ describe('MemberDonationHistory - Feature Tests', () => {
 
     it('should handle multiple payment method selection', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory memberId="member-123" />
@@ -479,14 +556,18 @@ describe('MemberDonationHistory - Feature Tests', () => {
         expect(screen.getByText(/donation history/i)).toBeInTheDocument();
       });
 
-      const methodFilterButton = screen.getByRole('button', { name: /payment method/i });
+      const methodFilterButton = screen.getByRole('button', {
+        name: /payment method/i,
+      });
       await user.click(methodFilterButton);
 
       // Select multiple methods
       const checkOption = screen.getByRole('option', { name: /check/i });
       const cashOption = screen.getByRole('option', { name: /cash/i });
-      const creditCardOption = screen.getByRole('option', { name: /credit card/i });
-      
+      const creditCardOption = screen.getByRole('option', {
+        name: /credit card/i,
+      });
+
       await user.click(checkOption);
       await user.click(cashOption);
       await user.click(creditCardOption);
@@ -502,7 +583,7 @@ describe('MemberDonationHistory - Feature Tests', () => {
 
     it('should combine category and payment method filters', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory memberId="member-123" />
@@ -514,16 +595,22 @@ describe('MemberDonationHistory - Feature Tests', () => {
       });
 
       // Select category
-      const categoryFilterButton = screen.getByRole('button', { name: /category/i });
+      const categoryFilterButton = screen.getByRole('button', {
+        name: /category/i,
+      });
       await user.click(categoryFilterButton);
-      
-      const generalFundOption = screen.getByRole('option', { name: /general fund/i });
+
+      const generalFundOption = screen.getByRole('option', {
+        name: /general fund/i,
+      });
       await user.click(generalFundOption);
 
       // Select payment method
-      const methodFilterButton = screen.getByRole('button', { name: /payment method/i });
+      const methodFilterButton = screen.getByRole('button', {
+        name: /payment method/i,
+      });
       await user.click(methodFilterButton);
-      
+
       const checkOption = screen.getByRole('option', { name: /check/i });
       await user.click(checkOption);
 
@@ -539,7 +626,7 @@ describe('MemberDonationHistory - Feature Tests', () => {
 
     it('should persist filter state across component updates', async () => {
       const user = userEvent.setup();
-      
+
       const { rerender } = render(
         <TestWrapper>
           <MemberDonationHistory memberId="member-123" />
@@ -551,10 +638,14 @@ describe('MemberDonationHistory - Feature Tests', () => {
       });
 
       // Apply filters
-      const categoryFilterButton = screen.getByRole('button', { name: /category/i });
+      const categoryFilterButton = screen.getByRole('button', {
+        name: /category/i,
+      });
       await user.click(categoryFilterButton);
-      
-      const generalFundOption = screen.getByRole('option', { name: /general fund/i });
+
+      const generalFundOption = screen.getByRole('option', {
+        name: /general fund/i,
+      });
       await user.click(generalFundOption);
 
       // Rerender component
@@ -574,7 +665,7 @@ describe('MemberDonationHistory - Feature Tests', () => {
   describe('Search Functionality Tests', () => {
     it('should search by donation description/note', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory memberId="member-123" />
@@ -589,18 +680,21 @@ describe('MemberDonationHistory - Feature Tests', () => {
       await user.type(searchInput, 'monthly donation');
 
       // Debounced search should trigger
-      await waitFor(() => {
-        expect(mockDonationsService.searchDonations).toHaveBeenCalledWith(
-          expect.objectContaining({
-            searchTerm: 'monthly donation',
-          })
-        );
-      }, { timeout: 1000 });
+      await waitFor(
+        () => {
+          expect(mockDonationsService.searchDonations).toHaveBeenCalledWith(
+            expect.objectContaining({
+              searchTerm: 'monthly donation',
+            })
+          );
+        },
+        { timeout: 1000 }
+      );
     });
 
     it('should search by receipt number', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory memberId="member-123" />
@@ -614,18 +708,21 @@ describe('MemberDonationHistory - Feature Tests', () => {
       const searchInput = screen.getByPlaceholderText(/search donations/i);
       await user.type(searchInput, 'R-2024-001');
 
-      await waitFor(() => {
-        expect(mockDonationsService.searchDonations).toHaveBeenCalledWith(
-          expect.objectContaining({
-            searchTerm: 'R-2024-001',
-          })
-        );
-      }, { timeout: 1000 });
+      await waitFor(
+        () => {
+          expect(mockDonationsService.searchDonations).toHaveBeenCalledWith(
+            expect.objectContaining({
+              searchTerm: 'R-2024-001',
+            })
+          );
+        },
+        { timeout: 1000 }
+      );
     });
 
     it('should handle partial text matching with case-insensitive search', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory memberId="member-123" />
@@ -639,18 +736,21 @@ describe('MemberDonationHistory - Feature Tests', () => {
       const searchInput = screen.getByPlaceholderText(/search donations/i);
       await user.type(searchInput, 'GENERAL'); // Uppercase
 
-      await waitFor(() => {
-        expect(mockDonationsService.searchDonations).toHaveBeenCalledWith(
-          expect.objectContaining({
-            searchTerm: 'GENERAL',
-          })
-        );
-      }, { timeout: 1000 });
+      await waitFor(
+        () => {
+          expect(mockDonationsService.searchDonations).toHaveBeenCalledWith(
+            expect.objectContaining({
+              searchTerm: 'GENERAL',
+            })
+          );
+        },
+        { timeout: 1000 }
+      );
     });
 
     it('should handle search with special characters', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory memberId="member-123" />
@@ -664,18 +764,21 @@ describe('MemberDonationHistory - Feature Tests', () => {
       const searchInput = screen.getByPlaceholderText(/search donations/i);
       await user.type(searchInput, '$100 & special');
 
-      await waitFor(() => {
-        expect(mockDonationsService.searchDonations).toHaveBeenCalledWith(
-          expect.objectContaining({
-            searchTerm: '$100 & special',
-          })
-        );
-      }, { timeout: 1000 });
+      await waitFor(
+        () => {
+          expect(mockDonationsService.searchDonations).toHaveBeenCalledWith(
+            expect.objectContaining({
+              searchTerm: '$100 & special',
+            })
+          );
+        },
+        { timeout: 1000 }
+      );
     });
 
     it('should clear search when input is emptied', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory memberId="member-123" />
@@ -687,16 +790,21 @@ describe('MemberDonationHistory - Feature Tests', () => {
       });
 
       const searchInput = screen.getByPlaceholderText(/search donations/i);
-      
+
       // Type search term
       await user.type(searchInput, 'test search');
-      
+
       // Clear search
       await user.clear(searchInput);
 
-      await waitFor(() => {
-        expect(mockDonationsService.getDonationsByMember).toHaveBeenCalledWith('member-123');
-      }, { timeout: 1000 });
+      await waitFor(
+        () => {
+          expect(
+            mockDonationsService.getDonationsByMember
+          ).toHaveBeenCalledWith('member-123');
+        },
+        { timeout: 1000 }
+      );
     });
   });
 
@@ -715,7 +823,7 @@ describe('MemberDonationHistory - Feature Tests', () => {
       // Verify default sort order (newest first)
       const donationRows = screen.getAllByRole('row');
       expect(donationRows.length).toBeGreaterThan(1);
-      
+
       // First donation should be most recent
       const firstDonationDate = within(donationRows[1]).getByText(/2024/);
       expect(firstDonationDate).toBeInTheDocument();
@@ -723,7 +831,7 @@ describe('MemberDonationHistory - Feature Tests', () => {
 
     it('should sort by date (oldest first when clicked)', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory memberId="member-123" />
@@ -751,7 +859,7 @@ describe('MemberDonationHistory - Feature Tests', () => {
 
     it('should sort by amount (highest first, then lowest)', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory memberId="member-123" />
@@ -763,7 +871,9 @@ describe('MemberDonationHistory - Feature Tests', () => {
       });
 
       // Click on amount column header
-      const amountHeader = screen.getByRole('columnheader', { name: /amount/i });
+      const amountHeader = screen.getByRole('columnheader', {
+        name: /amount/i,
+      });
       await user.click(amountHeader);
 
       await waitFor(() => {
@@ -790,7 +900,7 @@ describe('MemberDonationHistory - Feature Tests', () => {
 
     it('should sort by category alphabetically', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory memberId="member-123" />
@@ -801,7 +911,9 @@ describe('MemberDonationHistory - Feature Tests', () => {
         expect(screen.getByText(/donation history/i)).toBeInTheDocument();
       });
 
-      const categoryHeader = screen.getByRole('columnheader', { name: /category/i });
+      const categoryHeader = screen.getByRole('columnheader', {
+        name: /category/i,
+      });
       await user.click(categoryHeader);
 
       await waitFor(() => {
@@ -816,7 +928,7 @@ describe('MemberDonationHistory - Feature Tests', () => {
 
     it('should persist sort state across filter changes', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory memberId="member-123" />
@@ -828,14 +940,20 @@ describe('MemberDonationHistory - Feature Tests', () => {
       });
 
       // Set sort order
-      const amountHeader = screen.getByRole('columnheader', { name: /amount/i });
+      const amountHeader = screen.getByRole('columnheader', {
+        name: /amount/i,
+      });
       await user.click(amountHeader);
 
       // Apply a filter
-      const categoryFilterButton = screen.getByRole('button', { name: /category/i });
+      const categoryFilterButton = screen.getByRole('button', {
+        name: /category/i,
+      });
       await user.click(categoryFilterButton);
-      
-      const generalFundOption = screen.getByRole('option', { name: /general fund/i });
+
+      const generalFundOption = screen.getByRole('option', {
+        name: /general fund/i,
+      });
       await user.click(generalFundOption);
 
       // Sort should be maintained with filter
@@ -865,13 +983,17 @@ describe('MemberDonationHistory - Feature Tests', () => {
 
       // Should show pagination controls
       expect(screen.getByText(/page 1 of/i)).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /next page/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /previous page/i })).toBeDisabled();
+      expect(
+        screen.getByRole('button', { name: /next page/i })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /previous page/i })
+      ).toBeDisabled();
     });
 
     it('should navigate to next/previous pages', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory memberId="member-123" />
@@ -897,7 +1019,7 @@ describe('MemberDonationHistory - Feature Tests', () => {
 
     it('should handle page size options', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory memberId="member-123" />
@@ -924,7 +1046,7 @@ describe('MemberDonationHistory - Feature Tests', () => {
 
     it('should reset to page 1 when filters are applied', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory memberId="member-123" />
@@ -944,10 +1066,14 @@ describe('MemberDonationHistory - Feature Tests', () => {
       });
 
       // Apply a filter
-      const categoryFilterButton = screen.getByRole('button', { name: /category/i });
+      const categoryFilterButton = screen.getByRole('button', {
+        name: /category/i,
+      });
       await user.click(categoryFilterButton);
-      
-      const generalFundOption = screen.getByRole('option', { name: /general fund/i });
+
+      const generalFundOption = screen.getByRole('option', {
+        name: /general fund/i,
+      });
       await user.click(generalFundOption);
 
       // Should reset to page 1
@@ -958,7 +1084,7 @@ describe('MemberDonationHistory - Feature Tests', () => {
 
     it('should maintain filters when navigating between pages', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory memberId="member-123" />
@@ -970,10 +1096,14 @@ describe('MemberDonationHistory - Feature Tests', () => {
       });
 
       // Apply filter
-      const categoryFilterButton = screen.getByRole('button', { name: /category/i });
+      const categoryFilterButton = screen.getByRole('button', {
+        name: /category/i,
+      });
       await user.click(categoryFilterButton);
-      
-      const generalFundOption = screen.getByRole('option', { name: /general fund/i });
+
+      const generalFundOption = screen.getByRole('option', {
+        name: /general fund/i,
+      });
       await user.click(generalFundOption);
 
       // Navigate to page 2
@@ -996,7 +1126,7 @@ describe('MemberDonationHistory - Feature Tests', () => {
   describe('Performance and Edge Cases', () => {
     it('should debounce search input to prevent excessive API calls', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory memberId="member-123" />
@@ -1008,19 +1138,22 @@ describe('MemberDonationHistory - Feature Tests', () => {
       });
 
       const searchInput = screen.getByPlaceholderText(/search donations/i);
-      
+
       // Type rapidly
       await user.type(searchInput, 'test');
-      
+
       // Should only call search once after debounce period
-      await waitFor(() => {
-        expect(mockDonationsService.searchDonations).toHaveBeenCalledTimes(1);
-      }, { timeout: 1000 });
+      await waitFor(
+        () => {
+          expect(mockDonationsService.searchDonations).toHaveBeenCalledTimes(1);
+        },
+        { timeout: 1000 }
+      );
     });
 
     it('should handle empty dataset gracefully', async () => {
       mockDonationsService.getDonationsByMember.mockResolvedValueOnce([]);
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory memberId="member-123" />
@@ -1029,16 +1162,18 @@ describe('MemberDonationHistory - Feature Tests', () => {
 
       await waitFor(() => {
         expect(screen.getByText(/no donations found/i)).toBeInTheDocument();
-        expect(screen.getByText(/you haven't made any donations yet/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/you haven't made any donations yet/i)
+        ).toBeInTheDocument();
       });
     });
 
     it('should show loading state during data fetch', async () => {
       // Mock delayed response
       mockDonationsService.getDonationsByMember.mockImplementation(
-        () => new Promise(resolve => setTimeout(() => resolve([]), 1000))
+        () => new Promise((resolve) => setTimeout(() => resolve([]), 1000))
       );
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory memberId="member-123" />
@@ -1053,7 +1188,7 @@ describe('MemberDonationHistory - Feature Tests', () => {
       mockDonationsService.getDonationsByMember.mockRejectedValueOnce(
         new Error('Service unavailable')
       );
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory memberId="member-123" />
@@ -1061,8 +1196,12 @@ describe('MemberDonationHistory - Feature Tests', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText(/error loading donations/i)).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument();
+        expect(
+          screen.getByText(/error loading donations/i)
+        ).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /try again/i })
+        ).toBeInTheDocument();
       });
     });
   });

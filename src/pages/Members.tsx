@@ -260,74 +260,74 @@ export default function Members() {
             <tbody className="bg-white divide-y divide-gray-200">
               {members && members.length > 0 ? (
                 members.map((memberItem) => (
-                <tr key={memberItem.id} className="hover:bg-gray-50">
-                  <td className="w-16 px-4 py-4 whitespace-nowrap">
-                    <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                      <User className="h-5 w-5 text-gray-600" />
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium">
-                      <Link
-                        to={`/members/${memberItem.id}`}
-                        className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                  <tr key={memberItem.id} className="hover:bg-gray-50">
+                    <td className="w-16 px-4 py-4 whitespace-nowrap">
+                      <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                        <User className="h-5 w-5 text-gray-600" />
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium">
+                        <Link
+                          to={`/members/${memberItem.id}`}
+                          className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                          {memberItem.lastName}
+                        </Link>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm font-medium">
+                        <Link
+                          to={`/members/${memberItem.id}`}
+                          className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                        >
+                          {memberItem.firstName}
+                        </Link>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {getPrimaryEmail(memberItem)}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-900">
+                        {getPrimaryPhone(memberItem)}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(memberItem.memberStatus || 'active')}`}
                       >
-                        {memberItem.lastName}
-                      </Link>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium">
-                      <Link
-                        to={`/members/${memberItem.id}`}
-                        className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline"
+                        {memberItem.memberStatus}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(memberItem.role || 'member')}`}
                       >
-                        {memberItem.firstName}
-                      </Link>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {getPrimaryEmail(memberItem)}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {getPrimaryPhone(memberItem)}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(memberItem.memberStatus || 'active')}`}
-                    >
-                      {memberItem.memberStatus}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getRoleColor(memberItem.role || 'member')}`}
-                    >
-                      {memberItem.role}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    {canDeleteMembers ? (
-                      <button
-                        onClick={() =>
-                          handleDeleteMember(
-                            memberItem.id,
-                            `${memberItem.firstName} ${memberItem.lastName}`
-                          )
-                        }
-                        className="text-red-600 hover:text-red-900 transition-colors duration-200"
-                      >
-                        Delete
-                      </button>
-                    ) : (
-                      <span className="text-gray-400">No Actions</span>
-                    )}
-                  </td>
-                </tr>
+                        {memberItem.role}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      {canDeleteMembers ? (
+                        <button
+                          onClick={() =>
+                            handleDeleteMember(
+                              memberItem.id,
+                              `${memberItem.firstName} ${memberItem.lastName}`
+                            )
+                          }
+                          className="text-red-600 hover:text-red-900 transition-colors duration-200"
+                        >
+                          Delete
+                        </button>
+                      ) : (
+                        <span className="text-gray-400">No Actions</span>
+                      )}
+                    </td>
+                  </tr>
                 ))
               ) : (
                 <tr>
@@ -347,7 +347,6 @@ export default function Members() {
             </tbody>
           </table>
         </div>
-
 
         {/* Pagination */}
         {showPagination && (

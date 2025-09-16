@@ -17,7 +17,7 @@ export function validateStripeConfig(): StripeConfigValidation {
   const errors: string[] = [];
   const warnings: string[] = [];
   const nodeEnv = process.env.NODE_ENV;
-  
+
   const publishableKey = process.env.VITE_STRIPE_PUBLISHABLE_KEY;
   const secretKey = process.env.STRIPE_SECRET_KEY;
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -37,8 +37,10 @@ export function validateStripeConfig(): StripeConfigValidation {
 
   // Validate key types match environment
   if (publishableKey && secretKey) {
-    const isLiveKey = publishableKey.startsWith('pk_live_') && secretKey.startsWith('sk_live_');
-    const isTestKey = publishableKey.startsWith('pk_test_') && secretKey.startsWith('sk_test_');
+    const isLiveKey =
+      publishableKey.startsWith('pk_live_') && secretKey.startsWith('sk_live_');
+    const isTestKey =
+      publishableKey.startsWith('pk_test_') && secretKey.startsWith('sk_test_');
 
     if (isLiveKey) {
       environment = 'production';
@@ -64,18 +66,28 @@ export function validateStripeConfig(): StripeConfigValidation {
     isValid: errors.length === 0,
     errors,
     environment,
-    warnings: warnings.length > 0 ? warnings : undefined
+    warnings: warnings.length > 0 ? warnings : undefined,
   };
 }
 
 // Data sanitization for logging and security
 const SENSITIVE_FIELDS = [
-  'cardNumber', 'card_number', 'number',
-  'cvv', 'cvc', 'securityCode', 'security_code',
-  'accountNumber', 'account_number',
-  'routingNumber', 'routing_number',
-  'ssn', 'social_security_number',
-  'password', 'token', 'secret'
+  'cardNumber',
+  'card_number',
+  'number',
+  'cvv',
+  'cvc',
+  'securityCode',
+  'security_code',
+  'accountNumber',
+  'account_number',
+  'routingNumber',
+  'routing_number',
+  'ssn',
+  'social_security_number',
+  'password',
+  'token',
+  'secret',
 ];
 
 export function sanitizeForLogging(data: unknown): unknown {
@@ -88,14 +100,16 @@ export function sanitizeForLogging(data: unknown): unknown {
   }
 
   if (Array.isArray(data)) {
-    return data.map(item => sanitizeForLogging(item));
+    return data.map((item) => sanitizeForLogging(item));
   }
 
   if (typeof data === 'object') {
     const sanitized: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(data)) {
       const lowerKey = key.toLowerCase();
-      if (SENSITIVE_FIELDS.some(field => lowerKey.includes(field.toLowerCase()))) {
+      if (
+        SENSITIVE_FIELDS.some((field) => lowerKey.includes(field.toLowerCase()))
+      ) {
         sanitized[key] = '[REDACTED]';
       } else {
         sanitized[key] = sanitizeForLogging(value);
@@ -108,7 +122,10 @@ export function sanitizeForLogging(data: unknown): unknown {
 }
 
 // Donation amount validation with payment-specific constraints
-export function validateDonationAmount(amount: number, paymentType?: 'card' | 'ach'): string | null {
+export function validateDonationAmount(
+  amount: number,
+  paymentType?: 'card' | 'ach'
+): string | null {
   if (isNaN(amount) || !isFinite(amount)) {
     return 'Invalid donation amount';
   }
@@ -124,13 +141,13 @@ export function validateDonationAmount(amount: number, paymentType?: 'card' | 'a
   }
 
   // Minimum amounts by payment type
-  if (paymentType === 'card' && amount < 0.50) {
+  if (paymentType === 'card' && amount < 0.5) {
     return 'Minimum card payment amount is $0.50';
   }
-  if (paymentType === 'ach' && amount < 1.00) {
+  if (paymentType === 'ach' && amount < 1.0) {
     return 'Minimum ACH payment amount is $1.00';
   }
-  if (!paymentType && amount < 1.00) {
+  if (!paymentType && amount < 1.0) {
     return 'Minimum donation amount is $1.00';
   }
 
@@ -148,7 +165,9 @@ export interface PaymentMethodValidation {
   errors: string[];
 }
 
-export function validatePaymentMethod(paymentMethod: Record<string, unknown>): PaymentMethodValidation {
+export function validatePaymentMethod(
+  paymentMethod: Record<string, unknown>
+): PaymentMethodValidation {
   const errors: string[] = [];
 
   if (!paymentMethod.type) {
@@ -161,15 +180,17 @@ export function validatePaymentMethod(paymentMethod: Record<string, unknown>): P
       errors.push('Card details are required for card payment method');
     } else {
       const card = paymentMethod.card;
-      
+
       // Validate expiry date
       if (card.expiryMonth && card.expiryYear) {
         const currentDate = new Date();
         const currentYear = currentDate.getFullYear();
         const currentMonth = currentDate.getMonth() + 1;
-        
-        if (card.expiryYear < currentYear || 
-            (card.expiryYear === currentYear && card.expiryMonth < currentMonth)) {
+
+        if (
+          card.expiryYear < currentYear ||
+          (card.expiryYear === currentYear && card.expiryMonth < currentMonth)
+        ) {
           errors.push('Credit card has expired');
         }
       }
@@ -179,9 +200,12 @@ export function validatePaymentMethod(paymentMethod: Record<string, unknown>): P
       errors.push('Bank account details are required for bank payment method');
     } else {
       const bankAccount = paymentMethod.usBankAccount;
-      
+
       // Validate routing number format
-      if (bankAccount.routingNumber && !/^\d{9}$/.test(bankAccount.routingNumber)) {
+      if (
+        bankAccount.routingNumber &&
+        !/^\d{9}$/.test(bankAccount.routingNumber)
+      ) {
         errors.push('Invalid routing number format');
       }
     }
@@ -189,36 +213,46 @@ export function validatePaymentMethod(paymentMethod: Record<string, unknown>): P
 
   return {
     isValid: errors.length === 0,
-    errors
+    errors,
   };
 }
 
 // Idempotency key generation for duplicate prevention
-export function generateIdempotencyKey(input?: Record<string, unknown>): string {
+export function generateIdempotencyKey(
+  input?: Record<string, unknown>
+): string {
   if (input) {
     // Generate deterministic key for same input
     const inputString = JSON.stringify(input, Object.keys(input).sort());
-    return crypto.createHash('sha256').update(inputString).digest('hex').substring(0, 32);
+    return crypto
+      .createHash('sha256')
+      .update(inputString)
+      .digest('hex')
+      .substring(0, 32);
   }
-  
+
   // Generate random key
   return crypto.randomBytes(16).toString('hex') + '_' + Date.now();
 }
 
 // Webhook signature validation
-export function validateWebhookSignature(payload: string, signature: string, secret: string): boolean {
+export function validateWebhookSignature(
+  payload: string,
+  signature: string,
+  secret: string
+): boolean {
   try {
     const elements = signature.split(',');
-    const signatureHash = elements.find(element => element.startsWith('v1='));
-    const timestamp = elements.find(element => element.startsWith('t='));
-    
+    const signatureHash = elements.find((element) => element.startsWith('v1='));
+    const timestamp = elements.find((element) => element.startsWith('t='));
+
     if (!signatureHash || !timestamp) {
       return false;
     }
 
     const timestampValue = parseInt(timestamp.split('=')[1]);
     const currentTime = Math.floor(Date.now() / 1000);
-    
+
     // Reject signatures older than 5 minutes
     if (currentTime - timestampValue > 300) {
       return false;
@@ -230,7 +264,7 @@ export function validateWebhookSignature(payload: string, signature: string, sec
       .createHmac('sha256', secret)
       .update(timestamp.split('=')[1] + '.' + payload)
       .digest('hex');
-    
+
     return signatureHash.split('=')[1] === expectedSignature;
   } catch (error) {
     return false;
@@ -238,7 +272,10 @@ export function validateWebhookSignature(payload: string, signature: string, sec
 }
 
 // Data masking utilities
-export function maskSensitiveData(data: string, type: 'card' | 'bank' | 'ssn'): string {
+export function maskSensitiveData(
+  data: string,
+  type: 'card' | 'bank' | 'ssn'
+): string {
   if (!data || data.length < 4) {
     return data;
   }
@@ -250,21 +287,21 @@ export function maskSensitiveData(data: string, type: 'card' | 'bank' | 'ssn'): 
         return `****-****-****-${last4}`;
       }
       return data;
-    
+
     case 'bank':
       if (data.length >= 8) {
         const last4 = data.slice(-4);
         return `*****${last4}`;
       }
       return data;
-    
+
     case 'ssn':
       if (data.length >= 9) {
         const last4 = data.slice(-4);
         return `XXX-XX-${last4}`;
       }
       return data;
-    
+
     default:
       return data;
   }
@@ -293,7 +330,7 @@ export function validateEnvironmentSecurity(): EnvironmentSecurity {
 
   return {
     isSecure: warnings.length === 0,
-    warnings
+    warnings,
   };
 }
 
@@ -306,13 +343,16 @@ export interface SecureLogEntry {
   sanitized: boolean;
 }
 
-export function createSecureLogEntry(event: string, data: unknown): SecureLogEntry {
+export function createSecureLogEntry(
+  event: string,
+  data: unknown
+): SecureLogEntry {
   return {
     event,
     data: sanitizeForLogging(data),
     timestamp: new Date().toISOString(),
     correlationId: generateIdempotencyKey(),
-    sanitized: true
+    sanitized: true,
   };
 }
 

@@ -4,6 +4,7 @@ import { Users, Plus, Settings, AlertCircle } from 'lucide-react';
 import { householdsService } from '../../../services/firebase/households.service';
 import { useAuth } from '../../../hooks/useUnifiedAuth';
 import { Household } from '../../../types/firestore';
+import GivingSummary from '../../donations/GivingSummary';
 
 interface HouseholdSidebarProps {
   memberId: string;
@@ -369,14 +370,21 @@ const HouseholdSidebar = memo(
     }
 
     return (
-      <div
-        className={`bg-white rounded-lg border border-gray-200 p-8 ${className}`}
-      >
-        <HouseholdHeader household={household} canManage={canManageHousehold} />
-        <div className="mt-6">
-          <HouseholdMemberList members={members} currentMemberId={memberId} />
+      <div className={`space-y-6 ${className}`}>
+        {/* Household Information */}
+        <div className="bg-white rounded-lg border border-gray-200 p-8">
+          <HouseholdHeader
+            household={household}
+            canManage={canManageHousehold}
+          />
+          <div className="mt-6">
+            <HouseholdMemberList members={members} currentMemberId={memberId} />
+          </div>
+          {canManageHousehold && <HouseholdActions />}
         </div>
-        {canManageHousehold && <HouseholdActions />}
+
+        {/* Giving Summary */}
+        <GivingSummary memberId={memberId} />
       </div>
     );
   }

@@ -60,7 +60,11 @@ export function InlineEditArray({
     setErrors(newErrors);
   };
 
-  const updateItem = (index: number, field: keyof ArrayItem, value: string | boolean) => {
+  const updateItem = (
+    index: number,
+    field: keyof ArrayItem,
+    value: string | boolean
+  ) => {
     const updated = [...editItems];
     updated[index] = { ...updated[index], [field]: value };
     setEditItems(updated);

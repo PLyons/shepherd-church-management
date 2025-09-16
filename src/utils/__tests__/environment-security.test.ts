@@ -10,7 +10,7 @@ import {
   isProduction,
   validateSSLRequired,
   createSecureLogEntry,
-  sanitizeForLogging
+  sanitizeForLogging,
 } from '../security';
 
 describe('Environment Security Integration Tests', () => {
@@ -35,9 +35,12 @@ describe('Environment Security Integration Tests', () => {
     it('should validate complete production environment setup', () => {
       // Set up production environment
       process.env.NODE_ENV = 'production';
-      process.env.VITE_STRIPE_PUBLISHABLE_KEY = 'pk_live_FAKE_KEY_FOR_TESTING_ONLY_NOT_REAL';
-      process.env.STRIPE_SECRET_KEY = 'sk_live_FAKE_KEY_FOR_TESTING_ONLY_NOT_REAL';
-      process.env.STRIPE_WEBHOOK_SECRET = 'whsec_FAKE_WEBHOOK_SECRET_FOR_TESTING_ONLY';
+      process.env.VITE_STRIPE_PUBLISHABLE_KEY =
+        'pk_live_FAKE_KEY_FOR_TESTING_ONLY_NOT_REAL';
+      process.env.STRIPE_SECRET_KEY =
+        'sk_live_FAKE_KEY_FOR_TESTING_ONLY_NOT_REAL';
+      process.env.STRIPE_WEBHOOK_SECRET =
+        'whsec_FAKE_WEBHOOK_SECRET_FOR_TESTING_ONLY';
       process.env.VITE_APP_URL = 'https://secure-church-app.com';
 
       const stripeValidation = validateStripeConfig();
@@ -60,18 +63,25 @@ describe('Environment Security Integration Tests', () => {
       const envSecurity = validateEnvironmentSecurity();
 
       expect(stripeValidation.isValid).toBe(false);
-      expect(stripeValidation.errors).toContain('Test keys cannot be used in production environment');
+      expect(stripeValidation.errors).toContain(
+        'Test keys cannot be used in production environment'
+      );
       expect(envSecurity.isSecure).toBe(false);
-      expect(envSecurity.warnings).toContain('HTTPS required in production environment');
+      expect(envSecurity.warnings).toContain(
+        'HTTPS required in production environment'
+      );
     });
   });
 
   describe('Development Environment Security', () => {
     it('should validate development environment with test keys', () => {
       process.env.NODE_ENV = 'development';
-      process.env.VITE_STRIPE_PUBLISHABLE_KEY = 'pk_test_FAKE_KEY_FOR_TESTING_ONLY_NOT_REAL';
-      process.env.STRIPE_SECRET_KEY = 'sk_test_FAKE_KEY_FOR_TESTING_ONLY_NOT_REAL';
-      process.env.STRIPE_WEBHOOK_SECRET = 'whsec_FAKE_WEBHOOK_SECRET_FOR_TESTING_ONLY';
+      process.env.VITE_STRIPE_PUBLISHABLE_KEY =
+        'pk_test_FAKE_KEY_FOR_TESTING_ONLY_NOT_REAL';
+      process.env.STRIPE_SECRET_KEY =
+        'sk_test_FAKE_KEY_FOR_TESTING_ONLY_NOT_REAL';
+      process.env.STRIPE_WEBHOOK_SECRET =
+        'whsec_FAKE_WEBHOOK_SECRET_FOR_TESTING_ONLY';
       process.env.VITE_APP_URL = 'http://localhost:3000';
 
       const stripeValidation = validateStripeConfig();
@@ -80,7 +90,9 @@ describe('Environment Security Integration Tests', () => {
       expect(stripeValidation.isValid).toBe(true);
       expect(stripeValidation.environment).toBe('test');
       expect(envSecurity.isSecure).toBe(false); // HTTP is not secure, but acceptable in dev
-      expect(envSecurity.warnings).toContain('HTTP protocol detected in development');
+      expect(envSecurity.warnings).toContain(
+        'HTTP protocol detected in development'
+      );
     });
 
     it('should warn against live keys in development', () => {
@@ -91,7 +103,9 @@ describe('Environment Security Integration Tests', () => {
       const stripeValidation = validateStripeConfig();
 
       expect(stripeValidation.isValid).toBe(false);
-      expect(stripeValidation.errors).toContain('Live keys should not be used in development environment');
+      expect(stripeValidation.errors).toContain(
+        'Live keys should not be used in development environment'
+      );
     });
   });
 
@@ -110,22 +124,25 @@ describe('Environment Security Integration Tests', () => {
             expiryMonth: 12,
             expiryYear: 2025,
             brand: 'visa',
-            last4: '4242'
-          }
+            last4: '4242',
+          },
         },
         billingDetails: {
           name: 'John Doe',
           email: 'john@example.com',
-          phone: '+1234567890'
-        }
+          phone: '+1234567890',
+        },
       };
 
-      const secureLogEntry = createSecureLogEntry('payment_processed', paymentData);
+      const secureLogEntry = createSecureLogEntry(
+        'payment_processed',
+        paymentData
+      );
 
       // Verify sensitive data is sanitized
       expect(secureLogEntry.data.paymentMethod.card.number).toBe('[REDACTED]');
       expect(secureLogEntry.data.paymentMethod.card.cvc).toBe('[REDACTED]');
-      
+
       // Verify safe data is preserved
       expect(secureLogEntry.data.amount).toBe(5000);
       expect(secureLogEntry.data.currency).toBe('usd');
@@ -133,7 +150,7 @@ describe('Environment Security Integration Tests', () => {
       expect(secureLogEntry.data.paymentMethod.card.last4).toBe('4242');
       expect(secureLogEntry.data.billingDetails.name).toBe('John Doe');
       expect(secureLogEntry.data.billingDetails.email).toBe('john@example.com');
-      
+
       // Verify log metadata
       expect(secureLogEntry.event).toBe('payment_processed');
       expect(secureLogEntry.sanitized).toBe(true);
@@ -153,10 +170,10 @@ describe('Environment Security Integration Tests', () => {
                 paymentMethod: {
                   card: {
                     number: '4242424242424242',
-                    cvv: '123'
-                  }
-                }
-              }
+                    cvv: '123',
+                  },
+                },
+              },
             },
             {
               memberId: 'member_789',
@@ -164,30 +181,38 @@ describe('Environment Security Integration Tests', () => {
                 amount: 5000,
                 bankAccount: {
                   accountNumber: '123456789',
-                  routingNumber: '021000021'
-                }
-              }
-            }
-          ]
+                  routingNumber: '021000021',
+                },
+              },
+            },
+          ],
         },
         processing: {
           webhook: {
             signature: 'whsec_secret_signature',
-            timestamp: Date.now()
-          }
-        }
+            timestamp: Date.now(),
+          },
+        },
       };
 
       const sanitized = sanitizeForLogging(complexPaymentData);
 
       // Check card data sanitization
-      expect(sanitized.batch.payments[0].donation.paymentMethod.card.number).toBe('[REDACTED]');
-      expect(sanitized.batch.payments[0].donation.paymentMethod.card.cvv).toBe('[REDACTED]');
-      
+      expect(
+        sanitized.batch.payments[0].donation.paymentMethod.card.number
+      ).toBe('[REDACTED]');
+      expect(sanitized.batch.payments[0].donation.paymentMethod.card.cvv).toBe(
+        '[REDACTED]'
+      );
+
       // Check bank account sanitization
-      expect(sanitized.batch.payments[1].donation.bankAccount.accountNumber).toBe('[REDACTED]');
-      expect(sanitized.batch.payments[1].donation.bankAccount.routingNumber).toBe('[REDACTED]');
-      
+      expect(
+        sanitized.batch.payments[1].donation.bankAccount.accountNumber
+      ).toBe('[REDACTED]');
+      expect(
+        sanitized.batch.payments[1].donation.bankAccount.routingNumber
+      ).toBe('[REDACTED]');
+
       // Check preserved non-sensitive data
       expect(sanitized.batch.id).toBe('batch_123');
       expect(sanitized.batch.payments[0].memberId).toBe('member_456');
@@ -205,7 +230,9 @@ describe('Environment Security Integration Tests', () => {
       const validation = validateStripeConfig();
 
       expect(validation.isValid).toBe(false);
-      expect(validation.errors).toContain('VITE_STRIPE_PUBLISHABLE_KEY is required');
+      expect(validation.errors).toContain(
+        'VITE_STRIPE_PUBLISHABLE_KEY is required'
+      );
       expect(validation.errors).toContain('STRIPE_SECRET_KEY is required');
       expect(validation.errors).toContain('STRIPE_WEBHOOK_SECRET is required');
       expect(validation.environment).toBe('unknown');
@@ -239,14 +266,14 @@ describe('Environment Security Integration Tests', () => {
   describe('SSL and Security Requirements', () => {
     it('should enforce HTTPS in production environments', () => {
       process.env.NODE_ENV = 'production';
-      
+
       // Test without URL
       expect(validateSSLRequired()).toBe(false);
-      
+
       // Test with HTTP URL
       process.env.VITE_APP_URL = 'http://example.com';
       expect(validateSSLRequired()).toBe(false);
-      
+
       // Test with HTTPS URL
       process.env.VITE_APP_URL = 'https://example.com';
       expect(validateSSLRequired()).toBe(true);
@@ -255,7 +282,7 @@ describe('Environment Security Integration Tests', () => {
     it('should not enforce HTTPS in development environments', () => {
       process.env.NODE_ENV = 'development';
       process.env.VITE_APP_URL = 'http://localhost:3000';
-      
+
       expect(validateSSLRequired()).toBe(true); // Not required in development
     });
   });
@@ -280,7 +307,7 @@ describe('Environment Security Integration Tests', () => {
     it('should handle mixed environment configurations gracefully', () => {
       process.env.NODE_ENV = 'production';
       process.env.VITE_STRIPE_PUBLISHABLE_KEY = 'pk_test_mixed123'; // Wrong key type
-      process.env.STRIPE_SECRET_KEY = 'sk_live_mixed123';  // Different key type
+      process.env.STRIPE_SECRET_KEY = 'sk_live_mixed123'; // Different key type
       process.env.VITE_APP_URL = 'https://secure-app.com';
 
       const validation = validateStripeConfig();

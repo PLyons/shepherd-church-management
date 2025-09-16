@@ -15,7 +15,7 @@ import {
   StatementStatus,
   StatementType,
   StatementFormat,
-  StatementDeliveryMethod
+  StatementDeliveryMethod,
 } from '../donations';
 
 describe('Donation Statement Types - PRP-2C-009', () => {
@@ -40,8 +40,8 @@ describe('Donation Statement Types - PRP-2C-009', () => {
           periodStart: '2025-01-01T00:00:00Z',
           periodEnd: '2025-12-31T23:59:59Z',
           donationIds: ['donation-123', 'donation-456', 'donation-789'],
-          totalAmount: 12500.00,
-          totalDeductibleAmount: 11750.00,
+          totalAmount: 12500.0,
+          totalDeductibleAmount: 11750.0,
           donationCount: 15,
           includesQuidProQuo: true,
           churchName: 'Grace Community Church',
@@ -52,7 +52,8 @@ describe('Donation Statement Types - PRP-2C-009', () => {
           status: 'generated' as StatementStatus,
           format: 'pdf' as StatementFormat,
           fileSize: 245760,
-          downloadUrl: 'https://storage.googleapis.com/statements/stmt-2025-001.pdf',
+          downloadUrl:
+            'https://storage.googleapis.com/statements/stmt-2025-001.pdf',
           deliveryMethod: 'download' as StatementDeliveryMethod,
           sentAt: '2025-01-15T10:05:00Z',
           downloadedAt: '2025-01-16T14:30:00Z',
@@ -61,7 +62,7 @@ describe('Donation Statement Types - PRP-2C-009', () => {
         };
 
         expect(statement.id).toBe('stmt-2025-001');
-        expect(statement.totalAmount).toBe(12500.00);
+        expect(statement.totalAmount).toBe(12500.0);
         expect(statement.statementType).toBe('annual_tax_statement');
         expect(statement.status).toBe('generated');
         expect(statement.donationCount).toBe(15);
@@ -79,7 +80,7 @@ describe('Donation Statement Types - PRP-2C-009', () => {
         periodStart: '2025-01-01T00:00:00Z',
         periodEnd: '2025-03-31T23:59:59Z',
         donationIds: ['donation-q1-001', 'donation-q1-002'],
-        totalAmount: 3000.00,
+        totalAmount: 3000.0,
         donationCount: 3,
         status: 'sent' as StatementStatus,
         deliveryMethod: 'email' as StatementDeliveryMethod,
@@ -99,13 +100,13 @@ describe('Donation Statement Types - PRP-2C-009', () => {
         memberId: 'member-456',
         memberName: 'John Smith',
         receiptNumber: 'R-2025-001',
-        donationAmount: 500.00,
-        deductibleAmount: 450.00,
+        donationAmount: 500.0,
+        deductibleAmount: 450.0,
         donationDate: '2025-01-15T10:00:00Z',
         donationMethod: 'credit_card',
         categoryName: 'Building Fund',
         isQuidProQuo: true,
-        quidProQuoValue: 50.00,
+        quidProQuoValue: 50.0,
         quidProQuoDescription: 'Dinner event ticket',
         churchName: 'Grace Community Church',
         churchEIN: '12-3456789',
@@ -115,9 +116,9 @@ describe('Donation Statement Types - PRP-2C-009', () => {
       };
 
       expect(receiptData.receiptNumber).toBe('R-2025-001');
-      expect(receiptData.deductibleAmount).toBe(450.00);
+      expect(receiptData.deductibleAmount).toBe(450.0);
       expect(receiptData.isQuidProQuo).toBe(true);
-      expect(receiptData.quidProQuoValue).toBe(50.00);
+      expect(receiptData.quidProQuoValue).toBe(50.0);
     });
 
     it('should support simple receipt without quid pro quo', () => {
@@ -125,8 +126,8 @@ describe('Donation Statement Types - PRP-2C-009', () => {
         id: 'receipt-2025-002',
         donationId: 'donation-456',
         receiptNumber: 'R-2025-002',
-        donationAmount: 100.00,
-        deductibleAmount: 100.00,
+        donationAmount: 100.0,
+        deductibleAmount: 100.0,
         isQuidProQuo: false,
         status: 'generated' as StatementStatus,
       };
@@ -220,10 +221,15 @@ describe('Donation Statement Types - PRP-2C-009', () => {
   describe('Type Union Validation', () => {
     it('should validate StatementStatus type union', () => {
       const validStatuses: StatementStatus[] = [
-        'pending', 'generating', 'generated', 'sent', 'failed', 'cancelled'
+        'pending',
+        'generating',
+        'generated',
+        'sent',
+        'failed',
+        'cancelled',
       ];
 
-      validStatuses.forEach(status => {
+      validStatuses.forEach((status) => {
         expect(typeof status).toBe('string');
       });
     });
@@ -231,7 +237,7 @@ describe('Donation Statement Types - PRP-2C-009', () => {
     it('should validate StatementFormat type union', () => {
       const validFormats: StatementFormat[] = ['pdf', 'html', 'excel'];
 
-      validFormats.forEach(format => {
+      validFormats.forEach((format) => {
         expect(typeof format).toBe('string');
       });
     });

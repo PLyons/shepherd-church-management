@@ -5,10 +5,7 @@ export class MemberSearch {
   /**
    * Search members by name or email (client-side filtering)
    */
-  static searchMembers(
-    members: Member[],
-    searchTerm: string
-  ): Member[] {
+  static searchMembers(members: Member[], searchTerm: string): Member[] {
     const searchLower = searchTerm.toLowerCase();
     return members.filter(
       (member) =>
@@ -103,7 +100,7 @@ export class MemberSearch {
         case 'lastName':
           aValue = (a.lastName || '').toLowerCase();
           bValue = (b.lastName || '').toLowerCase();
-          
+
           // Secondary sort by firstName if lastName is the same
           if (aValue === bValue) {
             aValue = (a.firstName || '').toLowerCase();

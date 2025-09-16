@@ -25,12 +25,14 @@ export function useMemberForm() {
   const isEditMode = Boolean(id);
 
   const [loading, setLoading] = useState(false);
-  const [expandedSections, setExpandedSections] = useState<CollapsibleSections>({
-    basic: true,
-    contact: true,
-    addresses: false,
-    administrative: false,
-  });
+  const [expandedSections, setExpandedSections] = useState<CollapsibleSections>(
+    {
+      basic: true,
+      contact: true,
+      addresses: false,
+      administrative: false,
+    }
+  );
 
   // Form setup with react-hook-form
   const form = useForm<MemberFormData>({
@@ -250,13 +252,13 @@ export function useMemberForm() {
     isEditMode,
     expandedSections,
     watchedPhones,
-    
+
     // Form
     form,
     emailFieldArray,
     phoneFieldArray,
     addressFieldArray,
-    
+
     // Actions
     toggleSection,
     onSubmit,

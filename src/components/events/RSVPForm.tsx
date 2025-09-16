@@ -1,5 +1,10 @@
 import { useForm } from 'react-hook-form';
-import { CheckCircle, MessageCircle, Utensils, AlertCircle } from 'lucide-react';
+import {
+  CheckCircle,
+  MessageCircle,
+  Utensils,
+  AlertCircle,
+} from 'lucide-react';
 import { Event, EventRSVP, RSVPStatus } from '../../types/events';
 
 interface RSVPFormData {
@@ -107,24 +112,34 @@ export function RSVPForm({
               <label
                 key={option.value}
                 className={`flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 transition-colors ${
-                  watchStatus === option.value ? option.bgClass : 'bg-white border-gray-200'
+                  watchStatus === option.value
+                    ? option.bgClass
+                    : 'bg-white border-gray-200'
                 }`}
               >
                 <input
                   type="radio"
                   value={option.value}
-                  {...register('status', { required: 'Please select your attendance status' })}
+                  {...register('status', {
+                    required: 'Please select your attendance status',
+                  })}
                   className="sr-only"
                 />
                 <div className="flex items-center flex-1">
                   <span className="text-lg mr-3">{option.icon}</span>
                   <div className="flex-1">
-                    <div className={`font-medium ${
-                      watchStatus === option.value ? option.colorClass : 'text-gray-900'
-                    }`}>
+                    <div
+                      className={`font-medium ${
+                        watchStatus === option.value
+                          ? option.colorClass
+                          : 'text-gray-900'
+                      }`}
+                    >
                       {option.label}
                     </div>
-                    <div className="text-sm text-gray-500">{option.description}</div>
+                    <div className="text-sm text-gray-500">
+                      {option.description}
+                    </div>
                   </div>
                   {watchStatus === option.value && (
                     <CheckCircle className="h-5 w-5 text-green-600" />
@@ -141,15 +156,24 @@ export function RSVPForm({
         {/* Number of Guests */}
         {watchStatus === 'yes' && (
           <div>
-            <label htmlFor="numberOfGuests" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="numberOfGuests"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Number of additional guests (not including yourself)
             </label>
             <select
               id="numberOfGuests"
               {...register('numberOfGuests', {
                 valueAsNumber: true,
-                min: { value: 0, message: 'Number of guests cannot be negative' },
-                max: { value: maxGuests, message: `Maximum ${maxGuests} guests allowed` },
+                min: {
+                  value: 0,
+                  message: 'Number of guests cannot be negative',
+                },
+                max: {
+                  value: maxGuests,
+                  message: `Maximum ${maxGuests} guests allowed`,
+                },
               })}
               className="block w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
             >
@@ -160,14 +184,19 @@ export function RSVPForm({
               ))}
             </select>
             {errors.numberOfGuests && (
-              <p className="mt-1 text-sm text-red-600">{errors.numberOfGuests.message}</p>
+              <p className="mt-1 text-sm text-red-600">
+                {errors.numberOfGuests.message}
+              </p>
             )}
           </div>
         )}
 
         {/* Notes */}
         <div>
-          <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="notes"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             <MessageCircle className="h-4 w-4 inline mr-1" />
             Additional notes (optional)
           </label>
@@ -183,7 +212,10 @@ export function RSVPForm({
         {/* Dietary Restrictions */}
         {watchStatus === 'yes' && (
           <div>
-            <label htmlFor="dietaryRestrictions" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="dietaryRestrictions"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               <Utensils className="h-4 w-4 inline mr-1" />
               Dietary restrictions (optional)
             </label>

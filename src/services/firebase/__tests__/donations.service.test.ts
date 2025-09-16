@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
 import { Timestamp } from 'firebase/firestore';
 import { DonationsService } from '../donations.service';
-import { 
-  Donation, 
-  DonationDocument, 
-  DonationMethod, 
+import {
+  Donation,
+  DonationDocument,
+  DonationMethod,
   DonationStatus,
   Form990LineItem,
   RestrictionType,
@@ -44,11 +44,16 @@ vi.mock('../base/base-firestore-service', () => ({
     subscribeToCollection = mockSubscribeToCollection;
     unsubscribe = mockUnsubscribe;
     createMultiple = mockCreateMultiple;
-    
-    constructor(db: any, collectionName: string, docToClient: any, clientToDoc: any) {
+
+    constructor(
+      db: any,
+      collectionName: string,
+      docToClient: any,
+      clientToDoc: any
+    ) {
       // Store for verification
     }
-  }
+  },
 }));
 
 describe('DonationsService', () => {
@@ -58,7 +63,7 @@ describe('DonationsService', () => {
     id: 'donation-123',
     memberId: 'member-456',
     memberName: 'John Smith',
-    amount: 100.00,
+    amount: 100.0,
     donationDate: '2025-01-15T10:00:00Z',
     method: 'credit_card',
     sourceLabel: 'Online Portal',
@@ -86,7 +91,7 @@ describe('DonationsService', () => {
 
   const mockAnonymousDonation: Donation = {
     id: 'donation-anonymous-456',
-    amount: 50.00,
+    amount: 50.0,
     donationDate: '2025-01-15T10:00:00Z',
     method: 'cash',
     categoryId: 'category-general',
@@ -118,7 +123,7 @@ describe('DonationsService', () => {
         const newDonationData = {
           memberId: 'member-789',
           memberName: 'Jane Doe',
-          amount: 250.00,
+          amount: 250.0,
           donationDate: '2025-01-20T14:00:00Z',
           method: 'check' as DonationMethod,
           categoryId: 'category-123',
@@ -132,7 +137,11 @@ describe('DonationsService', () => {
           isTaxDeductible: true,
         };
 
-        mockCreate.mockResolvedValue({ ...mockDonation, ...newDonationData, status: 'pending' });
+        mockCreate.mockResolvedValue({
+          ...mockDonation,
+          ...newDonationData,
+          status: 'pending',
+        });
 
         const result = await donationsService.createDonation(newDonationData);
 
@@ -147,13 +156,13 @@ describe('DonationsService', () => {
           })
         );
         expect(result).toBeDefined();
-        expect(result.amount).toBe(250.00);
+        expect(result.amount).toBe(250.0);
         expect(result.status).toBe('pending');
       });
 
       it('should create anonymous donation without member information', async () => {
         const anonymousData = {
-          amount: 100.00,
+          amount: 100.0,
           donationDate: '2025-01-20T14:00:00Z',
           method: 'cash' as DonationMethod,
           categoryId: 'category-456',
@@ -167,7 +176,10 @@ describe('DonationsService', () => {
           isTaxDeductible: true,
         };
 
-        mockCreate.mockResolvedValue({ ...mockAnonymousDonation, ...anonymousData });
+        mockCreate.mockResolvedValue({
+          ...mockAnonymousDonation,
+          ...anonymousData,
+        });
 
         const result = await donationsService.createDonation(anonymousData);
 
@@ -188,7 +200,7 @@ describe('DonationsService', () => {
         const quidProQuoData = {
           memberId: 'member-123',
           memberName: 'Bob Johnson',
-          amount: 500.00,
+          amount: 500.0,
           donationDate: '2025-01-20T14:00:00Z',
           method: 'credit_card' as DonationMethod,
           categoryId: 'category-789',
@@ -196,7 +208,7 @@ describe('DonationsService', () => {
           form990Fields: {
             lineItem: '1a_cash_contributions' as Form990LineItem,
             isQuidProQuo: true,
-            quidProQuoValue: 100.00,
+            quidProQuoValue: 100.0,
             isAnonymous: false,
             restrictionType: 'unrestricted' as RestrictionType,
           },
@@ -208,12 +220,12 @@ describe('DonationsService', () => {
         const result = await donationsService.createDonation(quidProQuoData);
 
         expect(result.form990Fields.isQuidProQuo).toBe(true);
-        expect(result.form990Fields.quidProQuoValue).toBe(100.00);
+        expect(result.form990Fields.quidProQuoValue).toBe(100.0);
       });
 
       it('should validate donation amount is positive', async () => {
         const invalidData = {
-          amount: -50.00,
+          amount: -50.0,
           donationDate: '2025-01-20T14:00:00Z',
           method: 'cash' as DonationMethod,
           categoryId: 'category-123',
@@ -227,8 +239,9 @@ describe('DonationsService', () => {
           isTaxDeductible: true,
         };
 
-        await expect(donationsService.createDonation(invalidData))
-          .rejects.toThrow('Donation amount must be greater than 0');
+        await expect(
+          donationsService.createDonation(invalidData)
+        ).rejects.toThrow('Donation amount must be greater than 0');
       });
 
       it('should validate future donation dates', async () => {
@@ -236,7 +249,7 @@ describe('DonationsService', () => {
         futureDate.setDate(futureDate.getDate() + 7);
 
         const futureData = {
-          amount: 100.00,
+          amount: 100.0,
           donationDate: futureDate.toISOString(),
           method: 'cash' as DonationMethod,
           categoryId: 'category-123',
@@ -250,15 +263,16 @@ describe('DonationsService', () => {
           isTaxDeductible: true,
         };
 
-        await expect(donationsService.createDonation(futureData))
-          .rejects.toThrow('Donation date cannot be in the future');
+        await expect(
+          donationsService.createDonation(futureData)
+        ).rejects.toThrow('Donation date cannot be in the future');
       });
     });
 
     describe('updateDonation', () => {
       it('should update donation with automatic updatedAt timestamp', async () => {
         const updateData = {
-          amount: 150.00,
+          amount: 150.0,
           note: 'Updated note',
           status: 'verified' as DonationStatus,
           verifiedBy: 'admin-456',
@@ -266,16 +280,20 @@ describe('DonationsService', () => {
 
         mockUpdate.mockResolvedValue({ ...mockDonation, ...updateData });
 
-        const result = await donationsService.updateDonation('donation-123', updateData);
+        const result = await donationsService.updateDonation(
+          'donation-123',
+          updateData
+        );
 
-        expect(mockUpdate).toHaveBeenCalledWith('donation-123', 
+        expect(mockUpdate).toHaveBeenCalledWith(
+          'donation-123',
           expect.objectContaining({
             ...updateData,
             updatedAt: expect.any(Date),
             verifiedAt: expect.any(Date), // Should be set when status changes to verified
           })
         );
-        expect(result.amount).toBe(150.00);
+        expect(result.amount).toBe(150.0);
         expect(result.status).toBe('verified');
       });
 
@@ -289,7 +307,8 @@ describe('DonationsService', () => {
 
         await donationsService.updateDonation('donation-123', updateData);
 
-        expect(mockUpdate).toHaveBeenCalledWith('donation-123',
+        expect(mockUpdate).toHaveBeenCalledWith(
+          'donation-123',
           expect.objectContaining({
             status: 'verified',
             verifiedBy: 'admin-123',
@@ -308,7 +327,8 @@ describe('DonationsService', () => {
 
         await donationsService.updateDonation('donation-123', updateData);
 
-        expect(mockUpdate).toHaveBeenCalledWith('donation-123',
+        expect(mockUpdate).toHaveBeenCalledWith(
+          'donation-123',
           expect.objectContaining({
             isReceiptSent: true,
             receiptSentAt: expect.any(Date),
@@ -353,16 +373,22 @@ describe('DonationsService', () => {
         const memberDonations = [mockDonation];
         mockGetWhere.mockResolvedValue(memberDonations);
 
-        const result = await donationsService.getDonationsByMember('member-456');
+        const result =
+          await donationsService.getDonationsByMember('member-456');
 
-        expect(mockGetWhere).toHaveBeenCalledWith('memberId', '==', 'member-456');
+        expect(mockGetWhere).toHaveBeenCalledWith(
+          'memberId',
+          '==',
+          'member-456'
+        );
         expect(result).toEqual(memberDonations);
       });
 
       it('should return empty array for member with no donations', async () => {
         mockGetWhere.mockResolvedValue([]);
 
-        const result = await donationsService.getDonationsByMember('member-new');
+        const result =
+          await donationsService.getDonationsByMember('member-new');
 
         expect(result).toEqual([]);
       });
@@ -387,7 +413,7 @@ describe('DonationsService', () => {
 
         expect(result).toHaveLength(2);
         // Verify sensitive member data is sanitized for pastor role
-        result.forEach(donation => {
+        result.forEach((donation) => {
           if (donation.form990Fields.isAnonymous) {
             expect(donation.memberId).toBeUndefined();
             expect(donation.memberName).toBeUndefined();
@@ -396,31 +422,38 @@ describe('DonationsService', () => {
       });
 
       it('should throw error for member role accessing all donations', async () => {
-        await expect(donationsService.getDonationsForRole('member'))
-          .rejects.toThrow('Members can only access their own donation data');
+        await expect(
+          donationsService.getDonationsForRole('member')
+        ).rejects.toThrow('Members can only access their own donation data');
       });
     });
 
     describe('getMemberDonationSummary', () => {
       it('should calculate donation summary for member', async () => {
         const memberDonations = [
-          { ...mockDonation, amount: 100.00 },
-          { ...mockDonation, id: 'donation-456', amount: 150.00 },
+          { ...mockDonation, amount: 100.0 },
+          { ...mockDonation, id: 'donation-456', amount: 150.0 },
         ];
         mockGetWhere.mockResolvedValue(memberDonations);
 
-        const result = await donationsService.getMemberDonationSummary('member-456', 2025);
+        const result = await donationsService.getMemberDonationSummary(
+          'member-456',
+          2025
+        );
 
-        expect(result.totalAmount).toBe(250.00);
+        expect(result.totalAmount).toBe(250.0);
         expect(result.donationCount).toBe(2);
-        expect(result.averageDonation).toBe(125.00);
+        expect(result.averageDonation).toBe(125.0);
         expect(result.taxYear).toBe(2025);
       });
 
       it('should return empty summary for member with no donations', async () => {
         mockGetWhere.mockResolvedValue([]);
 
-        const result = await donationsService.getMemberDonationSummary('member-new', 2025);
+        const result = await donationsService.getMemberDonationSummary(
+          'member-new',
+          2025
+        );
 
         expect(result.totalAmount).toBe(0);
         expect(result.donationCount).toBe(0);
@@ -438,7 +471,10 @@ describe('DonationsService', () => {
 
         mockSearch.mockResolvedValue({ items: rangeDonations });
 
-        const result = await donationsService.getDonationsInDateRange(startDate, endDate);
+        const result = await donationsService.getDonationsInDateRange(
+          startDate,
+          endDate
+        );
 
         expect(mockSearch).toHaveBeenCalledWith(
           expect.objectContaining({
@@ -454,7 +490,10 @@ describe('DonationsService', () => {
         const sameDay = new Date('2025-01-15');
         mockSearch.mockResolvedValue({ items: [mockDonation] });
 
-        const result = await donationsService.getDonationsInDateRange(sameDay, sameDay);
+        const result = await donationsService.getDonationsInDateRange(
+          sameDay,
+          sameDay
+        );
 
         expect(result).toHaveLength(1);
       });
@@ -479,9 +518,14 @@ describe('DonationsService', () => {
         const categoryDonations = [mockDonation];
         mockGetWhere.mockResolvedValue(categoryDonations);
 
-        const result = await donationsService.getDonationsByCategory('category-789');
+        const result =
+          await donationsService.getDonationsByCategory('category-789');
 
-        expect(mockGetWhere).toHaveBeenCalledWith('categoryId', '==', 'category-789');
+        expect(mockGetWhere).toHaveBeenCalledWith(
+          'categoryId',
+          '==',
+          'category-789'
+        );
         expect(result).toEqual(categoryDonations);
       });
     });
@@ -491,9 +535,14 @@ describe('DonationsService', () => {
         const methodDonations = [mockDonation];
         mockGetWhere.mockResolvedValue(methodDonations);
 
-        const result = await donationsService.getDonationsByMethod('credit_card');
+        const result =
+          await donationsService.getDonationsByMethod('credit_card');
 
-        expect(mockGetWhere).toHaveBeenCalledWith('method', '==', 'credit_card');
+        expect(mockGetWhere).toHaveBeenCalledWith(
+          'method',
+          '==',
+          'credit_card'
+        );
         expect(result).toEqual(methodDonations);
       });
     });
@@ -520,8 +569,8 @@ describe('DonationsService', () => {
           categoryIds: ['category-789'],
           methods: ['credit_card'],
           status: ['verified'],
-          minAmount: 50.00,
-          maxAmount: 500.00,
+          minAmount: 50.0,
+          maxAmount: 500.0,
         };
 
         const searchResults = [mockDonation];
@@ -583,18 +632,18 @@ describe('DonationsService', () => {
 
     describe('getLargeDonations', () => {
       it('should get donations above threshold amount', async () => {
-        const largeDonations = [{ ...mockDonation, amount: 1000.00 }];
+        const largeDonations = [{ ...mockDonation, amount: 1000.0 }];
         mockSearch.mockResolvedValue({ items: largeDonations });
 
-        const result = await donationsService.getLargeDonations(500.00);
+        const result = await donationsService.getLargeDonations(500.0);
 
         expect(mockSearch).toHaveBeenCalledWith(
           expect.objectContaining({
             filters: expect.arrayContaining([
-              expect.objectContaining({ 
+              expect.objectContaining({
                 field: 'amount',
                 operator: '>=',
-                value: 500.00
+                value: 500.0,
               }),
             ]),
           })
@@ -608,19 +657,30 @@ describe('DonationsService', () => {
     describe('generateFinancialSummary', () => {
       it('should generate comprehensive financial summary', async () => {
         const donations = [
-          { ...mockDonation, amount: 100.00, method: 'credit_card' as DonationMethod },
-          { ...mockAnonymousDonation, amount: 50.00, method: 'cash' as DonationMethod },
+          {
+            ...mockDonation,
+            amount: 100.0,
+            method: 'credit_card' as DonationMethod,
+          },
+          {
+            ...mockAnonymousDonation,
+            amount: 50.0,
+            method: 'cash' as DonationMethod,
+          },
         ];
         mockSearch.mockResolvedValue({ items: donations });
 
         const startDate = new Date('2025-01-01');
         const endDate = new Date('2025-01-31');
 
-        const result = await donationsService.generateFinancialSummary(startDate, endDate);
+        const result = await donationsService.generateFinancialSummary(
+          startDate,
+          endDate
+        );
 
-        expect(result.totalDonations).toBe(150.00);
+        expect(result.totalDonations).toBe(150.0);
         expect(result.donationCount).toBe(2);
-        expect(result.averageDonation).toBe(75.00);
+        expect(result.averageDonation).toBe(75.0);
         expect(result.byMethod).toHaveProperty('credit_card');
         expect(result.byMethod).toHaveProperty('cash');
         expect(result.byCategory).toHaveProperty('category-789');
@@ -633,7 +693,10 @@ describe('DonationsService', () => {
         const startDate = new Date('2025-02-01');
         const endDate = new Date('2025-02-28');
 
-        const result = await donationsService.generateFinancialSummary(startDate, endDate);
+        const result = await donationsService.generateFinancialSummary(
+          startDate,
+          endDate
+        );
 
         expect(result.totalDonations).toBe(0);
         expect(result.donationCount).toBe(0);
@@ -649,8 +712,8 @@ describe('DonationsService', () => {
         const result = await donationsService.getDonationStatistics();
 
         expect(result.totalDonations).toBe(2);
-        expect(result.totalAmount).toBe(150.00);
-        expect(result.averageDonation).toBe(75.00);
+        expect(result.totalAmount).toBe(150.0);
+        expect(result.averageDonation).toBe(75.0);
         expect(result.donationsByStatus.verified).toBe(1);
         expect(result.donationsByStatus.pending).toBe(1);
         expect(result.donationsByMethod.credit_card).toBe(1);
@@ -704,23 +767,25 @@ describe('DonationsService', () => {
 
   describe('Edge Cases and Error Handling', () => {
     it('should handle invalid donation amounts', async () => {
-      await expect(donationsService.createDonation({
-        amount: 0,
-        donationDate: '2025-01-15T10:00:00Z',
-        method: 'cash',
-        categoryId: 'cat-123',
-        categoryName: 'General',
-        form990Fields: {
-          lineItem: '1a_cash_contributions',
-          isQuidProQuo: false,
-          isAnonymous: false,
-        },
-        isTaxDeductible: true,
-      })).rejects.toThrow('Donation amount must be greater than 0');
+      await expect(
+        donationsService.createDonation({
+          amount: 0,
+          donationDate: '2025-01-15T10:00:00Z',
+          method: 'cash',
+          categoryId: 'cat-123',
+          categoryName: 'General',
+          form990Fields: {
+            lineItem: '1a_cash_contributions',
+            isQuidProQuo: false,
+            isAnonymous: false,
+          },
+          isTaxDeductible: true,
+        })
+      ).rejects.toThrow('Donation amount must be greater than 0');
     });
 
     it('should handle very large donation amounts', async () => {
-      const largeAmount = 1000000.00;
+      const largeAmount = 1000000.0;
       mockCreate.mockResolvedValue({ ...mockDonation, amount: largeAmount });
 
       const result = await donationsService.createDonation({
@@ -741,15 +806,17 @@ describe('DonationsService', () => {
     });
 
     it('should handle missing form990Fields', async () => {
-      await expect(donationsService.createDonation({
-        amount: 100,
-        donationDate: '2025-01-15T10:00:00Z',
-        method: 'cash',
-        categoryId: 'cat-123',
-        categoryName: 'General',
-        form990Fields: null as any,
-        isTaxDeductible: true,
-      })).rejects.toThrow('Form 990 fields are required');
+      await expect(
+        donationsService.createDonation({
+          amount: 100,
+          donationDate: '2025-01-15T10:00:00Z',
+          method: 'cash',
+          categoryId: 'cat-123',
+          categoryName: 'General',
+          form990Fields: null as any,
+          isTaxDeductible: true,
+        })
+      ).rejects.toThrow('Form 990 fields are required');
     });
 
     it('should handle donations with decimal precision', async () => {
@@ -818,15 +885,16 @@ describe('DonationsService', () => {
         });
         donationsService.createMultiple = mockCreateMultiple;
 
-        const result = await donationsService.createMultipleDonations(donationsData);
+        const result =
+          await donationsService.createMultipleDonations(donationsData);
 
         expect(mockCreateMultiple).toHaveBeenCalledWith(
           expect.arrayContaining([
-            expect.objectContaining({ 
-              data: expect.objectContaining({ amount: 100 }) 
+            expect.objectContaining({
+              data: expect.objectContaining({ amount: 100 }),
             }),
-            expect.objectContaining({ 
-              data: expect.objectContaining({ amount: 150 }) 
+            expect.objectContaining({
+              data: expect.objectContaining({ amount: 150 }),
             }),
           ])
         );

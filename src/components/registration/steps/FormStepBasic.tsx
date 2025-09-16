@@ -3,7 +3,10 @@
 // This file exists to capture essential member information in the first step of registration process
 // RELEVANT FILES: src/hooks/useQRRegistration.ts, src/types/registration.ts, src/pages/QRRegistration.tsx, src/components/registration/steps/FormStepContact.tsx
 
-import { FormErrors, useQRRegistration } from '../../../hooks/useQRRegistration';
+import {
+  FormErrors,
+  useQRRegistration,
+} from '../../../hooks/useQRRegistration';
 import { RegistrationFormData } from '../../../types/registration';
 
 interface FormStepBasicProps {
@@ -46,9 +49,7 @@ export function FormStepBasic({
           placeholder="Enter your first name"
           autoFocus
         />
-        {errors.firstName && (
-          <p className={errorClass}>{errors.firstName}</p>
-        )}
+        {errors.firstName && <p className={errorClass}>{errors.firstName}</p>}
       </div>
 
       <div>
@@ -61,9 +62,7 @@ export function FormStepBasic({
           className={`${inputClass} ${errors.lastName ? 'border-red-500' : ''}`}
           placeholder="Enter your last name"
         />
-        {errors.lastName && (
-          <p className={errorClass}>{errors.lastName}</p>
-        )}
+        {errors.lastName && <p className={errorClass}>{errors.lastName}</p>}
       </div>
     </div>
   );

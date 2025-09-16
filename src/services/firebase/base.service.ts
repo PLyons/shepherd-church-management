@@ -8,7 +8,7 @@
 
 // The new architecture provides better maintainability, testability, and separation of concerns:
 // - FirestoreOperations: Basic CRUD operations (139 lines)
-// - FirestoreQueries: Query and pagination operations (124 lines)  
+// - FirestoreQueries: Query and pagination operations (124 lines)
 // - FirestoreSubscriptions: Real-time subscription operations (185 lines)
 // - FirestoreBatch: Batch operations (144 lines)
 // - FirestoreErrorHandler: Error handling utilities (175 lines)

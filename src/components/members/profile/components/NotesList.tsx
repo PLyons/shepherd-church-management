@@ -14,10 +14,15 @@ interface NotesListProps {
   memberId: string;
 }
 
-export function NotesList({ notes, onEdit, onDelete, memberId }: NotesListProps) {
+export function NotesList({
+  notes,
+  onEdit,
+  onDelete,
+  memberId,
+}: NotesListProps) {
   const [expandedNote, setExpandedNote] = useState<string | null>(null);
   const [deletingNote, setDeletingNote] = useState<string | null>(null);
-  
+
   const { member: currentUser } = useAuth();
   const { showToast } = useToast();
 
@@ -26,7 +31,7 @@ export function NotesList({ notes, onEdit, onDelete, memberId }: NotesListProps)
       setExpandedNote(null);
     } else {
       setExpandedNote(note.id);
-      
+
       // Track note access
       if (currentUser) {
         await notesService.trackNoteAccess(memberId, note.id, currentUser.id);
@@ -35,7 +40,11 @@ export function NotesList({ notes, onEdit, onDelete, memberId }: NotesListProps)
   };
 
   const handleDeleteNote = async (noteId: string) => {
-    if (!confirm('Are you sure you want to delete this note? This action cannot be undone.')) {
+    if (
+      !confirm(
+        'Are you sure you want to delete this note? This action cannot be undone.'
+      )
+    ) {
       return;
     }
 
@@ -74,27 +83,34 @@ export function NotesList({ notes, onEdit, onDelete, memberId }: NotesListProps)
 
   return (
     <div className="space-y-4">
-      {notes.map(note => {
+      {notes.map((note) => {
         const categoryConfig = NOTE_CONFIG[note.category];
         const priorityConfig = PRIORITY_CONFIG[note.priority];
         const isExpanded = expandedNote === note.id;
 
         return (
-          <div key={note.id} className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+          <div
+            key={note.id}
+            className="bg-white rounded-lg border border-gray-200 overflow-hidden"
+          >
             {/* Note Header */}
             <div className="p-4">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     {/* Category Badge */}
-                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${categoryConfig.bgColor} ${categoryConfig.color}`}>
+                    <span
+                      className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${categoryConfig.bgColor} ${categoryConfig.color}`}
+                    >
                       <span>{categoryConfig.icon}</span>
                       {categoryConfig.label}
                     </span>
 
                     {/* Priority Badge */}
                     {note.priority !== 'normal' && (
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${priorityConfig.bgColor} ${priorityConfig.color}`}>
+                      <span
+                        className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${priorityConfig.bgColor} ${priorityConfig.color}`}
+                      >
                         <span>{priorityConfig.icon}</span>
                         {priorityConfig.label}
                       </span>
@@ -112,9 +128,10 @@ export function NotesList({ notes, onEdit, onDelete, memberId }: NotesListProps)
                   <h4 className="text-sm font-medium text-gray-900 mb-1">
                     {note.title}
                   </h4>
-                  
+
                   <div className="text-xs text-gray-500 mb-2">
-                    Created by {note.createdByName} on {format(note.createdAt, 'PPP')}
+                    Created by {note.createdByName} on{' '}
+                    {format(note.createdAt, 'PPP')}
                     {note.updatedAt && (
                       <span> • Updated {format(note.updatedAt, 'PPP')}</span>
                     )}
@@ -123,7 +140,7 @@ export function NotesList({ notes, onEdit, onDelete, memberId }: NotesListProps)
                   {/* Tags */}
                   {note.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1 mb-2">
-                      {note.tags.map(tag => (
+                      {note.tags.map((tag) => (
                         <span
                           key={tag}
                           className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded"
@@ -182,16 +199,19 @@ export function NotesList({ notes, onEdit, onDelete, memberId }: NotesListProps)
               {/* Expanded Content */}
               {isExpanded && (
                 <div className="mt-4 pt-4 border-t border-gray-200">
-                  <div 
+                  <div
                     className="prose prose-sm max-w-none"
                     dangerouslySetInnerHTML={{ __html: note.content }}
                   />
-                  
+
                   {/* Access Info */}
                   <div className="mt-4 pt-2 border-t border-gray-100 text-xs text-gray-500">
                     Viewed {note.accessCount} times
                     {note.lastAccessedAt && (
-                      <span> • Last accessed {format(note.lastAccessedAt, 'PPp')}</span>
+                      <span>
+                        {' '}
+                        • Last accessed {format(note.lastAccessedAt, 'PPp')}
+                      </span>
                     )}
                   </div>
                 </div>

@@ -5,7 +5,10 @@
 
 import { MemberActivity, ActivityType } from '../types/activity';
 
-export function generateMockActivities(memberId: string, count: number = 20): Omit<MemberActivity, 'id'>[] {
+export function generateMockActivities(
+  memberId: string,
+  count: number = 20
+): Omit<MemberActivity, 'id'>[] {
   const activities: Omit<MemberActivity, 'id'>[] = [];
   const now = new Date();
 
@@ -17,18 +20,32 @@ export function generateMockActivities(memberId: string, count: number = 20): Om
     'Volunteer Training',
     'Prayer Meeting',
     'Community Outreach',
-    'Choir Practice'
+    'Choir Practice',
   ];
 
-  const mockDepartments = ['Children\'s Ministry', 'Music', 'Food Service', 'Ushers', 'Technical'];
+  const mockDepartments = [
+    "Children's Ministry",
+    'Music',
+    'Food Service',
+    'Ushers',
+    'Technical',
+  ];
   const mockRoles = ['Volunteer', 'Team Leader', 'Assistant', 'Coordinator'];
 
   for (let i = 0; i < count; i++) {
     const daysAgo = Math.floor(Math.random() * 90);
-    const timestamp = new Date(now.getTime() - (daysAgo * 24 * 60 * 60 * 1000));
-    
-    const activityTypes: ActivityType[] = ['profile_update', 'status_change', 'event_attendance', 'volunteer_service', 'registration', 'login'];
-    const type = activityTypes[Math.floor(Math.random() * activityTypes.length)];
+    const timestamp = new Date(now.getTime() - daysAgo * 24 * 60 * 60 * 1000);
+
+    const activityTypes: ActivityType[] = [
+      'profile_update',
+      'status_change',
+      'event_attendance',
+      'volunteer_service',
+      'registration',
+      'login',
+    ];
+    const type =
+      activityTypes[Math.floor(Math.random() * activityTypes.length)];
 
     let activity: Omit<MemberActivity, 'id'>;
 
@@ -46,20 +63,29 @@ export function generateMockActivities(memberId: string, count: number = 20): Om
             field,
             oldValue: field === 'phone' ? '(555) 123-4567' : 'old@example.com',
             newValue: field === 'phone' ? '(555) 987-6543' : 'new@example.com',
-            updatedBy: 'self'
+            updatedBy: 'self',
           },
-          source: 'system'
+          source: 'system',
         };
         break;
       }
 
       case 'status_change': {
         const statuses = [
-          { from: 'visitor', to: 'regular_attender', reason: 'Consistent attendance' },
-          { from: 'regular_attender', to: 'active', reason: 'Completed membership class' },
-          { from: 'participant', to: 'active', reason: 'Baptism completed' }
+          {
+            from: 'visitor',
+            to: 'regular_attender',
+            reason: 'Consistent attendance',
+          },
+          {
+            from: 'regular_attender',
+            to: 'active',
+            reason: 'Completed membership class',
+          },
+          { from: 'participant', to: 'active', reason: 'Baptism completed' },
         ];
-        const statusChange = statuses[Math.floor(Math.random() * statuses.length)];
+        const statusChange =
+          statuses[Math.floor(Math.random() * statuses.length)];
         activity = {
           memberId,
           type,
@@ -70,15 +96,16 @@ export function generateMockActivities(memberId: string, count: number = 20): Om
             previousStatus: statusChange.from,
             newStatus: statusChange.to,
             reason: statusChange.reason,
-            changedBy: 'admin'
+            changedBy: 'admin',
           },
-          source: 'system'
+          source: 'system',
         };
         break;
       }
 
       case 'event_attendance': {
-        const eventName = mockEvents[Math.floor(Math.random() * mockEvents.length)];
+        const eventName =
+          mockEvents[Math.floor(Math.random() * mockEvents.length)];
         activity = {
           memberId,
           type,
@@ -89,15 +116,16 @@ export function generateMockActivities(memberId: string, count: number = 20): Om
             eventId: `event-${Math.random().toString(36).substr(2, 9)}`,
             eventName,
             eventDate: timestamp,
-            attendanceStatus: 'attended' as const
+            attendanceStatus: 'attended' as const,
           },
-          source: 'system'
+          source: 'system',
         };
         break;
       }
 
       case 'volunteer_service': {
-        const department = mockDepartments[Math.floor(Math.random() * mockDepartments.length)];
+        const department =
+          mockDepartments[Math.floor(Math.random() * mockDepartments.length)];
         const role = mockRoles[Math.floor(Math.random() * mockRoles.length)];
         const hours = Math.floor(Math.random() * 8) + 1;
         activity = {
@@ -111,9 +139,9 @@ export function generateMockActivities(memberId: string, count: number = 20): Om
             serviceName: `${department} Service`,
             hours,
             role,
-            department
+            department,
           },
-          source: 'system'
+          source: 'system',
         };
         break;
       }
@@ -127,9 +155,9 @@ export function generateMockActivities(memberId: string, count: number = 20): Om
           timestamp,
           metadata: {
             registrationMethod: 'qr_code',
-            registrationSource: 'welcome_center'
+            registrationSource: 'welcome_center',
           },
-          source: 'system'
+          source: 'system',
         };
         break;
       }
@@ -143,9 +171,9 @@ export function generateMockActivities(memberId: string, count: number = 20): Om
           timestamp,
           metadata: {
             loginMethod: 'magic_link',
-            deviceType: 'desktop'
+            deviceType: 'desktop',
           },
-          source: 'system'
+          source: 'system',
         };
         break;
       }
@@ -157,12 +185,14 @@ export function generateMockActivities(memberId: string, count: number = 20): Om
           title: 'General Activity',
           description: 'Activity recorded',
           timestamp,
-          source: 'system'
+          source: 'system',
         };
     }
 
     activities.push(activity);
   }
 
-  return activities.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  return activities.sort(
+    (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
+  );
 }

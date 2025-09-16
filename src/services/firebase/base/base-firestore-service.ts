@@ -14,20 +14,28 @@ import {
 } from 'firebase/firestore';
 
 import { FirestoreOperations } from './firestore-operations';
-import { FirestoreQueries, PaginationParams, QueryResult } from './firestore-queries';
+import {
+  FirestoreQueries,
+  PaginationParams,
+  QueryResult,
+} from './firestore-queries';
 
-type FirestoreOperator = 
-  | '==' 
-  | '!=' 
-  | '<' 
-  | '<=' 
-  | '>' 
-  | '>=' 
-  | 'array-contains' 
-  | 'array-contains-any' 
-  | 'in' 
+type FirestoreOperator =
+  | '=='
+  | '!='
+  | '<'
+  | '<='
+  | '>'
+  | '>='
+  | 'array-contains'
+  | 'array-contains-any'
+  | 'in'
   | 'not-in';
-import { FirestoreSubscriptions, SubscriptionCallback, DocumentSubscriptionCallback } from './firestore-subscriptions';
+import {
+  FirestoreSubscriptions,
+  SubscriptionCallback,
+  DocumentSubscriptionCallback,
+} from './firestore-subscriptions';
 import { FirestoreBatch, BatchOperation, BatchResult } from './firestore-batch';
 import { FirestoreErrorHandler, ErrorContext } from './firestore-error-handler';
 
@@ -97,21 +105,33 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
   async getById(id: string): Promise<TClient | null> {
     return FirestoreErrorHandler.wrapOperation(
       () => this.operations.getById(id),
-      { operation: 'getById', collectionName: this.collectionName, documentId: id }
+      {
+        operation: 'getById',
+        collectionName: this.collectionName,
+        documentId: id,
+      }
     );
   }
 
   async update(id: string, data: Partial<TClient>): Promise<TClient> {
     return FirestoreErrorHandler.wrapOperation(
       () => this.operations.update(id, data),
-      { operation: 'update', collectionName: this.collectionName, documentId: id }
+      {
+        operation: 'update',
+        collectionName: this.collectionName,
+        documentId: id,
+      }
     );
   }
 
   async delete(id: string): Promise<void> {
     return FirestoreErrorHandler.wrapOperation(
       () => this.operations.delete(id),
-      { operation: 'delete', collectionName: this.collectionName, documentId: id }
+      {
+        operation: 'delete',
+        collectionName: this.collectionName,
+        documentId: id,
+      }
     );
   }
 
@@ -171,7 +191,11 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
 
   async search(
     searchConstraints: {
-      filters?: Array<{ field: string; operator: FirestoreOperator; value: unknown }>;
+      filters?: Array<{
+        field: string;
+        operator: FirestoreOperator;
+        value: unknown;
+      }>;
       orderByField?: string;
       orderDirection?: 'asc' | 'desc';
     },
@@ -199,7 +223,11 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
     constraints: QueryConstraint[] = [],
     subscriptionId?: string
   ): string {
-    return this.subscriptions.subscribeToCollection(callback, constraints, subscriptionId);
+    return this.subscriptions.subscribeToCollection(
+      callback,
+      constraints,
+      subscriptionId
+    );
   }
 
   subscribeToDocument(
@@ -215,7 +243,11 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
     callback: SubscriptionCallback<TClient>,
     subscriptionId?: string
   ): string {
-    return this.subscriptions.subscribeToDocuments(ids, callback, subscriptionId);
+    return this.subscriptions.subscribeToDocuments(
+      ids,
+      callback,
+      subscriptionId
+    );
   }
 
   unsubscribe(subscriptionId: string): boolean {
@@ -234,7 +266,9 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
   // BATCH OPERATIONS (delegated to FirestoreBatch)
   // ============================================================================
 
-  async executeOperations(operations: BatchOperation<TClient>[]): Promise<BatchResult> {
+  async executeOperations(
+    operations: BatchOperation<TClient>[]
+  ): Promise<BatchResult> {
     return FirestoreErrorHandler.wrapOperation(
       () => this.batch.executeOperations(operations),
       { operation: 'executeOperations', collectionName: this.collectionName }
@@ -282,7 +316,11 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
     );
   }
 
-  protected handleError(error: unknown, operationName: string, documentId?: string): never {
+  protected handleError(
+    error: unknown,
+    operationName: string,
+    documentId?: string
+  ): never {
     const context: ErrorContext = {
       operation: operationName,
       collectionName: this.collectionName,
@@ -291,7 +329,7 @@ export abstract class BaseFirestoreService<TDocument, TClient> {
 
     FirestoreErrorHandler.logError(error, context);
     const errorDetails = FirestoreErrorHandler.handleError(error, context);
-    
+
     throw FirestoreErrorHandler.createError(
       errorDetails.userMessage,
       errorDetails.code,

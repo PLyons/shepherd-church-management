@@ -1,17 +1,17 @@
-import { 
-  collection, 
-  addDoc, 
+import {
+  collection,
+  addDoc,
   updateDoc,
   deleteDoc,
   doc,
-  query, 
-  where, 
-  orderBy, 
+  query,
+  where,
+  orderBy,
   limit,
   startAfter,
-  getDocs, 
+  getDocs,
   Timestamp,
-  increment
+  increment,
 } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { MemberNote, Communication, NoteFilter } from '../../types/notes';
@@ -26,13 +26,16 @@ class NotesService {
   }
 
   // Note operations
-  async createNote(memberId: string, note: Omit<MemberNote, 'id' | 'createdAt' | 'accessCount'>): Promise<string> {
+  async createNote(
+    memberId: string,
+    note: Omit<MemberNote, 'id' | 'createdAt' | 'accessCount'>
+  ): Promise<string> {
     try {
       const notesRef = this.getNotesCollection(memberId);
       const docRef = await addDoc(notesRef, {
         ...note,
         createdAt: Timestamp.now(),
-        accessCount: 0
+        accessCount: 0,
       });
       return docRef.id;
     } catch (error) {
@@ -41,12 +44,16 @@ class NotesService {
     }
   }
 
-  async updateNote(memberId: string, noteId: string, updates: Partial<MemberNote>): Promise<void> {
+  async updateNote(
+    memberId: string,
+    noteId: string,
+    updates: Partial<MemberNote>
+  ): Promise<void> {
     try {
       const noteRef = doc(this.getNotesCollection(memberId), noteId);
       await updateDoc(noteRef, {
         ...updates,
-        updatedAt: Timestamp.now()
+        updatedAt: Timestamp.now(),
       });
     } catch (error) {
       console.error('Error updating note:', error);
@@ -65,7 +72,7 @@ class NotesService {
   }
 
   async getNotes(
-    memberId: string, 
+    memberId: string,
     filters: Partial<NoteFilter> = {},
     pageSize: number = 20,
     lastDoc?: any
@@ -90,11 +97,17 @@ class NotesService {
       }
 
       if (filters.dateRange?.start) {
-        q = query(q, where('createdAt', '>=', Timestamp.fromDate(filters.dateRange.start)));
+        q = query(
+          q,
+          where('createdAt', '>=', Timestamp.fromDate(filters.dateRange.start))
+        );
       }
 
       if (filters.dateRange?.end) {
-        q = query(q, where('createdAt', '<=', Timestamp.fromDate(filters.dateRange.end)));
+        q = query(
+          q,
+          where('createdAt', '<=', Timestamp.fromDate(filters.dateRange.end))
+        );
       }
 
       // Pagination
@@ -106,32 +119,33 @@ class NotesService {
       const snapshot = await getDocs(q);
       const docs = snapshot.docs;
       const hasMore = docs.length > pageSize;
-      
+
       if (hasMore) {
         docs.pop();
       }
 
-      let notes = docs.map(doc => ({
+      let notes = docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
         createdAt: doc.data().createdAt.toDate(),
         updatedAt: doc.data().updatedAt?.toDate(),
-        lastAccessedAt: doc.data().lastAccessedAt?.toDate()
+        lastAccessedAt: doc.data().lastAccessedAt?.toDate(),
       })) as MemberNote[];
 
       // Apply client-side filters
       if (filters.search) {
         const searchLower = filters.search.toLowerCase();
-        notes = notes.filter(note => 
-          note.title.toLowerCase().includes(searchLower) ||
-          note.plainTextContent.toLowerCase().includes(searchLower) ||
-          note.tags.some(tag => tag.toLowerCase().includes(searchLower))
+        notes = notes.filter(
+          (note) =>
+            note.title.toLowerCase().includes(searchLower) ||
+            note.plainTextContent.toLowerCase().includes(searchLower) ||
+            note.tags.some((tag) => tag.toLowerCase().includes(searchLower))
         );
       }
 
       if (filters.tags?.length) {
-        notes = notes.filter(note => 
-          filters.tags!.some(tag => note.tags.includes(tag))
+        notes = notes.filter((note) =>
+          filters.tags!.some((tag) => note.tags.includes(tag))
         );
       }
 
@@ -142,13 +156,17 @@ class NotesService {
     }
   }
 
-  async trackNoteAccess(memberId: string, noteId: string, accessedBy: string): Promise<void> {
+  async trackNoteAccess(
+    memberId: string,
+    noteId: string,
+    accessedBy: string
+  ): Promise<void> {
     try {
       const noteRef = doc(this.getNotesCollection(memberId), noteId);
       await updateDoc(noteRef, {
         lastAccessedBy: accessedBy,
         lastAccessedAt: Timestamp.now(),
-        accessCount: increment(1)
+        accessCount: increment(1),
       });
     } catch (error) {
       console.error('Error tracking note access:', error);
@@ -157,10 +175,13 @@ class NotesService {
   }
 
   // Communication operations
-  async logCommunication(memberId: string, communication: Omit<Communication, 'id' | 'timestamp'>): Promise<string> {
+  async logCommunication(
+    memberId: string,
+    communication: Omit<Communication, 'id' | 'timestamp'>
+  ): Promise<string> {
     try {
       const communicationsRef = this.getCommunicationsCollection(memberId);
-      
+
       // Convert Date objects to Firestore Timestamps and remove undefined values
       const firestoreData: Record<string, any> = {
         ...communication,
@@ -169,16 +190,18 @@ class NotesService {
 
       // Only add followUpDate if it exists
       if (communication.followUpDate) {
-        firestoreData.followUpDate = Timestamp.fromDate(communication.followUpDate);
+        firestoreData.followUpDate = Timestamp.fromDate(
+          communication.followUpDate
+        );
       }
 
       // Remove any undefined values that Firestore doesn't allow
-      Object.keys(firestoreData).forEach(key => {
+      Object.keys(firestoreData).forEach((key) => {
         if (firestoreData[key] === undefined) {
           delete firestoreData[key];
         }
       });
-      
+
       console.log('Attempting to save communication data:');
       console.log('- memberId:', memberId);
       console.log('- type:', communication.type);
@@ -192,21 +215,30 @@ class NotesService {
       console.log('- followUpDate (original):', communication.followUpDate);
       console.log('- followUpDate (converted):', firestoreData.followUpDate);
       console.log('- Full firestoreData:', firestoreData);
-      
+
       const docRef = await addDoc(communicationsRef, firestoreData);
       console.log('Successfully saved communication with ID:', docRef.id);
       return docRef.id;
     } catch (error) {
       console.error('Detailed error logging communication:');
       console.error('- Error object:', error);
-      console.error('- Error message:', error instanceof Error ? error.message : String(error));
-      console.error('- Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+      console.error(
+        '- Error message:',
+        error instanceof Error ? error.message : String(error)
+      );
+      console.error(
+        '- Error stack:',
+        error instanceof Error ? error.stack : 'No stack trace'
+      );
       console.error('- Original communication data:', communication);
       throw new Error('Failed to log communication');
     }
   }
 
-  async getCommunications(memberId: string, limitCount: number = 50): Promise<Communication[]> {
+  async getCommunications(
+    memberId: string,
+    limitCount: number = 50
+  ): Promise<Communication[]> {
     try {
       const q = query(
         this.getCommunicationsCollection(memberId),
@@ -215,11 +247,11 @@ class NotesService {
       );
 
       const snapshot = await getDocs(q);
-      return snapshot.docs.map(doc => ({
+      return snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
         timestamp: doc.data().timestamp.toDate(),
-        followUpDate: doc.data().followUpDate?.toDate()
+        followUpDate: doc.data().followUpDate?.toDate(),
       })) as Communication[];
     } catch (error) {
       console.error('Error fetching communications:', error);

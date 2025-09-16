@@ -28,7 +28,7 @@ export function RegistrationFilters({
       <h2 className="text-lg font-medium text-gray-900 mb-4">
         Filter Registrations
       </h2>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
         {/* Search */}
         <div className="lg:col-span-2">
@@ -94,10 +94,7 @@ export function RegistrationFilters({
             onChange={(e) =>
               setFilters((prev) => ({
                 ...prev,
-                memberStatus: e.target.value as
-                  | 'all'
-                  | 'visitor'
-                  | 'member',
+                memberStatus: e.target.value as 'all' | 'visitor' | 'member',
               }))
             }
             className="w-full py-2 px-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
@@ -115,11 +112,7 @@ export function RegistrationFilters({
             onChange={(e) =>
               setFilters((prev) => ({
                 ...prev,
-                dateRange: e.target.value as
-                  | 'all'
-                  | 'today'
-                  | 'week'
-                  | 'month',
+                dateRange: e.target.value as 'all' | 'today' | 'week' | 'month',
               }))
             }
             className="w-full py-2 px-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"

@@ -19,7 +19,7 @@ class MembershipHistoryService {
   ): Promise<void> {
     try {
       const historyRef = this.getHistoryCollection(change.memberId);
-      
+
       // Clean the data to ensure no undefined values are passed to Firestore
       const cleanData = {
         memberId: change.memberId,
@@ -29,13 +29,15 @@ class MembershipHistoryService {
         changedBy: change.changedBy,
         changedByName: change.changedByName,
         changedAt: Timestamp.now(),
-        metadata: change.metadata ? {
-          source: change.metadata.source,
-          userAgent: change.metadata.userAgent || null,
-          ipAddress: change.metadata.ipAddress || null,
-        } : null,
+        metadata: change.metadata
+          ? {
+              source: change.metadata.source,
+              userAgent: change.metadata.userAgent || null,
+              ipAddress: change.metadata.ipAddress || null,
+            }
+          : null,
       };
-      
+
       await addDoc(historyRef, cleanData);
     } catch (error) {
       console.error('Error adding status change:', error);

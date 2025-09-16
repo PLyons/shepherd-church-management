@@ -34,8 +34,10 @@ export function HouseholdForm({ household, mode }: HouseholdFormProps) {
     country: household?.address?.country || 'United States',
   });
   const [selectedMembers, setSelectedMembers] = useState<Member[]>([]);
-  const [primaryContactId, setPrimaryContactId] = useState<string>(household?.primaryContactId || '');
-  
+  const [primaryContactId, setPrimaryContactId] = useState<string>(
+    household?.primaryContactId || ''
+  );
+
   // UI state
   const [saving, setSaving] = useState(false);
   const [showMemberSearch, setShowMemberSearch] = useState(false);
@@ -52,9 +54,14 @@ export function HouseholdForm({ household, mode }: HouseholdFormProps) {
 
   useEffect(() => {
     if (memberSearchTerm.trim()) {
-      const filtered = availableMembers.filter(member =>
-        `${member.firstName} ${member.lastName}`.toLowerCase().includes(memberSearchTerm.toLowerCase()) ||
-        member.emails?.[0]?.address?.toLowerCase().includes(memberSearchTerm.toLowerCase())
+      const filtered = availableMembers.filter(
+        (member) =>
+          `${member.firstName} ${member.lastName}`
+            .toLowerCase()
+            .includes(memberSearchTerm.toLowerCase()) ||
+          member.emails?.[0]?.address
+            ?.toLowerCase()
+            .includes(memberSearchTerm.toLowerCase())
       );
       setFilteredMembers(filtered);
     } else {
@@ -66,9 +73,11 @@ export function HouseholdForm({ household, mode }: HouseholdFormProps) {
     try {
       const allMembers = await membersService.getAll();
       // Filter out members who are already in households (except current household members in edit mode)
-      const householdMemberIds = mode === 'edit' && household ? household.memberIds : [];
-      const available = allMembers.filter(member => 
-        !member.householdId || householdMemberIds.includes(member.id)
+      const householdMemberIds =
+        mode === 'edit' && household ? household.memberIds : [];
+      const available = allMembers.filter(
+        (member) =>
+          !member.householdId || householdMemberIds.includes(member.id)
       );
       setAvailableMembers(available);
     } catch (error) {
@@ -79,7 +88,7 @@ export function HouseholdForm({ household, mode }: HouseholdFormProps) {
 
   const loadHouseholdMembers = async () => {
     if (!household) return;
-    
+
     try {
       const members = await householdsService.getMembers(household.id);
       setSelectedMembers(members);
@@ -89,9 +98,9 @@ export function HouseholdForm({ household, mode }: HouseholdFormProps) {
   };
 
   const handleAddMember = (member: Member) => {
-    if (!selectedMembers.find(m => m.id === member.id)) {
+    if (!selectedMembers.find((m) => m.id === member.id)) {
       setSelectedMembers([...selectedMembers, member]);
-      
+
       // If this is the first member, make them the primary contact
       if (selectedMembers.length === 0) {
         setPrimaryContactId(member.id);
@@ -102,18 +111,18 @@ export function HouseholdForm({ household, mode }: HouseholdFormProps) {
   };
 
   const handleRemoveMember = (memberId: string) => {
-    setSelectedMembers(selectedMembers.filter(m => m.id !== memberId));
-    
+    setSelectedMembers(selectedMembers.filter((m) => m.id !== memberId));
+
     // If we removed the primary contact, clear it or set to first remaining member
     if (primaryContactId === memberId) {
-      const remaining = selectedMembers.filter(m => m.id !== memberId);
+      const remaining = selectedMembers.filter((m) => m.id !== memberId);
       setPrimaryContactId(remaining.length > 0 ? remaining[0].id : '');
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!currentUser) {
       showToast('You must be logged in to create households', 'error');
       return;
@@ -137,8 +146,10 @@ export function HouseholdForm({ household, mode }: HouseholdFormProps) {
     setSaving(true);
 
     try {
-      const primaryContact = selectedMembers.find(m => m.id === primaryContactId);
-      
+      const primaryContact = selectedMembers.find(
+        (m) => m.id === primaryContactId
+      );
+
       const householdData: Omit<Household, 'id' | 'createdAt' | 'updatedAt'> = {
         familyName: familyName.trim(),
         normalizedName: familyName.toLowerCase().trim(),
@@ -153,8 +164,10 @@ export function HouseholdForm({ household, mode }: HouseholdFormProps) {
           country: address.country,
         },
         primaryContactId,
-        primaryContactName: primaryContact ? `${primaryContact.firstName} ${primaryContact.lastName}` : '',
-        memberIds: selectedMembers.map(m => m.id),
+        primaryContactName: primaryContact
+          ? `${primaryContact.firstName} ${primaryContact.lastName}`
+          : '',
+        memberIds: selectedMembers.map((m) => m.id),
         memberCount: selectedMembers.length,
       };
 
@@ -201,10 +214,9 @@ export function HouseholdForm({ household, mode }: HouseholdFormProps) {
             {mode === 'create' ? 'Create New Household' : 'Edit Household'}
           </h2>
           <p className="mt-1 text-sm text-gray-500">
-            {mode === 'create' 
+            {mode === 'create'
               ? 'Add family information and select members to create a new household.'
-              : 'Update household information and manage member assignments.'
-            }
+              : 'Update household information and manage member assignments.'}
           </p>
         </div>
 
@@ -235,7 +247,12 @@ export function HouseholdForm({ household, mode }: HouseholdFormProps) {
                 <input
                   type="text"
                   value={address.addressLine1}
-                  onChange={(e) => setAddress(prev => ({ ...prev, addressLine1: e.target.value }))}
+                  onChange={(e) =>
+                    setAddress((prev) => ({
+                      ...prev,
+                      addressLine1: e.target.value,
+                    }))
+                  }
                   placeholder="Street address"
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -248,7 +265,12 @@ export function HouseholdForm({ household, mode }: HouseholdFormProps) {
                 <input
                   type="text"
                   value={address.addressLine2}
-                  onChange={(e) => setAddress(prev => ({ ...prev, addressLine2: e.target.value }))}
+                  onChange={(e) =>
+                    setAddress((prev) => ({
+                      ...prev,
+                      addressLine2: e.target.value,
+                    }))
+                  }
                   placeholder="Apartment, suite, etc."
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -262,7 +284,9 @@ export function HouseholdForm({ household, mode }: HouseholdFormProps) {
                   <input
                     type="text"
                     value={address.city}
-                    onChange={(e) => setAddress(prev => ({ ...prev, city: e.target.value }))}
+                    onChange={(e) =>
+                      setAddress((prev) => ({ ...prev, city: e.target.value }))
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -273,12 +297,17 @@ export function HouseholdForm({ household, mode }: HouseholdFormProps) {
                   </label>
                   <select
                     value={address.state}
-                    onChange={(e) => setAddress(prev => ({ ...prev, state: e.target.value }))}
+                    onChange={(e) =>
+                      setAddress((prev) => ({ ...prev, state: e.target.value }))
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">Select state</option>
-                    {US_STATES.map(state => (
-                      <option key={state.abbreviation} value={state.abbreviation}>
+                    {US_STATES.map((state) => (
+                      <option
+                        key={state.abbreviation}
+                        value={state.abbreviation}
+                      >
                         {state.name}
                       </option>
                     ))}
@@ -294,7 +323,12 @@ export function HouseholdForm({ household, mode }: HouseholdFormProps) {
                   <input
                     type="text"
                     value={address.postalCode}
-                    onChange={(e) => setAddress(prev => ({ ...prev, postalCode: e.target.value }))}
+                    onChange={(e) =>
+                      setAddress((prev) => ({
+                        ...prev,
+                        postalCode: e.target.value,
+                      }))
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -306,7 +340,12 @@ export function HouseholdForm({ household, mode }: HouseholdFormProps) {
                   <input
                     type="text"
                     value={address.country}
-                    onChange={(e) => setAddress(prev => ({ ...prev, country: e.target.value }))}
+                    onChange={(e) =>
+                      setAddress((prev) => ({
+                        ...prev,
+                        country: e.target.value,
+                      }))
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -334,8 +373,12 @@ export function HouseholdForm({ household, mode }: HouseholdFormProps) {
             {selectedMembers.length === 0 ? (
               <div className="text-center py-6 border-2 border-dashed border-gray-300 rounded-lg">
                 <User className="mx-auto h-8 w-8 text-gray-400" />
-                <p className="mt-2 text-sm text-gray-500">No members selected</p>
-                <p className="text-xs text-gray-400">Click "Add Member" to get started</p>
+                <p className="mt-2 text-sm text-gray-500">
+                  No members selected
+                </p>
+                <p className="text-xs text-gray-400">
+                  Click "Add Member" to get started
+                </p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -370,7 +413,9 @@ export function HouseholdForm({ household, mode }: HouseholdFormProps) {
                             : 'bg-gray-100 text-gray-700 hover:bg-blue-100 hover:text-blue-800'
                         }`}
                       >
-                        {member.id === primaryContactId ? 'Primary' : 'Make Primary'}
+                        {member.id === primaryContactId
+                          ? 'Primary'
+                          : 'Make Primary'}
                       </button>
                       <button
                         type="button"
@@ -416,22 +461,30 @@ export function HouseholdForm({ household, mode }: HouseholdFormProps) {
                   </div>
                 </div>
                 <div className="max-h-64 overflow-y-auto p-2">
-                  {filteredMembers.filter(member => !selectedMembers.find(sm => sm.id === member.id)).map((member) => (
-                    <button
-                      key={member.id}
-                      type="button"
-                      onClick={() => handleAddMember(member)}
-                      className="w-full text-left p-3 hover:bg-gray-50 rounded-md"
-                    >
-                      <p className="text-sm font-medium text-gray-900">
-                        {member.firstName} {member.lastName}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {member.emails?.[0]?.address || 'No email'}
-                      </p>
-                    </button>
-                  ))}
-                  {filteredMembers.filter(member => !selectedMembers.find(sm => sm.id === member.id)).length === 0 && (
+                  {filteredMembers
+                    .filter(
+                      (member) =>
+                        !selectedMembers.find((sm) => sm.id === member.id)
+                    )
+                    .map((member) => (
+                      <button
+                        key={member.id}
+                        type="button"
+                        onClick={() => handleAddMember(member)}
+                        className="w-full text-left p-3 hover:bg-gray-50 rounded-md"
+                      >
+                        <p className="text-sm font-medium text-gray-900">
+                          {member.firstName} {member.lastName}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {member.emails?.[0]?.address || 'No email'}
+                        </p>
+                      </button>
+                    ))}
+                  {filteredMembers.filter(
+                    (member) =>
+                      !selectedMembers.find((sm) => sm.id === member.id)
+                  ).length === 0 && (
                     <p className="text-center py-4 text-gray-500 text-sm">
                       No available members found
                     </p>
@@ -454,14 +507,18 @@ export function HouseholdForm({ household, mode }: HouseholdFormProps) {
           </button>
           <button
             type="submit"
-            disabled={saving || !familyName.trim() || selectedMembers.length === 0}
+            disabled={
+              saving || !familyName.trim() || selectedMembers.length === 0
+            }
             className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md disabled:opacity-50 flex items-center space-x-2"
           >
             {saving && (
               <div className="h-4 w-4 animate-spin rounded-full border border-white border-t-transparent" />
             )}
             <Save className="h-4 w-4" />
-            <span>{mode === 'create' ? 'Create Household' : 'Update Household'}</span>
+            <span>
+              {mode === 'create' ? 'Create Household' : 'Update Household'}
+            </span>
           </button>
         </div>
       </div>

@@ -46,7 +46,9 @@ export class FirestoreBatch<TDocument, TClient> {
       throw new Error('No active batch. Call startBatch() first.');
     }
 
-    const docRef = customId ? this.getDocRef(customId) : this.getDocRef(this.generateId());
+    const docRef = customId
+      ? this.getDocRef(customId)
+      : this.getDocRef(this.generateId());
     const documentData = this.clientToDocument(data);
     const now = Timestamp.now();
 
@@ -71,7 +73,7 @@ export class FirestoreBatch<TDocument, TClient> {
 
     const docRef = this.getDocRef(id);
     const documentData = this.clientToDocument(data);
-    
+
     const finalData = {
       ...documentData,
       updatedAt: Timestamp.now(),
@@ -99,11 +101,13 @@ export class FirestoreBatch<TDocument, TClient> {
   /**
    * Execute multiple operations in a single batch
    */
-  async executeOperations(operations: BatchOperation<TClient>[]): Promise<BatchResult> {
+  async executeOperations(
+    operations: BatchOperation<TClient>[]
+  ): Promise<BatchResult> {
     try {
       this.startBatch();
 
-      operations.forEach(operation => {
+      operations.forEach((operation) => {
         switch (operation.type) {
           case 'create':
             if (!operation.data) {
@@ -111,28 +115,28 @@ export class FirestoreBatch<TDocument, TClient> {
             }
             this.addCreate(operation.data, operation.customId);
             break;
-          
+
           case 'update':
             if (!operation.id || !operation.data) {
               throw new Error('Update operation requires id and data');
             }
             this.addUpdate(operation.id, operation.data);
             break;
-          
+
           case 'delete':
             if (!operation.id) {
               throw new Error('Delete operation requires id');
             }
             this.addDelete(operation.id);
             break;
-          
+
           default:
             throw new Error(`Unknown operation type: ${operation.type}`);
         }
       });
 
       await this.commitBatch();
-      
+
       return {
         success: true,
         operationsCount: this.operationsCount,
@@ -157,7 +161,9 @@ export class FirestoreBatch<TDocument, TClient> {
 
     try {
       await this.currentBatch.commit();
-      console.log(`Batch committed successfully with ${this.operationsCount} operations`);
+      console.log(
+        `Batch committed successfully with ${this.operationsCount} operations`
+      );
     } catch (error) {
       console.error('Error committing batch:', error);
       throw error;
@@ -178,8 +184,10 @@ export class FirestoreBatch<TDocument, TClient> {
   /**
    * Batch create multiple documents
    */
-  async createMultiple(items: Array<{ data: Partial<TClient>; customId?: string }>): Promise<BatchResult> {
-    const operations: BatchOperation<TClient>[] = items.map(item => ({
+  async createMultiple(
+    items: Array<{ data: Partial<TClient>; customId?: string }>
+  ): Promise<BatchResult> {
+    const operations: BatchOperation<TClient>[] = items.map((item) => ({
       type: 'create',
       data: item.data,
       customId: item.customId,
@@ -191,8 +199,10 @@ export class FirestoreBatch<TDocument, TClient> {
   /**
    * Batch update multiple documents
    */
-  async updateMultiple(updates: Array<{ id: string; data: Partial<TClient> }>): Promise<BatchResult> {
-    const operations: BatchOperation<TClient>[] = updates.map(update => ({
+  async updateMultiple(
+    updates: Array<{ id: string; data: Partial<TClient> }>
+  ): Promise<BatchResult> {
+    const operations: BatchOperation<TClient>[] = updates.map((update) => ({
       type: 'update',
       id: update.id,
       data: update.data,
@@ -205,7 +215,7 @@ export class FirestoreBatch<TDocument, TClient> {
    * Batch delete multiple documents
    */
   async deleteMultiple(ids: string[]): Promise<BatchResult> {
-    const operations: BatchOperation<TClient>[] = ids.map(id => ({
+    const operations: BatchOperation<TClient>[] = ids.map((id) => ({
       type: 'delete',
       id,
     }));

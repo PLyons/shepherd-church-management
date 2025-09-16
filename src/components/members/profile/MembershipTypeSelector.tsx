@@ -92,7 +92,10 @@ export function MembershipTypeSelector({
           },
         });
       } catch (historyError) {
-        console.warn('Failed to save status history, but member update was successful:', historyError);
+        console.warn(
+          'Failed to save status history, but member update was successful:',
+          historyError
+        );
       }
 
       showToast('Membership status updated successfully', 'success');

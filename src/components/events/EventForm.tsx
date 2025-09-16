@@ -20,7 +20,7 @@ interface EventFormProps {
 export const EventForm: React.FC<EventFormProps> = ({
   eventId,
   onSubmit,
-  onCancel
+  onCancel,
 }) => {
   const { user } = useAuth();
   const { showToast } = useToast();
@@ -33,7 +33,7 @@ export const EventForm: React.FC<EventFormProps> = ({
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-    watch
+    watch,
   } = useForm<EventFormData>({
     defaultValues: {
       title: '',
@@ -46,12 +46,15 @@ export const EventForm: React.FC<EventFormProps> = ({
       requiredRoles: [] as Role[],
       capacity: undefined,
       enableWaitlist: false,
-    }
+    },
   });
 
   const watchIsAllDay = watch('isAllDay');
   const watchCapacityValue = watch('capacity');
-  const watchHasCapacity = watchCapacityValue && !isNaN(Number(watchCapacityValue)) && Number(watchCapacityValue) > 0;
+  const watchHasCapacity =
+    watchCapacityValue &&
+    !isNaN(Number(watchCapacityValue)) &&
+    Number(watchCapacityValue) > 0;
 
   // Event type options
   const eventTypeOptions: { value: EventType; label: string }[] = [
@@ -79,11 +82,11 @@ export const EventForm: React.FC<EventFormProps> = ({
 
   const loadEvent = async () => {
     if (!eventId) return;
-    
+
     try {
       setIsLoadingEvent(true);
       const event = await eventsService.getById(eventId);
-      
+
       if (event) {
         reset({
           title: event.title,
@@ -115,7 +118,7 @@ export const EventForm: React.FC<EventFormProps> = ({
 
     try {
       setIsLoading(true);
-      
+
       // Convert EventFormData to Event format
       const eventData = {
         ...data,
@@ -125,7 +128,7 @@ export const EventForm: React.FC<EventFormProps> = ({
         isActive: true,
         isCancelled: false,
       };
-      
+
       if (onSubmit) {
         onSubmit(data);
       } else if (eventId) {
@@ -156,7 +159,7 @@ export const EventForm: React.FC<EventFormProps> = ({
   if (isLoadingEvent) {
     return (
       <div className="flex justify-center items-center py-8">
-        <div 
+        <div
           className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
           data-testid="loading-spinner"
           role="status"
@@ -175,11 +178,16 @@ export const EventForm: React.FC<EventFormProps> = ({
           </h2>
         </div>
 
-        <form onSubmit={handleSubmit(handleFormSubmit)} className="p-6 space-y-8">
+        <form
+          onSubmit={handleSubmit(handleFormSubmit)}
+          className="p-6 space-y-8"
+        >
           {/* Basic Information Section */}
           <section>
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
-            
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Basic Information
+            </h3>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Event Title */}
               <div className="md:col-span-2">
@@ -192,14 +200,16 @@ export const EventForm: React.FC<EventFormProps> = ({
                     required: 'Event title is required',
                     minLength: {
                       value: 3,
-                      message: 'Title must be at least 3 characters long'
-                    }
+                      message: 'Title must be at least 3 characters long',
+                    },
                   })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Enter event title"
                 />
                 {errors.title && (
-                  <p className="mt-1 text-sm text-red-600">{errors.title.message}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.title.message}
+                  </p>
                 )}
               </div>
 
@@ -209,17 +219,21 @@ export const EventForm: React.FC<EventFormProps> = ({
                   Event Type *
                 </label>
                 <select
-                  {...register('eventType', { required: 'Event type is required' })}
+                  {...register('eventType', {
+                    required: 'Event type is required',
+                  })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  {eventTypeOptions.map(option => (
+                  {eventTypeOptions.map((option) => (
                     <option key={option.value} value={option.value}>
                       {option.label}
                     </option>
                   ))}
                 </select>
                 {errors.eventType && (
-                  <p className="mt-1 text-sm text-red-600">{errors.eventType.message}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.eventType.message}
+                  </p>
                 )}
               </div>
 
@@ -230,12 +244,16 @@ export const EventForm: React.FC<EventFormProps> = ({
                 </label>
                 <input
                   type="text"
-                  {...register('location', { required: 'Location is required' })}
+                  {...register('location', {
+                    required: 'Location is required',
+                  })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Enter event location"
                 />
                 {errors.location && (
-                  <p className="mt-1 text-sm text-red-600">{errors.location.message}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.location.message}
+                  </p>
                 )}
               </div>
             </div>
@@ -256,8 +274,10 @@ export const EventForm: React.FC<EventFormProps> = ({
 
           {/* Date & Time Section */}
           <section>
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Date & Time</h3>
-            
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Date & Time
+            </h3>
+
             {/* All Day Toggle */}
             <div className="mb-4">
               <label className="inline-flex items-center">
@@ -266,7 +286,9 @@ export const EventForm: React.FC<EventFormProps> = ({
                   {...register('isAllDay')}
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
-                <span className="ml-2 text-sm text-gray-700">All day event</span>
+                <span className="ml-2 text-sm text-gray-700">
+                  All day event
+                </span>
               </label>
             </div>
 
@@ -278,11 +300,15 @@ export const EventForm: React.FC<EventFormProps> = ({
                 </label>
                 <input
                   type={watchIsAllDay ? 'date' : 'datetime-local'}
-                  {...register('startDate', { required: 'Start date is required' })}
+                  {...register('startDate', {
+                    required: 'Start date is required',
+                  })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
                 {errors.startDate && (
-                  <p className="mt-1 text-sm text-red-600">{errors.startDate.message}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.startDate.message}
+                  </p>
                 )}
               </div>
 
@@ -293,29 +319,32 @@ export const EventForm: React.FC<EventFormProps> = ({
                 </label>
                 <input
                   type={watchIsAllDay ? 'date' : 'datetime-local'}
-                  {...register('endDate', { 
+                  {...register('endDate', {
                     required: 'End date is required',
                     validate: (value, formValues) => {
                       if (new Date(value) <= new Date(formValues.startDate)) {
                         return 'End date must be after start date';
                       }
                       return true;
-                    }
+                    },
                   })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
                 {errors.endDate && (
-                  <p className="mt-1 text-sm text-red-600">{errors.endDate.message}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.endDate.message}
+                  </p>
                 )}
               </div>
             </div>
           </section>
 
-
           {/* Capacity Management Section */}
           <section>
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Capacity Management</h3>
-            
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Capacity Management
+            </h3>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Capacity Limit */}
               <div>
@@ -326,7 +355,7 @@ export const EventForm: React.FC<EventFormProps> = ({
                   type="number"
                   {...register('capacity', {
                     min: { value: 1, message: 'Capacity must be at least 1' },
-                    valueAsNumber: true
+                    valueAsNumber: true,
                   })}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Leave empty for unlimited"
@@ -336,7 +365,9 @@ export const EventForm: React.FC<EventFormProps> = ({
                   Total number of people who can attend (including guests)
                 </p>
                 {errors.capacity && (
-                  <p className="mt-1 text-sm text-red-600">{errors.capacity.message}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.capacity.message}
+                  </p>
                 )}
               </div>
 
@@ -377,8 +408,10 @@ export const EventForm: React.FC<EventFormProps> = ({
                   <div className="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
                   Saving...
                 </>
+              ) : eventId ? (
+                'Update Event'
               ) : (
-                eventId ? 'Update Event' : 'Create Event'
+                'Create Event'
               )}
             </button>
           </div>

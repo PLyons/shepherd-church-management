@@ -88,22 +88,28 @@ export class DashboardService {
       const now = new Date();
       const thirtyDaysFromNow = new Date();
       thirtyDaysFromNow.setDate(now.getDate() + 30);
-      
-      const upcomingEvents = await eventsService.getEventsInRange(now, thirtyDaysFromNow)
+
+      const upcomingEvents = await eventsService
+        .getEventsInRange(now, thirtyDaysFromNow)
         .catch((err: unknown) => {
           console.error('Upcoming events error:', err);
           return [];
         });
 
-      const recentActivity = await this.getAdminActivity().catch((err: unknown) => {
-        console.error('Admin activity error:', err);
-        return [];
-      });
+      const recentActivity = await this.getAdminActivity().catch(
+        (err: unknown) => {
+          console.error('Admin activity error:', err);
+          return [];
+        }
+      );
 
       console.log('DashboardService: Admin dashboard data complete', {
         totalMembers: memberStats.total,
         upcomingEventsCount: upcomingEvents.length,
-        upcomingEvents: upcomingEvents.map(e => ({ title: e.title, startDate: e.startDate }))
+        upcomingEvents: upcomingEvents.map((e) => ({
+          title: e.title,
+          startDate: e.startDate,
+        })),
       });
 
       return {
@@ -129,7 +135,8 @@ export class DashboardService {
     const memberStats = await this.membersService.getStatistics();
 
     // Get upcoming events for dashboard
-    const upcomingEvents = await eventsService.getEventsByRoleSimple('pastor', 5)
+    const upcomingEvents = await eventsService
+      .getEventsByRoleSimple('pastor', 5)
       .catch((err: unknown) => {
         console.error('Upcoming events error:', err);
         return [];
@@ -159,7 +166,8 @@ export class DashboardService {
     }
 
     // Get upcoming events for dashboard
-    const upcomingEvents = await eventsService.getEventsByRoleSimple('member', 5)
+    const upcomingEvents = await eventsService
+      .getEventsByRoleSimple('member', 5)
       .catch((err: unknown) => {
         console.error('Upcoming events error:', err);
         return [];

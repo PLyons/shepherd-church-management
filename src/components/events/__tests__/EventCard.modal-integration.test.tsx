@@ -16,9 +16,9 @@ vi.mock('../../../services/firebase/events.service');
 vi.mock('../../../contexts/FirebaseAuthContext');
 vi.mock('../../../contexts/ToastContext');
 vi.mock('../RSVPModal', () => ({
-  RSVPModal: vi.fn(({ isOpen }) => 
+  RSVPModal: vi.fn(({ isOpen }) =>
     isOpen ? <div data-testid="rsvp-modal">RSVP Modal</div> : null
-  )
+  ),
 }));
 
 const mockEventRSVPService = eventRSVPService as unknown as {
@@ -73,7 +73,7 @@ describe('EventCard - Modal Integration Tests', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     mockUseAuth.mockReturnValue({
       user: mockUser,
       member: mockMember,
@@ -105,7 +105,7 @@ describe('EventCard - Modal Integration Tests', () => {
   describe('Modal Trigger State Management', () => {
     it('should have modal closed by default', async () => {
       renderEventCard();
-      
+
       await waitFor(() => {
         expect(screen.queryByTestId('rsvp-modal')).not.toBeInTheDocument();
       });
@@ -113,7 +113,7 @@ describe('EventCard - Modal Integration Tests', () => {
 
     it('should open modal when RSVP button is clicked', async () => {
       renderEventCard();
-      
+
       // Wait for component to load RSVP data
       await waitFor(() => {
         expect(screen.getByText('RSVP')).toBeInTheDocument();
@@ -137,7 +137,7 @@ describe('EventCard - Modal Integration Tests', () => {
 
     it('should close modal when onClose callback is called', async () => {
       renderEventCard();
-      
+
       // Wait for component to load
       await waitFor(() => {
         expect(screen.getByText('RSVP')).toBeInTheDocument();
@@ -148,7 +148,8 @@ describe('EventCard - Modal Integration Tests', () => {
       fireEvent.click(rsvpButton);
 
       // Get the onClose callback and call it
-      const lastCall = mockRSVPModal.mock.calls[mockRSVPModal.mock.calls.length - 1];
+      const lastCall =
+        mockRSVPModal.mock.calls[mockRSVPModal.mock.calls.length - 1];
       const onCloseCallback = lastCall[0].onClose;
       onCloseCallback();
 
@@ -160,13 +161,13 @@ describe('EventCard - Modal Integration Tests', () => {
 
     it('should handle rapid modal open/close without state conflicts', async () => {
       renderEventCard();
-      
+
       await waitFor(() => {
         expect(screen.getByText('RSVP')).toBeInTheDocument();
       });
 
       const rsvpButton = screen.getByText('RSVP');
-      
+
       // Rapid clicks
       fireEvent.click(rsvpButton);
       fireEvent.click(rsvpButton);
@@ -182,7 +183,7 @@ describe('EventCard - Modal Integration Tests', () => {
   describe('RSVP Integration with Modal', () => {
     it('should update RSVP when modal callback is triggered', async () => {
       renderEventCard();
-      
+
       await waitFor(() => {
         expect(screen.getByText('RSVP')).toBeInTheDocument();
       });
@@ -191,17 +192,18 @@ describe('EventCard - Modal Integration Tests', () => {
       fireEvent.click(rsvpButton);
 
       // Get the onRSVPUpdate callback and call it
-      const lastCall = mockRSVPModal.mock.calls[mockRSVPModal.mock.calls.length - 1];
+      const lastCall =
+        mockRSVPModal.mock.calls[mockRSVPModal.mock.calls.length - 1];
       const onRSVPUpdateCallback = lastCall[0].onRSVPUpdate;
-      
-      await onRSVPUpdateCallback({ 
-        id: 'rsvp-1', 
-        status: 'yes', 
-        memberId: mockMember.id, 
+
+      await onRSVPUpdateCallback({
+        id: 'rsvp-1',
+        status: 'yes',
+        memberId: mockMember.id,
         eventId: mockEvent.id,
         responseDate: new Date(),
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       });
 
       // The EventCard should update its state

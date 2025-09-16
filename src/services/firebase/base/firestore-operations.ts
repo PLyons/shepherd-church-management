@@ -38,7 +38,12 @@ export class FirestoreOperations<TDocument, TClient> {
    */
   async create(data: Partial<TClient>, customId?: string): Promise<TClient> {
     try {
-      console.log('Creating document in collection:', this.collectionName, 'with data:', data);
+      console.log(
+        'Creating document in collection:',
+        this.collectionName,
+        'with data:',
+        data
+      );
       const documentData = this.clientToDocument(data);
       console.log('Converted to document data:', documentData);
       const now = Timestamp.now();
@@ -78,7 +83,11 @@ export class FirestoreOperations<TDocument, TClient> {
       console.log('Returning created document:', result);
       return result;
     } catch (error) {
-      console.error('Error creating document in collection:', this.collectionName, error);
+      console.error(
+        'Error creating document in collection:',
+        this.collectionName,
+        error
+      );
       throw error;
     }
   }
@@ -97,7 +106,11 @@ export class FirestoreOperations<TDocument, TClient> {
 
       return this.documentToClient(docSnap.id, docSnap.data() as TDocument);
     } catch (error) {
-      console.error('Error getting document from collection:', this.collectionName, error);
+      console.error(
+        'Error getting document from collection:',
+        this.collectionName,
+        error
+      );
       throw error;
     }
   }
@@ -129,7 +142,11 @@ export class FirestoreOperations<TDocument, TClient> {
         updatedDoc.data() as TDocument
       );
     } catch (error) {
-      console.error('Error updating document in collection:', this.collectionName, error);
+      console.error(
+        'Error updating document in collection:',
+        this.collectionName,
+        error
+      );
       throw error;
     }
   }
@@ -142,7 +159,11 @@ export class FirestoreOperations<TDocument, TClient> {
       const docRef = this.getDocRef(id);
       await deleteDoc(docRef);
     } catch (error) {
-      console.error('Error deleting document from collection:', this.collectionName, error);
+      console.error(
+        'Error deleting document from collection:',
+        this.collectionName,
+        error
+      );
       throw error;
     }
   }

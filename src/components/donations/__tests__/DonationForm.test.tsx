@@ -8,10 +8,19 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import { DonationForm } from '../DonationForm';
-import { donationsService, donationCategoriesService, membersService } from '../../../services/firebase';
+import {
+  donationsService,
+  donationCategoriesService,
+  membersService,
+} from '../../../services/firebase';
 import { useAuth } from '../../../contexts/FirebaseAuthContext';
 import { useToast } from '../../../contexts/ToastContext';
-import { DonationFormData, DonationCategory, DonationMethod, Form990LineItem } from '../../../types/donations';
+import {
+  DonationFormData,
+  DonationCategory,
+  DonationMethod,
+  Form990LineItem,
+} from '../../../types/donations';
 import { Member } from '../../../types';
 
 // Mock the services and contexts
@@ -141,7 +150,7 @@ describe('DonationForm', () => {
     id: 'donation-1',
     memberId: 'member-1',
     memberName: 'John Doe',
-    amount: 100.00,
+    amount: 100.0,
     donationDate: '2025-01-15',
     method: 'cash' as DonationMethod,
     categoryId: 'category-1',
@@ -162,17 +171,19 @@ describe('DonationForm', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     mockUseAuth.mockReturnValue({
       user: mockUser,
       isLoading: false,
     });
-    
+
     mockUseToast.mockReturnValue({
       showToast: mockShowToast,
     });
 
-    mockDonationCategoriesService.getActiveCategories.mockResolvedValue(mockCategories);
+    mockDonationCategoriesService.getActiveCategories.mockResolvedValue(
+      mockCategories
+    );
     mockMembersService.search.mockResolvedValue(mockMembers);
   });
 
@@ -201,15 +212,19 @@ describe('DonationForm', () => {
     });
 
     it('should show loading spinner when loading donation data', () => {
-      mockDonationsService.getById.mockImplementation(() => new Promise(() => {}));
-      
+      mockDonationsService.getById.mockImplementation(
+        () => new Promise(() => {})
+      );
+
       render(
         <TestWrapper>
           <DonationForm donationId="donation-1" />
         </TestWrapper>
       );
 
-      expect(screen.getByTestId('loading-spinner') || screen.getByRole('status')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('loading-spinner') || screen.getByRole('status')
+      ).toBeInTheDocument();
     });
 
     it('should render batch mode toggle when enabled', () => {
@@ -260,8 +275,12 @@ describe('DonationForm', () => {
       );
 
       await waitFor(() => {
-        const paymentMethodSelect = screen.getByLabelText(/payment method/i) as HTMLSelectElement;
-        const options = Array.from(paymentMethodSelect.options).map(option => option.value);
+        const paymentMethodSelect = screen.getByLabelText(
+          /payment method/i
+        ) as HTMLSelectElement;
+        const options = Array.from(paymentMethodSelect.options).map(
+          (option) => option.value
+        );
 
         expect(options).toContain('cash');
         expect(options).toContain('check');
@@ -283,12 +302,14 @@ describe('DonationForm', () => {
         expect(screen.getByDisplayValue('Offering')).toBeInTheDocument();
       });
 
-      expect(mockDonationCategoriesService.getActiveCategories).toHaveBeenCalled();
+      expect(
+        mockDonationCategoriesService.getActiveCategories
+      ).toHaveBeenCalled();
     });
 
     it('should show check number field when payment method is check', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <DonationForm />
@@ -309,7 +330,7 @@ describe('DonationForm', () => {
 
     it('should hide member search when anonymous donation is selected', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <DonationForm />
@@ -324,7 +345,9 @@ describe('DonationForm', () => {
       await user.click(anonymousCheckbox);
 
       await waitFor(() => {
-        expect(screen.queryByLabelText(/member search/i)).not.toBeInTheDocument();
+        expect(
+          screen.queryByLabelText(/member search/i)
+        ).not.toBeInTheDocument();
       });
     });
   });
@@ -332,7 +355,7 @@ describe('DonationForm', () => {
   describe('Member Search Integration', () => {
     it('should search members when typing in member field', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <DonationForm />
@@ -347,13 +370,16 @@ describe('DonationForm', () => {
       await user.type(memberInput, 'John');
 
       await waitFor(() => {
-        expect(mockMembersService.search).toHaveBeenCalledWith('John', expect.any(Object));
+        expect(mockMembersService.search).toHaveBeenCalledWith(
+          'John',
+          expect.any(Object)
+        );
       });
     });
 
     it('should display member search results', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <DonationForm />
@@ -375,7 +401,7 @@ describe('DonationForm', () => {
 
     it('should select member from search results', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <DonationForm />
@@ -404,7 +430,7 @@ describe('DonationForm', () => {
   describe('Form Validation', () => {
     it('should show required field errors on empty submission', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <DonationForm />
@@ -420,7 +446,9 @@ describe('DonationForm', () => {
 
       await waitFor(() => {
         expect(screen.getByText(/amount is required/i)).toBeInTheDocument();
-        expect(screen.getByText(/donation date is required/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/donation date is required/i)
+        ).toBeInTheDocument();
         expect(screen.getByText(/category is required/i)).toBeInTheDocument();
         expect(screen.getByText(/member is required/i)).toBeInTheDocument();
       });
@@ -428,7 +456,7 @@ describe('DonationForm', () => {
 
     it('should validate amount is greater than zero', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <DonationForm />
@@ -441,18 +469,20 @@ describe('DonationForm', () => {
 
       const amountInput = screen.getByLabelText(/donation amount/i);
       await user.type(amountInput, '0');
-      
+
       const submitButton = screen.getByText('Record Donation');
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/amount must be greater than 0/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/amount must be greater than 0/i)
+        ).toBeInTheDocument();
       });
     });
 
     it('should validate amount does not exceed maximum', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <DonationForm />
@@ -465,7 +495,7 @@ describe('DonationForm', () => {
 
       const amountInput = screen.getByLabelText(/donation amount/i);
       await user.type(amountInput, '1000001'); // Over $1,000,000 limit
-      
+
       const submitButton = screen.getByText('Record Donation');
       await user.click(submitButton);
 
@@ -476,7 +506,7 @@ describe('DonationForm', () => {
 
     it('should validate date is not in future', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <DonationForm />
@@ -493,18 +523,20 @@ describe('DonationForm', () => {
 
       const dateInput = screen.getByLabelText(/donation date/i);
       await user.type(dateInput, futureDate);
-      
+
       const submitButton = screen.getByText('Record Donation');
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/donation date cannot be in the future/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/donation date cannot be in the future/i)
+        ).toBeInTheDocument();
       });
     });
 
     it('should validate check number when payment method is check', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <DonationForm />
@@ -522,14 +554,16 @@ describe('DonationForm', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/check number is required/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/check number is required/i)
+        ).toBeInTheDocument();
       });
     });
 
     it('should allow submission without member when anonymous is selected', async () => {
       const user = userEvent.setup();
       mockDonationsService.create.mockResolvedValueOnce('donation-id');
-      
+
       render(
         <TestWrapper>
           <DonationForm />
@@ -537,7 +571,9 @@ describe('DonationForm', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByLabelText(/anonymous donation/i)).toBeInTheDocument();
+        expect(
+          screen.getByLabelText(/anonymous donation/i)
+        ).toBeInTheDocument();
       });
 
       // Fill required fields
@@ -565,7 +601,7 @@ describe('DonationForm', () => {
   describe('Batch Mode Functionality', () => {
     it('should show batch entry fields when batch mode is enabled', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <DonationForm enableBatchMode={true} />
@@ -587,8 +623,11 @@ describe('DonationForm', () => {
 
     it('should call createMultipleDonations when submitting batch', async () => {
       const user = userEvent.setup();
-      mockDonationsService.createMultipleDonations.mockResolvedValueOnce(['donation-1', 'donation-2']);
-      
+      mockDonationsService.createMultipleDonations.mockResolvedValueOnce([
+        'donation-1',
+        'donation-2',
+      ]);
+
       render(
         <TestWrapper>
           <DonationForm enableBatchMode={true} />
@@ -638,7 +677,7 @@ describe('DonationForm', () => {
     it('should call create service for new donations', async () => {
       const user = userEvent.setup();
       mockDonationsService.create.mockResolvedValueOnce('new-donation-id');
-      
+
       render(
         <TestWrapper>
           <DonationForm />
@@ -662,21 +701,24 @@ describe('DonationForm', () => {
 
       const categorySelect = screen.getByLabelText(/donation category/i);
       await user.selectOptions(categorySelect, validFormData.category);
-      
+
       const submitButton = screen.getByText('Record Donation');
       await user.click(submitButton);
 
       await waitFor(() => {
         expect(mockDonationsService.create).toHaveBeenCalledWith(
           expect.objectContaining({
-            amount: 100.00,
+            amount: 100.0,
             donationDate: validFormData.donationDate,
             categoryId: validFormData.category,
             memberId: 'member-1',
             createdBy: mockUser.uid,
           })
         );
-        expect(mockShowToast).toHaveBeenCalledWith('Donation recorded successfully!', 'success');
+        expect(mockShowToast).toHaveBeenCalledWith(
+          'Donation recorded successfully!',
+          'success'
+        );
       });
     });
 
@@ -684,7 +726,7 @@ describe('DonationForm', () => {
       const user = userEvent.setup();
       mockDonationsService.getById.mockResolvedValueOnce(mockDonationData);
       mockDonationsService.update.mockResolvedValueOnce(undefined);
-      
+
       render(
         <TestWrapper>
           <DonationForm donationId="donation-1" />
@@ -703,19 +745,24 @@ describe('DonationForm', () => {
         expect(mockDonationsService.update).toHaveBeenCalledWith(
           'donation-1',
           expect.objectContaining({
-            amount: 100.00,
+            amount: 100.0,
             donationDate: '2025-01-15',
             categoryId: 'category-1',
           })
         );
-        expect(mockShowToast).toHaveBeenCalledWith('Donation updated successfully!', 'success');
+        expect(mockShowToast).toHaveBeenCalledWith(
+          'Donation updated successfully!',
+          'success'
+        );
       });
     });
 
     it('should show loading state during submission', async () => {
       const user = userEvent.setup();
-      mockDonationsService.create.mockImplementation(() => new Promise(() => {}));
-      
+      mockDonationsService.create.mockImplementation(
+        () => new Promise(() => {})
+      );
+
       render(
         <TestWrapper>
           <DonationForm />
@@ -738,7 +785,7 @@ describe('DonationForm', () => {
 
       const categorySelect = screen.getByLabelText(/donation category/i);
       await user.selectOptions(categorySelect, validFormData.category);
-      
+
       const submitButton = screen.getByText('Record Donation');
       await user.click(submitButton);
 
@@ -750,8 +797,10 @@ describe('DonationForm', () => {
 
     it('should handle submission errors gracefully', async () => {
       const user = userEvent.setup();
-      mockDonationsService.create.mockRejectedValueOnce(new Error('Network error'));
-      
+      mockDonationsService.create.mockRejectedValueOnce(
+        new Error('Network error')
+      );
+
       render(
         <TestWrapper>
           <DonationForm />
@@ -774,7 +823,7 @@ describe('DonationForm', () => {
 
       const categorySelect = screen.getByLabelText(/donation category/i);
       await user.selectOptions(categorySelect, validFormData.category);
-      
+
       const submitButton = screen.getByText('Record Donation');
       await user.click(submitButton);
 
@@ -790,7 +839,7 @@ describe('DonationForm', () => {
   describe('Edit Mode with Pre-populated Data', () => {
     it('should populate form with existing donation data', async () => {
       mockDonationsService.getById.mockResolvedValueOnce(mockDonationData);
-      
+
       render(
         <TestWrapper>
           <DonationForm donationId="donation-1" />
@@ -806,8 +855,10 @@ describe('DonationForm', () => {
     });
 
     it('should handle donation loading errors', async () => {
-      mockDonationsService.getById.mockRejectedValueOnce(new Error('Donation not found'));
-      
+      mockDonationsService.getById.mockRejectedValueOnce(
+        new Error('Donation not found')
+      );
+
       render(
         <TestWrapper>
           <DonationForm donationId="donation-1" />
@@ -815,7 +866,10 @@ describe('DonationForm', () => {
       );
 
       await waitFor(() => {
-        expect(mockShowToast).toHaveBeenCalledWith('Error loading donation details', 'error');
+        expect(mockShowToast).toHaveBeenCalledWith(
+          'Error loading donation details',
+          'error'
+        );
       });
     });
   });
@@ -850,7 +904,9 @@ describe('DonationForm', () => {
       await waitFor(() => {
         // Members should only be able to record their own donations
         expect(screen.getByText(/record your donation/i)).toBeInTheDocument();
-        expect(screen.queryByLabelText(/member search/i)).not.toBeInTheDocument();
+        expect(
+          screen.queryByLabelText(/member search/i)
+        ).not.toBeInTheDocument();
       });
     });
   });
@@ -859,7 +915,7 @@ describe('DonationForm', () => {
     it('should call onSubmit prop when provided', async () => {
       const user = userEvent.setup();
       const mockOnSubmit = vi.fn();
-      
+
       render(
         <TestWrapper>
           <DonationForm onSubmit={mockOnSubmit} />
@@ -882,7 +938,7 @@ describe('DonationForm', () => {
 
       const categorySelect = screen.getByLabelText(/donation category/i);
       await user.selectOptions(categorySelect, 'category-1');
-      
+
       const submitButton = screen.getByText('Record Donation');
       await user.click(submitButton);
 
@@ -900,7 +956,7 @@ describe('DonationForm', () => {
     it('should call onCancel prop when cancel button is clicked', async () => {
       const user = userEvent.setup();
       const mockOnCancel = vi.fn();
-      
+
       render(
         <TestWrapper>
           <DonationForm onCancel={mockOnCancel} />
@@ -921,8 +977,10 @@ describe('DonationForm', () => {
 
   describe('Error Handling and Loading States', () => {
     it('should handle category loading errors', async () => {
-      mockDonationCategoriesService.getActiveCategories.mockRejectedValueOnce(new Error('Categories failed to load'));
-      
+      mockDonationCategoriesService.getActiveCategories.mockRejectedValueOnce(
+        new Error('Categories failed to load')
+      );
+
       render(
         <TestWrapper>
           <DonationForm />
@@ -930,14 +988,19 @@ describe('DonationForm', () => {
       );
 
       await waitFor(() => {
-        expect(mockShowToast).toHaveBeenCalledWith('Error loading donation categories', 'error');
+        expect(mockShowToast).toHaveBeenCalledWith(
+          'Error loading donation categories',
+          'error'
+        );
       });
     });
 
     it('should handle member search errors', async () => {
       const user = userEvent.setup();
-      mockMembersService.search.mockRejectedValueOnce(new Error('Search failed'));
-      
+      mockMembersService.search.mockRejectedValueOnce(
+        new Error('Search failed')
+      );
+
       render(
         <TestWrapper>
           <DonationForm />
@@ -952,13 +1015,17 @@ describe('DonationForm', () => {
       await user.type(memberInput, 'John');
 
       await waitFor(() => {
-        expect(screen.getByText(/error searching members/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/error searching members/i)
+        ).toBeInTheDocument();
       });
     });
 
     it('should show loading state while categories are loading', () => {
-      mockDonationCategoriesService.getActiveCategories.mockImplementation(() => new Promise(() => {}));
-      
+      mockDonationCategoriesService.getActiveCategories.mockImplementation(
+        () => new Promise(() => {})
+      );
+
       render(
         <TestWrapper>
           <DonationForm />

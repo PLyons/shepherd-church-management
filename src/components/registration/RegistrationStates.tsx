@@ -11,7 +11,10 @@ interface RegistrationStatesProps {
   onReturnHome: () => void;
 }
 
-export function RegistrationStates({ state, onReturnHome }: RegistrationStatesProps) {
+export function RegistrationStates({
+  state,
+  onReturnHome,
+}: RegistrationStatesProps) {
   if (state === 'loading') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex flex-col justify-center py-12 px-4">

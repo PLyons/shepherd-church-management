@@ -8,7 +8,10 @@ import { useNavigate } from 'react-router-dom';
 import { Plus, List } from 'lucide-react';
 import { Event } from '../types/events';
 import { useAuth } from '../hooks/useUnifiedAuth';
-import { EventCalendar, CalendarView } from '../components/events/EventCalendar';
+import {
+  EventCalendar,
+  CalendarView,
+} from '../components/events/EventCalendar';
 
 interface CalendarFilters {
   view: CalendarView;
@@ -17,13 +20,14 @@ interface CalendarFilters {
 export const Calendar: React.FC = () => {
   const navigate = useNavigate();
   const { member: currentUser } = useAuth();
-  
+
   const [filters, setFilters] = useState<CalendarFilters>({
-    view: 'month'
+    view: 'month',
   });
 
   // Check if user can manage events (admin or pastor)
-  const canManageEvents = currentUser?.role === 'admin' || currentUser?.role === 'pastor';
+  const canManageEvents =
+    currentUser?.role === 'admin' || currentUser?.role === 'pastor';
 
   const handleEventClick = (event: Event) => {
     // For now, navigate to event details (future: open modal)
@@ -61,7 +65,7 @@ export const Calendar: React.FC = () => {
               {canManageEvents && ' • Click dates to create events'}
             </p>
           </div>
-          
+
           <div className="flex items-center space-x-3">
             {/* View Events button */}
             <button

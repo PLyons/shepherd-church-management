@@ -5,13 +5,13 @@
 
 import { db } from '../../lib/firebase';
 import { BaseFirestoreService } from './base/base-firestore-service';
-import { 
-  DonationCategory, 
-  DonationCategoryDocument, 
+import {
+  DonationCategory,
+  DonationCategoryDocument,
   Form990LineItem,
 } from '../../types/donations';
 import { Role } from '../../types';
-import { 
+import {
   donationCategoryDocumentToDonationCategory,
   donationCategoryToDonationCategoryDocument,
 } from '../../utils/converters/donation-converters';
@@ -48,13 +48,18 @@ export interface CategoryOrderUpdate {
 // SERVICE IMPLEMENTATION
 // ============================================================================
 
-export class DonationCategoriesService extends BaseFirestoreService<DonationCategoryDocument, DonationCategory> {
+export class DonationCategoriesService extends BaseFirestoreService<
+  DonationCategoryDocument,
+  DonationCategory
+> {
   constructor() {
     super(
       db,
       'donation-categories',
-      (id: string, document: DonationCategoryDocument) => donationCategoryDocumentToDonationCategory(id, document),
-      (category: Partial<DonationCategory>) => donationCategoryToDonationCategoryDocument(category)
+      (id: string, document: DonationCategoryDocument) =>
+        donationCategoryDocumentToDonationCategory(id, document),
+      (category: Partial<DonationCategory>) =>
+        donationCategoryToDonationCategoryDocument(category)
     );
   }
 
@@ -65,10 +70,23 @@ export class DonationCategoriesService extends BaseFirestoreService<DonationCate
   /**
    * Create a new donation category with validation and defaults
    */
-  async createCategory(categoryData: Omit<DonationCategory, 'id' | 'createdAt' | 'updatedAt' | 'currentYearTotal' | 'lastYearTotal' | 'totalAmount' | 'donationCount' | 'averageDonation'>, createdBy: string): Promise<DonationCategory> {
+  async createCategory(
+    categoryData: Omit<
+      DonationCategory,
+      | 'id'
+      | 'createdAt'
+      | 'updatedAt'
+      | 'currentYearTotal'
+      | 'lastYearTotal'
+      | 'totalAmount'
+      | 'donationCount'
+      | 'averageDonation'
+    >,
+    createdBy: string
+  ): Promise<DonationCategory> {
     // Validate required fields
     this.validateCategoryData(categoryData);
-    
+
     // Validate annual goal if provided FIRST - before name uniqueness check
     if (categoryData.annualGoal !== undefined && categoryData.annualGoal <= 0) {
       throw new Error('Annual goal must be greater than 0');
@@ -76,23 +94,28 @@ export class DonationCategoriesService extends BaseFirestoreService<DonationCate
 
     // Check name uniqueness
     await this.validateNameUniqueness(categoryData.name);
-    
+
     // Assign display order if not provided
-    const displayOrder = categoryData.displayOrder || await this.getNextDisplayOrder();
-    
+    const displayOrder =
+      categoryData.displayOrder || (await this.getNextDisplayOrder());
+
     const now = new Date();
     const category: Partial<DonationCategory> = {
       ...categoryData,
       displayOrder,
-      isActive: categoryData.isActive !== undefined ? categoryData.isActive : true,
-      includeInReports: categoryData.includeInReports !== undefined ? categoryData.includeInReports : true,
+      isActive:
+        categoryData.isActive !== undefined ? categoryData.isActive : true,
+      includeInReports:
+        categoryData.includeInReports !== undefined
+          ? categoryData.includeInReports
+          : true,
       currentYearTotal: 0,
       lastYearTotal: 0,
       totalAmount: 0,
       donationCount: 0,
       averageDonation: 0,
       createdAt: now as any, // Test expects Date object
-      updatedAt: now as any, // Test expects Date object  
+      updatedAt: now as any, // Test expects Date object
       createdBy,
     };
 
@@ -104,34 +127,52 @@ export class DonationCategoriesService extends BaseFirestoreService<DonationCate
    */
   async getCategoryById(id: string): Promise<DonationCategory | null> {
     const category = await this.getById(id);
-    
+
     // Validate category data integrity
     if (category && !this.isValidCategoryStructure(category)) {
       throw new Error('Invalid category data structure');
     }
-    
+
     return category;
   }
 
   /**
    * Update donation category with validation
    */
-  async updateCategory(id: string, categoryData: Partial<DonationCategory>): Promise<DonationCategory> {
+  async updateCategory(
+    id: string,
+    categoryData: Partial<DonationCategory>
+  ): Promise<DonationCategory> {
     // Validate decimal precision for financial amounts
-    if (categoryData.totalAmount !== undefined && !Number.isInteger(categoryData.totalAmount * 100)) {
+    if (
+      categoryData.totalAmount !== undefined &&
+      !Number.isInteger(categoryData.totalAmount * 100)
+    ) {
       throw new Error('Financial amounts must have at most 2 decimal places');
     }
-    if (categoryData.currentYearTotal !== undefined && !Number.isInteger(categoryData.currentYearTotal * 100)) {
+    if (
+      categoryData.currentYearTotal !== undefined &&
+      !Number.isInteger(categoryData.currentYearTotal * 100)
+    ) {
       throw new Error('Financial amounts must have at most 2 decimal places');
     }
-    if (categoryData.averageDonation !== undefined && !Number.isInteger(categoryData.averageDonation * 100)) {
+    if (
+      categoryData.averageDonation !== undefined &&
+      !Number.isInteger(categoryData.averageDonation * 100)
+    ) {
       throw new Error('Financial amounts must have at most 2 decimal places');
     }
 
     // If updating name, check uniqueness (except for current category)
     if (categoryData.name) {
-      const existingCategories = await this.getWhere('name', '==', categoryData.name);
-      const duplicates = existingCategories ? existingCategories.filter(c => c.id !== id) : [];
+      const existingCategories = await this.getWhere(
+        'name',
+        '==',
+        categoryData.name
+      );
+      const duplicates = existingCategories
+        ? existingCategories.filter((c) => c.id !== id)
+        : [];
       if (duplicates.length > 0) {
         throw new Error(`Category name "${categoryData.name}" already exists`);
       }
@@ -196,7 +237,10 @@ export class DonationCategoriesService extends BaseFirestoreService<DonationCate
   /**
    * Update category statistics with new donation data
    */
-  async updateCategoryStatistics(categoryId: string, statisticsUpdate: CategoryStatisticsUpdate): Promise<DonationCategory> {
+  async updateCategoryStatistics(
+    categoryId: string,
+    statisticsUpdate: CategoryStatisticsUpdate
+  ): Promise<DonationCategory> {
     return this.updateCategory(categoryId, statisticsUpdate);
   }
 
@@ -204,16 +248,18 @@ export class DonationCategoriesService extends BaseFirestoreService<DonationCate
    * Recalculate category statistics from donations service
    * Note: This would integrate with DonationsService in real implementation
    */
-  async recalculateCategoryStatistics(categoryId: string): Promise<DonationCategory> {
+  async recalculateCategoryStatistics(
+    categoryId: string
+  ): Promise<DonationCategory> {
     // Mock implementation - in real app this would query donations service
     const mockStats: CategoryStatisticsUpdate = {
-      totalAmount: 25000.00,
+      totalAmount: 25000.0,
       donationCount: 85,
       averageDonation: 294.12,
       lastDonationDate: new Date().toISOString(),
-      currentYearTotal: 12500.00,
+      currentYearTotal: 12500.0,
     };
-    
+
     return this.updateCategoryStatistics(categoryId, mockStats);
   }
 
@@ -226,16 +272,25 @@ export class DonationCategoriesService extends BaseFirestoreService<DonationCate
    */
   async initializeDefaultCategories(createdBy: string): Promise<BatchResult> {
     const defaultCategories = this.getDefaultCategoryStructure();
-    const categoriesToCreate: Array<{ data: Partial<DonationCategory>; customId?: string }> = [];
-    
+    const categoriesToCreate: Array<{
+      data: Partial<DonationCategory>;
+      customId?: string;
+    }> = [];
+
     for (const categoryData of defaultCategories) {
       // Check if category already exists
-      const existingCategories = await this.getWhere('name', '==', categoryData.name);
-      
+      const existingCategories = await this.getWhere(
+        'name',
+        '==',
+        categoryData.name
+      );
+
       // For the mock test, getWhere returns all existing categories regardless of name filter
       // So we need to check if the specific name exists in the returned results
-      const nameExists = existingCategories && existingCategories.some(cat => cat.name === categoryData.name);
-      
+      const nameExists =
+        existingCategories &&
+        existingCategories.some((cat) => cat.name === categoryData.name);
+
       if (!nameExists) {
         const now = new Date();
         const category: Partial<DonationCategory> = {
@@ -254,11 +309,11 @@ export class DonationCategoriesService extends BaseFirestoreService<DonationCate
         categoriesToCreate.push({ data: category });
       }
     }
-    
+
     if (categoriesToCreate.length > 0) {
       return this.createMultiple(categoriesToCreate);
     }
-    
+
     return {
       successful: 0,
       failed: 0,
@@ -326,23 +381,27 @@ export class DonationCategoriesService extends BaseFirestoreService<DonationCate
   /**
    * Update display order for multiple categories
    */
-  async reorderCategories(categoryOrders: CategoryOrderUpdate[]): Promise<DonationCategory[]> {
+  async reorderCategories(
+    categoryOrders: CategoryOrderUpdate[]
+  ): Promise<DonationCategory[]> {
     // Validate unique display orders
-    const displayOrders = categoryOrders.map(co => co.newOrder);
+    const displayOrders = categoryOrders.map((co) => co.newOrder);
     const uniqueOrders = new Set(displayOrders);
     if (uniqueOrders.size !== displayOrders.length) {
       throw new Error('Duplicate display order found');
     }
 
     // Validate positive display orders
-    if (displayOrders.some(order => order <= 0)) {
+    if (displayOrders.some((order) => order <= 0)) {
       throw new Error('Display order must be greater than 0');
     }
 
     // Update categories individually
     const results: DonationCategory[] = [];
     for (const { categoryId, newOrder } of categoryOrders) {
-      const result = await this.updateCategory(categoryId, { displayOrder: newOrder });
+      const result = await this.updateCategory(categoryId, {
+        displayOrder: newOrder,
+      });
       results.push(result);
     }
 
@@ -357,8 +416,8 @@ export class DonationCategoriesService extends BaseFirestoreService<DonationCate
     if (!categories || categories.length === 0) {
       return 1;
     }
-    
-    const maxOrder = Math.max(...categories.map(c => c.displayOrder));
+
+    const maxOrder = Math.max(...categories.map((c) => c.displayOrder));
     return maxOrder + 1;
   }
 
@@ -373,7 +432,7 @@ export class DonationCategoriesService extends BaseFirestoreService<DonationCate
     if (role === 'admin' || role === 'pastor') {
       return this.getAllCategories();
     }
-    
+
     // Members only see active categories
     return this.getActiveCategories();
   }
@@ -416,11 +475,13 @@ export class DonationCategoriesService extends BaseFirestoreService<DonationCate
       '2_program_service_revenue',
       '3_investment_income',
       '4_other_revenue',
-      'not_applicable'
+      'not_applicable',
     ];
 
-    if (categoryData.defaultForm990LineItem && 
-        !validForm990LineItems.includes(categoryData.defaultForm990LineItem)) {
+    if (
+      categoryData.defaultForm990LineItem &&
+      !validForm990LineItems.includes(categoryData.defaultForm990LineItem)
+    ) {
       throw new Error('Invalid Form 990 line item');
     }
 
@@ -429,8 +490,10 @@ export class DonationCategoriesService extends BaseFirestoreService<DonationCate
     }
 
     // Validate decimal precision for financial amounts (max 2 decimal places)
-    if (categoryData.annualGoal !== undefined && 
-        !Number.isInteger(categoryData.annualGoal * 100)) {
+    if (
+      categoryData.annualGoal !== undefined &&
+      !Number.isInteger(categoryData.annualGoal * 100)
+    ) {
       throw new Error('Financial amounts must have at most 2 decimal places');
     }
   }
@@ -443,19 +506,24 @@ export class DonationCategoriesService extends BaseFirestoreService<DonationCate
     const updates: Array<{ id: string; data: Partial<DonationCategory> }> = [];
 
     // Fix missing display orders
-    const categoriesWithoutOrder = categories.filter(c => !c.displayOrder || c.displayOrder <= 0);
-    let nextOrder = Math.max(...categories.map(c => c.displayOrder || 0)) + 1;
-    
+    const categoriesWithoutOrder = categories.filter(
+      (c) => !c.displayOrder || c.displayOrder <= 0
+    );
+    let nextOrder = Math.max(...categories.map((c) => c.displayOrder || 0)) + 1;
+
     for (const category of categoriesWithoutOrder) {
       updates.push({
         id: category.id,
-        data: { displayOrder: nextOrder++, updatedAt: new Date().toISOString() }
+        data: {
+          displayOrder: nextOrder++,
+          updatedAt: new Date().toISOString(),
+        },
       });
     }
 
     // Fix duplicate display orders
     const orderCounts = new Map<number, string[]>();
-    categories.forEach(category => {
+    categories.forEach((category) => {
       const order = category.displayOrder;
       if (!orderCounts.has(order)) {
         orderCounts.set(order, []);
@@ -469,7 +537,10 @@ export class DonationCategoriesService extends BaseFirestoreService<DonationCate
         for (let i = 1; i < categoryIds.length; i++) {
           updates.push({
             id: categoryIds[i],
-            data: { displayOrder: nextOrder++, updatedAt: new Date().toISOString() }
+            data: {
+              displayOrder: nextOrder++,
+              updatedAt: new Date().toISOString(),
+            },
           });
         }
       }
@@ -495,13 +566,14 @@ export class DonationCategoriesService extends BaseFirestoreService<DonationCate
     }
 
     // Enrich with real-time statistics (mock implementation)
-    const goalProgress = category.annualGoal ? 
-      (category.currentYearTotal / category.annualGoal) * 100 : 0;
-    
+    const goalProgress = category.annualGoal
+      ? (category.currentYearTotal / category.annualGoal) * 100
+      : 0;
+
     return {
       ...category,
       recentDonationCount: 15,
-      thisMonthTotal: 8500.00,
+      thisMonthTotal: 8500.0,
       goalProgress,
     };
   }
@@ -523,24 +595,26 @@ export class DonationCategoriesService extends BaseFirestoreService<DonationCate
 
     const currentYear = new Date().getFullYear();
     const donationYear = new Date(donationDate).getFullYear();
-    
+
     let updatedStats: Partial<DonationCategory>;
-    
+
     if (isNewDonation) {
       // Adding new donation
       const newDonationCount = category.donationCount + 1;
       const newTotalAmount = category.totalAmount + donationAmount;
-      const newAverageDonation = Math.round((newTotalAmount / newDonationCount) * 100) / 100;
-      
+      const newAverageDonation =
+        Math.round((newTotalAmount / newDonationCount) * 100) / 100;
+
       updatedStats = {
         totalAmount: newTotalAmount,
         donationCount: newDonationCount,
         averageDonation: newAverageDonation,
         lastDonationDate: donationDate,
       };
-      
+
       if (donationYear === currentYear) {
-        updatedStats.currentYearTotal = category.currentYearTotal + donationAmount;
+        updatedStats.currentYearTotal =
+          category.currentYearTotal + donationAmount;
       }
     } else {
       // First donation to empty category
@@ -550,7 +624,7 @@ export class DonationCategoriesService extends BaseFirestoreService<DonationCate
         averageDonation: donationAmount,
         lastDonationDate: donationDate,
       };
-      
+
       if (donationYear === currentYear) {
         updatedStats.currentYearTotal = donationAmount;
       }
@@ -571,13 +645,13 @@ export class DonationCategoriesService extends BaseFirestoreService<DonationCate
     role?: Role
   ): string {
     const constraints: QueryConstraint[] = [];
-    
+
     if (role === 'member') {
       constraints.push(where('isActive', '==', true));
     }
-    
+
     constraints.push(orderBy('displayOrder', 'asc'));
-    
+
     return this.subscribeToCollection(callback, constraints, undefined);
   }
 
@@ -595,7 +669,9 @@ export class DonationCategoriesService extends BaseFirestoreService<DonationCate
   /**
    * Get categories by Form 990 line item
    */
-  async getCategoriesByForm990LineItem(lineItem: Form990LineItem): Promise<DonationCategory[]> {
+  async getCategoriesByForm990LineItem(
+    lineItem: Form990LineItem
+  ): Promise<DonationCategory[]> {
     return this.getWhere('defaultForm990LineItem', '==', lineItem);
   }
 
@@ -607,18 +683,20 @@ export class DonationCategoriesService extends BaseFirestoreService<DonationCate
       // Non-tax-deductible categories can have any line item
       return true;
     }
-    
+
     // Tax-deductible categories should have appropriate line items
     const validTaxDeductibleLineItems: Form990LineItem[] = [
       '1a_cash_contributions',
       '1b_noncash_contributions',
       '1c_contributions_reported_990',
-      '2_program_service_revenue'
+      '2_program_service_revenue',
     ];
-    
-    return categoryData.defaultForm990LineItem ? 
-      validTaxDeductibleLineItems.includes(categoryData.defaultForm990LineItem) : 
-      false;
+
+    return categoryData.defaultForm990LineItem
+      ? validTaxDeductibleLineItems.includes(
+          categoryData.defaultForm990LineItem
+        )
+      : false;
   }
 
   // ============================================================================
@@ -628,16 +706,19 @@ export class DonationCategoriesService extends BaseFirestoreService<DonationCate
   /**
    * Validate name uniqueness
    */
-  private async validateNameUniqueness(name: string, excludeId?: string): Promise<void> {
+  private async validateNameUniqueness(
+    name: string,
+    excludeId?: string
+  ): Promise<void> {
     const existingCategories = await this.getWhere('name', '==', name);
     if (!existingCategories) {
       return;
     }
-    
-    const duplicates = excludeId ? 
-      existingCategories.filter(c => c.id !== excludeId) : 
-      existingCategories;
-    
+
+    const duplicates = excludeId
+      ? existingCategories.filter((c) => c.id !== excludeId)
+      : existingCategories;
+
     if (duplicates && duplicates.length > 0) {
       throw new Error(`Category name "${name}" already exists`);
     }
@@ -647,10 +728,12 @@ export class DonationCategoriesService extends BaseFirestoreService<DonationCate
    * Validate category has required structure
    */
   private isValidCategoryStructure(category: any): boolean {
-    return category && 
-           category.name && 
-           category.defaultForm990LineItem &&
-           category.isTaxDeductible !== undefined;
+    return (
+      category &&
+      category.name &&
+      category.defaultForm990LineItem &&
+      category.isTaxDeductible !== undefined
+    );
   }
 }
 

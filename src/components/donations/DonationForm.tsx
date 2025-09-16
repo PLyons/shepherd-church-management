@@ -6,14 +6,17 @@
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import { donationsService, donationCategoriesService } from '../../services/firebase';
+import {
+  donationsService,
+  donationCategoriesService,
+} from '../../services/firebase';
 import { useAuth } from '../../contexts/FirebaseAuthContext';
 import { useToast } from '../../contexts/ToastContext';
-import { 
-  DonationFormData, 
-  DonationCategory, 
-  DonationMethod, 
-  Form990LineItem 
+import {
+  DonationFormData,
+  DonationCategory,
+  DonationMethod,
+  Form990LineItem,
 } from '../../types/donations';
 import { Member } from '../../types';
 import { DonorInfoSection } from './sections/DonorInfoSection';
@@ -32,12 +35,12 @@ export const DonationForm: React.FC<DonationFormProps> = ({
   donationId,
   onSubmit,
   onCancel,
-  enableBatchMode = false
+  enableBatchMode = false,
 }) => {
   const { user } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingDonation, setIsLoadingDonation] = useState(!!donationId);
   const [categories, setCategories] = useState<DonationCategory[]>([]);
@@ -58,7 +61,7 @@ export const DonationForm: React.FC<DonationFormProps> = ({
     watch,
     setValue,
     setError,
-    clearErrors
+    clearErrors,
   } = useForm<DonationFormData>({
     defaultValues: {
       amount: 0,
@@ -69,9 +72,8 @@ export const DonationForm: React.FC<DonationFormProps> = ({
       isQuidProQuo: false,
       sendReceipt: true,
       isTaxDeductible: true,
-    }
+    },
   });
-
 
   // Load categories on mount
   useEffect(() => {
@@ -85,11 +87,11 @@ export const DonationForm: React.FC<DonationFormProps> = ({
     }
   }, [donationId]);
 
-
   const loadCategories = async () => {
     try {
       setIsLoadingCategories(true);
-      const activeCategories = await donationCategoriesService.getActiveCategories();
+      const activeCategories =
+        await donationCategoriesService.getActiveCategories();
       setCategories(activeCategories);
     } catch (error) {
       console.error('Error loading categories:', error);
@@ -101,11 +103,11 @@ export const DonationForm: React.FC<DonationFormProps> = ({
 
   const loadDonation = async () => {
     if (!donationId) return;
-    
+
     try {
       setIsLoadingDonation(true);
       const donation = await donationsService.getById(donationId);
-      
+
       if (donation) {
         reset({
           amount: donation.amount,
@@ -129,7 +131,7 @@ export const DonationForm: React.FC<DonationFormProps> = ({
             email: '',
             role: 'member',
             memberStatus: 'active',
-            phone: ''
+            phone: '',
           });
         } else {
           setIsAnonymous(true);
@@ -160,7 +162,7 @@ export const DonationForm: React.FC<DonationFormProps> = ({
 
   const addBatchEntry = () => {
     const currentFormData = watch();
-    setBatchEntries(prev => [...prev, { ...currentFormData }]);
+    setBatchEntries((prev) => [...prev, { ...currentFormData }]);
     reset(); // Clear form for next entry
     setSelectedMember(null);
     setIsAnonymous(false);
@@ -179,12 +181,17 @@ export const DonationForm: React.FC<DonationFormProps> = ({
       setIsLoading(true);
 
       // Find category name for the current donation
-      const selectedCategory = categories.find(cat => cat.id === data.categoryId);
+      const selectedCategory = categories.find(
+        (cat) => cat.id === data.categoryId
+      );
 
       const donationData = {
         ...data,
         memberId: isAnonymous ? undefined : selectedMember?.id,
-        memberName: isAnonymous ? undefined : selectedMember?.fullName || `${selectedMember?.firstName} ${selectedMember?.lastName}`,
+        memberName: isAnonymous
+          ? undefined
+          : selectedMember?.fullName ||
+            `${selectedMember?.firstName} ${selectedMember?.lastName}`,
         categoryName: selectedCategory?.name || 'Unknown Category',
         form990Fields: {
           lineItem: data.form990LineItem,
@@ -203,7 +210,9 @@ export const DonationForm: React.FC<DonationFormProps> = ({
         const transformedBatchEntries = await Promise.all(
           batchEntries.map(async (entry) => {
             // Find category name for entry
-            const category = categories.find(cat => cat.id === entry.categoryId);
+            const category = categories.find(
+              (cat) => cat.id === entry.categoryId
+            );
             return {
               ...entry,
               memberId: entry.memberId || undefined,
@@ -225,7 +234,10 @@ export const DonationForm: React.FC<DonationFormProps> = ({
 
         const allEntries = [...transformedBatchEntries, donationData];
         await donationsService.createMultipleDonations(allEntries);
-        showToast(`${allEntries.length} donations recorded successfully!`, 'success');
+        showToast(
+          `${allEntries.length} donations recorded successfully!`,
+          'success'
+        );
         setBatchEntries([]);
         setBatchMode(false);
       } else if (isEditMode) {
@@ -245,7 +257,7 @@ export const DonationForm: React.FC<DonationFormProps> = ({
       }
     } catch (error) {
       console.error('Error submitting donation:', error);
-      const errorMessage = isEditMode 
+      const errorMessage = isEditMode
         ? 'Error updating donation. Please try again.'
         : 'Error recording donation. Please try again.';
       showToast(errorMessage, 'error');
@@ -265,7 +277,11 @@ export const DonationForm: React.FC<DonationFormProps> = ({
   if (isLoadingDonation) {
     return (
       <div className="flex items-center justify-center p-8">
-        <div data-testid="loading-spinner" role="status" className="text-gray-500">
+        <div
+          data-testid="loading-spinner"
+          role="status"
+          className="text-gray-500"
+        >
           Loading donation details...
         </div>
       </div>
@@ -283,7 +299,11 @@ export const DonationForm: React.FC<DonationFormProps> = ({
   return (
     <div className="max-w-2xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">
-        {isEditMode ? 'Edit Donation' : isMemberUser ? 'Record Your Donation' : 'Record Donation'}
+        {isEditMode
+          ? 'Edit Donation'
+          : isMemberUser
+            ? 'Record Your Donation'
+            : 'Record Donation'}
       </h1>
 
       <BatchModeSection
@@ -296,19 +316,19 @@ export const DonationForm: React.FC<DonationFormProps> = ({
 
       <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
         {/* Hidden fields for member data */}
-        <input 
-          type="hidden" 
+        <input
+          type="hidden"
           {...register('memberId', {
             validate: () => {
               if (!isAnonymous && !isMemberUser && !selectedMember) {
                 return 'Member is required';
               }
               return true;
-            }
-          })} 
+            },
+          })}
         />
         <input type="hidden" {...register('memberName')} />
-        
+
         <DonorInfoSection
           register={register}
           errors={errors}
@@ -330,7 +350,6 @@ export const DonationForm: React.FC<DonationFormProps> = ({
 
         <TaxReceiptSection register={register} />
 
-
         {/* Form Actions */}
         <div className="flex justify-end space-x-4 pt-6">
           <button
@@ -340,18 +359,24 @@ export const DonationForm: React.FC<DonationFormProps> = ({
           >
             Cancel
           </button>
-          
+
           <button
             type="submit"
             disabled={isSubmitting || isLoading}
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
             data-testid="submit-button"
           >
-            {isLoading ? (
-              batchMode ? 'Saving...' : isEditMode ? 'Updating...' : 'Recording...'
-            ) : (
-              batchMode ? 'Save All Donations' : isEditMode ? 'Update Donation' : 'Record Donation'
-            )}
+            {isLoading
+              ? batchMode
+                ? 'Saving...'
+                : isEditMode
+                  ? 'Updating...'
+                  : 'Recording...'
+              : batchMode
+                ? 'Save All Donations'
+                : isEditMode
+                  ? 'Update Donation'
+                  : 'Record Donation'}
           </button>
         </div>
       </form>

@@ -1,5 +1,13 @@
 import { format } from 'date-fns';
-import { Phone, Mail, MessageSquare, Video, Users, AlertCircle, Clock } from 'lucide-react';
+import {
+  Phone,
+  Mail,
+  MessageSquare,
+  Video,
+  Users,
+  AlertCircle,
+  Clock,
+} from 'lucide-react';
 import { Communication } from '../../../../types/notes';
 
 interface CommunicationsListProps {
@@ -7,7 +15,9 @@ interface CommunicationsListProps {
   memberId: string;
 }
 
-export function CommunicationsList({ communications }: CommunicationsListProps) {
+export function CommunicationsList({
+  communications,
+}: CommunicationsListProps) {
   const getMethodIcon = (method: Communication['method']) => {
     switch (method) {
       case 'phone':
@@ -86,7 +96,9 @@ export function CommunicationsList({ communications }: CommunicationsListProps) 
     return (
       <div className="text-center py-12">
         <div className="text-gray-400 mb-4">💬</div>
-        <h3 className="text-sm font-medium text-gray-900">No Communications Yet</h3>
+        <h3 className="text-sm font-medium text-gray-900">
+          No Communications Yet
+        </h3>
         <p className="text-sm text-gray-500">
           Log your first communication to start tracking member interactions.
         </p>
@@ -96,29 +108,38 @@ export function CommunicationsList({ communications }: CommunicationsListProps) 
 
   return (
     <div className="space-y-4">
-      {communications.map(comm => (
-        <div key={comm.id} className="bg-white rounded-lg border border-gray-200 p-4">
+      {communications.map((comm) => (
+        <div
+          key={comm.id}
+          className="bg-white rounded-lg border border-gray-200 p-4"
+        >
           <div className="flex items-start justify-between">
             <div className="flex-1">
               {/* Header */}
               <div className="flex items-center gap-3 mb-2">
                 {/* Method Badge */}
-                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getMethodColor(comm.method)}`}>
+                <span
+                  className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getMethodColor(comm.method)}`}
+                >
                   {getMethodIcon(comm.method)}
                   {comm.method.replace('_', ' ')}
                 </span>
 
                 {/* Type Badge */}
-                <span className={`inline-flex items-center px-2 py-1 rounded border text-xs font-medium ${getTypeColor(comm.type)}`}>
+                <span
+                  className={`inline-flex items-center px-2 py-1 rounded border text-xs font-medium ${getTypeColor(comm.type)}`}
+                >
                   {getTypeLabel(comm.type)}
                 </span>
 
                 {/* Direction */}
-                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                  comm.direction === 'incoming' 
-                    ? 'text-green-600 bg-green-100' 
-                    : 'text-blue-600 bg-blue-100'
-                }`}>
+                <span
+                  className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                    comm.direction === 'incoming'
+                      ? 'text-green-600 bg-green-100'
+                      : 'text-blue-600 bg-blue-100'
+                  }`}
+                >
                   {comm.direction === 'incoming' ? '← Incoming' : '→ Outgoing'}
                 </span>
 
@@ -137,10 +158,8 @@ export function CommunicationsList({ communications }: CommunicationsListProps) 
                   {comm.subject}
                 </h4>
               )}
-              
-              <p className="text-sm text-gray-700 mb-2">
-                {comm.summary}
-              </p>
+
+              <p className="text-sm text-gray-700 mb-2">{comm.summary}</p>
 
               {/* Full Content */}
               {comm.fullContent && (
@@ -159,16 +178,16 @@ export function CommunicationsList({ communications }: CommunicationsListProps) 
               {/* Metadata */}
               <div className="flex items-center gap-4 text-xs text-gray-500">
                 <span>{format(comm.timestamp, 'PPp')}</span>
-                {comm.duration && (
-                  <span>{comm.duration} minutes</span>
-                )}
+                {comm.duration && <span>{comm.duration} minutes</span>}
                 <span>Recorded by {comm.recordedByName}</span>
               </div>
 
               {/* Follow-up Date */}
               {comm.followUpDate && (
                 <div className="mt-2 flex items-center gap-2 text-xs">
-                  <span className={`font-medium ${comm.followUpCompleted ? 'text-green-600' : 'text-orange-600'}`}>
+                  <span
+                    className={`font-medium ${comm.followUpCompleted ? 'text-green-600' : 'text-orange-600'}`}
+                  >
                     Follow-up: {format(comm.followUpDate, 'PP')}
                   </span>
                   {comm.followUpCompleted && (

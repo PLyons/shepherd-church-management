@@ -36,10 +36,17 @@ export default function Households() {
 
   useEffect(() => {
     if (searchTerm.trim()) {
-      const filtered = households.filter(household =>
-        household.familyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        household.address?.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        household.primaryContactName?.toLowerCase().includes(searchTerm.toLowerCase())
+      const filtered = households.filter(
+        (household) =>
+          household.familyName
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          household.address?.city
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          household.primaryContactName
+            ?.toLowerCase()
+            .includes(searchTerm.toLowerCase())
       );
       setFilteredHouseholds(filtered);
     } else {
@@ -62,7 +69,11 @@ export default function Households() {
   };
 
   const handleDeleteHousehold = async (household: Household) => {
-    if (!window.confirm(`Are you sure you want to delete the ${household.familyName} household? This will remove all members from the household.`)) {
+    if (
+      !window.confirm(
+        `Are you sure you want to delete the ${household.familyName} household? This will remove all members from the household.`
+      )
+    ) {
       return;
     }
 
@@ -78,7 +89,7 @@ export default function Households() {
 
   const formatAddress = (household: Household) => {
     if (!household.address) return 'No address provided';
-    
+
     const { addressLine1, city, state, postalCode } = household.address;
     const parts = [addressLine1, city, state, postalCode].filter(Boolean);
     return parts.length > 0 ? parts.join(', ') : 'No address provided';
@@ -88,7 +99,8 @@ export default function Households() {
     return <LoadingSpinner />;
   }
 
-  const canManageHouseholds = currentMember?.role === 'admin' || currentMember?.role === 'pastor';
+  const canManageHouseholds =
+    currentMember?.role === 'admin' || currentMember?.role === 'pastor';
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -98,12 +110,15 @@ export default function Households() {
           <Home className="h-8 w-8 text-blue-600" />
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Households</h1>
-            <p className="text-gray-600">Manage church families and households</p>
+            <p className="text-gray-600">
+              Manage church families and households
+            </p>
           </div>
         </div>
         <div className="flex items-center space-x-3">
           <div className="text-sm text-gray-500">
-            {filteredHouseholds.length} {filteredHouseholds.length === 1 ? 'household' : 'households'}
+            {filteredHouseholds.length}{' '}
+            {filteredHouseholds.length === 1 ? 'household' : 'households'}
           </div>
           {canManageHouseholds && (
             <Link
@@ -145,10 +160,9 @@ export default function Households() {
             {searchTerm ? 'No households found' : 'No households yet'}
           </h3>
           <p className="mt-1 text-sm text-gray-500">
-            {searchTerm 
-              ? 'Try adjusting your search criteria.' 
-              : 'Get started by creating your first household.'
-            }
+            {searchTerm
+              ? 'Try adjusting your search criteria.'
+              : 'Get started by creating your first household.'}
           </p>
           {!searchTerm && canManageHouseholds && (
             <div className="mt-6">
@@ -182,11 +196,12 @@ export default function Households() {
                       {household.familyName} Family
                     </Link>
                     <p className="text-sm text-gray-500">
-                      {household.memberCount} {household.memberCount === 1 ? 'member' : 'members'}
+                      {household.memberCount}{' '}
+                      {household.memberCount === 1 ? 'member' : 'members'}
                     </p>
                   </div>
                 </div>
-                
+
                 {canManageHouseholds && (
                   <div className="flex items-center space-x-1">
                     <Link
@@ -226,7 +241,9 @@ export default function Households() {
               {/* Members List */}
               {household.members && household.members.length > 0 && (
                 <div className="mb-4">
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">Members:</h4>
+                  <h4 className="text-sm font-medium text-gray-900 mb-2">
+                    Members:
+                  </h4>
                   <div className="space-y-1">
                     {household.members.slice(0, 3).map((member) => (
                       <Link
@@ -235,7 +252,9 @@ export default function Households() {
                         className="block text-sm text-blue-600 hover:text-blue-800 hover:underline"
                       >
                         {member.firstName} {member.lastName}
-                        {member.isPrimaryContact && <span className="text-gray-500 ml-1">(Primary)</span>}
+                        {member.isPrimaryContact && (
+                          <span className="text-gray-500 ml-1">(Primary)</span>
+                        )}
                       </Link>
                     ))}
                     {household.members.length > 3 && (

@@ -202,12 +202,16 @@ export function RegistrationCard({
             {registration.gender && (
               <div>
                 <span className="font-medium text-gray-900">Gender:</span>
-                <span className="ml-2 text-gray-600">{registration.gender}</span>
+                <span className="ml-2 text-gray-600">
+                  {registration.gender}
+                </span>
               </div>
             )}
             {registration.maritalStatus && (
               <div>
-                <span className="font-medium text-gray-900">Marital Status:</span>
+                <span className="font-medium text-gray-900">
+                  Marital Status:
+                </span>
                 <span className="ml-2 text-gray-600">
                   {registration.maritalStatus}
                 </span>
@@ -225,7 +229,9 @@ export function RegistrationCard({
 
           {registration.emergencyContact && (
             <div className="mt-3">
-              <span className="font-medium text-gray-900">Emergency Contact:</span>
+              <span className="font-medium text-gray-900">
+                Emergency Contact:
+              </span>
               <div className="ml-2 text-gray-600">
                 {registration.emergencyContact.name} -{' '}
                 {registration.emergencyContact.phone} (

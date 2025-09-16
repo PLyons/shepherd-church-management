@@ -1,12 +1,12 @@
 import { auth } from '../../lib/firebase';
 import { donationsService } from '../firebase/donations.service';
 import { getStripeService } from './stripe.service';
-import type { 
-  Donation, 
+import type {
+  Donation,
   DonationFormData,
   CreatePaymentIntentRequest,
   PaymentIntentResponse,
-  RecurringDonation 
+  RecurringDonation,
 } from '../../types/donations';
 
 /**
@@ -48,17 +48,22 @@ export class DonationPaymentService {
         },
       };
 
-      const paymentIntent = await stripeService.createPaymentIntent(paymentRequest);
+      const paymentIntent =
+        await stripeService.createPaymentIntent(paymentRequest);
 
       if (paymentIntent.error) {
         throw new Error(`Payment failed: ${paymentIntent.error.message}`);
       }
 
       // Process the payment
-      const processedPayment = await stripeService.processPayment(paymentIntent.id);
-      
+      const processedPayment = await stripeService.processPayment(
+        paymentIntent.id
+      );
+
       if (processedPayment.error || processedPayment.status !== 'succeeded') {
-        throw new Error(`Payment processing failed: ${processedPayment.error?.message || 'Unknown error'}`);
+        throw new Error(
+          `Payment processing failed: ${processedPayment.error?.message || 'Unknown error'}`
+        );
       }
 
       // Create donation record in Firebase
@@ -91,12 +96,14 @@ export class DonationPaymentService {
   ): Promise<{ donation: Donation; subscription: RecurringDonation }> {
     const currentUser = auth.currentUser;
     if (!currentUser) {
-      throw new Error('User must be authenticated to setup recurring donations');
+      throw new Error(
+        'User must be authenticated to setup recurring donations'
+      );
     }
 
     try {
       const stripeService = getStripeService();
-      
+
       // Create recurring donation with Stripe
       const subscription = await stripeService.setupRecurringDonation({
         memberId: formData.memberId || currentUser.uid,
@@ -161,7 +168,9 @@ export class DonationPaymentService {
   /**
    * Retries a failed payment
    */
-  async retryFailedPayment(paymentIntentId: string): Promise<PaymentIntentResponse> {
+  async retryFailedPayment(
+    paymentIntentId: string
+  ): Promise<PaymentIntentResponse> {
     try {
       const stripeService = getStripeService();
       return await stripeService.retryPayment(paymentIntentId);
@@ -174,7 +183,9 @@ export class DonationPaymentService {
   /**
    * Gets saved payment methods for the current user
    */
-  async getPaymentMethods(): Promise<import('../../types/donations').PaymentMethod[]> {
+  async getPaymentMethods(): Promise<
+    import('../../types/donations').PaymentMethod[]
+  > {
     const currentUser = auth.currentUser;
     if (!currentUser) {
       throw new Error('User must be authenticated to retrieve payment methods');

@@ -92,8 +92,10 @@ class FollowUpService extends BaseFirestoreService<
         if (client.memberId) document.memberId = client.memberId;
         if (client.actionType) document.actionType = client.actionType;
         if (client.status) document.status = client.status;
-        if (client.scheduledAt) document.scheduledAt = new Date(client.scheduledAt);
-        if (client.completedAt) document.completedAt = new Date(client.completedAt);
+        if (client.scheduledAt)
+          document.scheduledAt = new Date(client.scheduledAt);
+        if (client.completedAt)
+          document.completedAt = new Date(client.completedAt);
         if (client.metadata) document.metadata = client.metadata;
         if (client.createdAt) document.createdAt = new Date(client.createdAt);
         if (client.updatedAt) document.updatedAt = new Date(client.updatedAt);

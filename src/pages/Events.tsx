@@ -5,14 +5,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  Calendar,
-  Plus,
-  Search,
-  RefreshCw,
-  Filter,
-  X,
-} from 'lucide-react';
+import { Calendar, Plus, Search, RefreshCw, Filter, X } from 'lucide-react';
 import { Event, EventType } from '../types/events';
 import { eventsService } from '../services/firebase/events.service';
 import { useAuth } from '../hooks/useUnifiedAuth';
@@ -49,10 +42,12 @@ export default function Events() {
 
   const loadEvents = async () => {
     if (!currentMember) return;
-    
+
     try {
       setLoading(true);
-      const data = await eventsService.getEventsByRoleSimple(currentMember.role);
+      const data = await eventsService.getEventsByRoleSimple(
+        currentMember.role
+      );
       setEvents(data);
     } catch (error) {
       console.error('Error loading events:', error);
@@ -72,14 +67,17 @@ export default function Events() {
   };
 
   const hasActiveFilters = useMemo(() => {
-    return filters.type !== 'all' || 
-           filters.dateRange !== 'upcoming' || 
-           filters.rsvpStatus !== 'all' || 
-           filters.isPublic !== 'all' ||
-           searchTerm.trim() !== '';
+    return (
+      filters.type !== 'all' ||
+      filters.dateRange !== 'upcoming' ||
+      filters.rsvpStatus !== 'all' ||
+      filters.isPublic !== 'all' ||
+      searchTerm.trim() !== ''
+    );
   }, [filters, searchTerm]);
 
-  const canManageEvents = currentMember?.role === 'admin' || currentMember?.role === 'pastor';
+  const canManageEvents =
+    currentMember?.role === 'admin' || currentMember?.role === 'pastor';
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -174,8 +172,8 @@ export default function Events() {
         showDisplayModeToggle={true}
         emptyStateTitle={hasActiveFilters ? 'No events found' : 'No events yet'}
         emptyStateDescription={
-          hasActiveFilters 
-            ? 'Try adjusting your search or filter criteria.' 
+          hasActiveFilters
+            ? 'Try adjusting your search or filter criteria.'
             : 'Get started by creating your first event.'
         }
       />

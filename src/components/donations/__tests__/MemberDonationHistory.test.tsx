@@ -11,7 +11,12 @@ import { MemberDonationHistory } from '../MemberDonationHistory';
 import { donationsService } from '../../../services/firebase';
 import { useAuth } from '../../../contexts/FirebaseAuthContext';
 import { useToast } from '../../../contexts/ToastContext';
-import { Donation, DonationMethod, DonationStatus, Form990LineItem } from '../../../types/donations';
+import {
+  Donation,
+  DonationMethod,
+  DonationStatus,
+  Form990LineItem,
+} from '../../../types/donations';
 import { Member } from '../../../types';
 
 // Mock the services and contexts
@@ -76,7 +81,7 @@ describe('MemberDonationHistory', () => {
       id: 'donation-1',
       memberId: 'member-1',
       memberName: 'John Doe',
-      amount: 500.00,
+      amount: 500.0,
       donationDate: '2025-01-15',
       method: 'check' as DonationMethod,
       categoryId: 'category-1',
@@ -100,7 +105,7 @@ describe('MemberDonationHistory', () => {
       id: 'donation-2',
       memberId: 'member-1',
       memberName: 'John Doe',
-      amount: 250.00,
+      amount: 250.0,
       donationDate: '2025-01-08',
       method: 'cash' as DonationMethod,
       categoryId: 'category-2',
@@ -122,7 +127,7 @@ describe('MemberDonationHistory', () => {
       id: 'donation-3',
       memberId: 'member-1',
       memberName: 'John Doe',
-      amount: 1000.00,
+      amount: 1000.0,
       donationDate: '2024-12-25',
       method: 'online' as DonationMethod,
       categoryId: 'category-3',
@@ -148,41 +153,41 @@ describe('MemberDonationHistory', () => {
   const mockSummaryData = {
     memberId: 'member-1',
     memberName: 'John Doe',
-    totalAmount: 1750.00,
+    totalAmount: 1750.0,
     totalCount: 3,
     averageDonation: 583.33,
     firstDonationDate: '2024-12-25',
     lastDonationDate: '2025-01-15',
-    yearToDateTotal: 750.00,
-    previousYearTotal: 1000.00,
-    
+    yearToDateTotal: 750.0,
+    previousYearTotal: 1000.0,
+
     // Category breakdown
     byCategory: {
       'category-1': {
         categoryName: 'Tithe',
-        amount: 500.00,
+        amount: 500.0,
         count: 1,
         percentage: 28.57,
       },
       'category-2': {
         categoryName: 'Offering',
-        amount: 250.00,
+        amount: 250.0,
         count: 1,
         percentage: 14.29,
       },
       'category-3': {
         categoryName: 'Special Collection',
-        amount: 1000.00,
+        amount: 1000.0,
         count: 1,
         percentage: 57.14,
       },
     },
-    
+
     // Method breakdown
     byMethod: {
-      check: { amount: 500.00, count: 1, percentage: 28.57 },
-      cash: { amount: 250.00, count: 1, percentage: 14.29 },
-      online: { amount: 1000.00, count: 1, percentage: 57.14 },
+      check: { amount: 500.0, count: 1, percentage: 28.57 },
+      cash: { amount: 250.0, count: 1, percentage: 14.29 },
+      online: { amount: 1000.0, count: 1, percentage: 57.14 },
       credit_card: { amount: 0, count: 0, percentage: 0 },
       debit_card: { amount: 0, count: 0, percentage: 0 },
       bank_transfer: { amount: 0, count: 0, percentage: 0 },
@@ -191,27 +196,29 @@ describe('MemberDonationHistory', () => {
       in_kind: { amount: 0, count: 0, percentage: 0 },
       other: { amount: 0, count: 0, percentage: 0 },
     },
-    
+
     // Tax-deductible breakdown
-    taxDeductibleTotal: 750.00,
-    nonTaxDeductibleTotal: 1000.00,
+    taxDeductibleTotal: 750.0,
+    nonTaxDeductibleTotal: 1000.0,
     taxDeductiblePercentage: 42.86,
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     mockUseAuth.mockReturnValue({
       user: mockUser,
       isLoading: false,
     });
-    
+
     mockUseToast.mockReturnValue({
       showToast: mockShowToast,
     });
 
     mockDonationsService.getDonationsByMember.mockResolvedValue(mockDonations);
-    mockDonationsService.getMemberDonationSummary.mockResolvedValue(mockSummaryData);
+    mockDonationsService.getMemberDonationSummary.mockResolvedValue(
+      mockSummaryData
+    );
   });
 
   describe('Component Rendering Tests', () => {
@@ -233,7 +240,9 @@ describe('MemberDonationHistory', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Donation History for John Doe')).toBeInTheDocument();
+        expect(
+          screen.getByText('Donation History for John Doe')
+        ).toBeInTheDocument();
         expect(screen.getByText('Total Donated:')).toBeInTheDocument();
         expect(screen.getByText('$1,750.00')).toBeInTheDocument();
         expect(screen.getByText('Number of Donations:')).toBeInTheDocument();
@@ -267,7 +276,9 @@ describe('MemberDonationHistory', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('2025 Year-to-Date Summary')).toBeInTheDocument();
+        expect(
+          screen.getByText('2025 Year-to-Date Summary')
+        ).toBeInTheDocument();
         expect(screen.getByText('$750.00')).toBeInTheDocument();
         expect(screen.getByText('Previous Year (2024):')).toBeInTheDocument();
         expect(screen.getByText('$1,000.00')).toBeInTheDocument();
@@ -284,8 +295,12 @@ describe('MemberDonationHistory', () => {
       await waitFor(() => {
         expect(screen.getByText('Breakdown by Category')).toBeInTheDocument();
         expect(screen.getByText('Tithe: $500.00 (28.57%)')).toBeInTheDocument();
-        expect(screen.getByText('Offering: $250.00 (14.29%)')).toBeInTheDocument();
-        expect(screen.getByText('Special Collection: $1,000.00 (57.14%)')).toBeInTheDocument();
+        expect(
+          screen.getByText('Offering: $250.00 (14.29%)')
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText('Special Collection: $1,000.00 (57.14%)')
+        ).toBeInTheDocument();
       });
     });
 
@@ -297,8 +312,12 @@ describe('MemberDonationHistory', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByTestId('member-donation-history')).toBeInTheDocument();
-        expect(mockDonationsService.getDonationsByMember).toHaveBeenCalledWith('member-1');
+        expect(
+          screen.getByTestId('member-donation-history')
+        ).toBeInTheDocument();
+        expect(mockDonationsService.getDonationsByMember).toHaveBeenCalledWith(
+          'member-1'
+        );
       });
     });
   });
@@ -345,7 +364,9 @@ describe('MemberDonationHistory', () => {
         const table = screen.getByRole('table');
         expect(within(table).getByText('Tithe')).toBeInTheDocument();
         expect(within(table).getByText('Offering')).toBeInTheDocument();
-        expect(within(table).getByText('Special Collection')).toBeInTheDocument();
+        expect(
+          within(table).getByText('Special Collection')
+        ).toBeInTheDocument();
         expect(within(table).getByText('Check')).toBeInTheDocument();
         expect(within(table).getByText('Cash')).toBeInTheDocument();
         expect(within(table).getByText('Online')).toBeInTheDocument();
@@ -361,19 +382,23 @@ describe('MemberDonationHistory', () => {
 
       await waitFor(() => {
         const taxSummary = screen.getByTestId('tax-summary');
-        expect(within(taxSummary).getByText('Tax-Deductible Total:')).toBeInTheDocument();
+        expect(
+          within(taxSummary).getByText('Tax-Deductible Total:')
+        ).toBeInTheDocument();
         expect(within(taxSummary).getByText('$750.00')).toBeInTheDocument();
-        expect(within(taxSummary).getByText('Non-Deductible Total:')).toBeInTheDocument();
+        expect(
+          within(taxSummary).getByText('Non-Deductible Total:')
+        ).toBeInTheDocument();
         expect(within(taxSummary).getByText('$1,000.00')).toBeInTheDocument();
       });
 
       const table = screen.getByRole('table');
       const rows = within(table).getAllByRole('row');
-      
+
       // Check tax deductible indicators in table
       expect(within(rows[1]).getByText('Yes')).toBeInTheDocument(); // Tithe - tax deductible
       expect(within(rows[2]).getByText('Yes')).toBeInTheDocument(); // Offering - tax deductible
-      expect(within(rows[3]).getByText('No')).toBeInTheDocument();  // Special Collection - not tax deductible
+      expect(within(rows[3]).getByText('No')).toBeInTheDocument(); // Special Collection - not tax deductible
     });
 
     it('should display receipt status correctly', async () => {
@@ -386,10 +411,14 @@ describe('MemberDonationHistory', () => {
       await waitFor(() => {
         const table = screen.getByRole('table');
         const rows = within(table).getAllByRole('row');
-        
-        expect(within(rows[1]).getByText('Sent (REC-2025-001)')).toBeInTheDocument();
+
+        expect(
+          within(rows[1]).getByText('Sent (REC-2025-001)')
+        ).toBeInTheDocument();
         expect(within(rows[2]).getByText('Not Sent')).toBeInTheDocument();
-        expect(within(rows[3]).getByText('Sent (REC-2024-125)')).toBeInTheDocument();
+        expect(
+          within(rows[3]).getByText('Sent (REC-2024-125)')
+        ).toBeInTheDocument();
       });
     });
 
@@ -402,7 +431,9 @@ describe('MemberDonationHistory', () => {
 
       await waitFor(() => {
         const table = screen.getByRole('table');
-        expect(within(table).getByText('Christmas special offering')).toBeInTheDocument();
+        expect(
+          within(table).getByText('Christmas special offering')
+        ).toBeInTheDocument();
       });
     });
 
@@ -414,7 +445,9 @@ describe('MemberDonationHistory', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Average Donation: $583.33')).toBeInTheDocument();
+        expect(
+          screen.getByText('Average Donation: $583.33')
+        ).toBeInTheDocument();
         expect(screen.getByText('Tax-Deductible: 42.86%')).toBeInTheDocument();
       });
     });
@@ -422,22 +455,32 @@ describe('MemberDonationHistory', () => {
 
   describe('Loading & Error States', () => {
     it('should show loading spinner during data fetch', () => {
-      mockDonationsService.getDonationsByMember.mockImplementation(() => new Promise(() => {}));
-      mockDonationsService.getMemberDonationSummary.mockImplementation(() => new Promise(() => {}));
-      
+      mockDonationsService.getDonationsByMember.mockImplementation(
+        () => new Promise(() => {})
+      );
+      mockDonationsService.getMemberDonationSummary.mockImplementation(
+        () => new Promise(() => {})
+      );
+
       render(
         <TestWrapper>
           <MemberDonationHistory member={mockMember} />
         </TestWrapper>
       );
 
-      expect(screen.getByTestId('loading-spinner') || screen.getByRole('status')).toBeInTheDocument();
-      expect(screen.getByText('Loading donation history...')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('loading-spinner') || screen.getByRole('status')
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText('Loading donation history...')
+      ).toBeInTheDocument();
     });
 
     it('should show error message when data fetch fails', async () => {
-      mockDonationsService.getDonationsByMember.mockRejectedValueOnce(new Error('Network error'));
-      
+      mockDonationsService.getDonationsByMember.mockRejectedValueOnce(
+        new Error('Network error')
+      );
+
       render(
         <TestWrapper>
           <MemberDonationHistory member={mockMember} />
@@ -445,9 +488,15 @@ describe('MemberDonationHistory', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Error loading donation history')).toBeInTheDocument();
-        expect(screen.getByText('Failed to load donation data. Please try again.')).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
+        expect(
+          screen.getByText('Error loading donation history')
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText('Failed to load donation data. Please try again.')
+        ).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /retry/i })
+        ).toBeInTheDocument();
       });
     });
 
@@ -460,7 +509,7 @@ describe('MemberDonationHistory', () => {
         byCategory: {},
         byMethod: {},
       });
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory member={mockMember} />
@@ -468,8 +517,12 @@ describe('MemberDonationHistory', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('No donation history found')).toBeInTheDocument();
-        expect(screen.getByText('John Doe has not made any donations yet.')).toBeInTheDocument();
+        expect(
+          screen.getByText('No donation history found')
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText('John Doe has not made any donations yet.')
+        ).toBeInTheDocument();
         expect(screen.getByTestId('empty-donations-state')).toBeInTheDocument();
       });
     });
@@ -485,8 +538,10 @@ describe('MemberDonationHistory', () => {
         },
       ];
 
-      mockDonationsService.getDonationsByMember.mockResolvedValueOnce(malformedDonations as any);
-      
+      mockDonationsService.getDonationsByMember.mockResolvedValueOnce(
+        malformedDonations as any
+      );
+
       render(
         <TestWrapper>
           <MemberDonationHistory member={mockMember} />
@@ -494,7 +549,9 @@ describe('MemberDonationHistory', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Some donation data may be incomplete')).toBeInTheDocument();
+        expect(
+          screen.getByText('Some donation data may be incomplete')
+        ).toBeInTheDocument();
         expect(mockShowToast).toHaveBeenCalledWith(
           'Some donation records contain invalid data',
           'warning'
@@ -504,8 +561,10 @@ describe('MemberDonationHistory', () => {
 
     it('should retry data fetch when retry button is clicked', async () => {
       const user = userEvent.setup();
-      mockDonationsService.getDonationsByMember.mockRejectedValueOnce(new Error('Network error'));
-      
+      mockDonationsService.getDonationsByMember.mockRejectedValueOnce(
+        new Error('Network error')
+      );
+
       render(
         <TestWrapper>
           <MemberDonationHistory member={mockMember} />
@@ -513,19 +572,29 @@ describe('MemberDonationHistory', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /retry/i })
+        ).toBeInTheDocument();
       });
 
       // Reset mocks for successful retry
-      mockDonationsService.getDonationsByMember.mockResolvedValueOnce(mockDonations);
-      mockDonationsService.getMemberDonationSummary.mockResolvedValueOnce(mockSummaryData);
+      mockDonationsService.getDonationsByMember.mockResolvedValueOnce(
+        mockDonations
+      );
+      mockDonationsService.getMemberDonationSummary.mockResolvedValueOnce(
+        mockSummaryData
+      );
 
       const retryButton = screen.getByRole('button', { name: /retry/i });
       await user.click(retryButton);
 
       await waitFor(() => {
-        expect(mockDonationsService.getDonationsByMember).toHaveBeenCalledTimes(2);
-        expect(screen.getByText('Donation History for John Doe')).toBeInTheDocument();
+        expect(mockDonationsService.getDonationsByMember).toHaveBeenCalledTimes(
+          2
+        );
+        expect(
+          screen.getByText('Donation History for John Doe')
+        ).toBeInTheDocument();
       });
     });
   });
@@ -546,7 +615,7 @@ describe('MemberDonationHistory', () => {
 
     it('should filter donations by selected year', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory member={mockMember} />
@@ -567,7 +636,9 @@ describe('MemberDonationHistory', () => {
         expect(rows).toHaveLength(3);
         expect(within(table).getByText('Jan 15, 2025')).toBeInTheDocument();
         expect(within(table).getByText('Jan 8, 2025')).toBeInTheDocument();
-        expect(within(table).queryByText('Dec 25, 2024')).not.toBeInTheDocument();
+        expect(
+          within(table).queryByText('Dec 25, 2024')
+        ).not.toBeInTheDocument();
       });
     });
 
@@ -581,7 +652,7 @@ describe('MemberDonationHistory', () => {
       await waitFor(() => {
         const table = screen.getByRole('table');
         const rows = within(table).getAllByRole('row');
-        
+
         // First data row should be most recent donation
         expect(within(rows[1]).getByText('Jan 15, 2025')).toBeInTheDocument();
         expect(within(rows[2]).getByText('Jan 8, 2025')).toBeInTheDocument();
@@ -591,7 +662,7 @@ describe('MemberDonationHistory', () => {
 
     it('should allow sorting by amount', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory member={mockMember} />
@@ -599,16 +670,20 @@ describe('MemberDonationHistory', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByRole('columnheader', { name: /amount/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('columnheader', { name: /amount/i })
+        ).toBeInTheDocument();
       });
 
-      const amountHeader = screen.getByRole('columnheader', { name: /amount/i });
+      const amountHeader = screen.getByRole('columnheader', {
+        name: /amount/i,
+      });
       await user.click(amountHeader);
 
       await waitFor(() => {
         const table = screen.getByRole('table');
         const rows = within(table).getAllByRole('row');
-        
+
         // Should be sorted by amount descending
         expect(within(rows[1]).getByText('$1,000.00')).toBeInTheDocument();
         expect(within(rows[2]).getByText('$500.00')).toBeInTheDocument();
@@ -626,7 +701,9 @@ describe('MemberDonationHistory', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /export to csv/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /export to csv/i })
+        ).toBeInTheDocument();
       });
     });
 
@@ -643,14 +720,16 @@ describe('MemberDonationHistory', () => {
       );
 
       await waitFor(() => {
-        expect(screen.queryByRole('button', { name: /export to csv/i })).not.toBeInTheDocument();
+        expect(
+          screen.queryByRole('button', { name: /export to csv/i })
+        ).not.toBeInTheDocument();
       });
     });
 
     it('should trigger CSV export when export button is clicked', async () => {
       const user = userEvent.setup();
       const mockDownload = vi.spyOn(document, 'createElement');
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory member={mockMember} />
@@ -658,10 +737,14 @@ describe('MemberDonationHistory', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /export to csv/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /export to csv/i })
+        ).toBeInTheDocument();
       });
 
-      const exportButton = screen.getByRole('button', { name: /export to csv/i });
+      const exportButton = screen.getByRole('button', {
+        name: /export to csv/i,
+      });
       await user.click(exportButton);
 
       await waitFor(() => {
@@ -702,10 +785,12 @@ describe('MemberDonationHistory', () => {
 
     it('should update display when new donations are received', async () => {
       const subscriptionCallback = vi.fn();
-      mockDonationsService.subscribeToDonations.mockImplementation((callback) => {
-        subscriptionCallback.mockImplementation(callback);
-        return vi.fn(); // unsubscribe function
-      });
+      mockDonationsService.subscribeToDonations.mockImplementation(
+        (callback) => {
+          subscriptionCallback.mockImplementation(callback);
+          return vi.fn(); // unsubscribe function
+        }
+      );
 
       render(
         <TestWrapper>
@@ -718,12 +803,15 @@ describe('MemberDonationHistory', () => {
       });
 
       // Simulate new donation received
-      const newDonations = [...mockDonations, {
-        ...mockDonations[0],
-        id: 'donation-4',
-        amount: 100.00,
-        donationDate: '2025-01-20',
-      }];
+      const newDonations = [
+        ...mockDonations,
+        {
+          ...mockDonations[0],
+          id: 'donation-4',
+          amount: 100.0,
+          donationDate: '2025-01-20',
+        },
+      ];
 
       subscriptionCallback(newDonations);
 
@@ -742,15 +830,22 @@ describe('MemberDonationHistory', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByRole('table')).toHaveAttribute('aria-label', 'Donation history table');
-        expect(screen.getByRole('region', { name: /donation summary/i })).toBeInTheDocument();
-        expect(screen.getByRole('region', { name: /category breakdown/i })).toBeInTheDocument();
+        expect(screen.getByRole('table')).toHaveAttribute(
+          'aria-label',
+          'Donation history table'
+        );
+        expect(
+          screen.getByRole('region', { name: /donation summary/i })
+        ).toBeInTheDocument();
+        expect(
+          screen.getByRole('region', { name: /category breakdown/i })
+        ).toBeInTheDocument();
       });
     });
 
     it('should support keyboard navigation', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <MemberDonationHistory member={mockMember} />
@@ -758,7 +853,9 @@ describe('MemberDonationHistory', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /export to csv/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /export to csv/i })
+        ).toBeInTheDocument();
       });
 
       // Test tab navigation
@@ -766,12 +863,16 @@ describe('MemberDonationHistory', () => {
       expect(screen.getByLabelText(/filter by year/i)).toHaveFocus();
 
       await user.tab();
-      expect(screen.getByRole('button', { name: /export to csv/i })).toHaveFocus();
+      expect(
+        screen.getByRole('button', { name: /export to csv/i })
+      ).toHaveFocus();
     });
 
     it('should announce loading and error states to screen readers', () => {
-      mockDonationsService.getDonationsByMember.mockImplementation(() => new Promise(() => {}));
-      
+      mockDonationsService.getDonationsByMember.mockImplementation(
+        () => new Promise(() => {})
+      );
+
       render(
         <TestWrapper>
           <MemberDonationHistory member={mockMember} />
@@ -793,7 +894,9 @@ describe('MemberDonationHistory', () => {
       );
 
       await waitFor(() => {
-        expect(mockDonationsService.getDonationsByMember).toHaveBeenCalledWith('member-1');
+        expect(mockDonationsService.getDonationsByMember).toHaveBeenCalledWith(
+          'member-1'
+        );
       });
     });
 
@@ -805,13 +908,17 @@ describe('MemberDonationHistory', () => {
       );
 
       await waitFor(() => {
-        expect(mockDonationsService.getMemberDonationSummary).toHaveBeenCalledWith('member-1');
+        expect(
+          mockDonationsService.getMemberDonationSummary
+        ).toHaveBeenCalledWith('member-1');
       });
     });
 
     it('should handle service method rejections gracefully', async () => {
-      mockDonationsService.getMemberDonationSummary.mockRejectedValueOnce(new Error('Summary error'));
-      
+      mockDonationsService.getMemberDonationSummary.mockRejectedValueOnce(
+        new Error('Summary error')
+      );
+
       render(
         <TestWrapper>
           <MemberDonationHistory member={mockMember} />

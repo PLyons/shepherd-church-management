@@ -24,9 +24,9 @@ export class StripeService {
       this.stripe = stripeInstance;
     } else {
       // Create new instance (for production)
-      const apiKey = config.publicKey.startsWith('pk_') ? 
-        config.publicKey.replace('pk_', 'sk_') : 
-        config.publicKey;
+      const apiKey = config.publicKey.startsWith('pk_')
+        ? config.publicKey.replace('pk_', 'sk_')
+        : config.publicKey;
       this.stripe = new Stripe(apiKey, {
         apiVersion: '2024-06-20',
       });
@@ -42,18 +42,24 @@ export class StripeService {
     }
 
     if (this.config.minDonationAmount < 50) {
-      throw new Error('Invalid Stripe configuration: Minimum donation amount must be at least $0.50');
+      throw new Error(
+        'Invalid Stripe configuration: Minimum donation amount must be at least $0.50'
+      );
     }
 
     if (this.config.maxDonationAmount > 99999999) {
-      throw new Error('Invalid Stripe configuration: Maximum donation amount exceeds Stripe limits');
+      throw new Error(
+        'Invalid Stripe configuration: Maximum donation amount exceeds Stripe limits'
+      );
     }
   }
 
   /**
    * Creates a payment intent for one-time donations
    */
-  async createPaymentIntent(request: CreatePaymentIntentRequest): Promise<PaymentIntentResponse> {
+  async createPaymentIntent(
+    request: CreatePaymentIntentRequest
+  ): Promise<PaymentIntentResponse> {
     try {
       const paymentIntent = await this.stripe.paymentIntents.create({
         amount: request.amount,
@@ -87,7 +93,9 @@ export class StripeService {
         currency: request.currency,
         error: {
           code: (error as { code?: string }).code || 'unknown_error',
-          message: (error as { message?: string }).message || 'An unexpected error occurred',
+          message:
+            (error as { message?: string }).message ||
+            'An unexpected error occurred',
           type: (error as { type?: string }).type || 'api_error',
         },
       };
@@ -120,7 +128,9 @@ export class StripeService {
         clientSecret: '',
         error: {
           code: (error as { code?: string }).code || 'unknown_error',
-          message: (error as { message?: string }).message || 'An unexpected error occurred',
+          message:
+            (error as { message?: string }).message ||
+            'An unexpected error occurred',
           type: (error as { type?: string }).type || 'api_error',
         },
       };
@@ -130,9 +140,12 @@ export class StripeService {
   /**
    * Processes a payment using Stripe Elements
    */
-  async processPayment(paymentIntentId: string): Promise<PaymentIntentResponse> {
+  async processPayment(
+    paymentIntentId: string
+  ): Promise<PaymentIntentResponse> {
     try {
-      const paymentIntent = await this.stripe.paymentIntents.confirm(paymentIntentId);
+      const paymentIntent =
+        await this.stripe.paymentIntents.confirm(paymentIntentId);
 
       return {
         id: paymentIntent.id,
@@ -150,7 +163,9 @@ export class StripeService {
         currency: 'usd',
         error: {
           code: (error as { code?: string }).code || 'unknown_error',
-          message: (error as { message?: string }).message || 'An unexpected error occurred',
+          message:
+            (error as { message?: string }).message ||
+            'An unexpected error occurred',
           type: (error as { type?: string }).type || 'card_error',
         },
       };
@@ -174,20 +189,24 @@ export class StripeService {
 
       const subscription = await this.stripe.subscriptions.create({
         customer: customerId,
-        items: [{
-          price_data: {
-            currency: this.config.currency,
-            unit_amount: data.amount,
-            recurring: { interval: this.mapFrequencyToInterval(data.frequency) },
-            product_data: {
-              name: data.description || `${data.frequency} donation`,
-              metadata: {
-                categoryId: data.categoryId,
-                source: 'shepherd-cms',
+        items: [
+          {
+            price_data: {
+              currency: this.config.currency,
+              unit_amount: data.amount,
+              recurring: {
+                interval: this.mapFrequencyToInterval(data.frequency),
+              },
+              product_data: {
+                name: data.description || `${data.frequency} donation`,
+                metadata: {
+                  categoryId: data.categoryId,
+                  source: 'shepherd-cms',
+                },
               },
             },
           },
-        }],
+        ],
         default_payment_method: data.paymentMethodId,
         metadata: {
           memberId: data.memberId,
@@ -205,14 +224,20 @@ export class StripeService {
         paymentMethodId: data.paymentMethodId,
         categoryId: data.categoryId,
         status: subscription.status as RecurringDonation['status'],
-        startDate: new Date(subscription.current_period_start * 1000).toISOString(),
-        nextPaymentDate: new Date(subscription.current_period_end * 1000).toISOString(),
+        startDate: new Date(
+          subscription.current_period_start * 1000
+        ).toISOString(),
+        nextPaymentDate: new Date(
+          subscription.current_period_end * 1000
+        ).toISOString(),
         description: data.description,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
     } catch (error: unknown) {
-      throw new Error(`Failed to setup recurring donation: ${(error as Error).message}`);
+      throw new Error(
+        `Failed to setup recurring donation: ${(error as Error).message}`
+      );
     }
   }
 
@@ -231,12 +256,14 @@ export class StripeService {
         id: pm.id,
         type: pm.type as PaymentMethod['type'],
         customerId,
-        card: pm.card ? {
-          brand: pm.card.brand,
-          last4: pm.card.last4,
-          expiryMonth: pm.card.exp_month,
-          expiryYear: pm.card.exp_year,
-        } : undefined,
+        card: pm.card
+          ? {
+              brand: pm.card.brand,
+              last4: pm.card.last4,
+              expiryMonth: pm.card.exp_month,
+              expiryYear: pm.card.exp_year,
+            }
+          : undefined,
       }));
     } catch (error: unknown) {
       console.error('Failed to retrieve payment methods:', error);
@@ -279,22 +306,30 @@ export class StripeService {
   ): Promise<RecurringDonation> {
     try {
       // First get the current subscription to access its items
-      const currentSubscription = await this.stripe.subscriptions.retrieve(subscriptionId);
-      
-      const subscription = await this.stripe.subscriptions.update(subscriptionId, {
-        items: updates.amount ? [{
-          id: currentSubscription.items.data[0].id,
-          price_data: {
-            currency: this.config.currency,
-            unit_amount: updates.amount,
-            recurring: { interval: 'month' }, // Simplified
-            product_data: {
-              name: 'Updated donation',
-            },
-          },
-        }] : undefined,
-        default_payment_method: updates.paymentMethodId,
-      });
+      const currentSubscription =
+        await this.stripe.subscriptions.retrieve(subscriptionId);
+
+      const subscription = await this.stripe.subscriptions.update(
+        subscriptionId,
+        {
+          items: updates.amount
+            ? [
+                {
+                  id: currentSubscription.items.data[0].id,
+                  price_data: {
+                    currency: this.config.currency,
+                    unit_amount: updates.amount,
+                    recurring: { interval: 'month' }, // Simplified
+                    product_data: {
+                      name: 'Updated donation',
+                    },
+                  },
+                },
+              ]
+            : undefined,
+          default_payment_method: updates.paymentMethodId,
+        }
+      );
 
       return {
         id: subscription.id,
@@ -305,13 +340,19 @@ export class StripeService {
         paymentMethodId: subscription.default_payment_method as string,
         categoryId: subscription.metadata.categoryId || '',
         status: subscription.status as RecurringDonation['status'],
-        startDate: new Date(subscription.current_period_start * 1000).toISOString(),
-        nextPaymentDate: new Date(subscription.current_period_end * 1000).toISOString(),
+        startDate: new Date(
+          subscription.current_period_start * 1000
+        ).toISOString(),
+        nextPaymentDate: new Date(
+          subscription.current_period_end * 1000
+        ).toISOString(),
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
     } catch (error: unknown) {
-      throw new Error(`Failed to update recurring donation: ${(error as Error).message}`);
+      throw new Error(
+        `Failed to update recurring donation: ${(error as Error).message}`
+      );
     }
   }
 
@@ -325,7 +366,9 @@ export class StripeService {
   /**
    * Maps frequency to Stripe interval
    */
-  private mapFrequencyToInterval(frequency: 'weekly' | 'monthly' | 'yearly'): 'week' | 'month' | 'year' {
+  private mapFrequencyToInterval(
+    frequency: 'weekly' | 'monthly' | 'yearly'
+  ): 'week' | 'month' | 'year' {
     switch (frequency) {
       case 'weekly':
         return 'week';
@@ -372,7 +415,9 @@ export function createStripeService(config: StripeConfig): StripeService {
  */
 export function getStripeService(): StripeService {
   if (!stripeServiceInstance) {
-    throw new Error('Stripe service not initialized. Call createStripeService first.');
+    throw new Error(
+      'Stripe service not initialized. Call createStripeService first.'
+    );
   }
   return stripeServiceInstance;
 }

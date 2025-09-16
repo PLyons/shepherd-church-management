@@ -7,7 +7,10 @@ import {
   RegistrationTokenDocument,
   PendingRegistrationDocument,
 } from '../../types/firestore';
-import { RegistrationToken, PendingRegistration } from '../../types/registration';
+import {
+  RegistrationToken,
+  PendingRegistration,
+} from '../../types/registration';
 import {
   timestampToString,
   stringToTimestamp,

@@ -12,37 +12,34 @@ import { formatCurrency, formatDate } from '../../utils/currency-utils';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { Card } from '../common/Card';
 import { DonationFilters, FilterState } from './DonationFilters';
-import { generateDonationStatement, generateDonationCSV, DonationStatementData } from './DonationStatementPDF';
+import {
+  generateDonationStatement,
+  generateDonationCSV,
+  DonationStatementData,
+} from './DonationStatementPDF';
 
 interface MemberDonationHistoryProps {
   memberId?: string;
   member?: { id: string; firstName: string; lastName: string };
 }
 
-
 export const MemberDonationHistory: React.FC<MemberDonationHistoryProps> = ({
   memberId,
-  member
+  member,
 }) => {
   const { user, member: currentMember, hasRole } = useAuth();
   const { showToast } = useToast();
-  
+
   // Get the target member ID (either prop or current user)
   const targetMemberId = memberId || member?.id || currentMember?.id;
-  
+
   // Optimized donation data management with caching and real-time updates
-  const {
-    donations,
-    loading,
-    error,
-    retry,
-    refetch,
-    summary
-  } = useMemberDonations({
-    memberId: targetMemberId,
-    enableRealTime: true,
-    cacheTimeout: 5 * 60 * 1000 // 5 minutes cache
-  });
+  const { donations, loading, error, retry, refetch, summary } =
+    useMemberDonations({
+      memberId: targetMemberId,
+      enableRealTime: true,
+      cacheTimeout: 5 * 60 * 1000, // 5 minutes cache
+    });
   const [filters, setFilters] = useState<FilterState>({
     categoryIds: [],
     methods: [],
@@ -50,11 +47,11 @@ export const MemberDonationHistory: React.FC<MemberDonationHistoryProps> = ({
     sortBy: 'donationDate',
     sortDirection: 'desc',
     page: 1,
-    pageSize: 25
+    pageSize: 25,
   });
-  const targetMemberName = member 
+  const targetMemberName = member
     ? `${member.firstName} ${member.lastName}`
-    : currentMember 
+    : currentMember
       ? `${currentMember.firstName} ${currentMember.lastName}`
       : 'Unknown Member';
 
@@ -66,7 +63,7 @@ export const MemberDonationHistory: React.FC<MemberDonationHistoryProps> = ({
     if (filters.dateRange) {
       const startDate = new Date(filters.dateRange.start);
       const endDate = new Date(filters.dateRange.end);
-      result = result.filter(d => {
+      result = result.filter((d) => {
         const donationDate = new Date(d.donationDate);
         return donationDate >= startDate && donationDate <= endDate;
       });
@@ -74,22 +71,23 @@ export const MemberDonationHistory: React.FC<MemberDonationHistoryProps> = ({
 
     // Filter by categories
     if (filters.categoryIds.length > 0) {
-      result = result.filter(d => filters.categoryIds.includes(d.categoryId));
+      result = result.filter((d) => filters.categoryIds.includes(d.categoryId));
     }
 
     // Filter by methods
     if (filters.methods.length > 0) {
-      result = result.filter(d => filters.methods.includes(d.method));
+      result = result.filter((d) => filters.methods.includes(d.method));
     }
 
     // Search filter
     if (filters.searchTerm) {
       const searchLower = filters.searchTerm.toLowerCase();
-      result = result.filter(d => 
-        d.note?.toLowerCase().includes(searchLower) ||
-        d.receiptNumber?.toLowerCase().includes(searchLower) ||
-        d.categoryName.toLowerCase().includes(searchLower) ||
-        d.memberName?.toLowerCase().includes(searchLower)
+      result = result.filter(
+        (d) =>
+          d.note?.toLowerCase().includes(searchLower) ||
+          d.receiptNumber?.toLowerCase().includes(searchLower) ||
+          d.categoryName.toLowerCase().includes(searchLower) ||
+          d.memberName?.toLowerCase().includes(searchLower)
       );
     }
 
@@ -98,7 +96,9 @@ export const MemberDonationHistory: React.FC<MemberDonationHistoryProps> = ({
       let comparison = 0;
       switch (filters.sortBy) {
         case 'donationDate':
-          comparison = new Date(a.donationDate).getTime() - new Date(b.donationDate).getTime();
+          comparison =
+            new Date(a.donationDate).getTime() -
+            new Date(b.donationDate).getTime();
           break;
         case 'amount':
           comparison = a.amount - b.amount;
@@ -114,7 +114,9 @@ export const MemberDonationHistory: React.FC<MemberDonationHistoryProps> = ({
   }, [donations, filters]);
 
   // Calculate pagination
-  const totalPages = Math.ceil(filteredAndSortedDonations.length / filters.pageSize);
+  const totalPages = Math.ceil(
+    filteredAndSortedDonations.length / filters.pageSize
+  );
   const paginatedDonations = filteredAndSortedDonations.slice(
     (filters.page - 1) * filters.pageSize,
     filters.page * filters.pageSize
@@ -125,18 +127,22 @@ export const MemberDonationHistory: React.FC<MemberDonationHistoryProps> = ({
 
   // Category breakdown (calculated from filtered donations for display accuracy)
   const categoryTotals = useMemo(() => {
-    return donations.reduce((acc, donation) => {
-      acc[donation.categoryName] = (acc[donation.categoryName] || 0) + donation.amount;
-      return acc;
-    }, {} as Record<string, number>);
+    return donations.reduce(
+      (acc, donation) => {
+        acc[donation.categoryName] =
+          (acc[donation.categoryName] || 0) + donation.amount;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
   }, [donations]);
 
   // Filter handlers
   const updateFilters = useCallback((updates: Partial<FilterState>) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       ...updates,
-      page: updates.page || 1 // Reset to first page when filters change
+      page: updates.page || 1, // Reset to first page when filters change
     }));
   }, []);
 
@@ -149,16 +155,19 @@ export const MemberDonationHistory: React.FC<MemberDonationHistoryProps> = ({
     zip: '12345',
     ein: '12-3456789',
     phone: '(555) 123-4567',
-    email: 'admin@shepherdchurch.org'
+    email: 'admin@shepherdchurch.org',
   };
 
   // Export functionality
   const handleExportCSV = useCallback(() => {
     if (!hasRole('admin') && !hasRole('pastor')) {
-      showToast('Export functionality is only available to administrators and pastors', 'error');
+      showToast(
+        'Export functionality is only available to administrators and pastors',
+        'error'
+      );
       return;
     }
-    
+
     try {
       generateDonationCSV(filteredAndSortedDonations, targetMemberName);
       showToast('CSV export downloaded successfully', 'success');
@@ -169,49 +178,67 @@ export const MemberDonationHistory: React.FC<MemberDonationHistoryProps> = ({
   }, [hasRole, showToast, filteredAndSortedDonations, targetMemberName]);
 
   // PDF statement generation
-  const handleGeneratePDFStatement = useCallback(async (taxYear: number) => {
-    if (!targetMemberId || !currentMember) {
-      showToast('Unable to generate statement - member information missing', 'error');
-      return;
-    }
-
-    try {
-      // Filter donations for the specific tax year
-      const yearDonations = donations.filter(d => 
-        new Date(d.donationDate).getFullYear() === taxYear
-      );
-
-      if (yearDonations.length === 0) {
-        showToast(`No donations found for ${taxYear}`, 'info');
+  const handleGeneratePDFStatement = useCallback(
+    async (taxYear: number) => {
+      if (!targetMemberId || !currentMember) {
+        showToast(
+          'Unable to generate statement - member information missing',
+          'error'
+        );
         return;
       }
 
-      const statementData: DonationStatementData = {
-        member: {
-          id: targetMemberId,
-          firstName: member?.firstName || currentMember.firstName,
-          lastName: member?.lastName || currentMember.lastName,
-          email: currentMember.email,
-          // Address would come from member profile if available
-        },
-        donations: yearDonations,
-        taxYear,
-        churchInfo,
-        statementNumber: `${taxYear}-${targetMemberId.slice(-6)}`,
-        generatedDate: new Date().toISOString()
-      };
+      try {
+        // Filter donations for the specific tax year
+        const yearDonations = donations.filter(
+          (d) => new Date(d.donationDate).getFullYear() === taxYear
+        );
 
-      await generateDonationStatement(statementData);
-      showToast(`${taxYear} donation statement generated successfully`, 'success');
-      
-      // Audit logging
-      console.log(`PDF statement generated for member: ${targetMemberId}, tax year: ${taxYear}, by user: ${user?.uid}`);
-      
-    } catch (error) {
-      showToast('Failed to generate donation statement', 'error');
-      console.error('PDF generation error:', error);
-    }
-  }, [targetMemberId, currentMember, member, donations, churchInfo, user?.uid, showToast]);
+        if (yearDonations.length === 0) {
+          showToast(`No donations found for ${taxYear}`, 'info');
+          return;
+        }
+
+        const statementData: DonationStatementData = {
+          member: {
+            id: targetMemberId,
+            firstName: member?.firstName || currentMember.firstName,
+            lastName: member?.lastName || currentMember.lastName,
+            email: currentMember.email,
+            // Address would come from member profile if available
+          },
+          donations: yearDonations,
+          taxYear,
+          churchInfo,
+          statementNumber: `${taxYear}-${targetMemberId.slice(-6)}`,
+          generatedDate: new Date().toISOString(),
+        };
+
+        await generateDonationStatement(statementData);
+        showToast(
+          `${taxYear} donation statement generated successfully`,
+          'success'
+        );
+
+        // Audit logging
+        console.log(
+          `PDF statement generated for member: ${targetMemberId}, tax year: ${taxYear}, by user: ${user?.uid}`
+        );
+      } catch (error) {
+        showToast('Failed to generate donation statement', 'error');
+        console.error('PDF generation error:', error);
+      }
+    },
+    [
+      targetMemberId,
+      currentMember,
+      member,
+      donations,
+      churchInfo,
+      user?.uid,
+      showToast,
+    ]
+  );
 
   // Authorization check
   if (!user || !currentMember) {
@@ -225,7 +252,11 @@ export const MemberDonationHistory: React.FC<MemberDonationHistoryProps> = ({
   // Loading state
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-12" role="status" aria-label="Loading donation history">
+      <div
+        className="flex justify-center items-center py-12"
+        role="status"
+        aria-label="Loading donation history"
+      >
         <LoadingSpinner />
         <span className="sr-only">Loading donation history...</span>
       </div>
@@ -236,7 +267,9 @@ export const MemberDonationHistory: React.FC<MemberDonationHistoryProps> = ({
   if (error) {
     return (
       <div className="text-center py-8" role="alert">
-        <p className="text-red-600 mb-4">Error loading donation history: {error}</p>
+        <p className="text-red-600 mb-4">
+          Error loading donation history: {error}
+        </p>
         <button
           onClick={retry}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
@@ -252,21 +285,31 @@ export const MemberDonationHistory: React.FC<MemberDonationHistoryProps> = ({
   if (donations.length === 0) {
     return (
       <div className="text-center py-12">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">No Donation History</h2>
-        <p className="text-gray-600">No donations found for {targetMemberName}.</p>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          No Donation History
+        </h2>
+        <p className="text-gray-600">
+          No donations found for {targetMemberName}.
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6" role="main" aria-label={`Donation history for ${targetMemberName}`}>
+    <div
+      className="space-y-6"
+      role="main"
+      aria-label={`Donation history for ${targetMemberName}`}
+    >
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Donation History</h1>
-          <p className="text-gray-600">Viewing donations for {targetMemberName}</p>
+          <p className="text-gray-600">
+            Viewing donations for {targetMemberName}
+          </p>
         </div>
-        
+
         {/* Export buttons - only for admin/pastor */}
         {(hasRole('admin') || hasRole('pastor')) && (
           <div className="flex flex-col sm:flex-row gap-2 mt-4 sm:mt-0">
@@ -297,37 +340,55 @@ export const MemberDonationHistory: React.FC<MemberDonationHistoryProps> = ({
 
       {/* Year-to-date summary */}
       <Card>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Year-to-Date Summary ({currentYear})</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Year-to-Date Summary ({currentYear})
+        </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <p className="text-sm text-gray-600">Total Donated</p>
-            <p className="text-2xl font-bold text-gray-900">{formatCurrency(summary.ytdAmount)}</p>
+            <p className="text-2xl font-bold text-gray-900">
+              {formatCurrency(summary.ytdAmount)}
+            </p>
           </div>
           <div>
             <p className="text-sm text-gray-600">Tax Deductible</p>
-            <p className="text-2xl font-bold text-green-600">{formatCurrency(summary.taxDeductibleAmount)}</p>
+            <p className="text-2xl font-bold text-green-600">
+              {formatCurrency(summary.taxDeductibleAmount)}
+            </p>
           </div>
           <div>
             <p className="text-sm text-gray-600">Donation Count</p>
-            <p className="text-2xl font-bold text-blue-600">{summary.ytdCount}</p>
+            <p className="text-2xl font-bold text-blue-600">
+              {summary.ytdCount}
+            </p>
           </div>
         </div>
       </Card>
 
       {/* Category breakdown */}
       <Card>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Category Breakdown</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Category Breakdown
+        </h3>
         <div className="space-y-2">
           {Object.entries(categoryTotals)
-            .sort(([,a], [,b]) => b - a)
+            .sort(([, a], [, b]) => b - a)
             .map(([category, total]) => {
-              const percentage = summary.ytdAmount > 0 ? ((total / summary.ytdAmount) * 100).toFixed(1) : '0.0';
+              const percentage =
+                summary.ytdAmount > 0
+                  ? ((total / summary.ytdAmount) * 100).toFixed(1)
+                  : '0.0';
               return (
-                <div key={category} className="flex justify-between items-center">
+                <div
+                  key={category}
+                  className="flex justify-between items-center"
+                >
                   <span className="text-gray-700">{category}</span>
                   <div className="text-right">
                     <span className="font-medium">{formatCurrency(total)}</span>
-                    <span className="text-sm text-gray-500 ml-2">({percentage}%)</span>
+                    <span className="text-sm text-gray-500 ml-2">
+                      ({percentage}%)
+                    </span>
                   </div>
                 </div>
               );
@@ -336,40 +397,53 @@ export const MemberDonationHistory: React.FC<MemberDonationHistoryProps> = ({
       </Card>
 
       {/* Filters */}
-      <DonationFilters
-        filters={filters}
-        onFiltersChange={updateFilters}
-      />
+      <DonationFilters filters={filters} onFiltersChange={updateFilters} />
 
       {/* Donation table */}
       <Card>
         <div className="overflow-x-auto">
-          <table 
-            className="min-w-full divide-y divide-gray-200" 
+          <table
+            className="min-w-full divide-y divide-gray-200"
             role="table"
             aria-label="Donation history table"
           >
             <thead className="bg-gray-50">
               <tr>
-                <th 
+                <th
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                  onClick={() => updateFilters({
-                    sortBy: 'donationDate',
-                    sortDirection: filters.sortBy === 'donationDate' && filters.sortDirection === 'desc' ? 'asc' : 'desc'
-                  })}
+                  onClick={() =>
+                    updateFilters({
+                      sortBy: 'donationDate',
+                      sortDirection:
+                        filters.sortBy === 'donationDate' &&
+                        filters.sortDirection === 'desc'
+                          ? 'asc'
+                          : 'desc',
+                    })
+                  }
                   aria-label="Sort by date"
                 >
-                  Date {filters.sortBy === 'donationDate' && (filters.sortDirection === 'desc' ? '↓' : '↑')}
+                  Date{' '}
+                  {filters.sortBy === 'donationDate' &&
+                    (filters.sortDirection === 'desc' ? '↓' : '↑')}
                 </th>
-                <th 
+                <th
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                  onClick={() => updateFilters({
-                    sortBy: 'amount',
-                    sortDirection: filters.sortBy === 'amount' && filters.sortDirection === 'desc' ? 'asc' : 'desc'
-                  })}
+                  onClick={() =>
+                    updateFilters({
+                      sortBy: 'amount',
+                      sortDirection:
+                        filters.sortBy === 'amount' &&
+                        filters.sortDirection === 'desc'
+                          ? 'asc'
+                          : 'desc',
+                    })
+                  }
                   aria-label="Sort by amount"
                 >
-                  Amount {filters.sortBy === 'amount' && (filters.sortDirection === 'desc' ? '↓' : '↑')}
+                  Amount{' '}
+                  {filters.sortBy === 'amount' &&
+                    (filters.sortDirection === 'desc' ? '↓' : '↑')}
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Category
@@ -421,8 +495,11 @@ export const MemberDonationHistory: React.FC<MemberDonationHistoryProps> = ({
           <div className="flex items-center justify-between px-6 py-3 border-t border-gray-200">
             <div className="text-sm text-gray-700">
               Showing {(filters.page - 1) * filters.pageSize + 1} to{' '}
-              {Math.min(filters.page * filters.pageSize, filteredAndSortedDonations.length)} of{' '}
-              {filteredAndSortedDonations.length} results
+              {Math.min(
+                filters.page * filters.pageSize,
+                filteredAndSortedDonations.length
+              )}{' '}
+              of {filteredAndSortedDonations.length} results
             </div>
             <div className="flex space-x-2">
               <button

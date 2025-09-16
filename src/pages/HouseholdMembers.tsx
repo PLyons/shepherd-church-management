@@ -13,7 +13,7 @@ export default function HouseholdMembers() {
   const navigate = useNavigate();
   const { member: currentUser } = useAuth();
   const { showToast } = useToast();
-  
+
   const [household, setHousehold] = useState<Household | null>(null);
   const [currentMembers, setCurrentMembers] = useState<Member[]>([]);
   const [availableMembers, setAvailableMembers] = useState<Member[]>([]);
@@ -37,21 +37,23 @@ export default function HouseholdMembers() {
       const [householdData, householdMembers, allMembers] = await Promise.all([
         householdsService.getById(id),
         householdsService.getMembers(id),
-        membersService.getAll()
+        membersService.getAll(),
       ]);
-      
+
       if (!householdData) {
         showToast('Household not found', 'error');
         navigate('/households');
         return;
       }
-      
+
       setHousehold(householdData);
       setCurrentMembers(householdMembers);
-      
+
       // Filter out members already in this household
-      const householdMemberIds = new Set(householdMembers.map(m => m.id));
-      const available = allMembers.filter(member => !householdMemberIds.has(member.id));
+      const householdMemberIds = new Set(householdMembers.map((m) => m.id));
+      const available = allMembers.filter(
+        (member) => !householdMemberIds.has(member.id)
+      );
       setAvailableMembers(available);
     } catch (error) {
       console.error('Error loading data:', error);
@@ -67,7 +69,10 @@ export default function HouseholdMembers() {
 
     try {
       await householdsService.addMember(household.id, member.id);
-      showToast(`${member.firstName} ${member.lastName} added to household`, 'success');
+      showToast(
+        `${member.firstName} ${member.lastName} added to household`,
+        'success'
+      );
       setShowAddMemberModal(false);
       loadData(); // Refresh data
     } catch (error) {
@@ -87,7 +92,10 @@ export default function HouseholdMembers() {
 
     try {
       await householdsService.removeMember(household.id, member.id);
-      showToast(`${member.firstName} ${member.lastName} removed from household`, 'success');
+      showToast(
+        `${member.firstName} ${member.lastName} removed from household`,
+        'success'
+      );
       loadData(); // Refresh data
     } catch (error) {
       console.error('Error removing member:', error);
@@ -100,7 +108,10 @@ export default function HouseholdMembers() {
 
     try {
       await householdsService.setPrimaryContact(household.id, member.id);
-      showToast(`${member.firstName} ${member.lastName} set as primary contact`, 'success');
+      showToast(
+        `${member.firstName} ${member.lastName} set as primary contact`,
+        'success'
+      );
       loadData(); // Refresh data
     } catch (error) {
       console.error('Error setting primary contact:', error);
@@ -108,9 +119,14 @@ export default function HouseholdMembers() {
     }
   };
 
-  const filteredAvailableMembers = availableMembers.filter(member =>
-    `${member.firstName} ${member.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    member.emails?.some(email => email.address.toLowerCase().includes(searchTerm.toLowerCase()))
+  const filteredAvailableMembers = availableMembers.filter(
+    (member) =>
+      `${member.firstName} ${member.lastName}`
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      member.emails?.some((email) =>
+        email.address.toLowerCase().includes(searchTerm.toLowerCase())
+      )
   );
 
   // Role-based access control
@@ -144,7 +160,9 @@ export default function HouseholdMembers() {
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900">Household Not Found</h2>
+          <h2 className="text-2xl font-bold text-gray-900">
+            Household Not Found
+          </h2>
           <p className="mt-2 text-gray-600">
             The household you're trying to manage doesn't exist.
           </p>
@@ -212,7 +230,8 @@ export default function HouseholdMembers() {
                 <div className="flex items-center space-x-4">
                   <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
                     <span className="text-gray-600 font-medium">
-                      {member.firstName[0]}{member.lastName[0]}
+                      {member.firstName[0]}
+                      {member.lastName[0]}
                     </span>
                   </div>
                   <div>
@@ -265,7 +284,9 @@ export default function HouseholdMembers() {
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium text-gray-900">Add Member to Household</h3>
+                <h3 className="text-lg font-medium text-gray-900">
+                  Add Member to Household
+                </h3>
                 <button
                   onClick={() => setShowAddMemberModal(false)}
                   className="text-gray-400 hover:text-gray-500"
@@ -274,7 +295,7 @@ export default function HouseholdMembers() {
                 </button>
               </div>
             </div>
-            
+
             <div className="p-6">
               {/* Search */}
               <div className="mb-4">
@@ -296,11 +317,13 @@ export default function HouseholdMembers() {
                   <div className="text-center py-8">
                     <Users className="mx-auto h-12 w-12 text-gray-400" />
                     <h3 className="mt-2 text-sm font-medium text-gray-900">
-                      {searchTerm ? 'No matching members' : 'No available members'}
+                      {searchTerm
+                        ? 'No matching members'
+                        : 'No available members'}
                     </h3>
                     <p className="mt-1 text-sm text-gray-500">
-                      {searchTerm 
-                        ? 'Try adjusting your search terms.' 
+                      {searchTerm
+                        ? 'Try adjusting your search terms.'
                         : 'All members are already assigned to households.'}
                     </p>
                   </div>
@@ -314,7 +337,8 @@ export default function HouseholdMembers() {
                         <div className="flex items-center space-x-3">
                           <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
                             <span className="text-gray-600 font-medium text-sm">
-                              {member.firstName[0]}{member.lastName[0]}
+                              {member.firstName[0]}
+                              {member.lastName[0]}
                             </span>
                           </div>
                           <div>
@@ -339,7 +363,7 @@ export default function HouseholdMembers() {
                 )}
               </div>
             </div>
-            
+
             <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
               <button
                 onClick={() => setShowAddMemberModal(false)}

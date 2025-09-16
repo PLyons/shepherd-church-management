@@ -5,7 +5,15 @@
 
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, LogOut, User, ChevronDown } from 'lucide-react';
+import {
+  Menu,
+  LogOut,
+  User,
+  ChevronDown,
+  DollarSign,
+  BarChart3,
+  Heart,
+} from 'lucide-react';
 import { useAuth } from '../../hooks/useUnifiedAuth';
 
 interface NavigationProps {
@@ -13,16 +21,39 @@ interface NavigationProps {
   userRole: 'admin' | 'pastor' | 'member';
 }
 
-const navigationItems = [
+interface NavigationItem {
+  name: string;
+  href: string;
+  roles: ('admin' | 'pastor' | 'member')[];
+  submenu?: { name: string; href: string }[];
+}
+
+const navigationItems: NavigationItem[] = [
   {
     name: 'Dashboard',
     href: '/dashboard',
     roles: ['admin', 'pastor', 'member'],
   },
   { name: 'Members', href: '/members', roles: ['admin', 'pastor', 'member'] },
-  { name: 'Households', href: '/households', roles: ['admin', 'pastor', 'member'] },
+  {
+    name: 'Households',
+    href: '/households',
+    roles: ['admin', 'pastor', 'member'],
+  },
   { name: 'Events', href: '/events', roles: ['admin', 'pastor', 'member'] },
   { name: 'Calendar', href: '/calendar', roles: ['admin', 'pastor', 'member'] },
+  {
+    name: 'Donations',
+    href: '/donations',
+    roles: ['admin'],
+    submenu: [
+      { name: 'Quick Donate', href: '/donations/record' },
+      { name: 'Financial Reports', href: '/donations' },
+      { name: 'Donation Categories', href: '/donations/categories' },
+    ],
+  },
+  { name: 'Giving Overview', href: '/giving-overview', roles: ['pastor'] },
+  { name: 'My Giving', href: '/donations/my-giving', roles: ['member'] },
   {
     name: 'Registration',
     href: '/admin/registration-tokens',

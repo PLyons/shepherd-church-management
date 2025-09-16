@@ -7,13 +7,13 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { DonationStatementsService } from '../../services/firebase/donationStatements.service';
 import { useAuth } from '../../contexts/FirebaseAuthContext';
 import { useToast } from '../../contexts/ToastContext';
-import { 
-  DonationStatement, 
+import {
+  DonationStatement,
   BulkStatementJob,
   StatementTemplate,
   StatementStatus,
   StatementFormat,
-  StatementDeliveryMethod
+  StatementDeliveryMethod,
 } from '../../types/donations';
 import { formatCurrency } from '../../utils/currency-utils';
 
@@ -21,18 +21,23 @@ interface DonationStatementsProps {
   className?: string;
 }
 
-export const DonationStatements: React.FC<DonationStatementsProps> = ({ className = '' }) => {
+export const DonationStatements: React.FC<DonationStatementsProps> = ({
+  className = '',
+}) => {
   const { user, member } = useAuth();
   const { showToast } = useToast();
-  
+
   // Service instance
   const [statementsService] = useState(() => new DonationStatementsService());
-  
+
   // Role checking with fallback for test compatibility
-  const hasRole = useCallback((role: string): boolean => {
-    return member?.role === role || (user as any)?.role === role;
-  }, [member?.role, user]);
-  
+  const hasRole = useCallback(
+    (role: string): boolean => {
+      return member?.role === role || (user as any)?.role === role;
+    },
+    [member?.role, user]
+  );
+
   // Authorization check
   const isAuthorized = useMemo(() => {
     if (!user) return false;
@@ -41,18 +46,23 @@ export const DonationStatements: React.FC<DonationStatementsProps> = ({ classNam
   }, [user, member?.role]);
 
   // State management
-  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  const [selectedYear, setSelectedYear] = useState<number>(
+    new Date().getFullYear()
+  );
   const [statements, setStatements] = useState<DonationStatement[]>([]);
   const [bulkJobs, setBulkJobs] = useState<BulkStatementJob[]>([]);
   const [templates, setTemplates] = useState<StatementTemplate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isBulkGenerating, setIsBulkGenerating] = useState(false);
-  const [activeTab, setActiveTab] = useState<'statements' | 'bulk' | 'templates'>('statements');
+  const [activeTab, setActiveTab] = useState<
+    'statements' | 'bulk' | 'templates'
+  >('statements');
 
   // Form state
   const [selectedMemberId, setSelectedMemberId] = useState<string>('');
-  const [bulkDeliveryMethod, setBulkDeliveryMethod] = useState<StatementDeliveryMethod>('email');
+  const [bulkDeliveryMethod, setBulkDeliveryMethod] =
+    useState<StatementDeliveryMethod>('email');
 
   // Generate year options for the dropdown (last 10 years)
   const yearOptions = useMemo(() => {
@@ -69,7 +79,7 @@ export const DonationStatements: React.FC<DonationStatementsProps> = ({ classNam
   const loadStatements = async () => {
     try {
       setIsLoading(true);
-      
+
       // For now, we'll create mock data since the service doesn't have a getByYear method
       // In a real implementation, you'd add this method to the service
       const mockStatements: DonationStatement[] = [
@@ -82,7 +92,7 @@ export const DonationStatements: React.FC<DonationStatementsProps> = ({ classNam
             line1: '123 Main St',
             city: 'Anytown',
             state: 'CA',
-            postalCode: '12345'
+            postalCode: '12345',
           },
           statementType: 'annual_tax_statement',
           taxYear: selectedYear,
@@ -102,10 +112,10 @@ export const DonationStatements: React.FC<DonationStatementsProps> = ({ classNam
           format: 'pdf',
           deliveryMethod: 'email',
           createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        }
+          updatedAt: new Date().toISOString(),
+        },
       ];
-      
+
       setStatements(mockStatements);
     } catch (error) {
       console.error('Error loading statements:', error);
@@ -123,14 +133,14 @@ export const DonationStatements: React.FC<DonationStatementsProps> = ({ classNam
 
     try {
       setIsGenerating(true);
-      
+
       const statement = await statementsService.generateAnnualStatement(
         selectedMemberId,
         selectedYear,
         user?.uid
       );
-      
-      setStatements(prev => [statement, ...prev]);
+
+      setStatements((prev) => [statement, ...prev]);
       showToast('Statement generated successfully', 'success');
       setSelectedMemberId('');
     } catch (error) {
@@ -147,13 +157,13 @@ export const DonationStatements: React.FC<DonationStatementsProps> = ({ classNam
   const handleBulkGeneration = async () => {
     try {
       setIsBulkGenerating(true);
-      
+
       const job = await statementsService.startBulkStatementJob(
         selectedYear,
         user?.uid || ''
       );
-      
-      setBulkJobs(prev => [job, ...prev]);
+
+      setBulkJobs((prev) => [job, ...prev]);
       showToast('Bulk generation job started', 'success');
     } catch (error) {
       console.error('Error starting bulk generation:', error);
@@ -180,13 +190,20 @@ export const DonationStatements: React.FC<DonationStatementsProps> = ({ classNam
 
   const getStatusBadgeColor = (status: StatementStatus): string => {
     switch (status) {
-      case 'generated': return 'bg-green-100 text-green-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'generating': return 'bg-blue-100 text-blue-800';
-      case 'sent': return 'bg-purple-100 text-purple-800';
-      case 'failed': return 'bg-red-100 text-red-800';
-      case 'cancelled': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'generated':
+        return 'bg-green-100 text-green-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'generating':
+        return 'bg-blue-100 text-blue-800';
+      case 'sent':
+        return 'bg-purple-100 text-purple-800';
+      case 'failed':
+        return 'bg-red-100 text-red-800';
+      case 'cancelled':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -195,10 +212,12 @@ export const DonationStatements: React.FC<DonationStatementsProps> = ({ classNam
     return (
       <div className="p-6 text-center">
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <h3 className="text-lg font-medium text-red-800 mb-2">Access Denied</h3>
+          <h3 className="text-lg font-medium text-red-800 mb-2">
+            Access Denied
+          </h3>
           <p className="text-red-600">
-            You don't have permission to access donation statements. 
-            Admin or Pastor role required.
+            You don't have permission to access donation statements. Admin or
+            Pastor role required.
           </p>
         </div>
       </div>
@@ -211,15 +230,20 @@ export const DonationStatements: React.FC<DonationStatementsProps> = ({ classNam
       <div className="bg-white shadow rounded-lg p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Donation Statements</h2>
+            <h2 className="text-2xl font-bold text-gray-900">
+              Donation Statements
+            </h2>
             <p className="mt-1 text-sm text-gray-500">
               Generate and manage annual tax statements and donation receipts
             </p>
           </div>
-          
+
           {/* Year Selector */}
           <div className="mt-4 sm:mt-0">
-            <label htmlFor="year-select" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="year-select"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Tax Year
             </label>
             <select
@@ -228,8 +252,10 @@ export const DonationStatements: React.FC<DonationStatementsProps> = ({ classNam
               onChange={(e) => setSelectedYear(parseInt(e.target.value))}
               className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 rounded-md"
             >
-              {yearOptions.map(year => (
-                <option key={year} value={year}>{year}</option>
+              {yearOptions.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
               ))}
             </select>
           </div>
@@ -241,9 +267,13 @@ export const DonationStatements: React.FC<DonationStatementsProps> = ({ classNam
         <div className="border-b border-gray-200">
           <nav className="-mb-px flex space-x-8 px-6">
             {[
-              { key: 'statements', label: 'Statements', count: statements.length },
+              {
+                key: 'statements',
+                label: 'Statements',
+                count: statements.length,
+              },
               { key: 'bulk', label: 'Bulk Processing', count: bulkJobs.length },
-              { key: 'templates', label: 'Templates', count: templates.length }
+              { key: 'templates', label: 'Templates', count: templates.length },
             ].map((tab) => (
               <button
                 key={tab.key}
@@ -271,10 +301,15 @@ export const DonationStatements: React.FC<DonationStatementsProps> = ({ classNam
             <div className="space-y-6">
               {/* Individual Statement Generation */}
               <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Generate Individual Statement</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  Generate Individual Statement
+                </h3>
                 <div className="flex flex-col sm:flex-row sm:items-end space-y-4 sm:space-y-0 sm:space-x-4">
                   <div className="flex-1">
-                    <label htmlFor="member-select" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label
+                      htmlFor="member-select"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
                       Select Member
                     </label>
                     <input
@@ -293,9 +328,25 @@ export const DonationStatements: React.FC<DonationStatementsProps> = ({ classNam
                   >
                     {isGenerating ? (
                       <>
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg
+                          className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
                         </svg>
                         Generating...
                       </>
@@ -309,15 +360,19 @@ export const DonationStatements: React.FC<DonationStatementsProps> = ({ classNam
               {/* Statements Table */}
               <div className="bg-white overflow-hidden shadow rounded-lg">
                 <div className="px-4 py-5 sm:p-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Generated Statements</h3>
-                  
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Generated Statements
+                  </h3>
+
                   {isLoading ? (
                     <div className="flex justify-center py-8">
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                     </div>
                   ) : statements.length === 0 ? (
                     <div className="text-center py-8">
-                      <p className="text-gray-500">No statements generated for {selectedYear}</p>
+                      <p className="text-gray-500">
+                        No statements generated for {selectedYear}
+                      </p>
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
@@ -364,22 +419,30 @@ export const DonationStatements: React.FC<DonationStatementsProps> = ({ classNam
                                 {statement.donationCount}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeColor(statement.status)}`}>
+                                <span
+                                  className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadgeColor(statement.status)}`}
+                                >
                                   {statement.status}
                                 </span>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                {new Date(statement.generatedAt).toLocaleDateString()}
+                                {new Date(
+                                  statement.generatedAt
+                                ).toLocaleDateString()}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                                 <button
-                                  onClick={() => handleDownloadStatement(statement)}
+                                  onClick={() =>
+                                    handleDownloadStatement(statement)
+                                  }
                                   className="text-blue-600 hover:text-blue-900"
                                 >
                                   Download
                                 </button>
                                 <button
-                                  onClick={() => handleEmailStatement(statement)}
+                                  onClick={() =>
+                                    handleEmailStatement(statement)
+                                  }
                                   className="text-green-600 hover:text-green-900"
                                 >
                                   Email
@@ -400,21 +463,32 @@ export const DonationStatements: React.FC<DonationStatementsProps> = ({ classNam
             <div className="space-y-6">
               {/* Bulk Generation Controls */}
               <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Bulk Statement Generation</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  Bulk Statement Generation
+                </h3>
                 <div className="flex flex-col sm:flex-row sm:items-end space-y-4 sm:space-y-0 sm:space-x-4">
                   <div className="flex-1">
-                    <label htmlFor="delivery-method" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label
+                      htmlFor="delivery-method"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
                       Delivery Method
                     </label>
                     <select
                       id="delivery-method"
                       value={bulkDeliveryMethod}
-                      onChange={(e) => setBulkDeliveryMethod(e.target.value as StatementDeliveryMethod)}
+                      onChange={(e) =>
+                        setBulkDeliveryMethod(
+                          e.target.value as StatementDeliveryMethod
+                        )
+                      }
                       className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
                     >
                       <option value="email">Email</option>
                       <option value="download">Download</option>
-                      <option value="email_with_download">Email + Download</option>
+                      <option value="email_with_download">
+                        Email + Download
+                      </option>
                     </select>
                   </div>
                   <button
@@ -424,9 +498,25 @@ export const DonationStatements: React.FC<DonationStatementsProps> = ({ classNam
                   >
                     {isBulkGenerating ? (
                       <>
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg
+                          className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
                         </svg>
                         Starting...
                       </>
@@ -440,8 +530,10 @@ export const DonationStatements: React.FC<DonationStatementsProps> = ({ classNam
               {/* Bulk Jobs Table */}
               <div className="bg-white overflow-hidden shadow rounded-lg">
                 <div className="px-4 py-5 sm:p-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Bulk Processing Jobs</h3>
-                  
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Bulk Processing Jobs
+                  </h3>
+
                   {bulkJobs.length === 0 ? (
                     <div className="text-center py-8">
                       <p className="text-gray-500">No bulk processing jobs</p>
@@ -451,37 +543,58 @@ export const DonationStatements: React.FC<DonationStatementsProps> = ({ classNam
                       {bulkJobs.map((job) => (
                         <div key={job.id} className="border rounded-lg p-4">
                           <div className="flex items-center justify-between mb-2">
-                            <h4 className="text-lg font-medium text-gray-900">{job.jobName}</h4>
-                            <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                              job.status === 'completed' ? 'bg-green-100 text-green-800' :
-                              job.status === 'running' ? 'bg-blue-100 text-blue-800' :
-                              job.status === 'failed' ? 'bg-red-100 text-red-800' :
-                              'bg-yellow-100 text-yellow-800'
-                            }`}>
+                            <h4 className="text-lg font-medium text-gray-900">
+                              {job.jobName}
+                            </h4>
+                            <span
+                              className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                                job.status === 'completed'
+                                  ? 'bg-green-100 text-green-800'
+                                  : job.status === 'running'
+                                    ? 'bg-blue-100 text-blue-800'
+                                    : job.status === 'failed'
+                                      ? 'bg-red-100 text-red-800'
+                                      : 'bg-yellow-100 text-yellow-800'
+                              }`}
+                            >
                               {job.status}
                             </span>
                           </div>
-                          
+
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                             <div>
-                              <span className="font-medium text-gray-500">Progress:</span>
-                              <span className="ml-2">{job.processedMembers} / {job.totalMembers}</span>
+                              <span className="font-medium text-gray-500">
+                                Progress:
+                              </span>
+                              <span className="ml-2">
+                                {job.processedMembers} / {job.totalMembers}
+                              </span>
                             </div>
                             <div>
-                              <span className="font-medium text-gray-500">Successful:</span>
-                              <span className="ml-2 text-green-600">{job.successfulStatements}</span>
+                              <span className="font-medium text-gray-500">
+                                Successful:
+                              </span>
+                              <span className="ml-2 text-green-600">
+                                {job.successfulStatements}
+                              </span>
                             </div>
                             <div>
-                              <span className="font-medium text-gray-500">Failed:</span>
-                              <span className="ml-2 text-red-600">{job.failedStatements}</span>
+                              <span className="font-medium text-gray-500">
+                                Failed:
+                              </span>
+                              <span className="ml-2 text-red-600">
+                                {job.failedStatements}
+                              </span>
                             </div>
                           </div>
-                          
+
                           <div className="mt-3">
                             <div className="bg-gray-200 rounded-full h-2">
-                              <div 
+                              <div
                                 className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                                style={{ width: `${(job.processedMembers / job.totalMembers) * 100}%` }}
+                                style={{
+                                  width: `${(job.processedMembers / job.totalMembers) * 100}%`,
+                                }}
                               ></div>
                             </div>
                           </div>
@@ -497,15 +610,20 @@ export const DonationStatements: React.FC<DonationStatementsProps> = ({ classNam
           {activeTab === 'templates' && (
             <div className="space-y-6">
               <div className="bg-gray-50 rounded-lg p-4">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Statement Templates</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  Statement Templates
+                </h3>
                 <p className="text-sm text-gray-600 mb-4">
                   Customize the appearance and content of donation statements.
                 </p>
-                
+
                 <div className="text-center py-8">
-                  <p className="text-gray-500">Template management coming soon</p>
+                  <p className="text-gray-500">
+                    Template management coming soon
+                  </p>
                   <p className="text-sm text-gray-400 mt-2">
-                    This feature will allow customization of statement layouts, church branding, and content.
+                    This feature will allow customization of statement layouts,
+                    church branding, and content.
                   </p>
                 </div>
               </div>

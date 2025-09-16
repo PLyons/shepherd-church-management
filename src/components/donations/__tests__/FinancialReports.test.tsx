@@ -8,16 +8,19 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import { FinancialReports } from '../FinancialReports';
-import { donationsService, donationCategoriesService } from '../../../services/firebase';
+import {
+  donationsService,
+  donationCategoriesService,
+} from '../../../services/firebase';
 import { useAuth } from '../../../contexts/FirebaseAuthContext';
 import { useToast } from '../../../contexts/ToastContext';
-import { 
-  Donation, 
-  DonationMethod, 
-  DonationStatus, 
-  Form990LineItem, 
+import {
+  Donation,
+  DonationMethod,
+  DonationStatus,
+  Form990LineItem,
   DonationCategory,
-  FinancialSummary 
+  FinancialSummary,
 } from '../../../types/donations';
 
 // Mock the services and contexts
@@ -46,17 +49,29 @@ vi.mock('react-router-dom', async () => {
 // Mock Chart.js components
 vi.mock('react-chartjs-2', () => ({
   Line: ({ data, options }: any) => (
-    <div data-testid="line-chart" data-chart-data={JSON.stringify(data)} data-chart-options={JSON.stringify(options)}>
+    <div
+      data-testid="line-chart"
+      data-chart-data={JSON.stringify(data)}
+      data-chart-options={JSON.stringify(options)}
+    >
       Line Chart
     </div>
   ),
   Bar: ({ data, options }: any) => (
-    <div data-testid="bar-chart" data-chart-data={JSON.stringify(data)} data-chart-options={JSON.stringify(options)}>
+    <div
+      data-testid="bar-chart"
+      data-chart-data={JSON.stringify(data)}
+      data-chart-options={JSON.stringify(options)}
+    >
       Bar Chart
     </div>
   ),
   Doughnut: ({ data, options }: any) => (
-    <div data-testid="doughnut-chart" data-chart-data={JSON.stringify(data)} data-chart-options={JSON.stringify(options)}>
+    <div
+      data-testid="doughnut-chart"
+      data-chart-data={JSON.stringify(data)}
+      data-chart-options={JSON.stringify(options)}
+    >
       Doughnut Chart
     </div>
   ),
@@ -153,7 +168,7 @@ describe('FinancialReports', () => {
       totalAmount: 20000,
       donationCount: 25,
       lastDonationDate: '2025-01-05',
-      averageDonation: 800.00,
+      averageDonation: 800.0,
       includeInReports: true,
       reportingCategory: 'Programs',
       displayOrder: 3,
@@ -168,7 +183,7 @@ describe('FinancialReports', () => {
       id: 'donation-1',
       memberId: 'member-1',
       memberName: 'John Smith',
-      amount: 500.00,
+      amount: 500.0,
       donationDate: '2025-01-15',
       method: 'check' as DonationMethod,
       categoryId: 'category-1',
@@ -192,7 +207,7 @@ describe('FinancialReports', () => {
       id: 'donation-2',
       memberId: 'member-2',
       memberName: 'Jane Doe',
-      amount: 1000.00,
+      amount: 1000.0,
       donationDate: '2025-01-10',
       method: 'online' as DonationMethod,
       categoryId: 'category-2',
@@ -216,7 +231,7 @@ describe('FinancialReports', () => {
       id: 'donation-3',
       memberId: 'member-3',
       memberName: 'Bob Johnson',
-      amount: 250.00,
+      amount: 250.0,
       donationDate: '2025-01-05',
       method: 'cash' as DonationMethod,
       categoryId: 'category-1',
@@ -236,7 +251,7 @@ describe('FinancialReports', () => {
     },
     {
       id: 'donation-4',
-      amount: 750.00,
+      amount: 750.0,
       donationDate: '2024-12-25',
       method: 'credit_card' as DonationMethod,
       categoryId: 'category-3',
@@ -259,17 +274,17 @@ describe('FinancialReports', () => {
   ];
 
   const mockFinancialSummary: FinancialSummary = {
-    totalDonations: 2500.00,
+    totalDonations: 2500.0,
     donationCount: 4,
-    averageDonation: 625.00,
+    averageDonation: 625.0,
     periodStart: '2024-01-01',
     periodEnd: '2025-01-15',
-    
+
     byMethod: {
-      check: { amount: 500.00, count: 1, percentage: 20.00 },
-      online: { amount: 1000.00, count: 1, percentage: 40.00 },
-      cash: { amount: 250.00, count: 1, percentage: 10.00 },
-      credit_card: { amount: 750.00, count: 1, percentage: 30.00 },
+      check: { amount: 500.0, count: 1, percentage: 20.0 },
+      online: { amount: 1000.0, count: 1, percentage: 40.0 },
+      cash: { amount: 250.0, count: 1, percentage: 10.0 },
+      credit_card: { amount: 750.0, count: 1, percentage: 30.0 },
       debit_card: { amount: 0, count: 0, percentage: 0 },
       bank_transfer: { amount: 0, count: 0, percentage: 0 },
       stock: { amount: 0, count: 0, percentage: 0 },
@@ -277,33 +292,37 @@ describe('FinancialReports', () => {
       in_kind: { amount: 0, count: 0, percentage: 0 },
       other: { amount: 0, count: 0, percentage: 0 },
     },
-    
+
     byCategory: {
       'category-1': {
         categoryName: 'Tithe',
-        amount: 750.00,
+        amount: 750.0,
         count: 2,
-        percentage: 30.00,
-        goalProgress: 50.00,
+        percentage: 30.0,
+        goalProgress: 50.0,
       },
       'category-2': {
         categoryName: 'Building Fund',
-        amount: 1000.00,
+        amount: 1000.0,
         count: 1,
-        percentage: 40.00,
-        goalProgress: 75.00,
+        percentage: 40.0,
+        goalProgress: 75.0,
       },
       'category-3': {
         categoryName: 'Special Missions',
-        amount: 750.00,
+        amount: 750.0,
         count: 1,
-        percentage: 30.00,
+        percentage: 30.0,
       },
     },
-    
+
     form990Breakdown: {
-      '1a_cash_contributions': { amount: 1750.00, count: 3, percentage: 70.00 },
-      '2_program_service_revenue': { amount: 750.00, count: 1, percentage: 30.00 },
+      '1a_cash_contributions': { amount: 1750.0, count: 3, percentage: 70.0 },
+      '2_program_service_revenue': {
+        amount: 750.0,
+        count: 1,
+        percentage: 30.0,
+      },
       '1b_noncash_contributions': { amount: 0, count: 0, percentage: 0 },
       '1c_contributions_reported_990': { amount: 0, count: 0, percentage: 0 },
       '1d_related_organizations': { amount: 0, count: 0, percentage: 0 },
@@ -311,33 +330,39 @@ describe('FinancialReports', () => {
       '1f_other_contributions': { amount: 0, count: 0, percentage: 0 },
       '3_investment_income': { amount: 0, count: 0, percentage: 0 },
       '4_other_revenue': { amount: 0, count: 0, percentage: 0 },
-      'not_applicable': { amount: 0, count: 0, percentage: 0 },
+      not_applicable: { amount: 0, count: 0, percentage: 0 },
     },
-    
+
     topDonorRanges: [
-      { range: '$1000-$2499', count: 1, totalAmount: 1000.00 },
-      { range: '$500-$999', count: 1, totalAmount: 500.00 },
-      { range: '$250-$499', count: 1, totalAmount: 250.00 },
+      { range: '$1000-$2499', count: 1, totalAmount: 1000.0 },
+      { range: '$500-$999', count: 1, totalAmount: 500.0 },
+      { range: '$250-$499', count: 1, totalAmount: 250.0 },
       { range: '$100-$249', count: 0, totalAmount: 0 },
     ],
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     mockUseAuth.mockReturnValue({
       user: mockAdminUser,
       isLoading: false,
     });
-    
+
     mockUseToast.mockReturnValue({
       showToast: mockShowToast,
     });
 
     mockDonationsService.getAllDonations.mockResolvedValue(mockDonations);
-    mockDonationsService.getDonationsByDateRange.mockResolvedValue(mockDonations);
-    mockDonationsService.getFinancialSummary.mockResolvedValue(mockFinancialSummary);
-    mockDonationCategoriesService.getCategories.mockResolvedValue(mockCategories);
+    mockDonationsService.getDonationsByDateRange.mockResolvedValue(
+      mockDonations
+    );
+    mockDonationsService.getFinancialSummary.mockResolvedValue(
+      mockFinancialSummary
+    );
+    mockDonationCategoriesService.getCategories.mockResolvedValue(
+      mockCategories
+    );
   });
 
   describe('Component Rendering Tests', () => {
@@ -348,7 +373,9 @@ describe('FinancialReports', () => {
         </TestWrapper>
       );
 
-      expect(screen.getByTestId('financial-reports-dashboard')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('financial-reports-dashboard')
+      ).toBeInTheDocument();
     });
 
     it('should show dashboard title and description', () => {
@@ -358,8 +385,14 @@ describe('FinancialReports', () => {
         </TestWrapper>
       );
 
-      expect(screen.getByText('Financial Reports Dashboard')).toBeInTheDocument();
-      expect(screen.getByText('Comprehensive donation tracking and financial analytics')).toBeInTheDocument();
+      expect(
+        screen.getByText('Financial Reports Dashboard')
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'Comprehensive donation tracking and financial analytics'
+        )
+      ).toBeInTheDocument();
     });
 
     it('should render KPI cards with correct data', async () => {
@@ -394,15 +427,19 @@ describe('FinancialReports', () => {
     });
 
     it('should show loading states properly', () => {
-      mockDonationsService.getFinancialSummary.mockImplementation(() => new Promise(() => {}));
-      
+      mockDonationsService.getFinancialSummary.mockImplementation(
+        () => new Promise(() => {})
+      );
+
       render(
         <TestWrapper>
           <FinancialReports />
         </TestWrapper>
       );
 
-      expect(screen.getByTestId('loading-spinner') || screen.getByRole('status')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('loading-spinner') || screen.getByRole('status')
+      ).toBeInTheDocument();
       expect(screen.getByText('Loading financial data...')).toBeInTheDocument();
     });
 
@@ -422,14 +459,20 @@ describe('FinancialReports', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('No financial data available')).toBeInTheDocument();
-        expect(screen.getByText('No donations found for the selected period.')).toBeInTheDocument();
+        expect(
+          screen.getByText('No financial data available')
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText('No donations found for the selected period.')
+        ).toBeInTheDocument();
       });
     });
 
     it('should display error states appropriately', async () => {
-      mockDonationsService.getFinancialSummary.mockRejectedValueOnce(new Error('Network error'));
-      
+      mockDonationsService.getFinancialSummary.mockRejectedValueOnce(
+        new Error('Network error')
+      );
+
       render(
         <TestWrapper>
           <FinancialReports />
@@ -437,9 +480,17 @@ describe('FinancialReports', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Error loading financial data')).toBeInTheDocument();
-        expect(screen.getByText('Failed to load financial reports. Please try again.')).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
+        expect(
+          screen.getByText('Error loading financial data')
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText(
+            'Failed to load financial reports. Please try again.'
+          )
+        ).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /retry/i })
+        ).toBeInTheDocument();
       });
     });
 
@@ -451,8 +502,12 @@ describe('FinancialReports', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /export report/i })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /download csv/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /export report/i })
+        ).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /download csv/i })
+        ).toBeInTheDocument();
       });
     });
 
@@ -469,8 +524,12 @@ describe('FinancialReports', () => {
       );
 
       await waitFor(() => {
-        expect(screen.queryByRole('button', { name: /export individual donations/i })).not.toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /export summary/i })).toBeInTheDocument();
+        expect(
+          screen.queryByRole('button', { name: /export individual donations/i })
+        ).not.toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /export summary/i })
+        ).toBeInTheDocument();
       });
     });
 
@@ -526,7 +585,9 @@ describe('FinancialReports', () => {
       await waitFor(() => {
         const donorsCard = screen.getByTestId('unique-donors-kpi');
         expect(within(donorsCard).getByText('3')).toBeInTheDocument(); // 3 unique members + 1 anonymous
-        expect(within(donorsCard).getByText('Unique Donors')).toBeInTheDocument();
+        expect(
+          within(donorsCard).getByText('Unique Donors')
+        ).toBeInTheDocument();
       });
     });
 
@@ -552,7 +613,9 @@ describe('FinancialReports', () => {
 
       await waitFor(() => {
         const growthIndicator = screen.getByTestId('growth-indicator');
-        expect(within(growthIndicator).getByText(/growth/i)).toBeInTheDocument();
+        expect(
+          within(growthIndicator).getByText(/growth/i)
+        ).toBeInTheDocument();
       });
     });
 
@@ -571,21 +634,21 @@ describe('FinancialReports', () => {
 
     it('should handle edge cases (no data, single donation)', async () => {
       mockDonationsService.getFinancialSummary.mockResolvedValueOnce({
-        totalDonations: 100.00,
+        totalDonations: 100.0,
         donationCount: 1,
-        averageDonation: 100.00,
+        averageDonation: 100.0,
         periodStart: '2025-01-01',
         periodEnd: '2025-01-15',
         byCategory: {
           'category-1': {
             categoryName: 'Tithe',
-            amount: 100.00,
+            amount: 100.0,
             count: 1,
-            percentage: 100.00,
+            percentage: 100.0,
           },
         },
         byMethod: {
-          cash: { amount: 100.00, count: 1, percentage: 100.00 },
+          cash: { amount: 100.0, count: 1, percentage: 100.0 },
           check: { amount: 0, count: 0, percentage: 0 },
           online: { amount: 0, count: 0, percentage: 0 },
           credit_card: { amount: 0, count: 0, percentage: 0 },
@@ -597,20 +660,26 @@ describe('FinancialReports', () => {
           other: { amount: 0, count: 0, percentage: 0 },
         },
         form990Breakdown: {
-          '1a_cash_contributions': { amount: 100.00, count: 1, percentage: 100.00 },
+          '1a_cash_contributions': {
+            amount: 100.0,
+            count: 1,
+            percentage: 100.0,
+          },
           '1b_noncash_contributions': { amount: 0, count: 0, percentage: 0 },
-          '1c_contributions_reported_990': { amount: 0, count: 0, percentage: 0 },
+          '1c_contributions_reported_990': {
+            amount: 0,
+            count: 0,
+            percentage: 0,
+          },
           '1d_related_organizations': { amount: 0, count: 0, percentage: 0 },
           '1e_government_grants': { amount: 0, count: 0, percentage: 0 },
           '1f_other_contributions': { amount: 0, count: 0, percentage: 0 },
           '2_program_service_revenue': { amount: 0, count: 0, percentage: 0 },
           '3_investment_income': { amount: 0, count: 0, percentage: 0 },
           '4_other_revenue': { amount: 0, count: 0, percentage: 0 },
-          'not_applicable': { amount: 0, count: 0, percentage: 0 },
+          not_applicable: { amount: 0, count: 0, percentage: 0 },
         },
-        topDonorRanges: [
-          { range: '$100-$249', count: 1, totalAmount: 100.00 },
-        ],
+        topDonorRanges: [{ range: '$100-$249', count: 1, totalAmount: 100.0 }],
       });
 
       render(
@@ -650,8 +719,12 @@ describe('FinancialReports', () => {
 
       await waitFor(() => {
         const categoryBreakdown = screen.getByTestId('category-breakdown');
-        expect(within(categoryBreakdown).getByText('40.0%')).toBeInTheDocument(); // Building Fund
-        expect(within(categoryBreakdown).getByText('30.0%')).toBeInTheDocument(); // Tithe and Special Missions
+        expect(
+          within(categoryBreakdown).getByText('40.0%')
+        ).toBeInTheDocument(); // Building Fund
+        expect(
+          within(categoryBreakdown).getByText('30.0%')
+        ).toBeInTheDocument(); // Tithe and Special Missions
       });
     });
   });
@@ -666,11 +739,15 @@ describe('FinancialReports', () => {
 
       await waitFor(() => {
         const lineChart = screen.getByTestId('line-chart');
-        const chartData = JSON.parse(lineChart.getAttribute('data-chart-data') || '{}');
-        
+        const chartData = JSON.parse(
+          lineChart.getAttribute('data-chart-data') || '{}'
+        );
+
         expect(chartData.labels).toContain('January 2025');
         expect(chartData.labels).toContain('December 2024');
-        expect(chartData.datasets[0].data).toHaveLength(chartData.labels.length);
+        expect(chartData.datasets[0].data).toHaveLength(
+          chartData.labels.length
+        );
       });
     });
 
@@ -683,8 +760,10 @@ describe('FinancialReports', () => {
 
       await waitFor(() => {
         const doughnutChart = screen.getByTestId('doughnut-chart');
-        const chartData = JSON.parse(doughnutChart.getAttribute('data-chart-data') || '{}');
-        
+        const chartData = JSON.parse(
+          doughnutChart.getAttribute('data-chart-data') || '{}'
+        );
+
         expect(chartData.labels).toContain('Tithe');
         expect(chartData.labels).toContain('Building Fund');
         expect(chartData.labels).toContain('Special Missions');
@@ -701,8 +780,10 @@ describe('FinancialReports', () => {
 
       await waitFor(() => {
         const barChart = screen.getByTestId('bar-chart');
-        const chartData = JSON.parse(barChart.getAttribute('data-chart-data') || '{}');
-        
+        const chartData = JSON.parse(
+          barChart.getAttribute('data-chart-data') || '{}'
+        );
+
         expect(chartData).toHaveProperty('labels');
         expect(chartData).toHaveProperty('datasets');
         expect(chartData.datasets[0]).toHaveProperty('data');
@@ -716,14 +797,16 @@ describe('FinancialReports', () => {
         byCategory: {
           'category-1': {
             categoryName: 'Tithe',
-            amount: 500.00,
+            amount: 500.0,
             count: 1,
-            percentage: 100.00,
+            percentage: 100.0,
           },
         },
       };
 
-      mockDonationsService.getFinancialSummary.mockResolvedValueOnce(incompleteData);
+      mockDonationsService.getFinancialSummary.mockResolvedValueOnce(
+        incompleteData
+      );
 
       render(
         <TestWrapper>
@@ -733,8 +816,10 @@ describe('FinancialReports', () => {
 
       await waitFor(() => {
         const doughnutChart = screen.getByTestId('doughnut-chart');
-        const chartData = JSON.parse(doughnutChart.getAttribute('data-chart-data') || '{}');
-        
+        const chartData = JSON.parse(
+          doughnutChart.getAttribute('data-chart-data') || '{}'
+        );
+
         expect(chartData.labels).toEqual(['Tithe']);
         expect(chartData.datasets[0].data).toEqual([500]);
       });
@@ -749,12 +834,17 @@ describe('FinancialReports', () => {
 
       await waitFor(() => {
         const categoryList = screen.getByTestId('category-ranking');
-        const categoryItems = within(categoryList).getAllByTestId('category-item');
-        
+        const categoryItems =
+          within(categoryList).getAllByTestId('category-item');
+
         // Should be sorted by amount descending
-        expect(within(categoryItems[0]).getByText('Building Fund')).toBeInTheDocument();
+        expect(
+          within(categoryItems[0]).getByText('Building Fund')
+        ).toBeInTheDocument();
         expect(within(categoryItems[1]).getByText('Tithe')).toBeInTheDocument();
-        expect(within(categoryItems[2]).getByText('Special Missions')).toBeInTheDocument();
+        expect(
+          within(categoryItems[2]).getByText('Special Missions')
+        ).toBeInTheDocument();
       });
     });
 
@@ -782,8 +872,10 @@ describe('FinancialReports', () => {
 
       await waitFor(() => {
         const doughnutChart = screen.getByTestId('doughnut-chart');
-        const chartData = JSON.parse(doughnutChart.getAttribute('data-chart-data') || '{}');
-        
+        const chartData = JSON.parse(
+          doughnutChart.getAttribute('data-chart-data') || '{}'
+        );
+
         // Should limit to top 10 categories
         expect(chartData.labels.length).toBeLessThanOrEqual(10);
       });
@@ -799,8 +891,10 @@ describe('FinancialReports', () => {
       await waitFor(() => {
         const comparisonChart = screen.getByTestId('comparison-chart');
         expect(comparisonChart).toBeInTheDocument();
-        
-        const chartData = JSON.parse(comparisonChart.getAttribute('data-chart-data') || '{}');
+
+        const chartData = JSON.parse(
+          comparisonChart.getAttribute('data-chart-data') || '{}'
+        );
         expect(chartData.datasets).toHaveLength(2); // Current year and previous year
         expect(chartData.datasets[0].label).toContain('2025');
         expect(chartData.datasets[1].label).toContain('2024');
@@ -816,15 +910,21 @@ describe('FinancialReports', () => {
 
       await waitFor(() => {
         const engagementSection = screen.getByTestId('donor-engagement');
-        expect(within(engagementSection).getByText('Donor Engagement')).toBeInTheDocument();
-        expect(within(engagementSection).getByText('Active Donors: 3')).toBeInTheDocument();
-        expect(within(engagementSection).getByText('Retention Rate: 75%')).toBeInTheDocument();
+        expect(
+          within(engagementSection).getByText('Donor Engagement')
+        ).toBeInTheDocument();
+        expect(
+          within(engagementSection).getByText('Active Donors: 3')
+        ).toBeInTheDocument();
+        expect(
+          within(engagementSection).getByText('Retention Rate: 75%')
+        ).toBeInTheDocument();
       });
     });
 
     it('should handle date range filtering', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <FinancialReports />
@@ -845,7 +945,9 @@ describe('FinancialReports', () => {
       await user.type(endDate, '2025-01-15');
 
       await waitFor(() => {
-        expect(mockDonationsService.getDonationsByDateRange).toHaveBeenCalledWith('2025-01-01', '2025-01-15');
+        expect(
+          mockDonationsService.getDonationsByDateRange
+        ).toHaveBeenCalledWith('2025-01-01', '2025-01-15');
       });
     });
   });
@@ -853,7 +955,7 @@ describe('FinancialReports', () => {
   describe('Data Filtering Tests', () => {
     it('should filter by date range', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <FinancialReports />
@@ -875,13 +977,15 @@ describe('FinancialReports', () => {
       await user.click(applyButton);
 
       await waitFor(() => {
-        expect(mockDonationsService.getDonationsByDateRange).toHaveBeenCalledWith('2025-01-01', '2025-01-31');
+        expect(
+          mockDonationsService.getDonationsByDateRange
+        ).toHaveBeenCalledWith('2025-01-01', '2025-01-31');
       });
     });
 
     it('should filter by categories', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <FinancialReports />
@@ -903,14 +1007,18 @@ describe('FinancialReports', () => {
 
       await waitFor(() => {
         const categoryBreakdown = screen.getByTestId('category-breakdown');
-        expect(within(categoryBreakdown).getByText('Tithe')).toBeInTheDocument();
-        expect(within(categoryBreakdown).queryByText('Building Fund')).not.toBeInTheDocument();
+        expect(
+          within(categoryBreakdown).getByText('Tithe')
+        ).toBeInTheDocument();
+        expect(
+          within(categoryBreakdown).queryByText('Building Fund')
+        ).not.toBeInTheDocument();
       });
     });
 
     it('should combine multiple filters', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <FinancialReports />
@@ -935,21 +1043,23 @@ describe('FinancialReports', () => {
       const titheOption = screen.getByRole('option', { name: 'Tithe' });
       await user.click(titheOption);
 
-      const applyButton = screen.getByRole('button', { name: /apply filters/i });
+      const applyButton = screen.getByRole('button', {
+        name: /apply filters/i,
+      });
       await user.click(applyButton);
 
       await waitFor(() => {
-        expect(mockDonationsService.getDonationsByDateRange).toHaveBeenCalledWith(
-          '2025-01-01', 
-          '2025-01-31',
-          { categoryIds: ['category-1'] }
-        );
+        expect(
+          mockDonationsService.getDonationsByDateRange
+        ).toHaveBeenCalledWith('2025-01-01', '2025-01-31', {
+          categoryIds: ['category-1'],
+        });
       });
     });
 
     it('should reset filters properly', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <FinancialReports />
@@ -957,10 +1067,14 @@ describe('FinancialReports', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /reset filters/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /reset filters/i })
+        ).toBeInTheDocument();
       });
 
-      const resetButton = screen.getByRole('button', { name: /reset filters/i });
+      const resetButton = screen.getByRole('button', {
+        name: /reset filters/i,
+      });
       await user.click(resetButton);
 
       await waitFor(() => {
@@ -971,7 +1085,7 @@ describe('FinancialReports', () => {
 
     it('should maintain filter state', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <FinancialReports />
@@ -996,7 +1110,7 @@ describe('FinancialReports', () => {
 
     it('should validate filter inputs', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <FinancialReports />
@@ -1016,7 +1130,9 @@ describe('FinancialReports', () => {
       await user.click(applyButton);
 
       await waitFor(() => {
-        expect(screen.getByText('End date must be after start date')).toBeInTheDocument();
+        expect(
+          screen.getByText('End date must be after start date')
+        ).toBeInTheDocument();
         expect(mockShowToast).toHaveBeenCalledWith(
           'Invalid date range. End date must be after start date.',
           'error'
@@ -1026,7 +1142,7 @@ describe('FinancialReports', () => {
 
     it('should handle invalid date ranges', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <FinancialReports />
@@ -1041,7 +1157,9 @@ describe('FinancialReports', () => {
       await user.click(applyButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Please enter a valid date')).toBeInTheDocument();
+        expect(
+          screen.getByText('Please enter a valid date')
+        ).toBeInTheDocument();
       });
     });
   });
@@ -1055,8 +1173,12 @@ describe('FinancialReports', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /export report/i })).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /download csv/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /export report/i })
+        ).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /download csv/i })
+        ).toBeInTheDocument();
       });
     });
 
@@ -1073,15 +1195,21 @@ describe('FinancialReports', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /export summary/i })).toBeInTheDocument();
-        expect(screen.queryByRole('button', { name: /export detailed/i })).not.toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /export summary/i })
+        ).toBeInTheDocument();
+        expect(
+          screen.queryByRole('button', { name: /export detailed/i })
+        ).not.toBeInTheDocument();
       });
     });
 
     it('should trigger CSV export with correct data', async () => {
       const user = userEvent.setup();
-      mockDonationsService.exportDonationsToCSV.mockResolvedValue('csv,data,here');
-      
+      mockDonationsService.exportDonationsToCSV.mockResolvedValue(
+        'csv,data,here'
+      );
+
       render(
         <TestWrapper>
           <FinancialReports />
@@ -1089,10 +1217,14 @@ describe('FinancialReports', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /download csv/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /download csv/i })
+        ).toBeInTheDocument();
       });
 
-      const exportButton = screen.getByRole('button', { name: /download csv/i });
+      const exportButton = screen.getByRole('button', {
+        name: /download csv/i,
+      });
       await user.click(exportButton);
 
       await waitFor(() => {
@@ -1101,14 +1233,19 @@ describe('FinancialReports', () => {
           endDate: expect.any(String),
           includeMemberInfo: true,
         });
-        expect(mockShowToast).toHaveBeenCalledWith('Report exported successfully', 'success');
+        expect(mockShowToast).toHaveBeenCalledWith(
+          'Report exported successfully',
+          'success'
+        );
       });
     });
 
     it('should handle export errors gracefully', async () => {
       const user = userEvent.setup();
-      mockDonationsService.exportDonationsToCSV.mockRejectedValueOnce(new Error('Export failed'));
-      
+      mockDonationsService.exportDonationsToCSV.mockRejectedValueOnce(
+        new Error('Export failed')
+      );
+
       render(
         <TestWrapper>
           <FinancialReports />
@@ -1116,34 +1253,46 @@ describe('FinancialReports', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /download csv/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /download csv/i })
+        ).toBeInTheDocument();
       });
 
-      const exportButton = screen.getByRole('button', { name: /download csv/i });
+      const exportButton = screen.getByRole('button', {
+        name: /download csv/i,
+      });
       await user.click(exportButton);
 
       await waitFor(() => {
-        expect(mockShowToast).toHaveBeenCalledWith('Failed to export report', 'error');
+        expect(mockShowToast).toHaveBeenCalledWith(
+          'Failed to export report',
+          'error'
+        );
       });
     });
 
     it('should show export progress indicator', async () => {
       const user = userEvent.setup();
       mockDonationsService.exportDonationsToCSV.mockImplementation(
-        () => new Promise(resolve => setTimeout(() => resolve('csv,data'), 2000))
+        () =>
+          new Promise((resolve) => setTimeout(() => resolve('csv,data'), 2000))
       );
-      
+
       render(
         <TestWrapper>
           <FinancialReports />
         </TestWrapper>
       );
 
-      const exportButton = screen.getByRole('button', { name: /download csv/i });
+      const exportButton = screen.getByRole('button', {
+        name: /download csv/i,
+      });
       await user.click(exportButton);
 
       expect(screen.getByText('Preparing export...')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /downloading/i })).toBeDisabled();
+      expect(
+        screen.getByRole('button', { name: /downloading/i })
+      ).toBeDisabled();
     });
   });
 
@@ -1158,7 +1307,9 @@ describe('FinancialReports', () => {
       await waitFor(() => {
         expect(screen.getByText('Individual Donations')).toBeInTheDocument();
         expect(screen.getByText('Donor Details')).toBeInTheDocument();
-        expect(screen.getByRole('button', { name: /export detailed/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /export detailed/i })
+        ).toBeInTheDocument();
       });
     });
 
@@ -1176,7 +1327,9 @@ describe('FinancialReports', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Aggregate Summary')).toBeInTheDocument();
-        expect(screen.queryByText('Individual Donations')).not.toBeInTheDocument();
+        expect(
+          screen.queryByText('Individual Donations')
+        ).not.toBeInTheDocument();
         expect(screen.queryByText('Donor Details')).not.toBeInTheDocument();
       });
     });
@@ -1194,27 +1347,37 @@ describe('FinancialReports', () => {
       );
 
       expect(screen.getByText('Access Denied')).toBeInTheDocument();
-      expect(screen.getByText('You do not have permission to view financial reports.')).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          'You do not have permission to view financial reports.'
+        )
+      ).toBeInTheDocument();
     });
   });
 
   describe('Loading and Error States', () => {
     it('should show loading spinner during data fetch', () => {
-      mockDonationsService.getFinancialSummary.mockImplementation(() => new Promise(() => {}));
-      
+      mockDonationsService.getFinancialSummary.mockImplementation(
+        () => new Promise(() => {})
+      );
+
       render(
         <TestWrapper>
           <FinancialReports />
         </TestWrapper>
       );
 
-      expect(screen.getByTestId('loading-spinner') || screen.getByRole('status')).toBeInTheDocument();
+      expect(
+        screen.getByTestId('loading-spinner') || screen.getByRole('status')
+      ).toBeInTheDocument();
     });
 
     it('should retry data fetch when retry button is clicked', async () => {
       const user = userEvent.setup();
-      mockDonationsService.getFinancialSummary.mockRejectedValueOnce(new Error('Network error'));
-      
+      mockDonationsService.getFinancialSummary.mockRejectedValueOnce(
+        new Error('Network error')
+      );
+
       render(
         <TestWrapper>
           <FinancialReports />
@@ -1222,19 +1385,29 @@ describe('FinancialReports', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /retry/i })
+        ).toBeInTheDocument();
       });
 
       // Reset mocks for successful retry
-      mockDonationsService.getFinancialSummary.mockResolvedValueOnce(mockFinancialSummary);
-      mockDonationCategoriesService.getCategories.mockResolvedValueOnce(mockCategories);
+      mockDonationsService.getFinancialSummary.mockResolvedValueOnce(
+        mockFinancialSummary
+      );
+      mockDonationCategoriesService.getCategories.mockResolvedValueOnce(
+        mockCategories
+      );
 
       const retryButton = screen.getByRole('button', { name: /retry/i });
       await user.click(retryButton);
 
       await waitFor(() => {
-        expect(mockDonationsService.getFinancialSummary).toHaveBeenCalledTimes(2);
-        expect(screen.getByText('Financial Reports Dashboard')).toBeInTheDocument();
+        expect(mockDonationsService.getFinancialSummary).toHaveBeenCalledTimes(
+          2
+        );
+        expect(
+          screen.getByText('Financial Reports Dashboard')
+        ).toBeInTheDocument();
       });
     });
   });
@@ -1248,15 +1421,22 @@ describe('FinancialReports', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByRole('main')).toHaveAttribute('aria-label', 'Financial reports dashboard');
-        expect(screen.getByRole('region', { name: /kpi summary/i })).toBeInTheDocument();
-        expect(screen.getByRole('region', { name: /charts section/i })).toBeInTheDocument();
+        expect(screen.getByRole('main')).toHaveAttribute(
+          'aria-label',
+          'Financial reports dashboard'
+        );
+        expect(
+          screen.getByRole('region', { name: /kpi summary/i })
+        ).toBeInTheDocument();
+        expect(
+          screen.getByRole('region', { name: /charts section/i })
+        ).toBeInTheDocument();
       });
     });
 
     it('should support keyboard navigation', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <FinancialReports />
@@ -1264,7 +1444,9 @@ describe('FinancialReports', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /export report/i })).toBeInTheDocument();
+        expect(
+          screen.getByRole('button', { name: /export report/i })
+        ).toBeInTheDocument();
       });
 
       // Test tab navigation
@@ -1275,7 +1457,9 @@ describe('FinancialReports', () => {
       expect(screen.getByLabelText(/end date/i)).toHaveFocus();
 
       await user.tab();
-      expect(screen.getByRole('button', { name: /apply filter/i })).toHaveFocus();
+      expect(
+        screen.getByRole('button', { name: /apply filter/i })
+      ).toHaveFocus();
     });
   });
 
@@ -1294,7 +1478,7 @@ describe('FinancialReports', () => {
 
     it('should call getDonationsByDateRange with date filters', async () => {
       const user = userEvent.setup();
-      
+
       render(
         <TestWrapper>
           <FinancialReports />
@@ -1303,26 +1487,27 @@ describe('FinancialReports', () => {
 
       const startDate = screen.getByLabelText(/start date/i);
       const endDate = screen.getByLabelText(/end date/i);
-      
+
       await user.clear(startDate);
       await user.type(startDate, '2025-01-01');
       await user.clear(endDate);
       await user.type(endDate, '2025-01-31');
-      
+
       const applyButton = screen.getByRole('button', { name: /apply filter/i });
       await user.click(applyButton);
 
       await waitFor(() => {
-        expect(mockDonationsService.getDonationsByDateRange).toHaveBeenCalledWith(
-          '2025-01-01', 
-          '2025-01-31'
-        );
+        expect(
+          mockDonationsService.getDonationsByDateRange
+        ).toHaveBeenCalledWith('2025-01-01', '2025-01-31');
       });
     });
 
     it('should handle service method rejections gracefully', async () => {
-      mockDonationCategoriesService.getCategories.mockRejectedValueOnce(new Error('Categories error'));
-      
+      mockDonationCategoriesService.getCategories.mockRejectedValueOnce(
+        new Error('Categories error')
+      );
+
       render(
         <TestWrapper>
           <FinancialReports />

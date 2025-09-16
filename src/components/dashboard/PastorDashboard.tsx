@@ -11,6 +11,7 @@ import {
 } from '../../services/firebase/dashboard.service';
 import { useAuth } from '../../hooks/useUnifiedAuth';
 import { LoadingSpinner } from '../common/LoadingSpinner';
+import { GivingOverviewWidget } from '../donations/GivingOverviewWidget';
 import { logger } from '../../utils/logger';
 import {
   Users,
@@ -229,6 +230,40 @@ export function PastorDashboard({ member }: PastorDashboardProps) {
               </div>
             </Link>
           ))}
+        </div>
+      </div>
+
+      {/* Giving Overview Widget */}
+      <div className="grid grid-cols-3 gap-6">
+        <div className="col-span-2">
+          <GivingOverviewWidget />
+        </div>
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Ministry Focus
+          </h3>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Active Members</span>
+              <span className="font-semibold text-gray-900">
+                {stats.activeMembers || 0}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Upcoming Events</span>
+              <span className="font-semibold text-gray-900">
+                {stats.upcomingEvents || 0}
+              </span>
+            </div>
+            <div className="pt-2 border-t border-gray-200">
+              <Link
+                to="/member-care"
+                className="text-sm text-purple-600 hover:text-purple-800 font-medium"
+              >
+                View Member Care →
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
 

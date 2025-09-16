@@ -88,14 +88,14 @@ const rsvpLabels = {
   waitlist: 'Waitlist',
 };
 
-export function EventCard({ 
-  event, 
-  currentMember, 
-  canManageEvents, 
+export function EventCard({
+  event,
+  currentMember,
+  canManageEvents,
   displayMode = 'full',
   showRSVPButton = true,
   onEventUpdate,
-  enableQuickActions = true
+  enableQuickActions = true,
 }: EventCardProps) {
   const [userRSVP, setUserRSVP] = useState<EventRSVP | null>(null);
   const [rsvpLoading] = useState(false);
@@ -114,7 +114,10 @@ export function EventCard({
 
     try {
       setLoadingRSVPStatus(true);
-      const rsvp = await eventRSVPService.getRSVPByMember(event.id, currentMember.id);
+      const rsvp = await eventRSVPService.getRSVPByMember(
+        event.id,
+        currentMember.id
+      );
       setUserRSVP(rsvp);
     } catch (error) {
       console.error('Error loading RSVP:', error);
@@ -127,10 +130,10 @@ export function EventCard({
   const handleRSVPUpdateFromModal = async (updatedRSVP: EventRSVP) => {
     // Update local state with the new RSVP
     setUserRSVP(updatedRSVP);
-    
+
     // Close the modal
     setIsModalOpen(false);
-    
+
     // Notify parent component
     onEventUpdate();
   };
@@ -152,7 +155,7 @@ export function EventCard({
     if (displayMode === 'compact' || displayMode === 'minimal') {
       return date.toLocaleDateString('en-US', {
         month: 'short',
-        day: 'numeric'
+        day: 'numeric',
       });
     }
     return date.toLocaleDateString('en-US', {
@@ -171,8 +174,14 @@ export function EventCard({
     });
   };
 
-  const canRSVP = currentMember && (typeof event.capacity === 'number' && !isNaN(event.capacity));
-  const eventDate = event.startDate instanceof Date ? event.startDate : new Date(event.startDate);
+  const canRSVP =
+    currentMember &&
+    typeof event.capacity === 'number' &&
+    !isNaN(event.capacity);
+  const eventDate =
+    event.startDate instanceof Date
+      ? event.startDate
+      : new Date(event.startDate);
   const isPastEvent = eventDate < new Date();
 
   // Minimal display mode
@@ -182,10 +191,13 @@ export function EventCard({
         <div className="flex items-center justify-between">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h4 className="text-sm font-medium text-gray-900 truncate">{event.title}</h4>
+              <h4 className="text-sm font-medium text-gray-900 truncate">
+                {event.title}
+              </h4>
               <span
                 className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${
-                  eventTypeColors[event.eventType] || 'bg-gray-100 text-gray-800'
+                  eventTypeColors[event.eventType] ||
+                  'bg-gray-100 text-gray-800'
                 }`}
               >
                 {eventTypeLabels[event.eventType] || event.eventType}
@@ -218,10 +230,13 @@ export function EventCard({
         <div className="flex justify-between items-start mb-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <h3 className="text-base font-semibold text-gray-900 truncate">{event.title}</h3>
+              <h3 className="text-base font-semibold text-gray-900 truncate">
+                {event.title}
+              </h3>
               <span
                 className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                  eventTypeColors[event.eventType] || 'bg-gray-100 text-gray-800'
+                  eventTypeColors[event.eventType] ||
+                  'bg-gray-100 text-gray-800'
                 }`}
               >
                 {eventTypeLabels[event.eventType] || event.eventType}
@@ -247,7 +262,7 @@ export function EventCard({
             </div>
           )}
         </div>
-        
+
         {/* RSVP Status for compact mode */}
         {canRSVP && showRSVPButton && !isPastEvent && (
           <div className="flex items-center justify-between">
@@ -264,7 +279,9 @@ export function EventCard({
                       />
                     );
                   })()}
-                  <span className={`text-xs font-medium ${rsvpColors[userRSVP.status]}`}>
+                  <span
+                    className={`text-xs font-medium ${rsvpColors[userRSVP.status]}`}
+                  >
                     {rsvpLabels[userRSVP.status]}
                   </span>
                 </>
@@ -281,7 +298,7 @@ export function EventCard({
             </button>
           </div>
         )}
-        
+
         <RSVPModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
@@ -301,10 +318,13 @@ export function EventCard({
           <div className="flex items-center justify-between">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-3 mb-2">
-                <h3 className="text-lg font-semibold text-gray-900">{event.title}</h3>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {event.title}
+                </h3>
                 <span
                   className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    eventTypeColors[event.eventType] || 'bg-gray-100 text-gray-800'
+                    eventTypeColors[event.eventType] ||
+                    'bg-gray-100 text-gray-800'
                   }`}
                 >
                   {eventTypeLabels[event.eventType] || event.eventType}
@@ -313,7 +333,7 @@ export function EventCard({
                   <EyeOff className="h-4 w-4 text-gray-400" />
                 )}
               </div>
-              
+
               <div className="flex items-center gap-6 text-sm text-gray-600 mb-2">
                 <div className="flex items-center">
                   <Calendar className="h-4 w-4 mr-1" />
@@ -325,7 +345,11 @@ export function EventCard({
                   {event.endDate && (
                     <span>
                       {' - '}
-                      {formatTime(event.endDate instanceof Date ? event.endDate : new Date(event.endDate))}
+                      {formatTime(
+                        event.endDate instanceof Date
+                          ? event.endDate
+                          : new Date(event.endDate)
+                      )}
                     </span>
                   )}
                 </div>
@@ -335,19 +359,26 @@ export function EventCard({
                     {event.location}
                   </div>
                 )}
-                {(typeof event.capacity === 'number' && !isNaN(event.capacity)) && (
-                  <div className="flex items-center">
-                    <Users className="h-4 w-4 mr-1" />
-                    {(typeof event.currentAttendees === 'number' && !isNaN(event.currentAttendees)) ? event.currentAttendees : 0} / {event.capacity}
-                  </div>
-                )}
+                {typeof event.capacity === 'number' &&
+                  !isNaN(event.capacity) && (
+                    <div className="flex items-center">
+                      <Users className="h-4 w-4 mr-1" />
+                      {typeof event.currentAttendees === 'number' &&
+                      !isNaN(event.currentAttendees)
+                        ? event.currentAttendees
+                        : 0}{' '}
+                      / {event.capacity}
+                    </div>
+                  )}
               </div>
-              
+
               {event.description && (
-                <p className="text-gray-600 text-sm line-clamp-1">{event.description}</p>
+                <p className="text-gray-600 text-sm line-clamp-1">
+                  {event.description}
+                </p>
               )}
             </div>
-            
+
             <div className="flex items-center gap-3 ml-4">
               {/* RSVP Status */}
               {canRSVP && showRSVPButton && !isPastEvent && (
@@ -364,7 +395,9 @@ export function EventCard({
                           />
                         );
                       })()}
-                      <span className={`text-sm font-medium ${rsvpColors[userRSVP.status]}`}>
+                      <span
+                        className={`text-sm font-medium ${rsvpColors[userRSVP.status]}`}
+                      >
                         {rsvpLabels[userRSVP.status]}
                       </span>
                     </>
@@ -380,7 +413,7 @@ export function EventCard({
                   </button>
                 </div>
               )}
-              
+
               {/* Admin Actions */}
               {canManageEvents && enableQuickActions && (
                 <div className="flex gap-2">
@@ -403,7 +436,7 @@ export function EventCard({
             </div>
           </div>
         </div>
-        
+
         <RSVPModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
@@ -422,7 +455,9 @@ export function EventCard({
       <div className="flex justify-between items-start mb-4">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
-            <h3 className="text-lg font-semibold text-gray-900">{event.title}</h3>
+            <h3 className="text-lg font-semibold text-gray-900">
+              {event.title}
+            </h3>
             <span
               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                 eventTypeColors[event.eventType] || 'bg-gray-100 text-gray-800'
@@ -430,12 +465,12 @@ export function EventCard({
             >
               {eventTypeLabels[event.eventType] || event.eventType}
             </span>
-            {!event.isPublic && (
-              <EyeOff className="h-4 w-4 text-gray-400" />
-            )}
+            {!event.isPublic && <EyeOff className="h-4 w-4 text-gray-400" />}
           </div>
           {event.description && (
-            <p className="text-gray-600 text-sm line-clamp-2">{event.description}</p>
+            <p className="text-gray-600 text-sm line-clamp-2">
+              {event.description}
+            </p>
           )}
         </div>
 
@@ -466,7 +501,7 @@ export function EventCard({
           <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
           <span>{formatDate(eventDate)}</span>
         </div>
-        
+
         <div className="flex items-center text-sm text-gray-600">
           <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
           <span>
@@ -474,7 +509,11 @@ export function EventCard({
             {event.endDate && (
               <span>
                 {' - '}
-                {formatTime(event.endDate instanceof Date ? event.endDate : new Date(event.endDate))}
+                {formatTime(
+                  event.endDate instanceof Date
+                    ? event.endDate
+                    : new Date(event.endDate)
+                )}
               </span>
             )}
           </span>
@@ -486,13 +525,19 @@ export function EventCard({
             <span>{event.location}</span>
           </div>
         )}
-        
-        {(typeof event.capacity === 'number' && !isNaN(event.capacity)) && (
+
+        {typeof event.capacity === 'number' && !isNaN(event.capacity) && (
           <div className="flex items-center text-sm text-gray-600">
             <Users className="h-4 w-4 mr-2 flex-shrink-0" />
             <span>
-              {(typeof event.currentAttendees === 'number' && !isNaN(event.currentAttendees)) ? event.currentAttendees : 0} / {event.capacity} attendees
-              {((typeof event.currentAttendees === 'number' ? event.currentAttendees : 0)) >= event.capacity && (
+              {typeof event.currentAttendees === 'number' &&
+              !isNaN(event.currentAttendees)
+                ? event.currentAttendees
+                : 0}{' '}
+              / {event.capacity} attendees
+              {(typeof event.currentAttendees === 'number'
+                ? event.currentAttendees
+                : 0) >= event.capacity && (
                 <span className="text-amber-600 font-medium"> (Full)</span>
               )}
             </span>
@@ -517,7 +562,9 @@ export function EventCard({
                       />
                     );
                   })()}
-                  <span className={`text-sm font-medium ${rsvpColors[userRSVP.status]}`}>
+                  <span
+                    className={`text-sm font-medium ${rsvpColors[userRSVP.status]}`}
+                  >
                     {rsvpLabels[userRSVP.status]}
                   </span>
                 </>

@@ -6,6 +6,7 @@ import {
   MessageSquare,
   FileText,
   Settings,
+  DollarSign,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -29,6 +30,12 @@ const tabs: TabConfig[] = [
     label: 'Activity',
     path: 'activity',
     icon: Activity,
+  },
+  {
+    id: 'giving',
+    label: 'Giving History',
+    path: 'giving',
+    icon: DollarSign,
   },
   {
     id: 'communications',
@@ -64,6 +71,14 @@ export default function MemberProfileTabs({
   const { member: currentMember } = useAuth();
 
   const visibleTabs = tabs.filter((tab) => {
+    // Special logic for giving tab - only show if admin/pastor OR viewing own profile
+    if (tab.id === 'giving') {
+      const isAdminOrPastor =
+        currentMember?.role === 'admin' || currentMember?.role === 'pastor';
+      const isOwnProfile = currentMember?.id === memberId;
+      return isAdminOrPastor || isOwnProfile;
+    }
+
     if (!tab.requiresRole) return true;
     return tab.requiresRole.includes(currentMember?.role || '');
   });

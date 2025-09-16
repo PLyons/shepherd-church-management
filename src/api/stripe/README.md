@@ -9,29 +9,35 @@ The webhook handler processes Stripe events and automatically creates donation r
 ## Supported Events
 
 ### Payment Events
+
 - `payment_intent.succeeded` - Records successful one-time donations
 - `payment_intent.payment_failed` - Logs failed payment attempts
 
-### Recurring Payment Events  
+### Recurring Payment Events
+
 - `invoice.payment_succeeded` - Records successful recurring donations
 - `invoice.payment_failed` - Logs failed recurring payments
 
 ### Subscription Events
+
 - `customer.subscription.deleted` - Handles subscription cancellations
 
 ## Features
 
 ### Security
+
 - **Webhook Signature Verification**: Uses Stripe's webhook signature verification to ensure requests are authentic
 - **Environment Variable Validation**: Validates required environment variables at runtime
 - **Request Sanitization**: Properly validates and sanitizes incoming webhook data
 
 ### Reliability
+
 - **Idempotency**: Prevents duplicate processing of the same webhook event
 - **Error Handling**: Comprehensive error handling with proper HTTP status codes
 - **Retry Support**: Returns appropriate status codes for Stripe's retry logic
 
 ### Integration
+
 - **DonationsService Integration**: Uses existing `donationsService` for database operations
 - **Member Lookup**: Supports both member-linked and anonymous donations
 - **Category Management**: Falls back to default categories when not specified
@@ -61,6 +67,7 @@ VITE_DEFAULT_DONATION_CATEGORY_NAME=General Fund
 ### Webhook Endpoint
 
 Configure your Stripe webhook endpoint to point to:
+
 ```
 https://your-domain.com/api/stripe/webhook
 ```
@@ -80,6 +87,7 @@ https://your-domain.com/api/stripe/webhook
 ## API Response Format
 
 ### Success Response (200)
+
 ```json
 {
   "received": true,
@@ -93,6 +101,7 @@ https://your-domain.com/api/stripe/webhook
 ### Error Responses
 
 #### Missing Signature (400)
+
 ```json
 {
   "error": "Missing Stripe signature"
@@ -100,6 +109,7 @@ https://your-domain.com/api/stripe/webhook
 ```
 
 #### Invalid Signature (400)
+
 ```json
 {
   "error": "Webhook signature verification failed: Invalid signature",
@@ -108,6 +118,7 @@ https://your-domain.com/api/stripe/webhook
 ```
 
 #### Processing Error (500)
+
 ```json
 {
   "error": "Webhook processing failed",
@@ -120,12 +131,13 @@ https://your-domain.com/api/stripe/webhook
 ## Donation Metadata
 
 ### Payment Intent Metadata
+
 When creating payment intents, include this metadata for proper donation recording:
 
 ```javascript
 {
   memberId: "member_123",
-  memberName: "John Doe", 
+  memberName: "John Doe",
   donationCategoryId: "cat_general_fund",
   donationCategoryName: "General Fund",
   isAnonymous: "false" // "true" for anonymous donations
@@ -133,6 +145,7 @@ When creating payment intents, include this metadata for proper donation recordi
 ```
 
 ### Recurring Donations
+
 Recurring donations use the same metadata structure in the subscription's metadata.
 
 ## Testing
@@ -146,6 +159,7 @@ The webhook handler includes comprehensive tests covering:
 - **Integration**: Full integration with DonationsService
 
 Run tests:
+
 ```bash
 npm run test -- src/api/stripe/__tests__/webhook.test.ts
 ```
@@ -161,16 +175,19 @@ npm run test -- src/api/stripe/__tests__/webhook.test.ts
 ## Deployment Considerations
 
 ### Serverless Functions
+
 - **Cold starts**: Handler is optimized for quick startup
 - **Memory usage**: Minimal memory footprint for cost efficiency
 - **Timeout**: Configure timeout to handle database operations
 
 ### Error Monitoring
+
 - **Failed webhooks**: Monitor 4xx/5xx responses in Stripe dashboard
 - **Database errors**: Monitor DonationsService errors
 - **Signature failures**: Monitor for potential security issues
 
 ### Performance
+
 - **Response time**: Handler responds quickly to prevent Stripe timeouts
 - **Database connections**: Uses existing Firebase connection pool
 - **Idempotency cache**: In-memory cache for duplicate prevention
@@ -196,6 +213,7 @@ npm run test -- src/api/stripe/__tests__/webhook.test.ts
 ### Debug Mode
 
 Enable verbose logging by setting:
+
 ```bash
 DEBUG=stripe:webhook
 ```

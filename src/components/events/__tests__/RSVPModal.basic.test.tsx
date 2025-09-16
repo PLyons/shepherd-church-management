@@ -48,12 +48,12 @@ describe('RSVPModal - Basic Tests', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     mockUseAuth.mockReturnValue({
       user: mockUser,
       isLoading: false,
     });
-    
+
     mockUseToast.mockReturnValue({
       showToast: mockShowToast,
     });
@@ -142,12 +142,14 @@ describe('RSVPModal - Basic Tests', () => {
       />
     );
 
-    expect(mockEventRSVPService.getCapacityInfo).toHaveBeenCalledWith('event-1');
+    expect(mockEventRSVPService.getCapacityInfo).toHaveBeenCalledWith(
+      'event-1'
+    );
   });
 
   it('should not call getCapacityInfo for unlimited events', () => {
     const unlimitedEvent = { ...mockEvent, capacity: undefined };
-    
+
     render(
       <RSVPModal
         isOpen={true}

@@ -1,6 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { MessageSquare, Plus, Phone, Mail, User, VideoIcon, Clock, Calendar, ChevronRight, AlertCircle } from 'lucide-react';
+import {
+  MessageSquare,
+  Plus,
+  Phone,
+  Mail,
+  User,
+  VideoIcon,
+  Clock,
+  Calendar,
+  ChevronRight,
+  AlertCircle,
+} from 'lucide-react';
 import { Communication } from '../../../../types/notes';
 import { notesService } from '../../../../services/firebase/notes.service';
 import { CommunicationLogger } from '../components/CommunicationLogger';
@@ -21,7 +32,7 @@ export default function CommunicationsTab() {
 
   const loadCommunications = async () => {
     if (!memberId) return;
-    
+
     try {
       setLoading(true);
       setError(null);
@@ -36,7 +47,7 @@ export default function CommunicationsTab() {
   };
 
   const handleCommunicationSaved = (communication: Communication) => {
-    setCommunications(prev => [communication, ...prev]);
+    setCommunications((prev) => [communication, ...prev]);
   };
 
   const getMethodIcon = (method: Communication['method']) => {
@@ -58,14 +69,14 @@ export default function CommunicationsTab() {
 
   const getTypeLabel = (type: Communication['type']) => {
     const labels = {
-      'pastoral_call': 'Pastoral Call',
-      'counseling_session': 'Counseling Session',
-      'prayer_support': 'Prayer Support',
-      'administrative': 'Administrative',
-      'emergency': 'Emergency',
-      'routine_check_in': 'Routine Check-in',
-      'event_coordination': 'Event Coordination',
-      'volunteer_coordination': 'Volunteer Coordination'
+      pastoral_call: 'Pastoral Call',
+      counseling_session: 'Counseling Session',
+      prayer_support: 'Prayer Support',
+      administrative: 'Administrative',
+      emergency: 'Emergency',
+      routine_check_in: 'Routine Check-in',
+      event_coordination: 'Event Coordination',
+      volunteer_coordination: 'Volunteer Coordination',
     };
     return labels[type] || type;
   };
@@ -93,7 +104,9 @@ export default function CommunicationsTab() {
         <div className="flex items-center space-x-2">
           <MessageSquare className="h-5 w-5 text-gray-600" />
           <h3 className="text-lg font-medium text-gray-900">Communications</h3>
-          <span className="text-sm text-gray-500">({communications.length})</span>
+          <span className="text-sm text-gray-500">
+            ({communications.length})
+          </span>
         </div>
         <button
           onClick={() => setShowLogger(true)}
@@ -163,17 +176,17 @@ export default function CommunicationsTab() {
                         </span>
                       )}
                     </div>
-                    
+
                     {communication.subject && (
                       <p className="text-sm font-medium text-gray-900 mb-1">
                         {communication.subject}
                       </p>
                     )}
-                    
+
                     <p className="text-sm text-gray-700 mb-2">
                       {communication.summary}
                     </p>
-                    
+
                     <div className="flex items-center text-xs text-gray-500 space-x-4">
                       <span className="flex items-center">
                         <Calendar className="h-3 w-3 mr-1" />
@@ -186,7 +199,11 @@ export default function CommunicationsTab() {
                           Follow-up needed
                           {communication.followUpDate && (
                             <span className="ml-1">
-                              ({new Date(communication.followUpDate).toLocaleDateString()})
+                              (
+                              {new Date(
+                                communication.followUpDate
+                              ).toLocaleDateString()}
+                              )
                             </span>
                           )}
                         </span>
@@ -194,7 +211,7 @@ export default function CommunicationsTab() {
                     </div>
                   </div>
                 </div>
-                
+
                 {communication.fullContent && (
                   <button className="flex items-center text-gray-400 hover:text-gray-600 p-1">
                     <ChevronRight className="h-4 w-4" />

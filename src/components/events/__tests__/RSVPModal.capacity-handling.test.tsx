@@ -56,12 +56,12 @@ describe('RSVPModal - Capacity Handling', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     mockUseAuth.mockReturnValue({
       user: mockUser,
       isLoading: false,
     });
-    
+
     mockUseToast.mockReturnValue({
       showToast: mockShowToast,
     });
@@ -150,7 +150,9 @@ describe('RSVPModal - Capacity Handling', () => {
 
       await waitFor(() => {
         expect(screen.getByText('0 spots')).toBeInTheDocument();
-        expect(screen.getByText('0 spots').closest('span')).toHaveClass('text-red-600');
+        expect(screen.getByText('0 spots').closest('span')).toHaveClass(
+          'text-red-600'
+        );
       });
     });
 
@@ -177,7 +179,9 @@ describe('RSVPModal - Capacity Handling', () => {
 
       await waitFor(() => {
         expect(screen.getByText('5 spots')).toBeInTheDocument();
-        expect(screen.getByText('5 spots').closest('span')).toHaveClass('text-green-600');
+        expect(screen.getByText('5 spots').closest('span')).toHaveClass(
+          'text-green-600'
+        );
       });
     });
   });
@@ -205,9 +209,21 @@ describe('RSVPModal - Capacity Handling', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Event is at capacity. New RSVPs will be added to the waitlist.')).toBeInTheDocument();
-        const warningElement = screen.getByText('Event is at capacity. New RSVPs will be added to the waitlist.').closest('div');
-        expect(warningElement).toHaveClass('bg-yellow-50', 'border-yellow-200', 'text-yellow-800');
+        expect(
+          screen.getByText(
+            'Event is at capacity. New RSVPs will be added to the waitlist.'
+          )
+        ).toBeInTheDocument();
+        const warningElement = screen
+          .getByText(
+            'Event is at capacity. New RSVPs will be added to the waitlist.'
+          )
+          .closest('div');
+        expect(warningElement).toHaveClass(
+          'bg-yellow-50',
+          'border-yellow-200',
+          'text-yellow-800'
+        );
       });
     });
 
@@ -233,9 +249,17 @@ describe('RSVPModal - Capacity Handling', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Event is at capacity. No new RSVPs accepted.')).toBeInTheDocument();
-        const errorElement = screen.getByText('Event is at capacity. No new RSVPs accepted.').closest('div');
-        expect(errorElement).toHaveClass('bg-red-50', 'border-red-200', 'text-red-800');
+        expect(
+          screen.getByText('Event is at capacity. No new RSVPs accepted.')
+        ).toBeInTheDocument();
+        const errorElement = screen
+          .getByText('Event is at capacity. No new RSVPs accepted.')
+          .closest('div');
+        expect(errorElement).toHaveClass(
+          'bg-red-50',
+          'border-red-200',
+          'text-red-800'
+        );
       });
     });
 
@@ -336,13 +360,16 @@ describe('RSVPModal - Capacity Handling', () => {
 
       await waitFor(() => {
         expect(mockShowToast).toHaveBeenCalledWith(
-          'Added to waitlist - you\'ll be notified if a spot opens!',
+          "Added to waitlist - you'll be notified if a spot opens!",
           'success'
         );
       });
 
       await waitFor(() => {
-        expect(mockEventRSVPService.getWaitlistPosition).toHaveBeenCalledWith('event-1', 'test-user-id');
+        expect(mockEventRSVPService.getWaitlistPosition).toHaveBeenCalledWith(
+          'event-1',
+          'test-user-id'
+        );
       });
     });
 
@@ -385,8 +412,13 @@ describe('RSVPModal - Capacity Handling', () => {
       });
 
       // Should show orange styling for waitlist status
-      const currentRSVPSection = screen.getByText('Current RSVP').closest('div');
-      expect(currentRSVPSection).toHaveClass('bg-orange-50', 'border-orange-200');
+      const currentRSVPSection = screen
+        .getByText('Current RSVP')
+        .closest('div');
+      expect(currentRSVPSection).toHaveClass(
+        'bg-orange-50',
+        'border-orange-200'
+      );
     });
   });
 
@@ -438,8 +470,10 @@ describe('RSVPModal - Capacity Handling', () => {
         />
       );
 
-      const guestInput = screen.getByLabelText(/Number of Additional Guests/i) as HTMLInputElement;
-      
+      const guestInput = screen.getByLabelText(
+        /Number of Additional Guests/i
+      ) as HTMLInputElement;
+
       // Max should be limited by event capacity (10) or default max (10), whichever is lower
       expect(guestInput.getAttribute('max')).toBe('10');
     });
@@ -456,7 +490,9 @@ describe('RSVPModal - Capacity Handling', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByText('Event capacity: 10 people total')).toBeInTheDocument();
+        expect(
+          screen.getByText('Event capacity: 10 people total')
+        ).toBeInTheDocument();
       });
     });
   });
@@ -471,7 +507,7 @@ describe('RSVPModal - Capacity Handling', () => {
         waitlistEnabled: true,
         waitlistCount: 0,
       };
-      
+
       const updatedCapacity = {
         capacity: 10,
         currentAttending: 8,
@@ -513,7 +549,7 @@ describe('RSVPModal - Capacity Handling', () => {
 
     it('should handle capacity changes that affect form state', async () => {
       const user = userEvent.setup();
-      
+
       // Start with available spots
       const availableCapacity = {
         capacity: 10,
@@ -523,7 +559,7 @@ describe('RSVPModal - Capacity Handling', () => {
         waitlistEnabled: true,
         waitlistCount: 0,
       };
-      
+
       // Then simulate someone else filling the event
       const atCapacityInfo = {
         capacity: 10,
@@ -539,7 +575,9 @@ describe('RSVPModal - Capacity Handling', () => {
         .mockResolvedValueOnce(atCapacityInfo);
 
       // Simulate capacity error on submission
-      mockEventRSVPService.createRSVP.mockRejectedValue(new Error('Event at capacity'));
+      mockEventRSVPService.createRSVP.mockRejectedValue(
+        new Error('Event at capacity')
+      );
 
       render(
         <RSVPModal
@@ -555,7 +593,11 @@ describe('RSVPModal - Capacity Handling', () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText('Event is at capacity. Please try selecting "Maybe" or check if waitlist is available.')).toBeInTheDocument();
+        expect(
+          screen.getByText(
+            'Event is at capacity. Please try selecting "Maybe" or check if waitlist is available.'
+          )
+        ).toBeInTheDocument();
       });
     });
   });

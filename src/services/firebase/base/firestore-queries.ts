@@ -17,16 +17,16 @@ import {
   Firestore,
 } from 'firebase/firestore';
 
-type FirestoreOperator = 
-  | '==' 
-  | '!=' 
-  | '<' 
-  | '<=' 
-  | '>' 
-  | '>=' 
-  | 'array-contains' 
-  | 'array-contains-any' 
-  | 'in' 
+type FirestoreOperator =
+  | '=='
+  | '!='
+  | '<'
+  | '<='
+  | '>'
+  | '>='
+  | 'array-contains'
+  | 'array-contains-any'
+  | 'in'
   | 'not-in';
 
 export interface PaginationParams {
@@ -59,12 +59,12 @@ export class FirestoreQueries<TDocument, TClient> {
       // Ensure constraints is an array
       const constraintsArray = Array.isArray(constraints) ? constraints : [];
       const queryConstraints = [...constraintsArray];
-      
+
       // Add pagination constraints
       if (pagination?.limit) {
         queryConstraints.push(limit(pagination.limit));
       }
-      
+
       if (pagination?.startAfter) {
         queryConstraints.push(startAfter(pagination.startAfter));
       }
@@ -72,12 +72,14 @@ export class FirestoreQueries<TDocument, TClient> {
       const q = query(this.getCollectionRef(), ...queryConstraints);
       const querySnapshot = await getDocs(q);
 
-      const items = querySnapshot.docs.map(doc =>
+      const items = querySnapshot.docs.map((doc) =>
         this.documentToClient(doc.id, doc.data() as TDocument)
       );
 
       const lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
-      const hasMore = pagination?.limit ? querySnapshot.docs.length === pagination.limit : false;
+      const hasMore = pagination?.limit
+        ? querySnapshot.docs.length === pagination.limit
+        : false;
 
       return {
         items,
@@ -124,7 +126,11 @@ export class FirestoreQueries<TDocument, TClient> {
    * Find documents with multiple field conditions
    */
   async findByFields(
-    conditions: Array<{ field: string; operator: FirestoreOperator; value: unknown }>,
+    conditions: Array<{
+      field: string;
+      operator: FirestoreOperator;
+      value: unknown;
+    }>,
     pagination?: PaginationParams
   ): Promise<QueryResult<TClient>> {
     const constraints = conditions.map(({ field, operator, value }) =>
@@ -138,7 +144,11 @@ export class FirestoreQueries<TDocument, TClient> {
    */
   async search(
     searchConstraints: {
-      filters?: Array<{ field: string; operator: FirestoreOperator; value: unknown }>;
+      filters?: Array<{
+        field: string;
+        operator: FirestoreOperator;
+        value: unknown;
+      }>;
       orderByField?: string;
       orderDirection?: 'asc' | 'desc';
     },
@@ -156,7 +166,10 @@ export class FirestoreQueries<TDocument, TClient> {
     // Add ordering
     if (searchConstraints.orderByField) {
       constraints.push(
-        orderBy(searchConstraints.orderByField, searchConstraints.orderDirection || 'asc')
+        orderBy(
+          searchConstraints.orderByField,
+          searchConstraints.orderDirection || 'asc'
+        )
       );
     }
 

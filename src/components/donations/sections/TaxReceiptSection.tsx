@@ -12,12 +12,12 @@ interface TaxReceiptSectionProps {
 }
 
 export const TaxReceiptSection: React.FC<TaxReceiptSectionProps> = ({
-  register
+  register,
 }) => {
   return (
     <div className="pb-6">
       <h2 className="text-lg font-semibold mb-4">Tax & Receipt Information</h2>
-      
+
       <div className="space-y-4">
         <label className="flex items-center">
           <input

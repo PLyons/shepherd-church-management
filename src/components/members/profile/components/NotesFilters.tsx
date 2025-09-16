@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { Search, X, Calendar } from 'lucide-react';
-import { NoteFilter, NoteCategory, NotePriority } from '../../../../types/notes';
+import {
+  NoteFilter,
+  NoteCategory,
+  NotePriority,
+} from '../../../../types/notes';
 import { NOTE_CONFIG, PRIORITY_CONFIG } from '../../../../types/notes';
 
 interface NotesFiltersProps {
@@ -13,34 +17,34 @@ export function NotesFilters({ filters, onFiltersChange }: NotesFiltersProps) {
 
   const handleCategoryToggle = (category: NoteCategory) => {
     const newCategories = filters.categories.includes(category)
-      ? filters.categories.filter(c => c !== category)
+      ? filters.categories.filter((c) => c !== category)
       : [...filters.categories, category];
-    
+
     onFiltersChange({ ...filters, categories: newCategories });
   };
 
   const handlePriorityToggle = (priority: NotePriority) => {
     const newPriorities = filters.priorities.includes(priority)
-      ? filters.priorities.filter(p => p !== priority)
+      ? filters.priorities.filter((p) => p !== priority)
       : [...filters.priorities, priority];
-    
+
     onFiltersChange({ ...filters, priorities: newPriorities });
   };
 
   const handleAddTag = () => {
     if (tagInput.trim() && !filters.tags.includes(tagInput.trim())) {
-      onFiltersChange({ 
-        ...filters, 
-        tags: [...filters.tags, tagInput.trim()] 
+      onFiltersChange({
+        ...filters,
+        tags: [...filters.tags, tagInput.trim()],
       });
       setTagInput('');
     }
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
-    onFiltersChange({ 
-      ...filters, 
-      tags: filters.tags.filter(tag => tag !== tagToRemove) 
+    onFiltersChange({
+      ...filters,
+      tags: filters.tags.filter((tag) => tag !== tagToRemove),
     });
   };
 
@@ -50,12 +54,12 @@ export function NotesFilters({ filters, onFiltersChange }: NotesFiltersProps) {
 
   const handleDateRangeChange = (field: 'start' | 'end', date: string) => {
     const dateValue = date ? new Date(date) : null;
-    onFiltersChange({ 
-      ...filters, 
-      dateRange: { 
-        ...filters.dateRange, 
-        [field]: dateValue 
-      } 
+    onFiltersChange({
+      ...filters,
+      dateRange: {
+        ...filters.dateRange,
+        [field]: dateValue,
+      },
     });
   };
 
@@ -66,11 +70,11 @@ export function NotesFilters({ filters, onFiltersChange }: NotesFiltersProps) {
       tags: [],
       dateRange: { start: null, end: null },
       search: '',
-      createdBy: []
+      createdBy: [],
     });
   };
 
-  const hasActiveFilters = 
+  const hasActiveFilters =
     filters.categories.length > 0 ||
     filters.priorities.length > 0 ||
     filters.tags.length > 0 ||
@@ -105,13 +109,21 @@ export function NotesFilters({ filters, onFiltersChange }: NotesFiltersProps) {
         <div className="grid grid-cols-2 gap-2">
           <input
             type="date"
-            value={filters.dateRange.start ? filters.dateRange.start.toISOString().split('T')[0] : ''}
+            value={
+              filters.dateRange.start
+                ? filters.dateRange.start.toISOString().split('T')[0]
+                : ''
+            }
             onChange={(e) => handleDateRangeChange('start', e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <input
             type="date"
-            value={filters.dateRange.end ? filters.dateRange.end.toISOString().split('T')[0] : ''}
+            value={
+              filters.dateRange.end
+                ? filters.dateRange.end.toISOString().split('T')[0]
+                : ''
+            }
             onChange={(e) => handleDateRangeChange('end', e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
@@ -179,7 +191,7 @@ export function NotesFilters({ filters, onFiltersChange }: NotesFiltersProps) {
           {/* Selected Tags */}
           {filters.tags.length > 0 && (
             <div className="flex flex-wrap gap-2">
-              {filters.tags.map(tag => (
+              {filters.tags.map((tag) => (
                 <span
                   key={tag}
                   className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
@@ -195,20 +207,24 @@ export function NotesFilters({ filters, onFiltersChange }: NotesFiltersProps) {
               ))}
             </div>
           )}
-          
+
           {/* Add Tag Input */}
           <div className="flex gap-2">
             <input
               type="text"
               value={tagInput}
               onChange={(e) => setTagInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+              onKeyDown={(e) =>
+                e.key === 'Enter' && (e.preventDefault(), handleAddTag())
+              }
               placeholder="Add tag to filter..."
               className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             <button
               onClick={handleAddTag}
-              disabled={!tagInput.trim() || filters.tags.includes(tagInput.trim())}
+              disabled={
+                !tagInput.trim() || filters.tags.includes(tagInput.trim())
+              }
               className="px-3 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Add

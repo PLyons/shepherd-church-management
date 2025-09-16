@@ -45,7 +45,8 @@ class RegistrationTokensService extends BaseFirestoreService<
         const document: Partial<RegistrationTokenDocument> = {};
 
         if (client.token !== undefined) document.token = client.token;
-        if (client.createdBy !== undefined) document.createdBy = client.createdBy;
+        if (client.createdBy !== undefined)
+          document.createdBy = client.createdBy;
         if (client.createdAt !== undefined)
           document.createdAt = stringToTimestamp(client.createdAt);
         if (client.expiresAt !== undefined)
@@ -280,7 +281,13 @@ class RegistrationTokensService extends BaseFirestoreService<
         currentUses: token.currentUses + 1,
       });
 
-      console.log('Token usage incremented:', tokenId, '(', token.currentUses + 1, ')');
+      console.log(
+        'Token usage incremented:',
+        tokenId,
+        '(',
+        token.currentUses + 1,
+        ')'
+      );
     } catch (error) {
       console.error('Error incrementing token usage:', error);
       throw error;

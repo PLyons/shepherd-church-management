@@ -1,6 +1,6 @@
 // src/components/donations/__tests__/FinancialReports.security.test.tsx
 // CRITICAL SECURITY TESTS: FinancialReports Dashboard - Role-Based Access & Data Privacy
-// 
+//
 // PURPOSE: Comprehensive security testing for Financial Reports Dashboard (PRP-2C-007)
 // SCOPE: Tests role-based access control, data privacy protection, financial data security, audit logging
 // SECURITY LEVEL: CRITICAL - Financial reporting with strict role-based access and data anonymization
@@ -18,7 +18,12 @@ import { FinancialReports } from '../FinancialReports';
 import { useAuth } from '../../../contexts/FirebaseAuthContext';
 import { useToast } from '../../../contexts/ToastContext';
 import { donationsService } from '../../../services/firebase';
-import { Donation, DonationMethod, DonationStatus, DonationReport } from '../../../types/donations';
+import {
+  Donation,
+  DonationMethod,
+  DonationStatus,
+  DonationReport,
+} from '../../../types/donations';
 import { Member } from '../../../types';
 
 // Mock the services and contexts
@@ -53,7 +58,11 @@ const mockFirebaseError = (code: string, message: string) => {
 };
 
 // Mock authenticated members with different roles
-const createMockMember = (id: string, role: 'admin' | 'pastor' | 'member', email: string): Member => ({
+const createMockMember = (
+  id: string,
+  role: 'admin' | 'pastor' | 'member',
+  email: string
+): Member => ({
   id,
   firstName: `Test`,
   lastName: `User ${id}`,
@@ -77,7 +86,12 @@ const MOCK_MEMBERS = {
 };
 
 // Mock financial report data
-const createMockDonation = (id: string, memberId: string, memberName: string, amount: number): Donation => ({
+const createMockDonation = (
+  id: string,
+  memberId: string,
+  memberName: string,
+  amount: number
+): Donation => ({
   id,
   memberId,
   memberName,
@@ -106,12 +120,12 @@ const createMockDonation = (id: string, memberId: string, memberName: string, am
 });
 
 const MOCK_DONATIONS = {
-  donation1: createMockDonation('don-001', 'member-123', 'John Doe', 100.00),
-  donation2: createMockDonation('don-002', 'member-456', 'Jane Smith', 250.00),
-  donation3: createMockDonation('don-003', 'member-789', 'Bob Johnson', 500.00),
-  donation4: createMockDonation('don-004', 'member-101', 'Alice Brown', 75.00),
+  donation1: createMockDonation('don-001', 'member-123', 'John Doe', 100.0),
+  donation2: createMockDonation('don-002', 'member-456', 'Jane Smith', 250.0),
+  donation3: createMockDonation('don-003', 'member-789', 'Bob Johnson', 500.0),
+  donation4: createMockDonation('don-004', 'member-101', 'Alice Brown', 75.0),
   anonymousDonation: {
-    ...createMockDonation('don-005', 'member-202', '', 1000.00),
+    ...createMockDonation('don-005', 'member-202', '', 1000.0),
     memberName: undefined,
     form990Fields: {
       lineItem: '1a_cash_contributions',
@@ -123,43 +137,73 @@ const MOCK_DONATIONS = {
 };
 
 const MOCK_ADMIN_REPORT: DonationReport = {
-  totalAmount: 1925.00,
+  totalAmount: 1925.0,
   totalDonations: 5,
-  averageDonation: 385.00,
+  averageDonation: 385.0,
   periodStart: '2025-01-01T00:00:00Z',
   periodEnd: '2025-01-31T23:59:59Z',
   byCategory: [
-    { categoryId: 'tithe-001', categoryName: 'Tithes', amount: 1500.00, count: 4 },
-    { categoryId: 'offering-002', categoryName: 'Special Offering', amount: 425.00, count: 1 },
+    {
+      categoryId: 'tithe-001',
+      categoryName: 'Tithes',
+      amount: 1500.0,
+      count: 4,
+    },
+    {
+      categoryId: 'offering-002',
+      categoryName: 'Special Offering',
+      amount: 425.0,
+      count: 1,
+    },
   ],
   byMethod: [
-    { method: 'credit_card', amount: 1200.00, count: 3 },
-    { method: 'bank_transfer', amount: 725.00, count: 2 },
+    { method: 'credit_card', amount: 1200.0, count: 3 },
+    { method: 'bank_transfer', amount: 725.0, count: 2 },
   ],
   topDonors: [
-    { memberId: 'member-789', memberName: 'Bob Johnson', amount: 500.00, donationCount: 1 },
-    { memberId: 'member-456', memberName: 'Jane Smith', amount: 250.00, donationCount: 1 },
+    {
+      memberId: 'member-789',
+      memberName: 'Bob Johnson',
+      amount: 500.0,
+      donationCount: 1,
+    },
+    {
+      memberId: 'member-456',
+      memberName: 'Jane Smith',
+      amount: 250.0,
+      donationCount: 1,
+    },
   ],
   donations: Object.values(MOCK_DONATIONS),
 };
 
 const MOCK_PASTOR_REPORT: DonationReport = {
-  totalAmount: 1925.00,
+  totalAmount: 1925.0,
   totalDonations: 5,
-  averageDonation: 385.00,
+  averageDonation: 385.0,
   periodStart: '2025-01-01T00:00:00Z',
   periodEnd: '2025-01-31T23:59:59Z',
   byCategory: [
-    { categoryId: 'tithe-001', categoryName: 'Tithes', amount: 1500.00, count: 4 },
-    { categoryId: 'offering-002', categoryName: 'Special Offering', amount: 425.00, count: 1 },
+    {
+      categoryId: 'tithe-001',
+      categoryName: 'Tithes',
+      amount: 1500.0,
+      count: 4,
+    },
+    {
+      categoryId: 'offering-002',
+      categoryName: 'Special Offering',
+      amount: 425.0,
+      count: 1,
+    },
   ],
   byMethod: [
-    { method: 'credit_card', amount: 1200.00, count: 3 },
-    { method: 'bank_transfer', amount: 725.00, count: 2 },
+    { method: 'credit_card', amount: 1200.0, count: 3 },
+    { method: 'bank_transfer', amount: 725.0, count: 2 },
   ],
   // Pastor view: no individual donor information
   topDonors: [],
-  donations: Object.values(MOCK_DONATIONS).map(d => ({
+  donations: Object.values(MOCK_DONATIONS).map((d) => ({
     ...d,
     memberId: 'ANONYMIZED',
     memberName: 'Anonymous Donor',
@@ -187,7 +231,7 @@ const mockUseToast = useToast as Mock;
 describe('FinancialReports - CRITICAL Security Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Default admin auth context mock
     mockUseAuth.mockReturnValue({
       user: { uid: 'admin-123' },
@@ -203,9 +247,15 @@ describe('FinancialReports - CRITICAL Security Tests', () => {
     });
 
     // Default successful service responses
-    mockDonationsService.getFinancialReports.mockResolvedValue(MOCK_ADMIN_REPORT);
-    mockDonationsService.getAggregateReports.mockResolvedValue(MOCK_PASTOR_REPORT);
-    mockDonationsService.getAnonymizedReports.mockResolvedValue(MOCK_PASTOR_REPORT);
+    mockDonationsService.getFinancialReports.mockResolvedValue(
+      MOCK_ADMIN_REPORT
+    );
+    mockDonationsService.getAggregateReports.mockResolvedValue(
+      MOCK_PASTOR_REPORT
+    );
+    mockDonationsService.getAnonymizedReports.mockResolvedValue(
+      MOCK_PASTOR_REPORT
+    );
     mockDonationsService.auditDataAccess.mockResolvedValue(true);
   });
 
@@ -279,7 +329,7 @@ describe('FinancialReports - CRITICAL Security Tests', () => {
 
       // Should display access denied message
       expect(screen.getByText('Access denied')).toBeInTheDocument();
-      
+
       // Should not make any service calls
       expect(mockDonationsService.getFinancialReports).not.toHaveBeenCalled();
       expect(mockDonationsService.getAnonymizedReports).not.toHaveBeenCalled();
@@ -311,8 +361,12 @@ describe('FinancialReports - CRITICAL Security Tests', () => {
 
       await waitFor(() => {
         // Should not display admin-only financial details
-        expect(screen.queryByText(/individual donor details/i)).not.toBeInTheDocument();
-        expect(screen.queryByText(/tax deduction summary/i)).not.toBeInTheDocument();
+        expect(
+          screen.queryByText(/individual donor details/i)
+        ).not.toBeInTheDocument();
+        expect(
+          screen.queryByText(/tax deduction summary/i)
+        ).not.toBeInTheDocument();
         expect(screen.queryByText(/member-123/)).not.toBeInTheDocument(); // Member IDs should be hidden
       });
     });
@@ -346,14 +400,17 @@ describe('FinancialReports - CRITICAL Security Tests', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Export Summary Report')).toBeInTheDocument();
-        expect(screen.queryByText('Export Detailed Report')).not.toBeInTheDocument();
+        expect(
+          screen.queryByText('Export Detailed Report')
+        ).not.toBeInTheDocument();
         expect(screen.queryByText('Export Donor List')).not.toBeInTheDocument();
       });
     });
 
     it('should enforce permission checks on all data fetching operations', async () => {
-      const mockHasRole = vi.fn()
-        .mockReturnValueOnce(true)  // Initial render permission check
+      const mockHasRole = vi
+        .fn()
+        .mockReturnValueOnce(true) // Initial render permission check
         .mockReturnValueOnce(false); // Secondary data fetch should fail
 
       mockUseAuth.mockReturnValue({
@@ -366,7 +423,9 @@ describe('FinancialReports - CRITICAL Security Tests', () => {
       renderWithRouter(<FinancialReports />);
 
       // Click on detailed view button (should trigger permission check)
-      const detailedButton = await waitFor(() => screen.getByText('View Details'));
+      const detailedButton = await waitFor(() =>
+        screen.getByText('View Details')
+      );
       fireEvent.click(detailedButton);
 
       await waitFor(() => {
@@ -399,7 +458,7 @@ describe('FinancialReports - CRITICAL Security Tests', () => {
 
     it('should handle role changes during active session', async () => {
       const mockHasRole = vi.fn().mockReturnValue(true);
-      
+
       mockUseAuth.mockReturnValue({
         user: { uid: 'admin-123' },
         member: MOCK_MEMBERS.admin,
@@ -430,7 +489,9 @@ describe('FinancialReports - CRITICAL Security Tests', () => {
     });
 
     it('should validate session integrity and detect privilege escalation attempts', async () => {
-      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleWarnSpy = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => {});
 
       // Simulate mismatched user context (potential privilege escalation)
       mockUseAuth.mockReturnValue({
@@ -522,7 +583,7 @@ describe('FinancialReports - CRITICAL Security Tests', () => {
 
     it('should audit and alert on repeated access denials (potential attack)', async () => {
       const auditSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      
+
       mockUseAuth.mockReturnValue({
         user: { uid: 'member-789' },
         member: MOCK_MEMBERS.member,
@@ -550,12 +611,12 @@ describe('FinancialReports - CRITICAL Security Tests', () => {
     });
 
     it('should enforce time-based session validation for sensitive operations', async () => {
-      const oldTimestamp = Date.now() - (2 * 60 * 60 * 1000); // 2 hours ago
-      
+      const oldTimestamp = Date.now() - 2 * 60 * 60 * 1000; // 2 hours ago
+
       mockUseAuth.mockReturnValue({
-        user: { 
+        user: {
           uid: 'admin-123',
-          metadata: { lastSignInTime: new Date(oldTimestamp).toISOString() }
+          metadata: { lastSignInTime: new Date(oldTimestamp).toISOString() },
         },
         member: MOCK_MEMBERS.admin,
         loading: false,
@@ -623,13 +684,15 @@ describe('FinancialReports - CRITICAL Security Tests', () => {
       const reportWithSmallDonations = {
         ...MOCK_PASTOR_REPORT,
         byAmount: [
-          { range: '$1-$99', count: 15, totalAmount: 750.00 }, // Aggregated small donations
-          { range: '$100-$499', count: 3, totalAmount: 900.00 },
-          { range: '$500+', count: 2, totalAmount: 1200.00 },
+          { range: '$1-$99', count: 15, totalAmount: 750.0 }, // Aggregated small donations
+          { range: '$100-$499', count: 3, totalAmount: 900.0 },
+          { range: '$500+', count: 2, totalAmount: 1200.0 },
         ],
       };
 
-      mockDonationsService.getAnonymizedReports.mockResolvedValue(reportWithSmallDonations);
+      mockDonationsService.getAnonymizedReports.mockResolvedValue(
+        reportWithSmallDonations
+      );
 
       mockUseAuth.mockReturnValue({
         user: { uid: 'pastor-456' },
@@ -678,7 +741,7 @@ describe('FinancialReports - CRITICAL Security Tests', () => {
       await waitFor(() => {
         // Member IDs should not be visible in DOM or data attributes
         const reportElements = screen.queryAllByTestId(/donor-row/);
-        reportElements.forEach(element => {
+        reportElements.forEach((element) => {
           expect(element).not.toHaveAttribute('data-member-id');
           expect(element.textContent).not.toMatch(/member-\d+/);
         });
@@ -691,7 +754,9 @@ describe('FinancialReports - CRITICAL Security Tests', () => {
         donations: [MOCK_DONATIONS.anonymousDonation],
       };
 
-      mockDonationsService.getFinancialReports.mockResolvedValue(reportWithAnonymous);
+      mockDonationsService.getFinancialReports.mockResolvedValue(
+        reportWithAnonymous
+      );
 
       mockUseAuth.mockReturnValue({
         user: { uid: 'admin-123' },
@@ -726,7 +791,9 @@ describe('FinancialReports - CRITICAL Security Tests', () => {
 
       renderWithRouter(<FinancialReports />);
 
-      const exportButton = await waitFor(() => screen.getByText('Export Report'));
+      const exportButton = await waitFor(() =>
+        screen.getByText('Export Report')
+      );
       fireEvent.click(exportButton);
 
       await waitFor(() => {
@@ -751,11 +818,16 @@ describe('FinancialReports - CRITICAL Security Tests', () => {
 
       await waitFor(() => {
         // Check that sensitive data is not present in DOM attributes or hidden elements
-        const sensitiveData = ['member-123', 'member-456', 'Bob Johnson', 'Jane Smith'];
+        const sensitiveData = [
+          'member-123',
+          'member-456',
+          'Bob Johnson',
+          'Jane Smith',
+        ];
         const allElements = document.querySelectorAll('*');
-        
-        sensitiveData.forEach(data => {
-          allElements.forEach(element => {
+
+        sensitiveData.forEach((data) => {
+          allElements.forEach((element) => {
             expect(element.getAttribute('data-member-id')).not.toBe(data);
             expect(element.getAttribute('data-donor-name')).not.toBe(data);
             expect(element.className).not.toContain(data);
@@ -777,7 +849,13 @@ describe('FinancialReports - CRITICAL Security Tests', () => {
       await waitFor(() => {
         expect(mockDonationsService.getAnonymizedReports).toHaveBeenCalledWith({
           fields: ['amount', 'date', 'category'], // Only necessary fields
-          excludeFields: ['memberName', 'memberId', 'email', 'phone', 'address'],
+          excludeFields: [
+            'memberName',
+            'memberId',
+            'email',
+            'phone',
+            'address',
+          ],
           anonymizeData: true,
           roleContext: 'pastor',
         });
@@ -809,7 +887,7 @@ describe('FinancialReports - CRITICAL Security Tests', () => {
         // Should show identified donors for admin
         expect(screen.getByText('John Doe')).toBeInTheDocument();
         expect(screen.getByText('Jane Smith')).toBeInTheDocument();
-        
+
         // Should still protect anonymous donation identity
         expect(screen.getByText('Anonymous Donation')).toBeInTheDocument();
         expect(screen.queryByText('member-202')).not.toBeInTheDocument();
@@ -862,7 +940,9 @@ describe('FinancialReports - CRITICAL Security Tests', () => {
         },
       };
 
-      mockDonationsService.getFinancialReports.mockResolvedValue(retentionReport);
+      mockDonationsService.getFinancialReports.mockResolvedValue(
+        retentionReport
+      );
 
       mockUseAuth.mockReturnValue({
         user: { uid: 'admin-123' },
@@ -875,8 +955,12 @@ describe('FinancialReports - CRITICAL Security Tests', () => {
 
       await waitFor(() => {
         expect(screen.getByText('Data Retention: 7 years')).toBeInTheDocument();
-        expect(screen.getByText('Next Purge: Dec 31, 2025')).toBeInTheDocument();
-        expect(screen.getByText('45 records scheduled for purging')).toBeInTheDocument();
+        expect(
+          screen.getByText('Next Purge: Dec 31, 2025')
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText('45 records scheduled for purging')
+        ).toBeInTheDocument();
       });
     });
   });
@@ -914,14 +998,16 @@ describe('FinancialReports - CRITICAL Security Tests', () => {
       const reportWithCalculations = {
         ...MOCK_ADMIN_REPORT,
         calculations: {
-          totalAmount: 1925.00,
-          calculatedTotal: 1925.00, // Should match
-          variance: 0.00,
+          totalAmount: 1925.0,
+          calculatedTotal: 1925.0, // Should match
+          variance: 0.0,
           isValid: true,
         },
       };
 
-      mockDonationsService.getFinancialReports.mockResolvedValue(reportWithCalculations);
+      mockDonationsService.getFinancialReports.mockResolvedValue(
+        reportWithCalculations
+      );
 
       mockUseAuth.mockReturnValue({
         user: { uid: 'admin-123' },
@@ -941,13 +1027,17 @@ describe('FinancialReports - CRITICAL Security Tests', () => {
     it('should detect and prevent financial data tampering', async () => {
       const tamperedReport = {
         ...MOCK_ADMIN_REPORT,
-        totalAmount: 1925.00,
+        totalAmount: 1925.0,
         checksum: 'invalid_checksum', // Simulated tampering
       };
 
-      mockDonationsService.getFinancialReports.mockResolvedValue(tamperedReport);
+      mockDonationsService.getFinancialReports.mockResolvedValue(
+        tamperedReport
+      );
 
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
 
       mockUseAuth.mockReturnValue({
         user: { uid: 'admin-123' },
@@ -990,7 +1080,9 @@ describe('FinancialReports - CRITICAL Security Tests', () => {
 
       renderWithRouter(<FinancialReports />);
 
-      const exportButton = await waitFor(() => screen.getByText('Export Detailed Report'));
+      const exportButton = await waitFor(() =>
+        screen.getByText('Export Detailed Report')
+      );
       fireEvent.click(exportButton);
 
       await waitFor(() => {
@@ -1027,7 +1119,9 @@ describe('FinancialReports - CRITICAL Security Tests', () => {
       });
 
       // Test filter operation audit
-      const filterButton = await waitFor(() => screen.getByText('Filter by Date'));
+      const filterButton = await waitFor(() =>
+        screen.getByText('Filter by Date')
+      );
       fireEvent.click(filterButton);
 
       await waitFor(() => {
@@ -1094,11 +1188,17 @@ describe('FinancialReports - CRITICAL Security Tests', () => {
       renderWithRouter(<FinancialReports />);
 
       // Simulate form submission with malicious input
-      const dateInput = await waitFor(() => screen.getByLabelText('Date Range'));
-      fireEvent.change(dateInput, { target: { value: maliciousInput.dateRange } });
+      const dateInput = await waitFor(() =>
+        screen.getByLabelText('Date Range')
+      );
+      fireEvent.change(dateInput, {
+        target: { value: maliciousInput.dateRange },
+      });
 
       const categoryInput = screen.getByLabelText('Category');
-      fireEvent.change(categoryInput, { target: { value: maliciousInput.category } });
+      fireEvent.change(categoryInput, {
+        target: { value: maliciousInput.category },
+      });
 
       const submitButton = screen.getByText('Generate Report');
       fireEvent.click(submitButton);
@@ -1120,7 +1220,7 @@ describe('FinancialReports - CRITICAL Security Tests', () => {
       });
 
       mockUseAuth.mockReturnValue({
-        user: { 
+        user: {
           uid: 'admin-123',
           getIdToken: vi.fn().mockResolvedValue('valid_jwt_token'),
         },
@@ -1161,7 +1261,9 @@ describe('FinancialReports - CRITICAL Security Tests', () => {
         ],
       };
 
-      mockDonationsService.getFinancialReports.mockResolvedValue(suspiciousReport);
+      mockDonationsService.getFinancialReports.mockResolvedValue(
+        suspiciousReport
+      );
 
       mockUseAuth.mockReturnValue({
         user: { uid: 'admin-123' },
@@ -1174,8 +1276,12 @@ describe('FinancialReports - CRITICAL Security Tests', () => {
 
       await waitFor(() => {
         expect(screen.getByText('⚠️ Fraud Alerts (2)')).toBeInTheDocument();
-        expect(screen.getByText('Multiple large donations from same IP address')).toBeInTheDocument();
-        expect(screen.getByText('Potential duplicate donation detected')).toBeInTheDocument();
+        expect(
+          screen.getByText('Multiple large donations from same IP address')
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText('Potential duplicate donation detected')
+        ).toBeInTheDocument();
       });
     });
 
@@ -1204,9 +1310,13 @@ describe('FinancialReports - CRITICAL Security Tests', () => {
       renderWithRouter(<FinancialReports />);
 
       await waitFor(() => {
-        expect(screen.getByText('Last Backup: Jan 14, 2025')).toBeInTheDocument();
+        expect(
+          screen.getByText('Last Backup: Jan 14, 2025')
+        ).toBeInTheDocument();
         expect(screen.getByText('✓ AES-256 Encrypted')).toBeInTheDocument();
-        expect(screen.getByText('RPO: 1 hour | RTO: 4 hours')).toBeInTheDocument();
+        expect(
+          screen.getByText('RPO: 1 hour | RTO: 4 hours')
+        ).toBeInTheDocument();
       });
     });
   });
@@ -1231,16 +1341,22 @@ describe('FinancialReports - CRITICAL Security Tests', () => {
 
       await waitFor(() => {
         expect(mockDonationsService.auditDataAccess).toHaveBeenCalledTimes(3);
-        expect(mockDonationsService.getFinancialReports).toHaveBeenCalledTimes(3);
+        expect(mockDonationsService.getFinancialReports).toHaveBeenCalledTimes(
+          3
+        );
       });
     });
 
     it('should prevent data exposure through error messages', async () => {
       mockDonationsService.getFinancialReports.mockRejectedValue(
-        new Error('Database connection failed: server db-financial-01 unreachable')
+        new Error(
+          'Database connection failed: server db-financial-01 unreachable'
+        )
       );
 
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
 
       mockUseAuth.mockReturnValue({
         user: { uid: 'admin-123' },
@@ -1253,7 +1369,9 @@ describe('FinancialReports - CRITICAL Security Tests', () => {
 
       await waitFor(() => {
         // Should show generic error to user, not specific database details
-        expect(screen.getByText('Unable to load financial reports')).toBeInTheDocument();
+        expect(
+          screen.getByText('Unable to load financial reports')
+        ).toBeInTheDocument();
         expect(screen.queryByText('db-financial-01')).not.toBeInTheDocument();
       });
 
@@ -1265,7 +1383,9 @@ describe('FinancialReports - CRITICAL Security Tests', () => {
       mockDonationsService.getFinancialReports.mockImplementation(() => {
         requestCount++;
         if (requestCount > 10) {
-          return Promise.reject(mockFirebaseError('resource-exhausted', 'Rate limit exceeded'));
+          return Promise.reject(
+            mockFirebaseError('resource-exhausted', 'Rate limit exceeded')
+          );
         }
         return Promise.resolve(MOCK_ADMIN_REPORT);
       });

@@ -20,8 +20,16 @@ export function ContactInfoSection({
   onToggle,
 }: ContactInfoSectionProps) {
   const { register } = form;
-  const { fields: emailFields, append: appendEmail, remove: removeEmail } = emailFieldArray;
-  const { fields: phoneFields, append: appendPhone, remove: removePhone } = phoneFieldArray;
+  const {
+    fields: emailFields,
+    append: appendEmail,
+    remove: removeEmail,
+  } = emailFieldArray;
+  const {
+    fields: phoneFields,
+    append: appendPhone,
+    remove: removePhone,
+  } = phoneFieldArray;
 
   return (
     <div className="border border-gray-200 rounded-lg">
@@ -65,10 +73,7 @@ export function ContactInfoSection({
             </div>
 
             {emailFields.map((field, index) => (
-              <div
-                key={field.id}
-                className="flex items-center space-x-2 mb-2"
-              >
+              <div key={field.id} className="flex items-center space-x-2 mb-2">
                 <select
                   {...register(`emails.${index}.type` as const)}
                   className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -179,17 +184,16 @@ export function ContactInfoSection({
                 </div>
 
                 {/* SMS Opt-in for mobile phones */}
-                {watchedPhones &&
-                  watchedPhones[index]?.type === 'mobile' && (
-                    <label className="flex items-center text-sm text-gray-600">
-                      <input
-                        type="checkbox"
-                        {...register(`phones.${index}.smsOptIn` as const)}
-                        className="mr-2"
-                      />
-                      Allow SMS messages to this number
-                    </label>
-                  )}
+                {watchedPhones && watchedPhones[index]?.type === 'mobile' && (
+                  <label className="flex items-center text-sm text-gray-600">
+                    <input
+                      type="checkbox"
+                      {...register(`phones.${index}.smsOptIn` as const)}
+                      className="mr-2"
+                    />
+                    Allow SMS messages to this number
+                  </label>
+                )}
               </div>
             ))}
           </div>

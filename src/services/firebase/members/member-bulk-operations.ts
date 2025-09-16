@@ -106,11 +106,17 @@ export class MemberBulkOperations {
       errors.push('Phone format is invalid');
     }
 
-    if (memberData.role && !['admin', 'pastor', 'member'].includes(memberData.role)) {
+    if (
+      memberData.role &&
+      !['admin', 'pastor', 'member'].includes(memberData.role)
+    ) {
       errors.push('Invalid role specified');
     }
 
-    if (memberData.memberStatus && !['active', 'inactive', 'visitor'].includes(memberData.memberStatus)) {
+    if (
+      memberData.memberStatus &&
+      !['active', 'inactive', 'visitor'].includes(memberData.memberStatus)
+    ) {
       errors.push('Invalid member status specified');
     }
 
@@ -149,16 +155,18 @@ export class MemberBulkOperations {
 
     for (let i = 0; i < membersData.length; i += batchSize) {
       const batch = membersData.slice(i, i + batchSize);
-      console.log(`Processing batch ${Math.floor(i / batchSize) + 1} of ${Math.ceil(membersData.length / batchSize)}`);
-      
+      console.log(
+        `Processing batch ${Math.floor(i / batchSize) + 1} of ${Math.ceil(membersData.length / batchSize)}`
+      );
+
       const batchResult = await this.importMembers(batch);
-      
+
       totalResult.success.push(...batchResult.success);
       totalResult.errors.push(...batchResult.errors);
 
       // Small delay between batches to be kind to Firestore
       if (i + batchSize < membersData.length) {
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
     }
 

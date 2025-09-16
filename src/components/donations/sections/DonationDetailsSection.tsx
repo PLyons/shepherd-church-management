@@ -18,17 +18,20 @@ export const DonationDetailsSection: React.FC<DonationDetailsSectionProps> = ({
   register,
   errors,
   watch,
-  categories
+  categories,
 }) => {
   const watchMethod = watch('method');
 
   return (
     <div className="border-b pb-6">
       <h2 className="text-lg font-semibold mb-4">Donation Details</h2>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="amount"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Donation Amount *
           </label>
           <input
@@ -40,8 +43,11 @@ export const DonationDetailsSection: React.FC<DonationDetailsSectionProps> = ({
             {...register('amount', {
               required: 'Amount is required',
               min: { value: 0.01, message: 'Amount must be greater than 0' },
-              max: { value: 1000000, message: 'Amount cannot exceed $1,000,000' },
-              valueAsNumber: true
+              max: {
+                value: 1000000,
+                message: 'Amount cannot exceed $1,000,000',
+              },
+              valueAsNumber: true,
             })}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="0.00"
@@ -52,7 +58,10 @@ export const DonationDetailsSection: React.FC<DonationDetailsSectionProps> = ({
         </div>
 
         <div>
-          <label htmlFor="donationDate" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="donationDate"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Donation Date *
           </label>
           <input
@@ -62,18 +71,25 @@ export const DonationDetailsSection: React.FC<DonationDetailsSectionProps> = ({
               required: 'Donation date is required',
               validate: (value) => {
                 const today = new Date().toISOString().split('T')[0];
-                return value <= today || 'Donation date cannot be in the future';
-              }
+                return (
+                  value <= today || 'Donation date cannot be in the future'
+                );
+              },
             })}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           {errors.donationDate && (
-            <p className="mt-1 text-sm text-red-600">{errors.donationDate.message}</p>
+            <p className="mt-1 text-sm text-red-600">
+              {errors.donationDate.message}
+            </p>
           )}
         </div>
 
         <div>
-          <label htmlFor="method" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="method"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Payment Method *
           </label>
           <select
@@ -93,7 +109,10 @@ export const DonationDetailsSection: React.FC<DonationDetailsSectionProps> = ({
         </div>
 
         <div>
-          <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="categoryId"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Donation Category *
           </label>
           <select
@@ -109,32 +128,43 @@ export const DonationDetailsSection: React.FC<DonationDetailsSectionProps> = ({
             ))}
           </select>
           {errors.categoryId && (
-            <p className="mt-1 text-sm text-red-600">{errors.categoryId.message}</p>
+            <p className="mt-1 text-sm text-red-600">
+              {errors.categoryId.message}
+            </p>
           )}
         </div>
 
         {watchMethod === 'check' && (
           <div>
-            <label htmlFor="checkNumber" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="checkNumber"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Check Number *
             </label>
             <input
               id="checkNumber"
               type="text"
               {...register('checkNumber', {
-                required: watchMethod === 'check' ? 'Check number is required' : false
+                required:
+                  watchMethod === 'check' ? 'Check number is required' : false,
               })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Check number"
             />
             {errors.checkNumber && (
-              <p className="mt-1 text-sm text-red-600">{errors.checkNumber.message}</p>
+              <p className="mt-1 text-sm text-red-600">
+                {errors.checkNumber.message}
+              </p>
             )}
           </div>
         )}
 
         <div className="md:col-span-2">
-          <label htmlFor="note" className="block text-sm font-medium text-gray-700 mb-1">
+          <label
+            htmlFor="note"
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             Notes
           </label>
           <textarea

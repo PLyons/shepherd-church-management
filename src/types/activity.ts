@@ -15,7 +15,7 @@ export interface BaseActivity {
   source: 'system' | 'manual' | 'import';
 }
 
-export type ActivityType = 
+export type ActivityType =
   | 'profile_update'
   | 'status_change'
   | 'event_attendance'
@@ -79,7 +79,7 @@ export interface CommunicationActivity extends BaseActivity {
   };
 }
 
-export type MemberActivity = 
+export type MemberActivity =
   | ProfileUpdateActivity
   | StatusChangeActivity
   | EventAttendanceActivity
@@ -96,41 +96,44 @@ export interface ActivityFilter {
   search: string;
 }
 
-export const ACTIVITY_CONFIG: Record<ActivityType, {
-  label: string;
-  icon: string;
-  color: string;
-  bgColor: string;
-  description: string;
-  requiresPermission?: string[];
-}> = {
+export const ACTIVITY_CONFIG: Record<
+  ActivityType,
+  {
+    label: string;
+    icon: string;
+    color: string;
+    bgColor: string;
+    description: string;
+    requiresPermission?: string[];
+  }
+> = {
   profile_update: {
     label: 'Profile Update',
     icon: '👤',
     color: 'text-blue-600',
     bgColor: 'bg-blue-100',
-    description: 'Member information was updated'
+    description: 'Member information was updated',
   },
   status_change: {
     label: 'Status Change',
     icon: '🔄',
     color: 'text-purple-600',
     bgColor: 'bg-purple-100',
-    description: 'Membership status was changed'
+    description: 'Membership status was changed',
   },
   event_attendance: {
     label: 'Event Attendance',
     icon: '📅',
     color: 'text-green-600',
     bgColor: 'bg-green-100',
-    description: 'Attended or registered for an event'
+    description: 'Attended or registered for an event',
   },
   volunteer_service: {
     label: 'Volunteer Service',
     icon: '🤝',
     color: 'text-orange-600',
     bgColor: 'bg-orange-100',
-    description: 'Volunteered for church activities'
+    description: 'Volunteered for church activities',
   },
   donation: {
     label: 'Donation',
@@ -138,7 +141,7 @@ export const ACTIVITY_CONFIG: Record<ActivityType, {
     color: 'text-emerald-600',
     bgColor: 'bg-emerald-100',
     description: 'Made a financial contribution',
-    requiresPermission: ['admin', 'pastor']
+    requiresPermission: ['admin', 'pastor'],
   },
   communication: {
     label: 'Communication',
@@ -146,7 +149,7 @@ export const ACTIVITY_CONFIG: Record<ActivityType, {
     color: 'text-indigo-600',
     bgColor: 'bg-indigo-100',
     description: 'Communication or interaction',
-    requiresPermission: ['admin', 'pastor']
+    requiresPermission: ['admin', 'pastor'],
   },
   note_added: {
     label: 'Note Added',
@@ -154,27 +157,27 @@ export const ACTIVITY_CONFIG: Record<ActivityType, {
     color: 'text-gray-600',
     bgColor: 'bg-gray-100',
     description: 'Pastoral or administrative note added',
-    requiresPermission: ['admin', 'pastor']
+    requiresPermission: ['admin', 'pastor'],
   },
   household_change: {
     label: 'Household Change',
     icon: '🏠',
     color: 'text-cyan-600',
     bgColor: 'bg-cyan-100',
-    description: 'Household membership changed'
+    description: 'Household membership changed',
   },
   login: {
     label: 'Login',
     icon: '🔐',
     color: 'text-slate-600',
     bgColor: 'bg-slate-100',
-    description: 'Logged into the system'
+    description: 'Logged into the system',
   },
   registration: {
     label: 'Registration',
     icon: '🎯',
     color: 'text-rose-600',
     bgColor: 'bg-rose-100',
-    description: 'Registered or joined the church'
-  }
+    description: 'Registered or joined the church',
+  },
 };

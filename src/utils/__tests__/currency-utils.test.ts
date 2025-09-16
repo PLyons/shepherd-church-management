@@ -5,7 +5,11 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { formatCurrency, parseCurrency, isValidCurrency } from '../currency-utils';
+import {
+  formatCurrency,
+  parseCurrency,
+  isValidCurrency,
+} from '../currency-utils';
 
 describe('Currency Utilities', () => {
   describe('formatCurrency', () => {
@@ -65,9 +69,9 @@ describe('Currency Utilities', () => {
 
     it('should remove symbols and spaces', () => {
       expect(parseCurrency('$ 1,000 ')).toBe(1000);
-      expect(parseCurrency(' $500.50 ')).toBe(500.50);
+      expect(parseCurrency(' $500.50 ')).toBe(500.5);
       expect(parseCurrency('1000')).toBe(1000); // No dollar sign
-      expect(parseCurrency('1,000.50')).toBe(1000.50); // No dollar sign with commas
+      expect(parseCurrency('1,000.50')).toBe(1000.5); // No dollar sign with commas
     });
 
     it('should handle invalid input gracefully', () => {
@@ -133,7 +137,7 @@ describe('Currency Utilities', () => {
     describe('invalid amounts (should return false)', () => {
       it('should reject negative amounts', () => {
         expect(isValidCurrency(-1)).toBe(false);
-        expect(isValidCurrency(-100.50)).toBe(false);
+        expect(isValidCurrency(-100.5)).toBe(false);
         expect(isValidCurrency('$-100.00')).toBe(false);
         expect(isValidCurrency('-50')).toBe(false);
       });
@@ -174,7 +178,7 @@ describe('Currency Utilities', () => {
         expect(isValidCurrency(999999.99)).toBe(true);
         // Just over the limit
         expect(isValidCurrency(1000000.01)).toBe(false);
-        
+
         // Smallest valid amount
         expect(isValidCurrency(0.01)).toBe(true);
         // Just under smallest valid amount
@@ -200,7 +204,7 @@ describe('Currency Utilities', () => {
         expect(isValidCurrency(500)).toBe(true);
         expect(isValidCurrency(1000)).toBe(true);
         expect(isValidCurrency(5000)).toBe(true);
-        
+
         // Large but reasonable amounts
         expect(isValidCurrency(25000)).toBe(true);
         expect(isValidCurrency(100000)).toBe(true);
@@ -227,20 +231,20 @@ describe('Currency Utilities', () => {
   describe('integration scenarios', () => {
     it('should maintain consistency between parse and format operations', () => {
       const testValues = ['$100.00', '$1,234.56', '$0.01', '$999,999.99'];
-      
-      testValues.forEach(value => {
+
+      testValues.forEach((value) => {
         const parsed = parseCurrency(value);
         const formatted = formatCurrency(parsed);
         const reparsed = parseCurrency(formatted);
-        
+
         expect(reparsed).toBe(parsed);
       });
     });
 
     it('should handle round-trip validation correctly', () => {
       const testAmounts = [0, 0.01, 100, 1234.56, 999999.99];
-      
-      testAmounts.forEach(amount => {
+
+      testAmounts.forEach((amount) => {
         expect(isValidCurrency(amount)).toBe(true);
         const formatted = formatCurrency(amount);
         expect(isValidCurrency(formatted)).toBe(true);
@@ -251,13 +255,14 @@ describe('Currency Utilities', () => {
 
     it('should reject invalid amounts consistently across all functions', () => {
       const invalidInputs = [-100, 1000001, 'abc', '', NaN, Infinity];
-      
-      invalidInputs.forEach(input => {
+
+      invalidInputs.forEach((input) => {
         expect(isValidCurrency(input)).toBe(false);
-        
+
         if (typeof input === 'string') {
           const parsed = parseCurrency(input);
-          if (parsed !== 0) { // parseCurrency might return 0 for invalid strings
+          if (parsed !== 0) {
+            // parseCurrency might return 0 for invalid strings
             expect(isValidCurrency(parsed)).toBe(false);
           }
         }

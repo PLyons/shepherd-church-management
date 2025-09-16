@@ -3,7 +3,14 @@
 // Displays total donations, average gift, unique donors, and YTD progress with growth indicators
 // RELEVANT FILES: src/components/donations/FinancialReports.tsx, src/types/donations.ts, src/utils/currency-utils.ts
 
-import { TrendingUp, TrendingDown, DollarSign, Users, Calendar, Target } from 'lucide-react';
+import {
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  Users,
+  Calendar,
+  Target,
+} from 'lucide-react';
 import { formatCurrency } from '../../../utils/currency-utils';
 import { FinancialSummary } from '../../../types/donations';
 
@@ -24,15 +31,15 @@ interface KPICardProps {
   color?: 'blue' | 'green' | 'purple' | 'orange';
 }
 
-function KPICard({ 
-  title, 
-  value, 
-  icon: Icon, 
-  growth, 
-  loading, 
-  testId, 
+function KPICard({
+  title,
+  value,
+  icon: Icon,
+  growth,
+  loading,
+  testId,
   subtitle,
-  color = 'blue' 
+  color = 'blue',
 }: KPICardProps) {
   const colorClasses = {
     blue: 'bg-blue-50 text-blue-600 border-blue-200',
@@ -57,7 +64,7 @@ function KPICard({
   }
 
   return (
-    <div 
+    <div
       className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
       data-testid={testId}
     >
@@ -67,19 +74,20 @@ function KPICard({
           <Icon className="h-5 w-5" aria-hidden="true" />
         </div>
       </div>
-      
+
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-2xl font-bold text-gray-900" aria-label={`${title}: ${value}`}>
+          <p
+            className="text-2xl font-bold text-gray-900"
+            aria-label={`${title}: ${value}`}
+          >
             {value}
           </p>
-          {subtitle && (
-            <p className="text-sm text-gray-500 mt-1">{subtitle}</p>
-          )}
+          {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
         </div>
-        
+
         {growth !== undefined && (
-          <div 
+          <div
             className={`flex items-center ${
               growth >= 0 ? 'text-green-600' : 'text-red-600'
             }`}
@@ -90,7 +98,10 @@ function KPICard({
             ) : (
               <TrendingDown className="h-4 w-4 mr-1" aria-hidden="true" />
             )}
-            <span className="text-sm font-medium" aria-label={`${growth >= 0 ? 'Growth' : 'Decline'}: ${Math.abs(growth)}%`}>
+            <span
+              className="text-sm font-medium"
+              aria-label={`${growth >= 0 ? 'Growth' : 'Decline'}: ${Math.abs(growth)}%`}
+            >
               {Math.abs(growth)}%
             </span>
           </div>
@@ -110,7 +121,10 @@ export function KPICards({ data, loading, previousPeriodData }: KPICardsProps) {
   // Calculate unique donors from donation data
   const getUniqueDonorsCount = (summary: FinancialSummary): number => {
     // Count unique donors from donor ranges
-    return summary.topDonorRanges.reduce((total, range) => total + range.count, 0);
+    return summary.topDonorRanges.reduce(
+      (total, range) => total + range.count,
+      0
+    );
   };
 
   // Calculate donation frequency
@@ -125,26 +139,42 @@ export function KPICards({ data, loading, previousPeriodData }: KPICardsProps) {
   const getYTDTotal = (summary: FinancialSummary): number => {
     const currentYear = new Date().getFullYear();
     const periodStart = new Date(summary.periodStart);
-    
+
     // If period includes current year, return total
     if (periodStart.getFullYear() === currentYear) {
       return summary.totalDonations;
     }
-    
+
     // Otherwise, estimate based on category goals
     return Object.values(summary.byCategory).reduce((total, category) => {
       return total + (category.goalProgress ? category.amount : 0);
     }, 0);
   };
 
-  const growthMetrics = previousPeriodData && data ? {
-    totalGrowth: calculateGrowth(data.totalDonations, previousPeriodData.totalDonations),
-    avgGrowth: calculateGrowth(data.averageDonation, previousPeriodData.averageDonation),
-    donorGrowth: calculateGrowth(getUniqueDonorsCount(data), getUniqueDonorsCount(previousPeriodData)),
-  } : undefined;
+  const growthMetrics =
+    previousPeriodData && data
+      ? {
+          totalGrowth: calculateGrowth(
+            data.totalDonations,
+            previousPeriodData.totalDonations
+          ),
+          avgGrowth: calculateGrowth(
+            data.averageDonation,
+            previousPeriodData.averageDonation
+          ),
+          donorGrowth: calculateGrowth(
+            getUniqueDonorsCount(data),
+            getUniqueDonorsCount(previousPeriodData)
+          ),
+        }
+      : undefined;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" role="region" aria-label="KPI Summary">
+    <div
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+      role="region"
+      aria-label="KPI Summary"
+    >
       <KPICard
         title="Total Donations"
         value={data ? formatCurrency(data.totalDonations) : '$0.00'}
@@ -154,7 +184,7 @@ export function KPICards({ data, loading, previousPeriodData }: KPICardsProps) {
         testId="total-donations-kpi"
         color="green"
       />
-      
+
       <KPICard
         title="Total Count"
         value={data ? data.donationCount.toString() : '0'}
@@ -164,7 +194,7 @@ export function KPICards({ data, loading, previousPeriodData }: KPICardsProps) {
         subtitle="Donations"
         color="blue"
       />
-      
+
       <KPICard
         title="Average Donation"
         value={data ? formatCurrency(data.averageDonation) : '$0.00'}
@@ -174,7 +204,7 @@ export function KPICards({ data, loading, previousPeriodData }: KPICardsProps) {
         testId="average-donation-kpi"
         color="purple"
       />
-      
+
       <KPICard
         title="Unique Donors"
         value={data ? getUniqueDonorsCount(data).toString() : '0'}
@@ -190,12 +220,18 @@ export function KPICards({ data, loading, previousPeriodData }: KPICardsProps) {
 }
 
 // Additional metrics section
-export function AdditionalMetrics({ data, loading }: Omit<KPICardsProps, 'previousPeriodData'>) {
+export function AdditionalMetrics({
+  data,
+  loading,
+}: Omit<KPICardsProps, 'previousPeriodData'>) {
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+          <div
+            key={i}
+            className="bg-white p-4 rounded-lg shadow-sm border border-gray-200"
+          >
             <div className="animate-pulse">
               <div className="h-4 bg-gray-200 rounded w-24 mb-3"></div>
               <div className="h-6 bg-gray-200 rounded w-16"></div>
@@ -210,19 +246,32 @@ export function AdditionalMetrics({ data, loading }: Omit<KPICardsProps, 'previo
     return null;
   }
 
-  const uniqueDonors = data.topDonorRanges.reduce((total, range) => total + range.count, 0);
-  const frequency = uniqueDonors > 0 ? (data.donationCount / uniqueDonors).toFixed(2) : '0';
+  const uniqueDonors = data.topDonorRanges.reduce(
+    (total, range) => total + range.count,
+    0
+  );
+  const frequency =
+    uniqueDonors > 0 ? (data.donationCount / uniqueDonors).toFixed(2) : '0';
   const ytdTotal = getYTDTotal(data);
-  
+
   // Calculate retention rate (simplified - would need historical data for accurate calculation)
-  const retentionRate = uniqueDonors > 0 ? Math.min(75, (uniqueDonors / data.donationCount) * 100).toFixed(0) : '0';
+  const retentionRate =
+    uniqueDonors > 0
+      ? Math.min(75, (uniqueDonors / data.donationCount) * 100).toFixed(0)
+      : '0';
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200" data-testid="ytd-summary">
-        <h4 className="text-sm font-medium text-gray-600 mb-2">Year-to-Date Summary</h4>
+      <div
+        className="bg-white p-4 rounded-lg shadow-sm border border-gray-200"
+        data-testid="ytd-summary"
+      >
+        <h4 className="text-sm font-medium text-gray-600 mb-2">
+          Year-to-Date Summary
+        </h4>
         <p className="text-lg font-semibold text-gray-900">
-          2025 Total: <span className="text-green-600">{formatCurrency(ytdTotal)}</span>
+          2025 Total:{' '}
+          <span className="text-green-600">{formatCurrency(ytdTotal)}</span>
         </p>
         <p className="text-sm text-gray-500 mt-1">
           Growth vs 2024: <span className="text-green-600">+15.2%</span>
@@ -230,13 +279,24 @@ export function AdditionalMetrics({ data, loading }: Omit<KPICardsProps, 'previo
       </div>
 
       <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
-        <h4 className="text-sm font-medium text-gray-600 mb-2">Donation Frequency</h4>
-        <p className="text-lg font-semibold text-gray-900">{frequency} per donor</p>
-        <p className="text-sm text-gray-500 mt-1">Average donations per contributor</p>
+        <h4 className="text-sm font-medium text-gray-600 mb-2">
+          Donation Frequency
+        </h4>
+        <p className="text-lg font-semibold text-gray-900">
+          {frequency} per donor
+        </p>
+        <p className="text-sm text-gray-500 mt-1">
+          Average donations per contributor
+        </p>
       </div>
 
-      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200" data-testid="donor-engagement">
-        <h4 className="text-sm font-medium text-gray-600 mb-2">Donor Engagement</h4>
+      <div
+        className="bg-white p-4 rounded-lg shadow-sm border border-gray-200"
+        data-testid="donor-engagement"
+      >
+        <h4 className="text-sm font-medium text-gray-600 mb-2">
+          Donor Engagement
+        </h4>
         <p className="text-lg font-semibold text-gray-900">
           Active Donors: {uniqueDonors}
         </p>
@@ -252,12 +312,12 @@ export function AdditionalMetrics({ data, loading }: Omit<KPICardsProps, 'previo
 function getYTDTotal(summary: FinancialSummary): number {
   const currentYear = new Date().getFullYear();
   const periodStart = new Date(summary.periodStart);
-  
+
   // If period includes current year, return total
   if (periodStart.getFullYear() === currentYear) {
     return summary.totalDonations;
   }
-  
+
   // Otherwise, estimate based on category goals
   return Object.values(summary.byCategory).reduce((total, category) => {
     return total + (category.goalProgress ? category.amount : 0);

@@ -1,11 +1,11 @@
 // src/components/donations/__tests__/MemberDonationHistory.security.test.tsx
 // CRITICAL SECURITY TESTS: MemberDonationHistory Component - Member-Only Access Control
-// 
+//
 // PURPOSE: Comprehensive security testing to ensure strict data privacy and member-only access
 // SCOPE: Tests member access control, authorization checks, data privacy, and Firebase security rules integration
 // SECURITY LEVEL: CRITICAL - Financial data protection with 100% security coverage required
 //
-// RELEVANT FILES: 
+// RELEVANT FILES:
 // - src/components/donations/MemberDonationHistory.tsx (component under test)
 // - src/services/firebase/donations.service.ts (service layer security)
 // - __tests__/security/firestore-security-rules.test.ts (Firebase rules reference)
@@ -18,7 +18,11 @@ import { MemberDonationHistory } from '../MemberDonationHistory';
 import { useAuth } from '../../../contexts/FirebaseAuthContext';
 import { useToast } from '../../../contexts/ToastContext';
 import { donationsService } from '../../../services/firebase';
-import { Donation, DonationMethod, DonationStatus } from '../../../types/donations';
+import {
+  Donation,
+  DonationMethod,
+  DonationStatus,
+} from '../../../types/donations';
 import { Member } from '../../../types';
 
 // Mock the services and contexts
@@ -43,7 +47,11 @@ const mockFirebaseError = (code: string, message: string) => {
 };
 
 // Mock authenticated members with different roles
-const createMockMember = (id: string, role: 'admin' | 'pastor' | 'member', email: string): Member => ({
+const createMockMember = (
+  id: string,
+  role: 'admin' | 'pastor' | 'member',
+  email: string
+): Member => ({
   id,
   firstName: `Test`,
   lastName: `User ${id}`,
@@ -62,13 +70,17 @@ const createMockMember = (id: string, role: 'admin' | 'pastor' | 'member', email
 
 const MOCK_MEMBERS = {
   admin: createMockMember('admin-123', 'admin', 'admin@test.com'),
-  pastor: createMockMember('pastor-456', 'pastor', 'pastor@test.com'), 
+  pastor: createMockMember('pastor-456', 'pastor', 'pastor@test.com'),
   member1: createMockMember('member-789', 'member', 'member1@test.com'),
   member2: createMockMember('member-abc', 'member', 'member2@test.com'),
 };
 
 // Mock donation data for different members
-const createMockDonation = (id: string, memberId: string, amount: number): Donation => ({
+const createMockDonation = (
+  id: string,
+  memberId: string,
+  amount: number
+): Donation => ({
   id,
   memberId,
   memberName: `${MOCK_MEMBERS.member1.firstName} ${MOCK_MEMBERS.member1.lastName}`,
@@ -97,10 +109,10 @@ const createMockDonation = (id: string, memberId: string, amount: number): Donat
 });
 
 const MOCK_DONATIONS = {
-  member1Donation1: createMockDonation('don-001', 'member-789', 100.00),
-  member1Donation2: createMockDonation('don-002', 'member-789', 250.00),
-  member2Donation1: createMockDonation('don-003', 'member-abc', 150.00),
-  member2Donation2: createMockDonation('don-004', 'member-abc', 300.00),
+  member1Donation1: createMockDonation('don-001', 'member-789', 100.0),
+  member1Donation2: createMockDonation('don-002', 'member-789', 250.0),
+  member2Donation1: createMockDonation('don-003', 'member-abc', 150.0),
+  member2Donation2: createMockDonation('don-004', 'member-abc', 300.0),
 };
 
 // Test suite wrapper with router
@@ -123,7 +135,7 @@ const mockUseToast = useToast as Mock;
 describe('MemberDonationHistory - CRITICAL Security Tests', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Default auth context mock
     mockUseAuth.mockReturnValue({
       user: { uid: 'member-789' },
@@ -144,9 +156,9 @@ describe('MemberDonationHistory - CRITICAL Security Tests', () => {
     ]);
 
     mockDonationsService.getMemberDonationSummary.mockResolvedValue({
-      totalAmount: 350.00,
+      totalAmount: 350.0,
       totalDonations: 2,
-      currentYearAmount: 350.00,
+      currentYearAmount: 350.0,
       currentYearDonations: 2,
       lastDonationDate: '2025-01-15T10:00:00Z',
     });
@@ -168,29 +180,46 @@ describe('MemberDonationHistory - CRITICAL Security Tests', () => {
       renderWithRouter(<MemberDonationHistory />);
 
       await waitFor(() => {
-        expect(mockDonationsService.getDonationsByMember).toHaveBeenCalledWith('member-789');
-        expect(mockDonationsService.getDonationsByMember).toHaveBeenCalledTimes(1);
+        expect(mockDonationsService.getDonationsByMember).toHaveBeenCalledWith(
+          'member-789'
+        );
+        expect(mockDonationsService.getDonationsByMember).toHaveBeenCalledTimes(
+          1
+        );
       });
 
       // Should not attempt to fetch other members' data
-      expect(mockDonationsService.getDonationsByMember).not.toHaveBeenCalledWith('member-abc');
-      expect(mockDonationsService.getDonationsByMember).not.toHaveBeenCalledWith('admin-123');
-      expect(mockDonationsService.getDonationsByMember).not.toHaveBeenCalledWith('pastor-456');
+      expect(
+        mockDonationsService.getDonationsByMember
+      ).not.toHaveBeenCalledWith('member-abc');
+      expect(
+        mockDonationsService.getDonationsByMember
+      ).not.toHaveBeenCalledWith('admin-123');
+      expect(
+        mockDonationsService.getDonationsByMember
+      ).not.toHaveBeenCalledWith('pastor-456');
     });
 
     it('should reject attempts to view other members data through service calls', async () => {
       // Simulate malicious attempt to access other member's data
-      mockDonationsService.getDonationsByMember.mockImplementation((memberId: string) => {
-        if (memberId !== 'member-789') {
-          throw mockFirebaseError('permission-denied', 'Insufficient permissions');
+      mockDonationsService.getDonationsByMember.mockImplementation(
+        (memberId: string) => {
+          if (memberId !== 'member-789') {
+            throw mockFirebaseError(
+              'permission-denied',
+              'Insufficient permissions'
+            );
+          }
+          return Promise.resolve([MOCK_DONATIONS.member1Donation1]);
         }
-        return Promise.resolve([MOCK_DONATIONS.member1Donation1]);
-      });
+      );
 
       renderWithRouter(<MemberDonationHistory />);
 
       await waitFor(() => {
-        expect(mockDonationsService.getDonationsByMember).toHaveBeenCalledWith('member-789');
+        expect(mockDonationsService.getDonationsByMember).toHaveBeenCalledWith(
+          'member-789'
+        );
       });
 
       // Attempt to manually trigger service call with different member ID should fail
@@ -211,13 +240,18 @@ describe('MemberDonationHistory - CRITICAL Security Tests', () => {
 
       await waitFor(() => {
         // Should call service with the authenticated member's ID, not a hardcoded one
-        expect(mockDonationsService.getDonationsByMember).toHaveBeenCalledWith('member-abc');
+        expect(mockDonationsService.getDonationsByMember).toHaveBeenCalledWith(
+          'member-abc'
+        );
       });
     });
 
     it('should handle unauthorized access gracefully with user-friendly error', async () => {
       mockDonationsService.getDonationsByMember.mockRejectedValue(
-        mockFirebaseError('permission-denied', 'Access denied: Members can only view their own donation history')
+        mockFirebaseError(
+          'permission-denied',
+          'Access denied: Members can only view their own donation history'
+        )
       );
 
       const mockAddToast = vi.fn();
@@ -263,7 +297,9 @@ describe('MemberDonationHistory - CRITICAL Security Tests', () => {
       renderWithRouter(<MemberDonationHistory />);
 
       await waitFor(() => {
-        expect(mockDonationsService.getDonationsByMember).toHaveBeenCalledWith('member-abc');
+        expect(mockDonationsService.getDonationsByMember).toHaveBeenCalledWith(
+          'member-abc'
+        );
       });
 
       // Should not display member1's data anymore
@@ -287,7 +323,7 @@ describe('MemberDonationHistory - CRITICAL Security Tests', () => {
 
       // Should not make service calls for unauthenticated users
       expect(mockDonationsService.getDonationsByMember).not.toHaveBeenCalled();
-      
+
       // Should display login requirement message
       expect(screen.getByText(/please log in/i)).toBeInTheDocument();
     });
@@ -303,7 +339,9 @@ describe('MemberDonationHistory - CRITICAL Security Tests', () => {
       renderWithRouter(<MemberDonationHistory />);
 
       await waitFor(() => {
-        expect(mockDonationsService.getDonationsByMember).toHaveBeenCalledWith('member-789');
+        expect(mockDonationsService.getDonationsByMember).toHaveBeenCalledWith(
+          'member-789'
+        );
       });
 
       // Test with admin role accessing member view (should still only show their data)
@@ -316,7 +354,9 @@ describe('MemberDonationHistory - CRITICAL Security Tests', () => {
       renderWithRouter(<MemberDonationHistory />);
 
       await waitFor(() => {
-        expect(mockDonationsService.getDonationsByMember).toHaveBeenCalledWith('admin-123');
+        expect(mockDonationsService.getDonationsByMember).toHaveBeenCalledWith(
+          'admin-123'
+        );
       });
     });
 
@@ -334,10 +374,15 @@ describe('MemberDonationHistory - CRITICAL Security Tests', () => {
     });
 
     it('should audit and log unauthorized access attempts', async () => {
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
+
       mockDonationsService.getDonationsByMember.mockRejectedValue(
-        mockFirebaseError('permission-denied', 'Unauthorized access attempt detected')
+        mockFirebaseError(
+          'permission-denied',
+          'Unauthorized access attempt detected'
+        )
       );
 
       renderWithRouter(<MemberDonationHistory />);
@@ -357,7 +402,7 @@ describe('MemberDonationHistory - CRITICAL Security Tests', () => {
   });
 
   // ============================================================================
-  // DATA PRIVACY TESTS  
+  // DATA PRIVACY TESTS
   // ============================================================================
 
   describe('Data Privacy & Isolation', () => {
@@ -379,14 +424,14 @@ describe('MemberDonationHistory - CRITICAL Security Tests', () => {
 
     it('should not expose aggregated church financial data', async () => {
       mockDonationsService.getMemberDonationSummary.mockResolvedValue({
-        totalAmount: 350.00,
+        totalAmount: 350.0,
         totalDonations: 2,
-        currentYearAmount: 350.00,
+        currentYearAmount: 350.0,
         currentYearDonations: 2,
         lastDonationDate: '2025-01-15T10:00:00Z',
         // Should not include church-wide statistics
-        churchTotalAmount: 50000.00, // This should not be exposed
-        averageDonation: 1250.00, // This should not be exposed
+        churchTotalAmount: 50000.0, // This should not be exposed
+        averageDonation: 1250.0, // This should not be exposed
       });
 
       renderWithRouter(<MemberDonationHistory />);
@@ -403,14 +448,17 @@ describe('MemberDonationHistory - CRITICAL Security Tests', () => {
     });
 
     it('should securely handle sensitive donation information', async () => {
-      const sensitiveNote = 'Confidential family circumstances - financial hardship';
+      const sensitiveNote =
+        'Confidential family circumstances - financial hardship';
       const donationWithSensitiveData = {
         ...MOCK_DONATIONS.member1Donation1,
         note: sensitiveNote,
         internalNotes: 'Admin only - payment method declined twice',
       };
 
-      mockDonationsService.getDonationsByMember.mockResolvedValue([donationWithSensitiveData]);
+      mockDonationsService.getDonationsByMember.mockResolvedValue([
+        donationWithSensitiveData,
+      ]);
 
       renderWithRouter(<MemberDonationHistory />);
 
@@ -431,13 +479,17 @@ describe('MemberDonationHistory - CRITICAL Security Tests', () => {
         memberName: undefined, // Should be hidden for anonymous donations
       };
 
-      mockDonationsService.getDonationsByMember.mockResolvedValue([anonymousDonation]);
+      mockDonationsService.getDonationsByMember.mockResolvedValue([
+        anonymousDonation,
+      ]);
 
       renderWithRouter(<MemberDonationHistory />);
 
       await waitFor(() => {
         expect(screen.getByText('Anonymous Donation')).toBeInTheDocument();
-        expect(screen.queryByText('Test User member-789')).not.toBeInTheDocument();
+        expect(
+          screen.queryByText('Test User member-789')
+        ).not.toBeInTheDocument();
       });
     });
   });
@@ -453,7 +505,9 @@ describe('MemberDonationHistory - CRITICAL Security Tests', () => {
         'Missing or insufficient permissions'
       );
 
-      mockDonationsService.getDonationsByMember.mockRejectedValue(permissionError);
+      mockDonationsService.getDonationsByMember.mockRejectedValue(
+        permissionError
+      );
 
       const mockAddToast = vi.fn();
       mockUseToast.mockReturnValue({ addToast: mockAddToast });
@@ -474,7 +528,7 @@ describe('MemberDonationHistory - CRITICAL Security Tests', () => {
       // Simulate server-side security rule rejection
       mockDonationsService.getDonationsByMember.mockRejectedValue(
         mockFirebaseError(
-          'failed-precondition', 
+          'failed-precondition',
           'Security rule validation failed: Member can only access own data'
         )
       );
@@ -482,13 +536,18 @@ describe('MemberDonationHistory - CRITICAL Security Tests', () => {
       renderWithRouter(<MemberDonationHistory />);
 
       await waitFor(() => {
-        expect(screen.getByText(/security validation failed/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/security validation failed/i)
+        ).toBeInTheDocument();
       });
     });
 
     it('should handle network and authentication token errors', async () => {
       mockDonationsService.getDonationsByMember.mockRejectedValue(
-        mockFirebaseError('unauthenticated', 'User authentication token expired')
+        mockFirebaseError(
+          'unauthenticated',
+          'User authentication token expired'
+        )
       );
 
       const mockSignOut = vi.fn();
@@ -513,14 +572,16 @@ describe('MemberDonationHistory - CRITICAL Security Tests', () => {
         MOCK_DONATIONS.member2Donation1, // Should not be accessible
       ];
 
-      mockDonationsService.getDonationsByMember.mockResolvedValue(unauthorizedData);
+      mockDonationsService.getDonationsByMember.mockResolvedValue(
+        unauthorizedData
+      );
 
       renderWithRouter(<MemberDonationHistory />);
 
       await waitFor(() => {
         // Component should implement additional client-side validation
         const displayedDonations = screen.queryAllByTestId('donation-row');
-        
+
         // Should only display donations belonging to authenticated member
         displayedDonations.forEach((row) => {
           expect(row).not.toHaveTextContent('member-abc');
@@ -537,7 +598,7 @@ describe('MemberDonationHistory - CRITICAL Security Tests', () => {
     it('should handle SQL injection attempts in member ID', async () => {
       // Simulate malicious member ID
       const maliciousMemberId = "member-789'; DROP TABLE donations; --";
-      
+
       mockUseAuth.mockReturnValue({
         user: { uid: maliciousMemberId },
         member: { ...MOCK_MEMBERS.member1, id: maliciousMemberId },
@@ -551,7 +612,7 @@ describe('MemberDonationHistory - CRITICAL Security Tests', () => {
         expect(mockDonationsService.getDonationsByMember).toHaveBeenCalledWith(
           maliciousMemberId
         );
-        
+
         // Firestore should handle this safely, but component should log the attempt
         expect(console.warn).toHaveBeenCalledWith(
           expect.stringContaining('Suspicious member ID detected')
@@ -565,8 +626,10 @@ describe('MemberDonationHistory - CRITICAL Security Tests', () => {
       // Test with valid member ID
       mockDonationsService.getDonationsByMember.mockResolvedValue([]);
       renderWithRouter(<MemberDonationHistory />);
-      await waitFor(() => expect(mockDonationsService.getDonationsByMember).toHaveBeenCalled());
-      
+      await waitFor(() =>
+        expect(mockDonationsService.getDonationsByMember).toHaveBeenCalled()
+      );
+
       const validIdTime = Date.now() - startTime;
 
       vi.clearAllMocks();
@@ -578,7 +641,7 @@ describe('MemberDonationHistory - CRITICAL Security Tests', () => {
 
       const invalidStartTime = Date.now();
       renderWithRouter(<MemberDonationHistory />);
-      
+
       await waitFor(() => {
         expect(mockDonationsService.getDonationsByMember).toHaveBeenCalled();
       });
@@ -597,7 +660,9 @@ describe('MemberDonationHistory - CRITICAL Security Tests', () => {
         loading: false,
       });
 
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
 
       renderWithRouter(<MemberDonationHistory />);
 
@@ -619,9 +684,13 @@ describe('MemberDonationHistory - CRITICAL Security Tests', () => {
       mockDonationsService.getDonationsByMember.mockImplementation(() => {
         attemptCount++;
         if (attemptCount <= 3) {
-          return Promise.reject(mockFirebaseError('permission-denied', 'Unauthorized'));
+          return Promise.reject(
+            mockFirebaseError('permission-denied', 'Unauthorized')
+          );
         }
-        return Promise.reject(mockFirebaseError('resource-exhausted', 'Rate limit exceeded'));
+        return Promise.reject(
+          mockFirebaseError('resource-exhausted', 'Rate limit exceeded')
+        );
       });
 
       // Make multiple rapid requests
@@ -663,8 +732,12 @@ describe('MemberDonationHistory - CRITICAL Security Tests', () => {
       await Promise.all(promises);
 
       // Should handle concurrent access without security violations
-      expect(mockDonationsService.getDonationsByMember).toHaveBeenCalledTimes(5);
-      expect(mockDonationsService.getDonationsByMember).toHaveBeenCalledWith('member-789');
+      expect(mockDonationsService.getDonationsByMember).toHaveBeenCalledTimes(
+        5
+      );
+      expect(mockDonationsService.getDonationsByMember).toHaveBeenCalledWith(
+        'member-789'
+      );
     });
   });
 
@@ -683,7 +756,9 @@ describe('MemberDonationHistory - CRITICAL Security Tests', () => {
         },
       ];
 
-      mockDonationsService.getDonationsByMember.mockResolvedValue(corruptedData as any);
+      mockDonationsService.getDonationsByMember.mockResolvedValue(
+        corruptedData as any
+      );
 
       renderWithRouter(<MemberDonationHistory />);
 
@@ -700,7 +775,9 @@ describe('MemberDonationHistory - CRITICAL Security Tests', () => {
         throw new Error('Component crash simulation');
       });
 
-      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleErrorSpy = vi
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
 
       renderWithRouter(<MemberDonationHistory />);
 

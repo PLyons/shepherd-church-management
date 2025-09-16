@@ -25,13 +25,13 @@ import { eventsService } from './events.service';
 export interface RSVPDocument {
   eventId: string;
   memberId: string;
-  
+
   // RSVP details
   status: RSVPStatus;
   responseDate: Timestamp;
   numberOfGuests: number;
   notes?: string;
-  
+
   // Administrative
   createdAt: Timestamp;
   updatedAt: Timestamp;
@@ -41,9 +41,18 @@ export interface RSVPDocument {
 function rsvpToRSVPDocument(rsvp: Partial<EventRSVP>): Partial<RSVPDocument> {
   return {
     ...rsvp,
-    responseDate: rsvp.responseDate instanceof Date ? Timestamp.fromDate(rsvp.responseDate) : rsvp.responseDate,
-    createdAt: rsvp.createdAt instanceof Date ? Timestamp.fromDate(rsvp.createdAt) : rsvp.createdAt,
-    updatedAt: rsvp.updatedAt instanceof Date ? Timestamp.fromDate(rsvp.updatedAt) : rsvp.updatedAt,
+    responseDate:
+      rsvp.responseDate instanceof Date
+        ? Timestamp.fromDate(rsvp.responseDate)
+        : rsvp.responseDate,
+    createdAt:
+      rsvp.createdAt instanceof Date
+        ? Timestamp.fromDate(rsvp.createdAt)
+        : rsvp.createdAt,
+    updatedAt:
+      rsvp.updatedAt instanceof Date
+        ? Timestamp.fromDate(rsvp.updatedAt)
+        : rsvp.updatedAt,
   };
 }
 
@@ -57,7 +66,10 @@ function rsvpDocumentToRSVP(id: string, document: RSVPDocument): EventRSVP {
   } as EventRSVP;
 }
 
-export class EventRSVPService extends BaseFirestoreService<RSVPDocument, EventRSVP> {
+export class EventRSVPService extends BaseFirestoreService<
+  RSVPDocument,
+  EventRSVP
+> {
   constructor() {
     super(
       db,
@@ -76,9 +88,13 @@ export class EventRSVPService extends BaseFirestoreService<RSVPDocument, EventRS
   // CORE RSVP OPERATIONS
   // ============================================================================
 
-  async createRSVP(eventId: string, memberId: string, rsvpData: RSVPFormData): Promise<EventRSVP> {
+  async createRSVP(
+    eventId: string,
+    memberId: string,
+    rsvpData: RSVPFormData
+  ): Promise<EventRSVP> {
     const now = new Date();
-    
+
     // Use transaction for capacity checking
     return runTransaction(db, async (transaction) => {
       // Check if RSVP already exists
@@ -98,7 +114,10 @@ export class EventRSVPService extends BaseFirestoreService<RSVPDocument, EventRS
       // Check capacity if event has a limit and member is RSVPing 'yes'
       if (event.capacity && rsvpData.status === 'yes') {
         const currentRSVPs = await this.getRSVPsByStatus(eventId, 'yes');
-        const totalAttending = currentRSVPs.reduce((sum, rsvp) => sum + (rsvp.numberOfGuests + 1), 0);
+        const totalAttending = currentRSVPs.reduce(
+          (sum, rsvp) => sum + (rsvp.numberOfGuests + 1),
+          0
+        );
         const requestedTotal = rsvpData.numberOfGuests + 1;
 
         if (totalAttending + requestedTotal > event.capacity) {
@@ -125,32 +144,40 @@ export class EventRSVPService extends BaseFirestoreService<RSVPDocument, EventRS
       const rsvpCollection = this.getEventRSVPCollection(eventId);
       const docRef = doc(rsvpCollection);
       rsvp.id = docRef.id;
-      
+
       transaction.set(docRef, rsvpToRSVPDocument(rsvp));
       return rsvp;
     });
   }
 
-  async updateRSVP(eventId: string, rsvpId: string, updates: Partial<RSVPFormData>): Promise<void> {
+  async updateRSVP(
+    eventId: string,
+    rsvpId: string,
+    updates: Partial<RSVPFormData>
+  ): Promise<void> {
     return runTransaction(db, async (transaction) => {
       const rsvpRef = doc(this.getEventRSVPCollection(eventId), rsvpId);
       const rsvpDoc = await transaction.get(rsvpRef);
-      
+
       if (!rsvpDoc.exists()) {
         throw new Error('RSVP not found');
       }
 
-      const currentRSVP = rsvpDocumentToRSVP(rsvpDoc.id, rsvpDoc.data() as RSVPDocument);
-      
+      const currentRSVP = rsvpDocumentToRSVP(
+        rsvpDoc.id,
+        rsvpDoc.data() as RSVPDocument
+      );
+
       // If changing status to 'yes', check capacity
       if (updates.status === 'yes' && currentRSVP.status !== 'yes') {
         const event = await eventsService.getById(eventId);
         if (event?.capacity) {
           const currentRSVPs = await this.getRSVPsByStatus(eventId, 'yes');
           const totalAttending = currentRSVPs
-            .filter(rsvp => rsvp.id !== rsvpId)
+            .filter((rsvp) => rsvp.id !== rsvpId)
             .reduce((sum, rsvp) => sum + (rsvp.numberOfGuests + 1), 0);
-          const requestedTotal = (updates.numberOfGuests ?? currentRSVP.numberOfGuests) + 1;
+          const requestedTotal =
+            (updates.numberOfGuests ?? currentRSVP.numberOfGuests) + 1;
 
           if (totalAttending + requestedTotal > event.capacity) {
             throw new Error('Cannot change RSVP to yes - event is at capacity');
@@ -181,26 +208,32 @@ export class EventRSVPService extends BaseFirestoreService<RSVPDocument, EventRS
     const q = query(rsvpCollection, orderBy('createdAt', 'desc'));
     const querySnapshot = await getDocs(q);
 
-    return querySnapshot.docs.map(doc => 
+    return querySnapshot.docs.map((doc) =>
       rsvpDocumentToRSVP(doc.id, doc.data() as RSVPDocument)
     );
   }
 
-  async getRSVPsByStatus(eventId: string, status: RSVPStatus): Promise<EventRSVP[]> {
+  async getRSVPsByStatus(
+    eventId: string,
+    status: RSVPStatus
+  ): Promise<EventRSVP[]> {
     const rsvpCollection = this.getEventRSVPCollection(eventId);
     const q = query(
-      rsvpCollection, 
+      rsvpCollection,
       where('status', '==', status),
       orderBy('createdAt', 'desc')
     );
     const querySnapshot = await getDocs(q);
 
-    return querySnapshot.docs.map(doc => 
+    return querySnapshot.docs.map((doc) =>
       rsvpDocumentToRSVP(doc.id, doc.data() as RSVPDocument)
     );
   }
 
-  async getRSVPByMember(eventId: string, memberId: string): Promise<EventRSVP | null> {
+  async getRSVPByMember(
+    eventId: string,
+    memberId: string
+  ): Promise<EventRSVP | null> {
     const rsvpCollection = this.getEventRSVPCollection(eventId);
     const q = query(
       rsvpCollection,
@@ -226,7 +259,7 @@ export class EventRSVPService extends BaseFirestoreService<RSVPDocument, EventRS
     );
     const querySnapshot = await getDocs(q);
 
-    return querySnapshot.docs.map(doc => 
+    return querySnapshot.docs.map((doc) =>
       rsvpDocumentToRSVP(doc.id, doc.data() as RSVPDocument)
     );
   }
@@ -245,14 +278,20 @@ export class EventRSVPService extends BaseFirestoreService<RSVPDocument, EventRS
     statusBreakdown: Record<RSVPStatus, number>;
   }> {
     const allRSVPs = await this.getRSVPsByEvent(eventId);
-    
-    const statusBreakdown = allRSVPs.reduce((acc, rsvp) => {
-      acc[rsvp.status] = (acc[rsvp.status] || 0) + 1;
-      return acc;
-    }, {} as Record<RSVPStatus, number>);
 
-    const attendingRSVPs = allRSVPs.filter(rsvp => rsvp.status === 'yes');
-    const totalPeople = attendingRSVPs.reduce((sum, rsvp) => sum + rsvp.numberOfGuests + 1, 0);
+    const statusBreakdown = allRSVPs.reduce(
+      (acc, rsvp) => {
+        acc[rsvp.status] = (acc[rsvp.status] || 0) + 1;
+        return acc;
+      },
+      {} as Record<RSVPStatus, number>
+    );
+
+    const attendingRSVPs = allRSVPs.filter((rsvp) => rsvp.status === 'yes');
+    const totalPeople = attendingRSVPs.reduce(
+      (sum, rsvp) => sum + rsvp.numberOfGuests + 1,
+      0
+    );
 
     return {
       totalRSVPs: allRSVPs.length,
@@ -279,12 +318,16 @@ export class EventRSVPService extends BaseFirestoreService<RSVPDocument, EventRS
     }
 
     const summary = await this.getRSVPSummary(eventId);
-    
+
     return {
       capacity: event.capacity,
       currentAttending: summary.totalPeople,
-      spotsRemaining: event.capacity ? Math.max(0, event.capacity - summary.totalPeople) : undefined,
-      isAtCapacity: event.capacity ? summary.totalPeople >= event.capacity : false,
+      spotsRemaining: event.capacity
+        ? Math.max(0, event.capacity - summary.totalPeople)
+        : undefined,
+      isAtCapacity: event.capacity
+        ? summary.totalPeople >= event.capacity
+        : false,
       waitlistEnabled: event.enableWaitlist,
       waitlistCount: summary.waitlistCount,
     };
@@ -302,14 +345,14 @@ export class EventRSVPService extends BaseFirestoreService<RSVPDocument, EventRS
 
     const capacityInfo = await this.getCapacityInfo(eventId);
     const spotsAvailable = capacityInfo.spotsRemaining || 0;
-    
+
     if (spotsAvailable <= 0) {
       return 0;
     }
 
     const waitlistRSVPs = await this.getRSVPsByStatus(eventId, 'waitlist');
-    const sortedWaitlist = waitlistRSVPs.sort((a, b) => 
-      a.createdAt.getTime() - b.createdAt.getTime()
+    const sortedWaitlist = waitlistRSVPs.sort(
+      (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
     );
 
     let promoted = 0;
@@ -317,7 +360,7 @@ export class EventRSVPService extends BaseFirestoreService<RSVPDocument, EventRS
 
     for (const rsvp of sortedWaitlist) {
       const totalNeeded = rsvp.numberOfGuests + 1;
-      
+
       if (totalNeeded <= remainingSpots) {
         await this.updateRSVP(eventId, rsvp.id, { status: 'yes' });
         promoted++;
@@ -330,18 +373,23 @@ export class EventRSVPService extends BaseFirestoreService<RSVPDocument, EventRS
     return promoted;
   }
 
-  async getWaitlistPosition(eventId: string, memberId: string): Promise<number | null> {
+  async getWaitlistPosition(
+    eventId: string,
+    memberId: string
+  ): Promise<number | null> {
     const memberRSVP = await this.getRSVPByMember(eventId, memberId);
     if (!memberRSVP || memberRSVP.status !== 'waitlist') {
       return null;
     }
 
     const waitlistRSVPs = await this.getRSVPsByStatus(eventId, 'waitlist');
-    const sortedWaitlist = waitlistRSVPs.sort((a, b) => 
-      a.createdAt.getTime() - b.createdAt.getTime()
+    const sortedWaitlist = waitlistRSVPs.sort(
+      (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
     );
 
-    const position = sortedWaitlist.findIndex(rsvp => rsvp.memberId === memberId);
+    const position = sortedWaitlist.findIndex(
+      (rsvp) => rsvp.memberId === memberId
+    );
     return position >= 0 ? position + 1 : null;
   }
 }

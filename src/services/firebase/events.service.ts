@@ -20,26 +20,26 @@ export interface EventDocument {
   title: string;
   description: string;
   location: string;
-  
+
   // Temporal data
   startDate: Timestamp;
   endDate: Timestamp;
   isAllDay: boolean;
-  
+
   // Event classification
   eventType: EventType;
   requiredRoles: Role[];
-  
+
   // Capacity management
   capacity?: number;
   currentAttendees?: number;
   enableWaitlist: boolean;
-  
+
   // Administrative
   createdAt: Timestamp;
   updatedAt: Timestamp;
   createdBy: string; // Member ID
-  
+
   // Status
   isActive: boolean;
   isCancelled: boolean;
@@ -51,7 +51,8 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
     super(
       db,
       'events',
-      (id: string, document: EventDocument) => eventDocumentToEvent(id, document),
+      (id: string, document: EventDocument) =>
+        eventDocumentToEvent(id, document),
       (client: Partial<Event>) => eventToEventDocument(client)
     );
   }
@@ -59,7 +60,9 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
   /**
    * Create a new event with proper timestamps
    */
-  async createEvent(eventData: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>): Promise<Event> {
+  async createEvent(
+    eventData: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>
+  ): Promise<Event> {
     const now = new Date();
     const event: Partial<Event> = {
       ...eventData,
@@ -94,7 +97,7 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
       where('isCancelled', '==', false),
       where('startDate', '>=', now),
       orderBy('startDate', 'asc'),
-      limit(limitCount)
+      limit(limitCount),
     ];
 
     return this.getAll(constraints);
@@ -110,16 +113,17 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
       where('isCancelled', '==', false),
       where('startDate', '>=', now),
       orderBy('startDate', 'asc'),
-      limit(limitCount)
+      limit(limitCount),
     ];
 
     let events = await this.getAll(constraints);
 
     // Filter for role-specific events
     if (userRole !== 'admin') {
-      events = events.filter(event => 
-        event.requiredRoles.length === 0 || 
-        event.requiredRoles.includes(userRole)
+      events = events.filter(
+        (event) =>
+          event.requiredRoles.length === 0 ||
+          event.requiredRoles.includes(userRole)
       );
     }
 
@@ -129,20 +133,22 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
   /**
    * Temporary method to get events without complex indexes (while building)
    */
-  async getEventsByRoleSimple(userRole: Role, limitCount = 20): Promise<Event[]> {
+  async getEventsByRoleSimple(
+    userRole: Role,
+    limitCount = 20
+  ): Promise<Event[]> {
     // Use a simpler query that doesn't require custom indexes
     const constraints: QueryConstraint[] = [
       where('isActive', '==', true),
-      limit(limitCount)
+      limit(limitCount),
     ];
 
     let events = await this.getAll(constraints);
     const now = new Date();
 
     // Filter client-side to avoid complex indexes while they're building
-    events = events.filter(event => 
-      !event.isCancelled && 
-      event.startDate >= now
+    events = events.filter(
+      (event) => !event.isCancelled && event.startDate >= now
     );
 
     // Sort by start date
@@ -154,7 +160,10 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
   /**
    * Get events by type
    */
-  async getEventsByType(eventType: EventType, limitCount = 10): Promise<Event[]> {
+  async getEventsByType(
+    eventType: EventType,
+    limitCount = 10
+  ): Promise<Event[]> {
     const now = Timestamp.now();
     const constraints = [
       where('eventType', '==', eventType),
@@ -162,7 +171,7 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
       where('isCancelled', '==', false),
       where('startDate', '>=', now),
       orderBy('startDate', 'asc'),
-      limit(limitCount)
+      limit(limitCount),
     ];
 
     return this.getAll(constraints);
@@ -174,13 +183,13 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
   async getEventsInRange(startDate: Date, endDate: Date): Promise<Event[]> {
     const startTimestamp = Timestamp.fromDate(startDate);
     const endTimestamp = Timestamp.fromDate(endDate);
-    
+
     const constraints = [
       where('isActive', '==', true),
       where('isCancelled', '==', false),
       where('startDate', '>=', startTimestamp),
       where('startDate', '<=', endTimestamp),
-      orderBy('startDate', 'asc')
+      orderBy('startDate', 'asc'),
     ];
 
     return this.getAll(constraints);
@@ -214,7 +223,7 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
       where('createdBy', '==', createdBy),
       where('isActive', '==', true),
       where('isCancelled', '==', false),
-      orderBy('createdAt', 'desc')
+      orderBy('createdAt', 'desc'),
     ];
 
     return this.getAll(constraints);
@@ -230,7 +239,7 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
       where('isActive', '==', true),
       where('isCancelled', '==', false),
       orderBy('endDate', 'desc'),
-      limit(limitCount)
+      limit(limitCount),
     ];
 
     return this.getAll(constraints);
@@ -243,10 +252,9 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
     const today = new Date();
     const startOfDay = new Date(today.setHours(0, 0, 0, 0));
     const endOfDay = new Date(today.setHours(23, 59, 59, 999));
-    
+
     return this.getEventsInRange(startOfDay, endOfDay);
   }
-
 
   /**
    * Search events by text query
@@ -256,11 +264,12 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
     // In production, you might want to implement Firestore full-text search
     const allEvents = await this.getUpcomingEvents(100);
     const searchLower = query.toLowerCase();
-    
-    return allEvents.filter(event => 
-      event.title.toLowerCase().includes(searchLower) ||
-      event.description.toLowerCase().includes(searchLower) ||
-      event.location.toLowerCase().includes(searchLower)
+
+    return allEvents.filter(
+      (event) =>
+        event.title.toLowerCase().includes(searchLower) ||
+        event.description.toLowerCase().includes(searchLower) ||
+        event.location.toLowerCase().includes(searchLower)
     );
   }
 
@@ -271,7 +280,7 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
     const now = new Date();
     const tomorrow = new Date(now);
     tomorrow.setDate(tomorrow.getDate() + 1);
-    
+
     return this.getEventsInRange(now, tomorrow);
   }
 
@@ -289,18 +298,21 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
     const allEvents = await this.getAll();
 
     const now = new Date();
-    const upcoming = allEvents.filter(event => 
-      event.startDate >= now && event.isActive && !event.isCancelled
+    const upcoming = allEvents.filter(
+      (event) => event.startDate >= now && event.isActive && !event.isCancelled
     );
-    const past = allEvents.filter(event => 
-      event.endDate < now && event.isActive
+    const past = allEvents.filter(
+      (event) => event.endDate < now && event.isActive
     );
-    const cancelled = allEvents.filter(event => event.isCancelled);
+    const cancelled = allEvents.filter((event) => event.isCancelled);
 
-    const eventsByType = allEvents.reduce((acc, event) => {
-      acc[event.eventType] = (acc[event.eventType] || 0) + 1;
-      return acc;
-    }, {} as Record<EventType, number>);
+    const eventsByType = allEvents.reduce(
+      (acc, event) => {
+        acc[event.eventType] = (acc[event.eventType] || 0) + 1;
+        return acc;
+      },
+      {} as Record<EventType, number>
+    );
 
     return {
       totalEvents: allEvents.length,
@@ -342,18 +354,24 @@ function eventToEventDocument(event: Partial<Event>): Partial<EventDocument> {
   if (event.title !== undefined) document.title = event.title;
   if (event.description !== undefined) document.description = event.description;
   if (event.location !== undefined) document.location = event.location;
-  if (event.startDate !== undefined) document.startDate = Timestamp.fromDate(event.startDate);
-  if (event.endDate !== undefined) document.endDate = Timestamp.fromDate(event.endDate);
+  if (event.startDate !== undefined)
+    document.startDate = Timestamp.fromDate(event.startDate);
+  if (event.endDate !== undefined)
+    document.endDate = Timestamp.fromDate(event.endDate);
   if (event.isAllDay !== undefined) document.isAllDay = event.isAllDay;
   if (event.eventType !== undefined) document.eventType = event.eventType;
-  if (event.requiredRoles !== undefined) document.requiredRoles = event.requiredRoles;
+  if (event.requiredRoles !== undefined)
+    document.requiredRoles = event.requiredRoles;
   if (event.capacity !== undefined) document.capacity = event.capacity;
-  if (event.currentAttendees !== undefined) document.currentAttendees = event.currentAttendees;
-  if (event.enableWaitlist !== undefined) document.enableWaitlist = event.enableWaitlist;
+  if (event.currentAttendees !== undefined)
+    document.currentAttendees = event.currentAttendees;
+  if (event.enableWaitlist !== undefined)
+    document.enableWaitlist = event.enableWaitlist;
   if (event.createdBy !== undefined) document.createdBy = event.createdBy;
   if (event.isActive !== undefined) document.isActive = event.isActive;
   if (event.isCancelled !== undefined) document.isCancelled = event.isCancelled;
-  if (event.cancellationReason !== undefined) document.cancellationReason = event.cancellationReason;
+  if (event.cancellationReason !== undefined)
+    document.cancellationReason = event.cancellationReason;
 
   return document;
 }

@@ -132,7 +132,10 @@ export const donationCategoryToDonationCategoryDocument = (
     donationCount: category.donationCount || 0,
     lastDonationDate: stringToTimestamp(category.lastDonationDate),
     averageDonation: category.averageDonation || 0,
-    includeInReports: category.includeInReports !== undefined ? category.includeInReports : true,
+    includeInReports:
+      category.includeInReports !== undefined
+        ? category.includeInReports
+        : true,
     reportingCategory: category.reportingCategory,
     displayOrder: category.displayOrder || 0,
     createdAt: category.createdAt ? stringToTimestamp(category.createdAt) : now,

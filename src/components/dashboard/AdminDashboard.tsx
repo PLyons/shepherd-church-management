@@ -11,6 +11,7 @@ import {
 } from '../../services/firebase/dashboard.service';
 import { useAuth } from '../../hooks/useUnifiedAuth';
 import { LoadingSpinner } from '../common/LoadingSpinner';
+import { DonationInsightsWidget } from '../donations/DonationInsightsWidget';
 import { logger } from '../../utils/logger';
 import {
   Users,
@@ -112,7 +113,10 @@ export function AdminDashboard({ member }: AdminDashboardProps) {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
+      <div
+        data-testid="dashboard-loading"
+        className="flex justify-center items-center h-64"
+      >
         <LoadingSpinner />
       </div>
     );
@@ -233,7 +237,10 @@ export function AdminDashboard({ member }: AdminDashboardProps) {
       </div>
 
       {/* Admin Quick Actions */}
-      <div className="bg-white rounded-lg shadow p-6">
+      <div
+        data-testid="quick-actions-widget"
+        className="bg-white rounded-lg shadow p-6"
+      >
         <h2 className="text-lg font-semibold text-gray-900 mb-4">
           Administrative Actions
         </h2>
@@ -268,6 +275,84 @@ export function AdminDashboard({ member }: AdminDashboardProps) {
               </div>
             </Link>
           ))}
+
+          {/* Donation-specific quick actions */}
+          <Link
+            to="/donations/new"
+            className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <div className="w-5 h-5 mr-3 text-green-600">
+              <DollarSign className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="font-medium text-gray-900 block">
+                Record Donation
+              </span>
+              <span className="text-sm text-gray-500">Add new donation</span>
+            </div>
+          </Link>
+
+          <Link
+            to="/financial-reports"
+            className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <div className="w-5 h-5 mr-3 text-blue-600">
+              <BarChart3 className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="font-medium text-gray-900 block">
+                Financial Reports
+              </span>
+              <span className="text-sm text-gray-500">View analytics</span>
+            </div>
+          </Link>
+
+          <Link
+            to="/donation-statements"
+            className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+          >
+            <div className="w-5 h-5 mr-3 text-purple-600">
+              <Settings className="w-5 h-5" />
+            </div>
+            <div>
+              <span className="font-medium text-gray-900 block">
+                Generate Statements
+              </span>
+              <span className="text-sm text-gray-500">Tax documents</span>
+            </div>
+          </Link>
+        </div>
+      </div>
+
+      {/* Donation Insights Widget */}
+      <div className="grid grid-cols-3 gap-6">
+        <div className="col-span-2">
+          <DonationInsightsWidget />
+        </div>
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Quick Stats
+          </h3>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Active Members</span>
+              <span className="font-semibold text-gray-900">
+                {stats.activeMembers || 0}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Total Households</span>
+              <span className="font-semibold text-gray-900">
+                {stats.totalHouseholds || 0}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Upcoming Events</span>
+              <span className="font-semibold text-gray-900">
+                {stats.upcomingEvents || 0}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -375,41 +460,6 @@ export function AdminDashboard({ member }: AdminDashboardProps) {
                 <p>No recent activity</p>
               </div>
             )}
-          </div>
-        </div>
-      </div>
-
-      {/* Financial Overview (Admin Only) */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">
-            Financial Overview
-          </h2>
-          <Link
-            to="/admin/financial-reports"
-            className="text-blue-600 hover:text-blue-500 text-sm font-medium flex items-center"
-          >
-            View reports <BarChart3 className="w-4 h-4 ml-1" />
-          </Link>
-        </div>
-        <div className="grid grid-cols-3 gap-6">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">
-              {formatCurrency(stats.totalDonations || 0)}
-            </div>
-            <div className="text-sm text-gray-500">Total Donations (YTD)</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">
-              {formatCurrency(stats.monthlyDonations || 0)}
-            </div>
-            <div className="text-sm text-gray-500">This Month</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-purple-600">
-              {formatCurrency((stats.monthlyDonations || 0) * 12)}
-            </div>
-            <div className="text-sm text-gray-500">Projected Annual</div>
           </div>
         </div>
       </div>

@@ -40,18 +40,23 @@ interface MemberDonationsReturn extends MemberDonationsState {
 }
 
 // Simple in-memory cache for donation data
-const donationCache = new Map<string, {
-  data: Donation[];
-  timestamp: number;
-  expiry: number;
-}>();
+const donationCache = new Map<
+  string,
+  {
+    data: Donation[];
+    timestamp: number;
+    expiry: number;
+  }
+>();
 
-export const useMemberDonations = (options: UseMemberDonationsOptions = {}): MemberDonationsReturn => {
+export const useMemberDonations = (
+  options: UseMemberDonationsOptions = {}
+): MemberDonationsReturn => {
   const {
     memberId: propMemberId,
     autoFetch = true,
     enableRealTime = true,
-    cacheTimeout = 5 * 60 * 1000 // 5 minutes default
+    cacheTimeout = 5 * 60 * 1000, // 5 minutes default
   } = options;
 
   const { user, member: currentMember, hasRole } = useAuth();
@@ -63,7 +68,7 @@ export const useMemberDonations = (options: UseMemberDonationsOptions = {}): Mem
     loading: true,
     error: null,
     lastFetched: null,
-    retryCount: 0
+    retryCount: 0,
   });
 
   // Real-time subscription cleanup
@@ -75,47 +80,50 @@ export const useMemberDonations = (options: UseMemberDonationsOptions = {}): Mem
   // Security validation
   const canAccessDonations = useMemo(() => {
     if (!user || !currentMember || !targetMemberId) return false;
-    
+
     // Admin/pastor can access any member's donations
     if (hasRole('admin') || hasRole('pastor')) return true;
-    
+
     // Member can only access their own donations
     return targetMemberId === currentMember.id;
   }, [user, currentMember, hasRole, targetMemberId]);
 
   // Cache key for this member's donations
-  const cacheKey = useMemo(() => 
-    targetMemberId ? `donations_${targetMemberId}` : null, 
+  const cacheKey = useMemo(
+    () => (targetMemberId ? `donations_${targetMemberId}` : null),
     [targetMemberId]
   );
 
   // Check cache validity
   const getCachedData = useCallback((): Donation[] | null => {
     if (!cacheKey) return null;
-    
+
     const cached = donationCache.get(cacheKey);
     if (!cached) return null;
-    
+
     const now = Date.now();
     if (now > cached.expiry) {
       donationCache.delete(cacheKey);
       return null;
     }
-    
+
     return cached.data;
   }, [cacheKey]);
 
   // Store data in cache
-  const setCachedData = useCallback((data: Donation[]) => {
-    if (!cacheKey) return;
-    
-    const now = Date.now();
-    donationCache.set(cacheKey, {
-      data: [...data], // Create a copy to prevent mutations
-      timestamp: now,
-      expiry: now + cacheTimeout
-    });
-  }, [cacheKey, cacheTimeout]);
+  const setCachedData = useCallback(
+    (data: Donation[]) => {
+      if (!cacheKey) return;
+
+      const now = Date.now();
+      donationCache.set(cacheKey, {
+        data: [...data], // Create a copy to prevent mutations
+        timestamp: now,
+        expiry: now + cacheTimeout,
+      });
+    },
+    [cacheKey, cacheTimeout]
+  );
 
   // Clear cache for this member
   const clearCache = useCallback(() => {
@@ -125,82 +133,95 @@ export const useMemberDonations = (options: UseMemberDonationsOptions = {}): Mem
   }, [cacheKey]);
 
   // Fetch donations from service or cache
-  const fetchDonations = useCallback(async (useCache: boolean = true) => {
-    if (!targetMemberId || !canAccessDonations) {
-      setState(prev => ({ 
-        ...prev, 
-        loading: false, 
-        error: 'Unauthorized access or missing member ID' 
-      }));
-      return;
-    }
-
-    try {
-      // Check cache first if enabled
-      if (useCache) {
-        const cachedData = getCachedData();
-        if (cachedData) {
-          setState(prev => ({
-            ...prev,
-            donations: cachedData,
-            loading: false,
-            error: null,
-            lastFetched: new Date(donationCache.get(cacheKey!)?.timestamp || Date.now()),
-            retryCount: 0
-          }));
-          return;
-        }
+  const fetchDonations = useCallback(
+    async (useCache: boolean = true) => {
+      if (!targetMemberId || !canAccessDonations) {
+        setState((prev) => ({
+          ...prev,
+          loading: false,
+          error: 'Unauthorized access or missing member ID',
+        }));
+        return;
       }
 
-      setState(prev => ({ ...prev, loading: true, error: null }));
+      try {
+        // Check cache first if enabled
+        if (useCache) {
+          const cachedData = getCachedData();
+          if (cachedData) {
+            setState((prev) => ({
+              ...prev,
+              donations: cachedData,
+              loading: false,
+              error: null,
+              lastFetched: new Date(
+                donationCache.get(cacheKey!)?.timestamp || Date.now()
+              ),
+              retryCount: 0,
+            }));
+            return;
+          }
+        }
 
-      const donationData = await donationsService.getDonationsByMember(targetMemberId);
-      
-      // Sort by date descending (most recent first)
-      const sortedDonations = donationData.sort((a, b) => 
-        new Date(b.donationDate).getTime() - new Date(a.donationDate).getTime()
-      );
+        setState((prev) => ({ ...prev, loading: true, error: null }));
 
-      // Update state
-      setState(prev => ({
-        ...prev,
-        donations: sortedDonations,
-        loading: false,
-        error: null,
-        lastFetched: new Date(),
-        retryCount: 0
-      }));
+        const donationData =
+          await donationsService.getDonationsByMember(targetMemberId);
 
-      // Cache the data
-      setCachedData(sortedDonations);
+        // Sort by date descending (most recent first)
+        const sortedDonations = donationData.sort(
+          (a, b) =>
+            new Date(b.donationDate).getTime() -
+            new Date(a.donationDate).getTime()
+        );
 
-      // Audit logging
-      console.log(`Member donations fetched: ${targetMemberId} (${donationData.length} donations) by user: ${user?.uid}`);
+        // Update state
+        setState((prev) => ({
+          ...prev,
+          donations: sortedDonations,
+          loading: false,
+          error: null,
+          lastFetched: new Date(),
+          retryCount: 0,
+        }));
 
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to load donations';
-      
-      setState(prev => ({
-        ...prev,
-        loading: false,
-        error: errorMessage,
-        retryCount: prev.retryCount + 1
-      }));
+        // Cache the data
+        setCachedData(sortedDonations);
 
-      showToast(errorMessage, 'error');
+        // Audit logging
+        console.log(
+          `Member donations fetched: ${targetMemberId} (${donationData.length} donations) by user: ${user?.uid}`
+        );
+      } catch (err) {
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to load donations';
 
-      // Security audit log for failures
-      console.error(`Failed donation access for member: ${targetMemberId} by user: ${user?.uid}`, err);
-    }
-  }, [
-    targetMemberId,
-    canAccessDonations,
-    getCachedData,
-    setCachedData,
-    cacheKey,
-    user?.uid,
-    showToast
-  ]);
+        setState((prev) => ({
+          ...prev,
+          loading: false,
+          error: errorMessage,
+          retryCount: prev.retryCount + 1,
+        }));
+
+        showToast(errorMessage, 'error');
+
+        // Security audit log for failures
+        console.error(
+          `Failed donation access for member: ${targetMemberId} by user: ${user?.uid}`,
+          err
+        );
+      }
+    },
+    [
+      targetMemberId,
+      canAccessDonations,
+      getCachedData,
+      setCachedData,
+      cacheKey,
+      user?.uid,
+      showToast,
+    ]
+  );
 
   // Set up real-time subscription
   const setupRealTimeUpdates = useCallback(() => {
@@ -210,34 +231,39 @@ export const useMemberDonations = (options: UseMemberDonationsOptions = {}): Mem
       const unsubscribeFn = donationsService.subscribeToDonations(
         (updatedDonations) => {
           // Filter for this member's donations only
-          const memberDonations = updatedDonations.filter(d => d.memberId === targetMemberId);
-          
-          const sortedDonations = memberDonations.sort((a, b) => 
-            new Date(b.donationDate).getTime() - new Date(a.donationDate).getTime()
+          const memberDonations = updatedDonations.filter(
+            (d) => d.memberId === targetMemberId
           );
 
-          setState(prev => ({
+          const sortedDonations = memberDonations.sort(
+            (a, b) =>
+              new Date(b.donationDate).getTime() -
+              new Date(a.donationDate).getTime()
+          );
+
+          setState((prev) => ({
             ...prev,
             donations: sortedDonations,
-            lastFetched: new Date()
+            lastFetched: new Date(),
           }));
 
           // Update cache with new data
           setCachedData(sortedDonations);
 
-          console.log(`Real-time donation update for member: ${targetMemberId}`);
+          console.log(
+            `Real-time donation update for member: ${targetMemberId}`
+          );
         },
         (error) => {
           console.error('Real-time donation updates error:', error);
-          setState(prev => ({
+          setState((prev) => ({
             ...prev,
-            error: 'Real-time updates failed'
+            error: 'Real-time updates failed',
           }));
         }
       );
 
       setUnsubscribe(() => unsubscribeFn);
-      
     } catch (error) {
       console.error('Failed to setup real-time updates:', error);
     }
@@ -268,18 +294,18 @@ export const useMemberDonations = (options: UseMemberDonationsOptions = {}): Mem
   const summary = useMemo(() => {
     const totalAmount = state.donations.reduce((sum, d) => sum + d.amount, 0);
     const totalCount = state.donations.length;
-    
+
     const currentYear = new Date().getFullYear();
-    const ytdDonations = state.donations.filter(d => 
-      new Date(d.donationDate).getFullYear() === currentYear
+    const ytdDonations = state.donations.filter(
+      (d) => new Date(d.donationDate).getFullYear() === currentYear
     );
     const ytdAmount = ytdDonations.reduce((sum, d) => sum + d.amount, 0);
     const ytdCount = ytdDonations.length;
-    
+
     const taxDeductibleAmount = state.donations
-      .filter(d => d.isTaxDeductible)
+      .filter((d) => d.isTaxDeductible)
       .reduce((sum, d) => sum + d.amount, 0);
-    
+
     const averageDonation = totalCount > 0 ? totalAmount / totalCount : 0;
 
     return {
@@ -288,7 +314,7 @@ export const useMemberDonations = (options: UseMemberDonationsOptions = {}): Mem
       ytdAmount,
       ytdCount,
       taxDeductibleAmount,
-      averageDonation
+      averageDonation,
     };
   }, [state.donations]);
 
@@ -318,7 +344,7 @@ export const useMemberDonations = (options: UseMemberDonationsOptions = {}): Mem
     refetch,
     clearCache,
     retry,
-    summary
+    summary,
   };
 };
 
@@ -331,12 +357,18 @@ export const clearAllDonationCache = (): void => {
 export const getDonationCacheStats = () => {
   const now = Date.now();
   const entries = Array.from(donationCache.entries());
-  
+
   return {
     totalCached: entries.length,
     validCached: entries.filter(([, data]) => now < data.expiry).length,
     expiredCached: entries.filter(([, data]) => now >= data.expiry).length,
-    oldestEntry: entries.length > 0 ? Math.min(...entries.map(([, data]) => data.timestamp)) : null,
-    newestEntry: entries.length > 0 ? Math.max(...entries.map(([, data]) => data.timestamp)) : null
+    oldestEntry:
+      entries.length > 0
+        ? Math.min(...entries.map(([, data]) => data.timestamp))
+        : null,
+    newestEntry:
+      entries.length > 0
+        ? Math.max(...entries.map(([, data]) => data.timestamp))
+        : null,
   };
 };

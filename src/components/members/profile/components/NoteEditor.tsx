@@ -3,7 +3,11 @@ import { X, Save, AlertCircle } from 'lucide-react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
-import { MemberNote, NoteCategory, NotePriority } from '../../../../types/notes';
+import {
+  MemberNote,
+  NoteCategory,
+  NotePriority,
+} from '../../../../types/notes';
 import { NOTE_CONFIG, PRIORITY_CONFIG } from '../../../../types/notes';
 import { notesService } from '../../../../services/firebase/notes.service';
 import { useAuth } from '../../../../hooks/useUnifiedAuth';
@@ -17,7 +21,13 @@ interface NoteEditorProps {
   onSave: (note: MemberNote) => void;
 }
 
-export function NoteEditor({ isOpen, onClose, memberId, note, onSave }: NoteEditorProps) {
+export function NoteEditor({
+  isOpen,
+  onClose,
+  memberId,
+  note,
+  onSave,
+}: NoteEditorProps) {
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState<NoteCategory>('general');
   const [priority, setPriority] = useState<NotePriority>('normal');
@@ -34,15 +44,15 @@ export function NoteEditor({ isOpen, onClose, memberId, note, onSave }: NoteEdit
     extensions: [
       StarterKit,
       Placeholder.configure({
-        placeholder: 'Write your note here...'
-      })
+        placeholder: 'Write your note here...',
+      }),
     ],
     content: note?.content || '<p></p>',
     editorProps: {
       attributes: {
-        class: 'prose prose-sm max-w-none focus:outline-none min-h-[200px] p-4'
-      }
-    }
+        class: 'prose prose-sm max-w-none focus:outline-none min-h-[200px] p-4',
+      },
+    },
   });
 
   useEffect(() => {
@@ -74,7 +84,7 @@ export function NoteEditor({ isOpen, onClose, memberId, note, onSave }: NoteEdit
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
-    setTags(tags.filter(tag => tag !== tagToRemove));
+    setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
   const handleClose = () => {
@@ -121,17 +131,17 @@ export function NoteEditor({ isOpen, onClose, memberId, note, onSave }: NoteEdit
           tags,
           isPrivate,
           updatedBy: currentUser.id,
-          updatedByName: `${currentUser.firstName} ${currentUser.lastName}`
+          updatedByName: `${currentUser.firstName} ${currentUser.lastName}`,
           // updatedAt is set by the service
         };
 
         await notesService.updateNote(memberId, note.id, updateData);
-        
+
         // Create updated note object for UI
         const updatedNote: MemberNote = {
           ...note,
           ...updateData,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         };
         onSave(updatedNote);
         showToast('Note updated successfully', 'success');
@@ -147,36 +157,40 @@ export function NoteEditor({ isOpen, onClose, memberId, note, onSave }: NoteEdit
           tags,
           isPrivate,
           createdBy: currentUser.id,
-          createdByName: `${currentUser.firstName} ${currentUser.lastName}`
+          createdByName: `${currentUser.firstName} ${currentUser.lastName}`,
         };
 
         const noteId = await notesService.createNote(memberId, newNote);
-        
+
         // Create note object for UI update with real ID
         const createdNote: MemberNote = {
           ...newNote,
           id: noteId,
           createdAt: new Date(),
-          accessCount: 0
+          accessCount: 0,
         };
-        
+
         onSave(createdNote);
         showToast('Note created successfully', 'success');
       }
-      
+
       // Close modal on successful save
       handleClose();
     } catch (error) {
       console.error('Error saving note:', error);
-      
+
       // Show error message but still close modal for better UX
-      const errorMessage = error instanceof Error ? error.message : 'Failed to save note';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to save note';
       if (errorMessage.includes('permissions')) {
-        showToast('Permission denied: Please ensure Firebase security rules are deployed', 'error');
+        showToast(
+          'Permission denied: Please ensure Firebase security rules are deployed',
+          'error'
+        );
       } else {
         showToast('Failed to save note. Please try again.', 'error');
       }
-      
+
       // Close modal even on error to prevent stuck state
       handleClose();
     } finally {
@@ -262,7 +276,7 @@ export function NoteEditor({ isOpen, onClose, memberId, note, onSave }: NoteEdit
                 Tags
               </label>
               <div className="flex flex-wrap gap-2 mb-2">
-                {tags.map(tag => (
+                {tags.map((tag) => (
                   <span
                     key={tag}
                     className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
@@ -282,7 +296,9 @@ export function NoteEditor({ isOpen, onClose, memberId, note, onSave }: NoteEdit
                   type="text"
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
+                  onKeyDown={(e) =>
+                    e.key === 'Enter' && (e.preventDefault(), handleAddTag())
+                  }
                   placeholder="Add tag..."
                   className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -304,8 +320,12 @@ export function NoteEditor({ isOpen, onClose, memberId, note, onSave }: NoteEdit
                   onChange={(e) => setIsPrivate(e.target.checked)}
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
-                <span className="text-sm font-medium text-gray-700">Private Note</span>
-                <span className="text-sm text-gray-500">(Only visible to creator and admins)</span>
+                <span className="text-sm font-medium text-gray-700">
+                  Private Note
+                </span>
+                <span className="text-sm text-gray-500">
+                  (Only visible to creator and admins)
+                </span>
               </label>
             </div>
 
@@ -320,7 +340,9 @@ export function NoteEditor({ isOpen, onClose, memberId, note, onSave }: NoteEdit
                   <button
                     onClick={() => editor?.chain().focus().toggleBold().run()}
                     className={`px-2 py-1 rounded text-sm font-medium ${
-                      editor?.isActive('bold') ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-200'
+                      editor?.isActive('bold')
+                        ? 'bg-blue-100 text-blue-600'
+                        : 'text-gray-600 hover:bg-gray-200'
                     }`}
                   >
                     B
@@ -328,21 +350,27 @@ export function NoteEditor({ isOpen, onClose, memberId, note, onSave }: NoteEdit
                   <button
                     onClick={() => editor?.chain().focus().toggleItalic().run()}
                     className={`px-2 py-1 rounded text-sm italic ${
-                      editor?.isActive('italic') ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-200'
+                      editor?.isActive('italic')
+                        ? 'bg-blue-100 text-blue-600'
+                        : 'text-gray-600 hover:bg-gray-200'
                     }`}
                   >
                     I
                   </button>
                   <button
-                    onClick={() => editor?.chain().focus().toggleBulletList().run()}
+                    onClick={() =>
+                      editor?.chain().focus().toggleBulletList().run()
+                    }
                     className={`px-2 py-1 rounded text-sm ${
-                      editor?.isActive('bulletList') ? 'bg-blue-100 text-blue-600' : 'text-gray-600 hover:bg-gray-200'
+                      editor?.isActive('bulletList')
+                        ? 'bg-blue-100 text-blue-600'
+                        : 'text-gray-600 hover:bg-gray-200'
                     }`}
                   >
                     •
                   </button>
                 </div>
-                
+
                 {/* Editor */}
                 <EditorContent editor={editor} />
               </div>
