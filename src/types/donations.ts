@@ -225,20 +225,42 @@ export interface DonationCategoryDocument {
 
 export interface FinancialSummary {
   totalDonations: number;
+  totalTaxDeductible: number;
   donationCount: number;
   averageDonation: number;
-  periodStart: string; // ISO string
-  periodEnd: string; // ISO string
+  periodStart?: string; // ISO string
+  periodEnd?: string; // ISO string
   
-  // Breakdown by method
-  byMethod: Record<DonationMethod, {
+  // Breakdown by category (simplified for test compatibility)
+  categoryBreakdown: {
+    categoryId: string;
+    categoryName: string;
+    amount: number;
+    percentage: number;
+  }[];
+  
+  // Breakdown by method (simplified for test compatibility)  
+  methodBreakdown: {
+    method: DonationMethod;
+    amount: number;
+    percentage: number;
+  }[];
+  
+  // Monthly trends for charts
+  monthlyTrends: {
+    month: string; // YYYY-MM format
+    amount: number;
+  }[];
+  
+  // Legacy breakdown by method (for backwards compatibility)
+  byMethod?: Record<DonationMethod, {
     amount: number;
     count: number;
     percentage: number;
   }>;
   
-  // Breakdown by category
-  byCategory: Record<string, {
+  // Legacy breakdown by category (for backwards compatibility)
+  byCategory?: Record<string, {
     categoryName: string;
     amount: number;
     count: number;
@@ -247,14 +269,14 @@ export interface FinancialSummary {
   }>;
   
   // Form 990 breakdown
-  form990Breakdown: Record<Form990LineItem, {
+  form990Breakdown?: Record<Form990LineItem, {
     amount: number;
     count: number;
     percentage: number;
   }>;
   
   // Top donors (anonymized for privacy)
-  topDonorRanges: {
+  topDonorRanges?: {
     range: string; // e.g., "$1000-$2499"
     count: number;
     totalAmount: number;
@@ -400,6 +422,65 @@ export interface DonationValidationResult {
   isValid: boolean;
   errors: DonationValidationError[];
   warnings?: DonationValidationError[];
+}
+
+// ============================================================================
+// FORM 990 REPORTING TYPES
+// ============================================================================
+
+export interface Form990Data {
+  taxYear: number;
+  organizationName: string;
+  ein: string;
+  totalRevenue: number;
+  partVIII: Form990PartVIII;
+  quidProQuoDisclosures: QuidProQuoDisclosure[];
+  restrictedFunds: RestrictedFund[];
+  contributions: {
+    cash: number;
+    nonCash: number;
+    restricted: number;
+    quidProQuo: number;
+  };
+  programServiceRevenue: number;
+  investmentIncome: number;
+  otherRevenue: number;
+  lineItems: Form990LineItemDetail[];
+}
+
+export interface Form990PartVIII {
+  '1a_cash_contributions': number;
+  '1b_noncash_contributions': number;
+  '1c_contributions_reported_990': number;
+  '1d_related_organizations': number;
+  '1e_government_grants': number;
+  '1f_other_contributions': number;
+  '2_program_service_revenue': number;
+  '3_investment_income': number;
+  '4_other_revenue': number;
+  total_revenue: number;
+}
+
+export interface Form990LineItemDetail {
+  line: string;
+  description: string;
+  amount: number;
+  percentage: number;
+}
+
+export interface QuidProQuoDisclosure {
+  donationId: string;
+  totalAmount: number;
+  quidProQuoValue: number;
+  deductibleAmount: number;
+  description: string;
+}
+
+export interface RestrictedFund {
+  categoryName: string;
+  amount: number;
+  restrictionType: RestrictionType;
+  description: string;
 }
 
 // ============================================================================
