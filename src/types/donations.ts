@@ -606,3 +606,182 @@ export interface StripeConfig {
   enableApplePay?: boolean;
   enableGooglePay?: boolean;
 }
+
+// ============================================================================
+// DONATION STATEMENTS & RECEIPTS TYPES (PRP-2C-009)
+// ============================================================================
+
+/**
+ * Type unions for statement system
+ */
+export type StatementStatus = 
+  | 'pending' 
+  | 'generating' 
+  | 'generated' 
+  | 'sent' 
+  | 'failed' 
+  | 'cancelled';
+
+export type StatementType = 
+  | 'annual_tax_statement' 
+  | 'quarterly_summary' 
+  | 'monthly_summary' 
+  | 'year_end_summary' 
+  | 'custom_range';
+
+export type StatementFormat = 
+  | 'pdf' 
+  | 'html' 
+  | 'excel';
+
+export type StatementDeliveryMethod = 
+  | 'download' 
+  | 'email' 
+  | 'email_with_download';
+
+/**
+ * Comprehensive donation statement interface for tax reporting and member communications
+ */
+export interface DonationStatement {
+  id: string;
+  memberId: string;
+  memberName: string;
+  memberEmail: string;
+  memberAddress: {
+    line1: string;
+    line2?: string;
+    city: string;
+    state: string;
+    postalCode: string;
+  };
+  
+  // Statement configuration
+  statementType: StatementType;
+  taxYear: number;
+  periodStart: string; // ISO date string
+  periodEnd: string; // ISO date string
+  
+  // Donation data
+  donationIds: string[];
+  totalAmount: number;
+  totalDeductibleAmount: number;
+  donationCount: number;
+  includesQuidProQuo: boolean;
+  
+  // Church information
+  churchName: string;
+  churchAddress: string;
+  churchEIN: string;
+  
+  // Statement generation
+  generatedAt: string; // ISO timestamp
+  generatedBy: string; // Member ID who generated
+  status: StatementStatus;
+  format: StatementFormat;
+  fileSize?: number; // File size in bytes
+  downloadUrl?: string;
+  
+  // Delivery tracking
+  deliveryMethod: StatementDeliveryMethod;
+  sentAt?: string; // ISO timestamp
+  downloadedAt?: string; // ISO timestamp
+  
+  // Administrative
+  createdAt: string; // ISO timestamp
+  updatedAt: string; // ISO timestamp
+}
+
+/**
+ * Individual donation receipt interface for immediate confirmation
+ */
+export interface DonationReceipt {
+  id: string;
+  donationId: string;
+  memberId: string;
+  memberName: string;
+  receiptNumber: string;
+  
+  // Donation details
+  donationAmount: number;
+  deductibleAmount: number;
+  donationDate: string; // ISO timestamp
+  donationMethod: string;
+  categoryName: string;
+  
+  // Tax deductibility information
+  isQuidProQuo: boolean;
+  quidProQuoValue?: number;
+  quidProQuoDescription?: string;
+  
+  // Church information
+  churchName: string;
+  churchEIN: string;
+  
+  // Receipt generation
+  generatedAt: string; // ISO timestamp
+  status: StatementStatus;
+  format: StatementFormat;
+}
+
+/**
+ * Statement template interface for customizable statement generation
+ */
+export interface StatementTemplate {
+  id: string;
+  name: string;
+  templateType: string;
+  isDefault: boolean;
+  isActive: boolean;
+  
+  // Header content configuration
+  headerContent: {
+    churchLogo?: string;
+    churchName: string;
+    churchEIN: string;
+  };
+  
+  // Body content configuration
+  bodyContent: {
+    greeting: string;
+    introText: string;
+  };
+  
+  // Styling configuration
+  styling: {
+    primaryColor: string;
+    fontFamily: string;
+  };
+  
+  // Section inclusion configuration
+  includeSections: {
+    donationSummary: boolean;
+    donationDetails: boolean;
+    quidProQuoDetails: boolean;
+  };
+  
+  version: string;
+}
+
+/**
+ * Bulk statement generation job interface for batch processing
+ */
+export interface BulkStatementJob {
+  id: string;
+  jobName: string;
+  jobType: string;
+  taxYear?: number;
+  templateId?: string;
+  
+  // Member targeting
+  memberIds?: string[];
+  totalMembers: number;
+  processedMembers: number;
+  successfulStatements: number;
+  failedStatements: number;
+  
+  // Job configuration
+  status: string;
+  deliveryMethod: StatementDeliveryMethod;
+  sendImmediately: boolean;
+  notifyOnCompletion?: boolean;
+}

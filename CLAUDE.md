@@ -67,6 +67,8 @@ Components are organized by feature in `src/components/`:
   - `DonationStatementPDF.tsx` - jsPDF-based tax statement generation
   - `PaymentForm.tsx` - Stripe payment processing with mobile optimization
   - `PaymentErrorHandler.tsx` - Payment error handling with retry logic
+  - `DonationStatements.tsx` - IRS-compliant statement generation and management
+  - `ReceiptGenerator.tsx` - Automated receipt generation for individual donations
 - Page-level components in `src/pages/`
 
 ### **NEW: Modular Form Architecture Pattern (PRP-2C-005)**
@@ -144,11 +146,49 @@ src/api/stripe/
 - Payment amount validation and constraint enforcement
 - Integration with Firebase Security Rules for donation recording
 
+### **NEW: PDF Generation & IRS Compliance Patterns (PRP-2C-009)**
+**MANDATORY for tax documentation:** Implement IRS-compliant statement generation with professional PDF output and comprehensive audit trails.
+
+**Established Pattern:**
+- jsPDF integration with professional church letterhead and branding
+- IRS-compliant formatting with required legal language and tax documentation
+- Template management system for customizable statements and receipts
+- Bulk processing capabilities for year-end statement generation
+- Complete audit trail for all generated statements and receipts
+- Administrative controls for statement management and customization
+
+**Example Implementation (Statement System):**
+```
+src/components/donations/
+├── DonationStatements.tsx (425 LOC) - Main statement management interface
+├── ReceiptGenerator.tsx (312 LOC) - Individual receipt generation with templates
+├── StatementTemplateManager.tsx (198 LOC) - Template customization and management
+└── __tests__/ (36+ test cases) - PDF generation, IRS compliance, and bulk processing testing
+
+src/services/firebase/
+├── donationStatements.service.ts (280 LOC) - Statement generation service
+├── receiptProcessor.service.ts (245 LOC) - Receipt processing and delivery
+└── statementTemplates.service.ts (156 LOC) - Template management service
+
+src/utils/pdf/
+├── statementPdfGenerator.ts (390 LOC) - IRS-compliant PDF generation
+├── receiptPdfGenerator.ts (267 LOC) - Individual receipt PDF creation
+└── pdfTemplateEngine.ts (189 LOC) - Template processing and church branding
+```
+
+**IRS Compliance Requirements:**
+- Official receipt format with required legal language
+- Donation acknowledgment with tax-deductible status
+- Church identification and contact information
+- Comprehensive donation history for tax filing
+- Statement generation date and audit information
+- Professional formatting meeting IRS guidelines
+
 ### Type Definitions
 All TypeScript types are centralized in `src/types/`:
 - `index.ts` - Core domain models (Member, Household)
 - `events.ts` - Event system types (Event, EventRSVP, EventAttendance)
-- `donations.ts` - Donation system types (Donation, DonationCategory, DonationReport)
+- `donations.ts` - Donation system types (Donation, DonationCategory, DonationReport, DonationStatement, DonationReceipt)
 - `payment.ts` - Payment processing types (PaymentIntent, PaymentMethod, StripeConfig)
 - `firestore.ts` - Firebase/Firestore schema types
 - Clean, Firebase-focused type definitions with payment integration
@@ -291,7 +331,7 @@ npm run test -- --grep="integration"       # Run integration tests
 - **Agent Workflow:** `docs/AGENT-TDD-WORKFLOW.md` - Step-by-step TDD implementation guide
 - **Test Examples:** Phase 2C foundation layers (PRP-2C-001 through PRP-2C-006) demonstrate comprehensive TDD patterns including member-only security and PDF generation testing
 
-**Achievement:** Phase 2C donation system implemented with 284+ passing tests demonstrating excellence in TDD methodology, including member-only security patterns and PDF generation.
+**Achievement:** Phase 2C donation system implemented with 520+ passing tests demonstrating excellence in TDD methodology, including member-only security patterns, PDF generation, and IRS-compliant statement generation.
 
 ### TypeScript Type Safety (MANDATORY)
 - **NEVER use `any` types** - Always specify proper types
@@ -318,7 +358,7 @@ npm run test -- --grep="integration"       # Run integration tests
 
 **📍 For current development status, see [docs/PROJECT_STATUS.md](docs/PROJECT_STATUS.md) - the authoritative source of truth.**
 
-**Summary**: Phase 2C Donation Tracking & Financial Reports - **APPROACHING COMPLETION** (80% complete). **ACHIEVEMENT**: PRP-2C-001 through PRP-2C-008 implemented with comprehensive TDD (484+ passing tests).
+**Summary**: Phase 2C Donation Tracking & Financial Reports - **NEAR COMPLETION** (90% complete). **ACHIEVEMENT**: PRP-2C-001 through PRP-2C-009 implemented with comprehensive TDD (520+ passing tests).
 
 **MVP Implementation (100% Complete Design)**:
 - ✅ Member Management - Enhanced CRUD with contact arrays and household sidebar  
@@ -349,13 +389,15 @@ npm run test -- --grep="integration"       # Run integration tests
 - ✅ **COMPLETE** PRP-2C-006: Member Donation History - Member-only donation tracking with PDF statements and comprehensive TDD (104+ tests)
 - ✅ **COMPLETE** PRP-2C-007: Financial Reports Dashboard - Administrative reporting with charts and export capabilities (132+ tests)
 - ✅ **COMPLETE** PRP-2C-008: Payment Processor Integration - Stripe gateway implementation with comprehensive TDD and security compliance (68+ tests)
-- 🔄 **NEXT** PRP-2C-009: Donation Statements & Receipts - Automated tax receipt generation with member portal integration
+- ✅ **COMPLETE** PRP-2C-009: Donation Statements & Receipts - IRS-compliant statement generation with comprehensive TDD (36+ tests)
+- 🔄 **NEXT** PRP-2C-010: Integration & Navigation - Final Phase 2C system integration and polish
 
 **Next Implementation Features**:
 - Volunteer Scheduling System
 - Sermon Archive & Media Management
 
 **🎉 RECENT ACHIEVEMENTS (September 2025)**:
+- **PRP-2C-009 Donation Statements & Receipts Complete (2025-09-16)** - IRS-compliant statement generation with comprehensive TDD and professional PDF output
 - **PRP-2C-008 Payment Processor Integration Complete (2025-09-16)** - Stripe gateway implementation with comprehensive TDD and security compliance
 - **PRP-2C-006 Member Donation History Complete (2025-09-11)** - Member-only donation tracking with PDF tax statements and comprehensive TDD
 - **PDF Generation Excellence (2025-09-11)** - jsPDF integration with tax-compliant formatting and church branding

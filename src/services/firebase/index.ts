@@ -16,6 +16,7 @@ export { EventsService, eventsService } from './events.service';
 export { EventRSVPService, eventRSVPService } from './event-rsvp.service';
 export { DonationsService, donationsService } from './donations.service';
 export { DonationCategoriesService, donationCategoriesService } from './donation-categories.service';
+export { DonationStatementsService, donationStatementsService } from './donationStatements.service';
 
 // Import classes for FirebaseService constructor
 import { MembersService } from './members.service';
@@ -23,6 +24,7 @@ import { EventsService } from './events.service';
 import { EventRSVPService } from './event-rsvp.service';
 import { DonationsService } from './donations.service';
 import { DonationCategoriesService } from './donation-categories.service';
+import { DonationStatementsService } from './donationStatements.service';
 import type { Member } from '../../types';
 import type { Event } from '../../types/events';
 
@@ -69,6 +71,9 @@ export const firebase = {
   get donationCategories() {
     return new DonationCategoriesService();
   },
+  get donationStatements() {
+    return new DonationStatementsService();
+  },
 } as const;
 
 // ============================================================================
@@ -82,6 +87,7 @@ export class FirebaseService {
   public readonly eventRSVPs: EventRSVPService;
   public readonly donations: DonationsService;
   public readonly donationCategories: DonationCategoriesService;
+  public readonly donationStatements: DonationStatementsService;
 
   constructor() {
     this.members = new MembersService();
@@ -89,6 +95,7 @@ export class FirebaseService {
     this.eventRSVPs = new EventRSVPService();
     this.donations = new DonationsService();
     this.donationCategories = new DonationCategoriesService();
+    this.donationStatements = new DonationStatementsService();
   }
 
   // ============================================================================
