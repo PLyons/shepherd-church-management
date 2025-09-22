@@ -205,7 +205,9 @@ export class DonationCategoriesService extends BaseFirestoreService<
    * Get only active categories sorted by display order
    */
   async getActiveCategories(): Promise<DonationCategory[]> {
-    return this.getWhere('isActive', '==', true);
+    const categories = await this.getWhere('isActive', '==', true);
+    // Sort by displayOrder in ascending order
+    return categories.sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0));
   }
 
   /**
