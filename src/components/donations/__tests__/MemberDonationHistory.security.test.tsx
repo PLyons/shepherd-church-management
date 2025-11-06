@@ -12,7 +12,7 @@
 // - src/contexts/FirebaseAuthContext.tsx (authentication context)
 
 import { describe, it, expect, beforeEach, afterEach, vi, Mock } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { MemberDonationHistory } from '../MemberDonationHistory';
 import { useAuth } from '../../../contexts/FirebaseAuthContext';

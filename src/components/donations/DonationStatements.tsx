@@ -3,7 +3,7 @@
 // Handles annual statement generation, bulk processing, and template management for admin/pastor roles
 // RELEVANT FILES: src/types/donations.ts, src/services/firebase/donationStatements.service.ts, src/components/donations/DonationStatementPDF.tsx
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { DonationStatementsService } from '../../services/firebase/donationStatements.service';
 import { useAuth } from '../../contexts/FirebaseAuthContext';
 import { useToast } from '../../contexts/ToastContext';
@@ -12,7 +12,6 @@ import {
   BulkStatementJob,
   StatementTemplate,
   StatementStatus,
-  StatementFormat,
   StatementDeliveryMethod,
 } from '../../types/donations';
 import { formatCurrency } from '../../utils/currency-utils';
@@ -30,18 +29,10 @@ export const DonationStatements: React.FC<DonationStatementsProps> = ({
   // Service instance
   const [statementsService] = useState(() => new DonationStatementsService());
 
-  // Role checking with fallback for test compatibility
-  const hasRole = useCallback(
-    (role: string): boolean => {
-      return member?.role === role || (user as any)?.role === role;
-    },
-    [member?.role, user]
-  );
-
   // Authorization check
   const isAuthorized = useMemo(() => {
     if (!user) return false;
-    const userRole = member?.role || (user as any)?.role;
+    const userRole = member?.role || (user as Record<string, unknown>)?.role;
     return userRole === 'admin' || userRole === 'pastor';
   }, [user, member?.role]);
 
@@ -51,7 +42,7 @@ export const DonationStatements: React.FC<DonationStatementsProps> = ({
   );
   const [statements, setStatements] = useState<DonationStatement[]>([]);
   const [bulkJobs, setBulkJobs] = useState<BulkStatementJob[]>([]);
-  const [templates, setTemplates] = useState<StatementTemplate[]>([]);
+  const [templates] = useState<StatementTemplate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isBulkGenerating, setIsBulkGenerating] = useState(false);
@@ -268,16 +259,16 @@ export const DonationStatements: React.FC<DonationStatementsProps> = ({
           <nav className="-mb-px flex space-x-8 px-6">
             {[
               {
-                key: 'statements',
+                key: 'statements' as const,
                 label: 'Statements',
                 count: statements.length,
               },
-              { key: 'bulk', label: 'Bulk Processing', count: bulkJobs.length },
-              { key: 'templates', label: 'Templates', count: templates.length },
+              { key: 'bulk' as const, label: 'Bulk Processing', count: bulkJobs.length },
+              { key: 'templates' as const, label: 'Templates', count: templates.length },
             ].map((tab) => (
               <button
                 key={tab.key}
-                onClick={() => setActiveTab(tab.key as any)}
+                onClick={() => setActiveTab(tab.key)}
                 className={`${
                   activeTab === tab.key
                     ? 'border-blue-500 text-blue-600'

@@ -9,7 +9,6 @@ import {
   render,
   screen,
   waitFor,
-  fireEvent,
   within,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -23,11 +22,8 @@ import { useAuth } from '../../../contexts/FirebaseAuthContext';
 import { useToast } from '../../../contexts/ToastContext';
 import {
   Donation,
-  DonationReportFilters,
   FinancialSummary,
-  Form990Fields,
   Form990LineItem,
-  TaxReceiptData,
 } from '../../../types/donations';
 import { Member } from '../../../types';
 
@@ -69,13 +65,13 @@ vi.mock('chart.js', () => ({
 }));
 
 vi.mock('react-chartjs-2', () => ({
-  Bar: vi.fn(({ data, options }) => (
+  Bar: vi.fn(({ data }) => (
     <div data-testid="bar-chart" data-chart-data={JSON.stringify(data)} />
   )),
-  Pie: vi.fn(({ data, options }) => (
+  Pie: vi.fn(({ data }) => (
     <div data-testid="pie-chart" data-chart-data={JSON.stringify(data)} />
   )),
-  Line: vi.fn(({ data, options }) => (
+  Line: vi.fn(({ data }) => (
     <div data-testid="line-chart" data-chart-data={JSON.stringify(data)} />
   )),
 }));
@@ -88,7 +84,7 @@ vi.mock('papaparse', () => ({
         config.fields.join(',') +
         '\n' +
         data
-          .map((row: any) =>
+          .map((row: Record<string, unknown>) =>
             config.fields.map((field: string) => row[field] || '').join(',')
           )
           .join('\n')

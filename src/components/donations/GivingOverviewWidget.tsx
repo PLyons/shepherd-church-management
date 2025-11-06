@@ -9,7 +9,6 @@ import { Link } from 'react-router-dom';
 import {
   Heart,
   TrendingUp,
-  Calendar,
   AlertCircle,
   Loader2,
 } from 'lucide-react';

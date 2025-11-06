@@ -3,11 +3,11 @@
 // Provides secure member-only access to donation records with comprehensive audit logging
 // RELEVANT FILES: src/services/firebase/donations.service.ts, src/contexts/FirebaseAuthContext.tsx, src/types/donations.ts, src/components/donations/__tests__/MemberDonationHistory.test.tsx
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useAuth } from '../../contexts/FirebaseAuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { useMemberDonations } from '../../hooks/useMemberDonations';
-import { Donation, DonationMethod } from '../../types/donations';
+import { DonationMethod } from '../../types/donations';
 import { formatCurrency, formatDate } from '../../utils/currency-utils';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { Card } from '../common/Card';
@@ -34,7 +34,7 @@ export const MemberDonationHistory: React.FC<MemberDonationHistoryProps> = ({
   const targetMemberId = memberId || member?.id || currentMember?.id;
 
   // Optimized donation data management with caching and real-time updates
-  const { donations, loading, error, retry, refetch, summary } =
+  const { donations, loading, error, retry, summary } =
     useMemberDonations({
       memberId: targetMemberId,
       enableRealTime: true,

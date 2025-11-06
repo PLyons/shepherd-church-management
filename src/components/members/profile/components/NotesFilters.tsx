@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, X, Calendar } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import {
   NoteFilter,
   NoteCategory,

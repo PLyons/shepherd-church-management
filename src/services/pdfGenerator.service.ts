@@ -44,7 +44,7 @@ export class PDFGeneratorService {
     this.applyTemplate(pdf, template);
 
     // Add statement header
-    this.addStatementHeader(pdf, statement, template);
+    this.addStatementHeader(pdf, statement);
 
     // Add member information
     this.addMemberInfo(pdf, statement);
@@ -54,7 +54,7 @@ export class PDFGeneratorService {
 
     // Add donation details if requested
     if (options?.includeDonationDetails) {
-      this.addDonationDetails(pdf, statement);
+      this.addDonationDetails(pdf);
     }
 
     // Add quid pro quo information if needed
@@ -201,8 +201,7 @@ export class PDFGeneratorService {
 
   private addStatementHeader(
     pdf: jsPDF,
-    statement: DonationStatement,
-    template: StatementTemplate
+    statement: DonationStatement
   ): void {
     pdf.setFontSize(16);
     pdf.text(`Annual Donation Statement - ${statement.taxYear}`, 20, 30);
@@ -239,7 +238,7 @@ export class PDFGeneratorService {
     pdf.text(`Number of Donations: ${statement.donationCount}`, 20, 140);
   }
 
-  private addDonationDetails(pdf: jsPDF, statement: DonationStatement): void {
+  private addDonationDetails(pdf: jsPDF): void {
     pdf.setFontSize(12);
     pdf.text('Donation Details:', 20, 160);
     // Add detailed donation information

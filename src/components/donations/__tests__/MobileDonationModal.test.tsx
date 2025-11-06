@@ -3,8 +3,8 @@
 // Tests written BEFORE implementation to define expected mobile-optimized donation flow behavior
 // Coverage: Multi-step flow, progress indicators, mobile UI patterns, and integration
 
-import { describe, it, expect, beforeEach, vi, Mock, afterEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import { MobileDonationModal } from '../MobileDonationModal';

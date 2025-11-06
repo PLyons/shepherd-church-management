@@ -82,7 +82,7 @@ export class DonationStatementPDF {
       this.addStatementPeriod(data.taxYear);
 
       // Tax compliance statement
-      this.addTaxComplianceStatement(data.churchInfo.ein);
+      this.addTaxComplianceStatement();
 
       // Donation summary
       this.addDonationSummary(data.donations, options.includeNonDeductible);
@@ -254,7 +254,7 @@ export class DonationStatementPDF {
   /**
    * Add IRS tax compliance statement
    */
-  private addTaxComplianceStatement(ein: string): void {
+  private addTaxComplianceStatement(): void {
     this.currentY += 5;
 
     // Box around compliance statement

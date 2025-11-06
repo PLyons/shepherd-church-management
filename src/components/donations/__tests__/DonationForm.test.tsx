@@ -4,7 +4,7 @@
 // RELEVANT FILES: src/components/donations/DonationForm.tsx, src/services/firebase/donations.service.ts, src/services/firebase/donation-categories.service.ts, src/types/donations.ts
 
 import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import { DonationForm } from '../DonationForm';
@@ -16,7 +16,6 @@ import {
 import { useAuth } from '../../../contexts/FirebaseAuthContext';
 import { useToast } from '../../../contexts/ToastContext';
 import {
-  DonationFormData,
   DonationCategory,
   DonationMethod,
   Form990LineItem,

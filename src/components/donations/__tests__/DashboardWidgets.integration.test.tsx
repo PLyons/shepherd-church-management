@@ -13,7 +13,7 @@
 // - src/services/firebase/donations.service.ts (data service)
 
 import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { AdminDashboard } from '../../dashboard/AdminDashboard';
 import { PastorDashboard } from '../../dashboard/PastorDashboard';

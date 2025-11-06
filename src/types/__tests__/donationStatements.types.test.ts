@@ -4,7 +4,7 @@
 // RELEVANT FILES: src/types/donations.ts, src/services/firebase/donation-statements.service.ts, src/components/donations/DonationStatements.tsx
 // STATUS: GREEN phase - types successfully implemented and all tests passing
 
-import { describe, it, expect, expectTypeOf } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 // Import the actual types from donations.ts
 import {

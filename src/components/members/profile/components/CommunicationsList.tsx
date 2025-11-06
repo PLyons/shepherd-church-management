@@ -5,7 +5,6 @@ import {
   MessageSquare,
   Video,
   Users,
-  AlertCircle,
   Clock,
 } from 'lucide-react';
 import { Communication } from '../../../../types/notes';

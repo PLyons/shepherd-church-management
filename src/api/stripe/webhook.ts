@@ -12,7 +12,6 @@ import {
   StripeSubscription,
   WebhookProcessingResult,
   WebhookValidationError,
-  DonationFromWebhook,
 } from '../../types/webhook';
 import { Donation } from '../../types/donations';
 

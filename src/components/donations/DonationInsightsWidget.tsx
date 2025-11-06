@@ -9,7 +9,6 @@ import { Link } from 'react-router-dom';
 import {
   DollarSign,
   TrendingUp,
-  Users,
   BarChart3,
   AlertCircle,
   Loader2,

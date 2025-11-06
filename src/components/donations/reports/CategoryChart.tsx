@@ -227,11 +227,6 @@ export function CategoryChart({ data, loading, maxCategories = 10, height = 400 
             </BarChart>
           ) : (
             <PieChart width={400} height={chartHeight} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                />
-              )}
-            </BarChart>
-          ) : (
-            <PieChart width={400} height={chartHeight} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
               <Pie
                 data={categoryData}
                 cx="50%"

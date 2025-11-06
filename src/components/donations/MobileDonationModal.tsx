@@ -23,7 +23,6 @@ export const MobileDonationModal: React.FC<MobileDonationModalProps> = ({
   const [donationData, setDonationData] = useState<DonationFormData | null>(
     null
   );
-  const [donationId, setDonationId] = useState<string>('');
 
   const handleDonationSubmit = (data: DonationFormData) => {
     setDonationData(data);
@@ -31,7 +30,6 @@ export const MobileDonationModal: React.FC<MobileDonationModalProps> = ({
   };
 
   const handlePaymentSuccess = (id: string) => {
-    setDonationId(id);
     setStep('success');
     onSuccess?.(id);
   };

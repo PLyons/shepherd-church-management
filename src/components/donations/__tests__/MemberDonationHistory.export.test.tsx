@@ -4,7 +4,7 @@
 // RELEVANT FILES: src/components/donations/MemberDonationHistory.tsx, src/services/firebase/donations.service.ts, src/types/donations.ts
 
 import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import { MemberDonationHistory } from '../MemberDonationHistory';
@@ -52,7 +52,7 @@ vi.mock('react-pdf', () => ({
 // Mock CSV generation
 vi.mock('papaparse', () => ({
   unparse: vi.fn(
-    (data) =>
+    () =>
       'member_name,amount,date,method,category\nJohn Doe,100.00,2024-01-15,cash,tithe'
   ),
 }));

@@ -10,9 +10,6 @@ import {
   LogOut,
   User,
   ChevronDown,
-  DollarSign,
-  BarChart3,
-  Heart,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useUnifiedAuth';
 

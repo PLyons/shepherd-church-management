@@ -7,7 +7,6 @@ import {
   CreatePaymentIntentRequest,
   PaymentMethod,
   RecurringDonation,
-  DonationFormData,
   PaymentIntentResponse,
   SetupIntentResponse,
 } from '../../types/donations';
@@ -99,8 +98,7 @@ class StripeClientService {
    */
   async processPayment(
     elements: StripeElements,
-    clientSecret: string,
-    donationData: DonationFormData
+    clientSecret: string
   ): Promise<{ success: boolean; error?: string; donationId?: string }> {
     try {
       const stripe = await this.stripe;

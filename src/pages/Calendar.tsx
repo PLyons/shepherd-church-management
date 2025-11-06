@@ -21,7 +21,7 @@ export const Calendar: React.FC = () => {
   const navigate = useNavigate();
   const { member: currentUser } = useAuth();
 
-  const [filters, setFilters] = useState<CalendarFilters>({
+  const [filters] = useState<CalendarFilters>({
     view: 'month',
   });
 

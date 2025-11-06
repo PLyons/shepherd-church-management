@@ -7,9 +7,7 @@ import { describe, it, expect } from 'vitest';
 import {
   // Core Types
   Donation,
-  DonationDocument,
   DonationCategory,
-  DonationCategoryDocument,
 
   // Enums and Type Unions
   DonationMethod,
@@ -19,21 +17,17 @@ import {
 
   // Form 990 Fields
   Form990Fields,
-  Form990FieldsDocument,
 
   // Reporting Types
   FinancialSummary,
   TaxReceiptData,
-  DonationReportFilters,
 
   // Form Data Types
   DonationFormData,
-  DonationCategoryFormData,
   BulkDonationImportData,
 
   // Validation Types
   DonationValidationRules,
-  DonationValidationError,
   DonationValidationResult,
 
   // Migration Types

@@ -4,7 +4,7 @@
 // RELEVANT FILES: src/components/members/MemberProfile.tsx, src/components/donations/MemberDonationHistory.tsx
 
 import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import MemberProfile from '../../../pages/MemberProfile';

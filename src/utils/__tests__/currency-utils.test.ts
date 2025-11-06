@@ -186,12 +186,12 @@ describe('Currency Utilities', () => {
       });
 
       it('should handle various input types', () => {
-        expect(isValidCurrency(null as any)).toBe(false);
-        expect(isValidCurrency(undefined as any)).toBe(false);
-        expect(isValidCurrency({} as any)).toBe(false);
-        expect(isValidCurrency([] as any)).toBe(false);
-        expect(isValidCurrency(true as any)).toBe(false);
-        expect(isValidCurrency(false as any)).toBe(false);
+        expect(isValidCurrency(null as unknown as number)).toBe(false);
+        expect(isValidCurrency(undefined as unknown as number)).toBe(false);
+        expect(isValidCurrency({} as unknown as number)).toBe(false);
+        expect(isValidCurrency([] as unknown as number)).toBe(false);
+        expect(isValidCurrency(true as unknown as number)).toBe(false);
+        expect(isValidCurrency(false as unknown as number)).toBe(false);
       });
 
       it('should validate reasonable donation ranges', () => {

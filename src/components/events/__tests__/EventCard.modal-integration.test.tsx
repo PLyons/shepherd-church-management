@@ -4,10 +4,9 @@ import { BrowserRouter } from 'react-router-dom';
 import { EventCard } from '../EventCard';
 import { RSVPModal } from '../RSVPModal';
 import { eventRSVPService } from '../../../services/firebase/event-rsvp.service';
-import { eventsService } from '../../../services/firebase/events.service';
 import { useAuth } from '../../../contexts/FirebaseAuthContext';
 import { useToast } from '../../../contexts/ToastContext';
-import { Event, EventType, EventRSVP } from '../../../types/events';
+import { Event, EventType } from '../../../types/events';
 import { Member } from '../../../types';
 
 // Mock the services and contexts

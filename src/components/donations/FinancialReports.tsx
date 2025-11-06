@@ -3,7 +3,7 @@
 // Provides executive summaries, IRS-compliant reporting, and role-based data access controls
 // RELEVANT FILES: src/types/donations.ts, src/services/firebase/donations.service.ts, src/components/donations/reports/Form990Report.tsx
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   donationsService,
   donationCategoriesService,
@@ -12,8 +12,6 @@ import { useAuth } from '../../contexts/FirebaseAuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import {
   FinancialSummary,
-  Donation,
-  DonationCategory,
 } from '../../types/donations';
 import { Form990Report } from './reports/Form990Report';
 import { formatCurrency } from '../../utils/currency-utils';
@@ -29,8 +27,6 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  BarChart,
-  Bar,
 } from 'recharts';
 
 interface FinancialReportsProps {
@@ -43,19 +39,11 @@ export const FinancialReports: React.FC<FinancialReportsProps> = ({
   const { user, member } = useAuth();
   const { showToast } = useToast();
 
-  // Role checking with fallback for test compatibility
-  const hasRole = useCallback(
-    (role: string): boolean => {
-      return member?.role === role || (user as any)?.role === role;
-    },
-    [member?.role, user]
-  );
-
   // Authorization check
   const isAuthorized = useMemo(() => {
     if (!user) return false;
     // Check role from member object first, then fall back to user object for tests
-    const userRole = member?.role || (user as any)?.role;
+    const userRole = member?.role || (user as Record<string, unknown>)?.role;
     return userRole === 'admin' || userRole === 'pastor';
   }, [user, member]);
 
@@ -86,7 +74,7 @@ export const FinancialReports: React.FC<FinancialReportsProps> = ({
 
   // Role-based access
   const hasAdminAccess =
-    member?.role === 'admin' || (user as any)?.role === 'admin';
+    member?.role === 'admin' || (user as Record<string, unknown>)?.role === 'admin';
 
   // Prevent unused variable warnings for future features
   console.log('Date range:', dateRange);

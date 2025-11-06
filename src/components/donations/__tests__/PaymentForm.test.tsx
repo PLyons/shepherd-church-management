@@ -4,7 +4,7 @@
 // Coverage: User interactions, payment flows, error handling, and integration scenarios
 
 import { describe, it, expect, beforeEach, vi, Mock, afterEach } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import { PaymentForm } from '../PaymentForm';

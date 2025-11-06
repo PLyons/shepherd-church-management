@@ -4,11 +4,9 @@
 // RELEVANT FILES: src/components/donations/__tests__/FinancialReports.form990.test.tsx, src/types/donations.ts, src/components/donations/DonationStatementPDF.tsx
 
 import React, { useState, useCallback } from 'react';
-import jsPDF from 'jspdf';
 import * as Papa from 'papaparse';
 import { useAuth } from '../../../contexts/FirebaseAuthContext';
 import { useToast } from '../../../contexts/ToastContext';
-import { donationsService } from '../../../services/firebase';
 import {
   Donation,
   DonationReportFilters,

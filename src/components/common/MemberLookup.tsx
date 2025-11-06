@@ -7,7 +7,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Member } from '../../types';
 import { MemberSearch } from '../../services/firebase/members/member-search';
-import { membersService } from '../../services/firebase/members.service';
 
 interface MemberLookupProps {
   onSelect: (member: Member | null) => void;
