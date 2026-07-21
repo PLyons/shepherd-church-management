@@ -48,12 +48,13 @@ const navigationItems: NavigationItem[] = [
     roles: ['admin'],
     submenu: [
       { name: 'Quick Donate', href: '/donations/record' },
+      { name: 'Create Donation', href: '/donations/create' },
+      { name: 'Batch Entry', href: '/donations/batch' },
       { name: 'Financial Reports', href: '/donations' },
-      { name: 'Donation Categories', href: '/donations/categories' },
     ],
   },
   { name: 'Giving Overview', href: '/giving-overview', roles: ['pastor'] },
-  { name: 'My Giving', href: '/donations/my-giving', roles: ['member'] },
+  { name: 'My Giving', href: '/my-giving', roles: ['member'] },
   {
     name: 'Registration',
     href: '/admin/registration-tokens',

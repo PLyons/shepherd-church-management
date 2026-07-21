@@ -71,12 +71,12 @@ export default function MemberProfileTabs({
   const { member: currentMember } = useAuth();
 
   const visibleTabs = tabs.filter((tab) => {
-    // Special logic for giving tab - only show if admin/pastor OR viewing own profile
+    // Giving tab: admin (any member) or member viewing own profile.
+    // Pastors use /giving-overview aggregates — not individual history (Phase 0.5).
     if (tab.id === 'giving') {
-      const isAdminOrPastor =
-        currentMember?.role === 'admin' || currentMember?.role === 'pastor';
+      const isAdmin = currentMember?.role === 'admin';
       const isOwnProfile = currentMember?.id === memberId;
-      return isAdminOrPastor || isOwnProfile;
+      return isAdmin || isOwnProfile;
     }
 
     if (!tab.requiresRole) return true;

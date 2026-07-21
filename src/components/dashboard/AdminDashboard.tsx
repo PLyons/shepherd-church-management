@@ -276,9 +276,9 @@ export function AdminDashboard({ member }: AdminDashboardProps) {
             </Link>
           ))}
 
-          {/* Donation-specific quick actions */}
+          {/* Donation-specific quick actions — paths must match src/router/index.tsx */}
           <Link
-            to="/donations/new"
+            to="/donations/record"
             className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
           >
             <div className="w-5 h-5 mr-3 text-green-600">
@@ -293,7 +293,7 @@ export function AdminDashboard({ member }: AdminDashboardProps) {
           </Link>
 
           <Link
-            to="/financial-reports"
+            to="/donations"
             className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
           >
             <div className="w-5 h-5 mr-3 text-blue-600">
@@ -308,7 +308,7 @@ export function AdminDashboard({ member }: AdminDashboardProps) {
           </Link>
 
           <Link
-            to="/donation-statements"
+            to="/donations"
             className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
           >
             <div className="w-5 h-5 mr-3 text-purple-600">
@@ -316,9 +316,11 @@ export function AdminDashboard({ member }: AdminDashboardProps) {
             </div>
             <div>
               <span className="font-medium text-gray-900 block">
-                Generate Statements
+                Donations Hub
               </span>
-              <span className="text-sm text-gray-500">Tax documents</span>
+              <span className="text-sm text-gray-500">
+                Manage donations &amp; statements
+              </span>
             </div>
           </Link>
         </div>

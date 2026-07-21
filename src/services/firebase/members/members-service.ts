@@ -25,10 +25,6 @@ import {
   memberDocumentToMember,
   memberToMemberDocument,
 } from '../../../utils/firestore-converters';
-import {
-  toFirestoreFieldsDeep,
-  fromFirestoreFieldsDeep,
-} from '../../../utils/firestore-field-mapper';
 
 // Import composition modules
 import { MemberSearch } from './member-search';
@@ -339,12 +335,12 @@ export class MembersService extends BaseFirestoreService<
     try {
       console.log('🔧 MembersService.create called with:', memberData);
 
-      // Use deep field mapper for nested objects (emails, phones, addresses)
-      const firestoreData = toFirestoreFieldsDeep({
-        ...memberData,
+      // Use proper converter that outputs camelCase for Firestore (per CLAUDE.md)
+      const firestoreData = {
+        ...memberToMemberDocument(memberData),
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
-      });
+      };
       console.log('🔧 Converted to Firestore format:', firestoreData);
 
       const docRef = await addDoc(collection(db, 'members'), firestoreData);
@@ -388,11 +384,11 @@ export class MembersService extends BaseFirestoreService<
       // Remove computed fields and id
       const { fullName, id: _, ...updateData } = updates;
 
-      // Use deep field mapper for nested objects (emails, phones, addresses)
-      const firestoreData = toFirestoreFieldsDeep({
-        ...updateData,
+      // Use proper converter that outputs camelCase for Firestore (per CLAUDE.md)
+      const firestoreData = {
+        ...memberToMemberDocument(updateData),
         updatedAt: serverTimestamp(),
-      });
+      };
 
       console.log(
         '🔧 Update data converted to Firestore format:',
@@ -410,13 +406,9 @@ export class MembersService extends BaseFirestoreService<
     try {
       const querySnapshot = await getDocs(collection(db, 'members'));
 
-      return querySnapshot.docs.map((doc) => {
-        const data = fromFirestoreFieldsDeep<Member>(doc.data());
-        return {
-          ...data,
-          id: doc.id,
-          fullName: `${data.firstName} ${data.lastName}`.trim(),
-        };
+      return querySnapshot.docs.map((docSnap) => {
+        // Use proper converter that reads camelCase from Firestore (per CLAUDE.md)
+        return memberDocumentToMember(docSnap.id, docSnap.data() as MemberDocument);
       });
     } catch (error) {
       console.error('Error fetching members:', error);

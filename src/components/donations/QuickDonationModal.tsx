@@ -1,7 +1,7 @@
 // src/components/donations/QuickDonationModal.tsx
 // Quick donation recording modal for member profiles
-// Allows admin/pastor to quickly record donations from member profile
-// RELEVANT FILES: src/components/members/profile/MemberProfileHeader.tsx, src/services/firebase/donations.service.ts
+// Admin-only shortcut to record a donation from a member profile (Phase 0.5)
+// RELEVANT FILES: src/pages/MemberProfile.tsx, src/components/members/profile/MemberProfileHeader.tsx, src/services/firebase/donations.service.ts
 
 import React, { useState } from 'react';
 import { X, DollarSign, Calendar, CreditCard, FileText } from 'lucide-react';

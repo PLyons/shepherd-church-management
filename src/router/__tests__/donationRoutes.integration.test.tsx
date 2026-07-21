@@ -134,6 +134,27 @@ vi.mock('../../pages/DonationDetail', () => ({
   default: () => <div data-testid="donation-detail-page">Donation Details</div>,
 }));
 
+vi.mock('../../pages/RecordDonation', () => ({
+  default: () => <div data-testid="record-donation-page">Record Donation</div>,
+  RecordDonation: () => (
+    <div data-testid="record-donation-page">Record Donation</div>
+  ),
+}));
+
+vi.mock('../../pages/BatchRecordDonations', () => ({
+  default: () => <div data-testid="batch-donation-page">Batch Donations</div>,
+  BatchRecordDonations: () => (
+    <div data-testid="batch-donation-page">Batch Donations</div>
+  ),
+}));
+
+vi.mock('../../pages/EditDonation', () => ({
+  default: () => <div data-testid="edit-donation-page">Edit Donation</div>,
+  EditDonation: () => (
+    <div data-testid="edit-donation-page">Edit Donation</div>
+  ),
+}));
+
 // Mock AuthGuard and RoleGuard components
 vi.mock('../../components/auth/AuthGuard', () => ({
   AuthGuard: ({
@@ -320,6 +341,57 @@ describe('Donation Routes Integration - RED PHASE', () => {
       await waitFor(() => {
         expect(screen.getByTestId('giving-overview-page')).toBeInTheDocument();
         expect(screen.getByText('Giving Overview')).toBeInTheDocument();
+      });
+    });
+
+    // Phase 0.4 — pastors cannot access donation management routes
+    it('should deny pastor access to /donations/record', async () => {
+      mockUseAuth.mockReturnValue({
+        user: { uid: 'pastor-456' },
+        member: MOCK_MEMBERS.pastor,
+        loading: false,
+        signOut: vi.fn(),
+        hasRole: vi.fn().mockImplementation((role) => role === 'pastor'),
+      });
+
+      renderWithRouter(['/donations/record']);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('role-access-denied')).toBeInTheDocument();
+      });
+    });
+
+    it('should deny pastor access to /donations/batch', async () => {
+      mockUseAuth.mockReturnValue({
+        user: { uid: 'pastor-456' },
+        member: MOCK_MEMBERS.pastor,
+        loading: false,
+        signOut: vi.fn(),
+        hasRole: vi.fn().mockImplementation((role) => role === 'pastor'),
+      });
+
+      renderWithRouter(['/donations/batch']);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('role-access-denied')).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe('Admin donation management routes (Phase 0.4)', () => {
+    it('should allow admin access to /donations/record', async () => {
+      mockUseAuth.mockReturnValue({
+        user: { uid: 'admin-123' },
+        member: MOCK_MEMBERS.admin,
+        loading: false,
+        signOut: vi.fn(),
+        hasRole: vi.fn().mockReturnValue(true),
+      });
+
+      renderWithRouter(['/donations/record']);
+
+      await waitFor(() => {
+        expect(screen.getByTestId('record-donation-page')).toBeInTheDocument();
       });
     });
   });

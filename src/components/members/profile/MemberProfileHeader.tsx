@@ -138,9 +138,8 @@ export default function MemberProfileHeader({
 
         {/* Actions */}
         <div className="flex items-center gap-2">
-          {/* Record Donation button for admin/pastor */}
-          {(currentUser?.role === 'admin' || currentUser?.role === 'pastor') &&
-            onRecordDonation && (
+          {/* Record Donation — admin only (Phase 0.5 / S5; pastors use giving-overview) */}
+          {currentUser?.role === 'admin' && onRecordDonation && (
               <Tooltip content="Record Donation">
                 <button
                   onClick={onRecordDonation}

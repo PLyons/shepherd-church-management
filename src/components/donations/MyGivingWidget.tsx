@@ -173,14 +173,14 @@ export function MyGivingWidget({
 
           <div className="flex space-x-3">
             <Link
-              to="/member/donations"
+              to="/my-giving"
               className="flex-1 bg-blue-600 text-white text-center py-2 px-4 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium flex items-center justify-center space-x-1"
             >
               <Eye className="w-4 h-4" />
               <span>View Full History</span>
             </Link>
             <Link
-              to="/donations/new"
+              to="/my-giving"
               className="flex-1 bg-green-600 text-white text-center py-2 px-4 rounded-md hover:bg-green-700 transition-colors text-sm font-medium"
             >
               Give Now

@@ -62,6 +62,9 @@ export default function MemberProfile() {
   const canDelete =
     currentMember?.role === 'admin' || currentMember?.role === 'pastor';
 
+  // Phase 0.5 — only admins record donations (matches Firestore + router)
+  const canRecordDonation = currentMember?.role === 'admin';
+
   const handleEdit = () => {
     navigate(`/members/edit/${id}`);
   };
@@ -138,7 +141,9 @@ export default function MemberProfile() {
           canDelete={canDelete}
           onEdit={handleEdit}
           onDelete={handleDelete}
-          onRecordDonation={handleRecordDonation}
+          onRecordDonation={
+            canRecordDonation ? handleRecordDonation : undefined
+          }
         />
         <MemberProfileTabs memberId={id!} />
 
@@ -162,8 +167,8 @@ export default function MemberProfile() {
         </div>
       </div>
 
-      {/* Quick Donation Modal */}
-      {member && (
+      {/* Quick Donation Modal — admin only */}
+      {member && canRecordDonation && (
         <QuickDonationModal
           isOpen={showDonationModal}
           onClose={() => setShowDonationModal(false)}

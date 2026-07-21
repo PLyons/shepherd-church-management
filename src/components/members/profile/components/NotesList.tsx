@@ -1,3 +1,8 @@
+// src/components/members/profile/components/NotesList.tsx
+// Renders pastoral care notes list with expand/edit/delete actions
+// Exists to show member notes safely without XSS from rich-text HTML
+// RELEVANT FILES: src/utils/safe-html.ts, src/components/members/profile/components/NoteEditor.tsx, src/services/firebase/notes.service.ts
+
 import { useState } from 'react';
 import { format } from 'date-fns';
 import { Edit, Trash2, Eye, Lock } from 'lucide-react';
@@ -6,6 +11,7 @@ import { NOTE_CONFIG, PRIORITY_CONFIG } from '../../../../types/notes';
 import { notesService } from '../../../../services/firebase/notes.service';
 import { useAuth } from '../../../../hooks/useUnifiedAuth';
 import { useToast } from '../../../../contexts/ToastContext';
+import { noteDisplayText } from '../../../../utils/safe-html';
 
 interface NotesListProps {
   notes: MemberNote[];
@@ -151,10 +157,10 @@ export function NotesList({
                     </div>
                   )}
 
-                  {/* Preview */}
+                  {/* Preview — always plain text (never raw HTML) */}
                   {!isExpanded && (
                     <p className="text-sm text-gray-600 line-clamp-2">
-                      {note.plainTextContent}
+                      {noteDisplayText(note.plainTextContent, note.content)}
                     </p>
                   )}
                 </div>
@@ -196,13 +202,12 @@ export function NotesList({
                 </div>
               </div>
 
-              {/* Expanded Content */}
+              {/* Expanded Content — plain text only (Phase 0.2 / S2 XSS fix) */}
               {isExpanded && (
                 <div className="mt-4 pt-4 border-t border-gray-200">
-                  <div
-                    className="prose prose-sm max-w-none"
-                    dangerouslySetInnerHTML={{ __html: note.content }}
-                  />
+                  <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                    {noteDisplayText(note.plainTextContent, note.content)}
+                  </p>
 
                   {/* Access Info */}
                   <div className="mt-4 pt-2 border-t border-gray-100 text-xs text-gray-500">

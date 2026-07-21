@@ -1,6 +1,6 @@
 // src/components/members/profile/tabs/MemberGivingTab.tsx
-// Member giving history tab component for member profile integration
-// Displays donation history using existing MemberDonationHistory component
+// Member giving history tab for member profile (admin or own profile only)
+// Pastors use aggregate /giving-overview — not individual histories (Phase 0.5)
 // RELEVANT FILES: src/components/donations/MemberDonationHistory.tsx, src/pages/MemberProfile.tsx
 
 import React, { useContext } from 'react';
@@ -20,12 +20,12 @@ export default function MemberGivingTab() {
     );
   }
 
-  // Security check: ensure proper access control
-  const isAdminOrPastor =
-    currentMember?.role === 'admin' || currentMember?.role === 'pastor';
+  // Security: admin may view any member; members only own profile.
+  // Pastors do not get individual giving history (Phase 0.5 / Firestore rules).
+  const isAdmin = currentMember?.role === 'admin';
   const isOwnProfile = currentMember?.id === member.id;
 
-  if (!isAdminOrPastor && !isOwnProfile) {
+  if (!isAdmin && !isOwnProfile) {
     return (
       <div className="text-center py-12">
         <h3 className="text-lg font-medium text-gray-900 mb-2">

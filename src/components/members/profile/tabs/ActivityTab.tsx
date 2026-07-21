@@ -182,13 +182,12 @@ export default function ActivityTab() {
         })
       );
 
-      // Fetch donation activities if user has permission
+      // Fetch donation activities if allowed (admin any; member own only)
       let donationActivities: MemberActivity[] = [];
-      const isAdminOrPastor =
-        currentUser?.role === 'admin' || currentUser?.role === 'pastor';
-      const isOwnProfile = currentUser?.id === member.id;
+      const canViewDonations =
+        currentUser?.role === 'admin' || currentUser?.id === member.id;
 
-      if (isAdminOrPastor || isOwnProfile) {
+      if (canViewDonations) {
         try {
           const donations = await donationsService.getDonationsByMember(
             member.id

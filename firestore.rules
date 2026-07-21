@@ -26,6 +26,23 @@ service cloud.firestore {
     function isMemberOwner(memberId) {
       return isAuthenticated() && request.auth.uid == memberId;
     }
+
+    // Phase 0.1 — privilege locks (S1)
+    // Role never changes unless the caller is admin.
+    function memberRoleUnchanged() {
+      return request.resource.data.role == resource.data.role;
+    }
+
+    // Owners may edit profile fields only; role + membership status stay fixed.
+    function memberOwnerSafeUpdate() {
+      return memberRoleUnchanged() &&
+             request.resource.data.memberStatus == resource.data.memberStatus;
+    }
+
+    // Pastors may edit member profiles/status, but cannot assign roles.
+    function pastorSafeMemberUpdate() {
+      return memberRoleUnchanged();
+    }
     
     function isValidMemberData() {
       return request.resource.data.keys().hasAll(['firstName', 'lastName']) &&
@@ -70,8 +87,13 @@ service cloud.firestore {
       // Anyone authenticated can read member profiles
       allow read: if isAuthenticated();
       
-      // Members can update their own profile, admins/pastors can update any
-      allow update: if isMemberOwner(memberId) || isAdminOrPastor();
+      // Updates are role-scoped (Phase 0.1 / S1):
+      // - Owner: profile fields only (cannot change role or memberStatus)
+      // - Pastor: profile + status (cannot change role)
+      // - Admin: full update including role assignment
+      allow update: if (isMemberOwner(memberId) && memberOwnerSafeUpdate())
+                    || (isPastor() && pastorSafeMemberUpdate())
+                    || isAdmin();
       
       // Only admins/pastors can create new members
       allow create: if isAdminOrPastor() && isValidMemberData();

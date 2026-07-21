@@ -77,14 +77,13 @@ export const useMemberDonations = (
   // Determine target member ID
   const targetMemberId = propMemberId || currentMember?.id;
 
-  // Security validation
+  // Security validation — admin any member; others only own donations (Phase 0.5)
   const canAccessDonations = useMemo(() => {
     if (!user || !currentMember || !targetMemberId) return false;
 
-    // Admin/pastor can access any member's donations
-    if (hasRole('admin') || hasRole('pastor')) return true;
+    if (hasRole('admin')) return true;
 
-    // Member can only access their own donations
+    // Member (and pastor) can only access their own donations
     return targetMemberId === currentMember.id;
   }, [user, currentMember, hasRole, targetMemberId]);
 

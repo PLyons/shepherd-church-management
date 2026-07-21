@@ -92,10 +92,12 @@ describe('Navigation - Donation Integration (PRP-2C-010)', () => {
       const donationsMenu = screen.getByText('Donations');
       await user.click(donationsMenu);
 
-      // Admin should see Quick Donate in submenu
+      // Admin should see real donation routes in submenu (Phase 0.3)
       expect(screen.getByText('Quick Donate')).toBeInTheDocument();
+      expect(screen.getByText('Create Donation')).toBeInTheDocument();
+      expect(screen.getByText('Batch Entry')).toBeInTheDocument();
       expect(screen.getByText('Financial Reports')).toBeInTheDocument();
-      expect(screen.getByText('Donation Categories')).toBeInTheDocument();
+      expect(screen.queryByText('Donation Categories')).not.toBeInTheDocument();
     });
   });
 
@@ -145,7 +147,7 @@ describe('Navigation - Donation Integration (PRP-2C-010)', () => {
       // Re-render for member
       renderNavigation(MOCK_MEMBERS.member);
       const myGivingLink = screen.getByText('My Giving').closest('a');
-      expect(myGivingLink).toHaveAttribute('href', '/donations/my-giving');
+      expect(myGivingLink).toHaveAttribute('href', '/my-giving');
     });
 
     it('should include donation paths in breadcrumb navigation', () => {

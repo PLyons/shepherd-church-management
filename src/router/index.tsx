@@ -238,7 +238,8 @@ export const routes = [
         path: 'events/:id/edit',
         element: <EditEvent />,
       },
-      // Donation Routes - Admin Only
+      // Donation management — admin only (matches Firestore write rules)
+      // Pastor: /giving-overview only. Member: /my-giving only.
       {
         path: 'donations',
         element: (
@@ -256,10 +257,18 @@ export const routes = [
         ),
       },
       {
-        path: 'donations/:id',
+        path: 'donations/record',
         element: (
           <RoleGuard allowedRoles={['admin']}>
-            <DonationDetail />
+            <RecordDonation />
+          </RoleGuard>
+        ),
+      },
+      {
+        path: 'donations/batch',
+        element: (
+          <RoleGuard allowedRoles={['admin']}>
+            <BatchRecordDonations />
           </RoleGuard>
         ),
       },
@@ -271,20 +280,24 @@ export const routes = [
           </RoleGuard>
         ),
       },
-      // Existing donation routes
-      {
-        path: 'donations/record',
-        element: <RecordDonation />,
-      },
-      {
-        path: 'donations/batch',
-        element: <BatchRecordDonations />,
-      },
+      // Legacy edit path — same policy as donations/:id/edit
       {
         path: 'donations/edit/:id',
-        element: <EditDonation />,
+        element: (
+          <RoleGuard allowedRoles={['admin']}>
+            <EditDonation />
+          </RoleGuard>
+        ),
       },
-      // Pastor Route - Giving Overview
+      {
+        path: 'donations/:id',
+        element: (
+          <RoleGuard allowedRoles={['admin']}>
+            <DonationDetail />
+          </RoleGuard>
+        ),
+      },
+      // Pastor Route - Giving Overview (aggregate only)
       {
         path: 'giving-overview',
         element: (

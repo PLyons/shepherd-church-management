@@ -9,7 +9,7 @@ import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import MemberProfile from '../../../pages/MemberProfile';
 import { donationsService } from '../../../services/firebase';
-import { useAuth } from '../../../contexts/FirebaseAuthContext';
+import { useAuth } from '../../../hooks/useUnifiedAuth';
 import { useToast } from '../../../contexts/ToastContext';
 import { Member } from '../../../types';
 import { Donation } from '../../../types/donations';
@@ -28,7 +28,7 @@ vi.mock('../../../services/firebase', () => ({
   },
 }));
 
-vi.mock('../../../contexts/FirebaseAuthContext');
+vi.mock('../../../hooks/useUnifiedAuth');
 vi.mock('../../../contexts/ToastContext');
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
@@ -218,7 +218,7 @@ describe('MemberProfile Integration with Donations', () => {
     });
   });
 
-  it('should show quick donation entry for admin/pastor users', async () => {
+  it('should show quick donation entry for admin users', async () => {
     render(
       <TestWrapper>
         <MemberProfile />
@@ -231,6 +231,28 @@ describe('MemberProfile Integration with Donations', () => {
         screen.getByRole('button', { name: /record donation/i })
       ).toBeInTheDocument();
     });
+  });
+
+  it('should hide Record Donation for pastor users (Phase 0.5)', async () => {
+    mockUseAuth.mockReturnValue({
+      user: { uid: 'pastor-1', role: 'pastor' },
+      member: { id: 'pastor-1', role: 'pastor' },
+      loading: false,
+    });
+
+    render(
+      <TestWrapper>
+        <MemberProfile />
+      </TestWrapper>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText(/John Doe/i)).toBeInTheDocument();
+    });
+
+    expect(
+      screen.queryByRole('button', { name: /record donation/i })
+    ).not.toBeInTheDocument();
   });
 
   it('should restrict donation data access for member users', async () => {
@@ -273,7 +295,7 @@ describe('MemberProfile Integration with Donations', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('should allow admin/pastor to record donations from member profile', async () => {
+  it('should allow admin to record donations from member profile', async () => {
     const user = userEvent.setup();
     const mockCreateDonation =
       mockDonationsService.createDonation.mockResolvedValue({

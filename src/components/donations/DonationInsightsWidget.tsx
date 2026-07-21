@@ -153,13 +153,13 @@ export function DonationInsightsWidget({
 
           <div className="flex space-x-3">
             <Link
-              to="/financial-reports"
+              to="/donations"
               className="flex-1 bg-blue-600 text-white text-center py-2 px-4 rounded-md hover:bg-blue-700 transition-colors text-sm font-medium"
             >
               View Reports
             </Link>
             <Link
-              to="/donations/new"
+              to="/donations/record"
               className="flex-1 bg-green-600 text-white text-center py-2 px-4 rounded-md hover:bg-green-700 transition-colors text-sm font-medium"
             >
               Record Donation

@@ -4,7 +4,8 @@
 // RELEVANT FILES: src/components/donations/MemberDonationHistory.tsx, src/types/donations.ts, src/utils/currency.ts
 
 import { Donation } from '../../types/donations';
-import { formatCurrency, formatDate } from '../../utils/currency-utils';
+import { formatCurrency } from '../../utils/currency-utils';
+import { formatDate } from '../../utils/date-utils';
 import jsPDF from 'jspdf';
 
 export interface DonationStatementData {
