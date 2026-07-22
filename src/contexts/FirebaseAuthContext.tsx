@@ -7,7 +7,6 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import {
   User,
   signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   signOut,
   onAuthStateChanged,
@@ -148,29 +147,15 @@ export function FirebaseAuthProvider({
   };
 
   const signUp = async (
-    email: string,
-    password: string,
-    memberData?: Partial<Member>
+    _email: string,
+    _password: string,
+    _memberData?: Partial<Member>
   ) => {
-    const { user } = await createUserWithEmailAndPassword(
-      auth,
-      email,
-      password
+    // Open self-registration disabled (invite-only). Use Firebase Console /
+    // Admin SDK to create users. Blocking Cloud Function still needed for API abuse.
+    throw new Error(
+      'Registration is invite-only. Contact your church administrator.'
     );
-
-    // Create member document in Firestore
-    const now = Timestamp.now();
-    const newMemberData: Partial<Member> = {
-      email: user.email || email,
-      role: 'member',
-      memberStatus: 'active',
-      joinedAt: now.toDate().toISOString(),
-      createdAt: now.toDate().toISOString(),
-      updatedAt: now.toDate().toISOString(),
-      ...memberData,
-    };
-
-    await setDoc(doc(db, 'members', user.uid), newMemberData);
   };
 
   const logout = async () => {

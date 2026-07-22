@@ -34,9 +34,10 @@ WHY:    Gate modules off without deleting code before simplifying the member cor
 OUT:    Flags exist; default members+households+auth ON; events+donations OFF.
 ```
 
-**Phase 0 status:** COMPLETE (0.1–0.5)  
+**Phase 0 status:** COMPLETE (0.1–0.5) + **0.6a register lockdown (app layer)**  
 **Do not start Phase 1 until you say “start 1.1”.**  
-**Just completed:** 0.5 — pastor individual donation UI scrubbed; S5 closed
+**Hard Auth block still pending:** say “add signup blocking function” when on Blaze.  
+**Just completed:** lock down `/register` (invite-only page; `signUp` throws)
 
 ---
 
@@ -246,6 +247,7 @@ Put rabbit holes here. They are **not** tasks until promoted into a phase.
 | | | **Parked (not 0.3):** other dead dashboard links like `/profile`, `/member-care`, `/admin/audit-logs` — add later if needed |
 | 2026-07-21 | **0.4 DONE:** All donation management routes use router `RoleGuard` admin-only (record/batch/edit/create/detail/list). Pages aligned. Pastor denied on record/batch (tests). Decision: pastors use `/giving-overview` only. CURRENT FOCUS → 0.5 |
 | 2026-07-21 | **0.5 DONE / Phase 0 COMPLETE:** Scrubbed pastor Record Donation button/modal; giving tab + activity donation fetch + useMemberDonations admin/own-only. Pastor → `/giving-overview` only for financials. CURRENT FOCUS → Phase 1.1 (await start command) |
+| 2026-07-21 | **0.6a DONE (app):** Public register locked — `/register` is invite-only message; Login link removed; `signUp()` throws. QR `/register/qr` unchanged. Still need Auth blocking function for API-level signup. |
 
 ---
 
