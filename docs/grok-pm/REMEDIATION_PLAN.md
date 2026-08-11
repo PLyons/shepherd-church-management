@@ -217,6 +217,10 @@ Put rabbit holes here. They are **not** tasks until promoted into a phase.
 - Mobile app
 - Performance micro-optimizations unrelated to P0/P1
 - Rich HTML note rendering with DOMPurify (optional later; plain text is secure enough for now)
+- **Member form polish (UI):**
+  1. Email type dropdown: rename label **Home → Personal** (value may stay `home` for data compat, or migrate carefully)
+  2. Phone input: auto-format to `(xxx) xxx-xxxx` as the user types / on blur
+  3. Phone field tab order: Tab should move to **Allow SMS messages to this number**, not the browser address bar (fix focus/tabindex on contact section)
 
 ---
 
@@ -248,6 +252,8 @@ Put rabbit holes here. They are **not** tasks until promoted into a phase.
 | 2026-07-21 | **0.4 DONE:** All donation management routes use router `RoleGuard` admin-only (record/batch/edit/create/detail/list). Pages aligned. Pastor denied on record/batch (tests). Decision: pastors use `/giving-overview` only. CURRENT FOCUS → 0.5 |
 | 2026-07-21 | **0.5 DONE / Phase 0 COMPLETE:** Scrubbed pastor Record Donation button/modal; giving tab + activity donation fetch + useMemberDonations admin/own-only. Pastor → `/giving-overview` only for financials. CURRENT FOCUS → Phase 1.1 (await start command) |
 | 2026-07-21 | **0.6a DONE (app):** Public register locked — `/register` is invite-only message; Login link removed; `signUp()` throws. QR `/register/qr` unchanged. Still need Auth blocking function for API-level signup. |
+| 2026-08-11 | **BUGFIX:** Member email/phone not persisting — `memberToMemberDocument` dropped `emails`/`phones` arrays. Converter + form prep now write arrays and derive legacy `email`/`phone`. |
+| 2026-08-11 | Parked member form polish: email type label Home→Personal; phone auto-format; phone Tab focus → SMS checkbox. |
 
 ---
 

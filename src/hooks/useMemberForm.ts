@@ -201,6 +201,15 @@ export function useMemberForm() {
         (addr) => addr.addressLine1?.trim() !== '' && addr.city?.trim() !== ''
       ) || [];
 
+    const primaryEmail =
+      filteredEmails.find((e) => e.primary)?.address ||
+      filteredEmails[0]?.address ||
+      data.email;
+    const primaryPhone =
+      filteredPhones.find((p) => p.primary)?.number ||
+      filteredPhones[0]?.number ||
+      data.phone;
+
     const prepared: Omit<Member, 'id' | 'fullName'> = {
       // Required fields
       firstName: data.firstName,
@@ -233,9 +242,9 @@ export function useMemberForm() {
       updatedAt: Timestamp.now(),
       ...(isEditMode ? {} : { createdAt: Timestamp.now() }),
 
-      // DEPRECATED fields for compatibility (optional)
-      email: data.email,
-      phone: data.phone,
+      // Legacy single fields derived from arrays (for queries / older UI)
+      email: primaryEmail,
+      phone: primaryPhone,
       birthdate: data.birthdate,
     };
 

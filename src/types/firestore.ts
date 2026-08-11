@@ -24,6 +24,44 @@ export interface MemberDocument {
   birthdate?: Timestamp;
   gender?: 'Male' | 'Female' | '';
 
+  // Enhanced contact arrays (Phase 0.1)
+  emails?: {
+    type: 'home' | 'work' | 'other';
+    address: string;
+    primary?: boolean;
+  }[];
+  phones?: {
+    type: 'mobile' | 'home' | 'work' | 'other';
+    number: string;
+    primary?: boolean;
+    smsOptIn?: boolean;
+    sms_opt_in?: boolean; // legacy read compat
+  }[];
+  addresses?: {
+    type: 'home' | 'work' | 'other';
+    addressLine1?: string;
+    address_line1?: string;
+    addressLine2?: string;
+    address_line2?: string;
+    city: string;
+    state: string;
+    postalCode?: string;
+    postal_code?: string;
+    country?: string;
+    primary?: boolean;
+  }[];
+
+  // Extended name / personal fields
+  prefix?: string;
+  middleName?: string;
+  middle_name?: string;
+  suffix?: string;
+  birth_date?: Timestamp;
+  anniversary_date?: Timestamp;
+  anniversaryDate?: Timestamp;
+  maritalStatus?: 'single' | 'married' | 'widowed' | 'divorced';
+  marital_status?: 'single' | 'married' | 'widowed' | 'divorced';
+
   // Church Information
   role?: 'admin' | 'pastor' | 'member';
   memberStatus?:
