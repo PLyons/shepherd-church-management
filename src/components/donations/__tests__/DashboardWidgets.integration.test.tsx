@@ -45,6 +45,10 @@ vi.mock('../../../hooks/useUnifiedAuth', () => ({
   useAuth: vi.fn(),
 }));
 
+vi.mock('../../../config/features', () => ({
+  isFeatureEnabled: vi.fn(() => true),
+}));
+
 // Mock router hooks
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
@@ -168,8 +172,10 @@ describe('Dashboard Widget Integration (PRP-2C-010)', () => {
         ).toBeInTheDocument();
       });
 
-      // Should show financial summary data
-      expect(screen.getByText('Total Donations')).toBeInTheDocument();
+      // Should show financial summary data after widget loads
+      await waitFor(() => {
+        expect(screen.getByText('Total Donations')).toBeInTheDocument();
+      });
       expect(screen.getByText('$50,000')).toBeInTheDocument();
       expect(screen.getByText('200 donations')).toBeInTheDocument();
     });
@@ -192,9 +198,9 @@ describe('Dashboard Widget Integration (PRP-2C-010)', () => {
       });
 
       // Should show donation-related quick actions
-      expect(screen.getByText('Record Donation')).toBeInTheDocument();
+      expect(screen.getAllByText('Record Donation').length).toBeGreaterThan(0);
       expect(screen.getByText('Financial Reports')).toBeInTheDocument();
-      expect(screen.getByText('Generate Statements')).toBeInTheDocument();
+      expect(screen.getByText('Donations Hub')).toBeInTheDocument();
     });
   });
 

@@ -27,17 +27,16 @@ You asked me to keep tight reins. I will.
 ## CURRENT FOCUS
 
 ```
-PHASE:  1 — Feature flags (next major phase)
-TASK:   1.1 — Add feature flags: members, households, events, donations, registration
+PHASE:  2 — Extract seams
+TASK:   2.1 — Split FirebaseService into per-module facades / narrow hooks
 STATUS: NOT STARTED
-WHY:    Gate modules off without deleting code before simplifying the member core.
-OUT:    Flags exist; default members+households+auth ON; events+donations OFF.
+WHY:    Feature flags hide UI, but member core still pulls donation/event coupling.
+OUT:    Narrow module boundaries so default path does not need donation/event god-object.
 ```
 
-**Phase 0 status:** COMPLETE (0.1–0.5) + **0.6a register lockdown (app layer)**  
-**Do not start Phase 1 until you say “start 1.1”.**  
-**Hard Auth block still pending:** say “add signup blocking function” when on Blaze.  
-**Just completed:** lock down `/register` (invite-only page; `signUp` throws)
+**Phase 1 status:** COMPLETE (1.1–1.5)  
+**Do not start 2.1 until you say “start 2.1”.**  
+**Just completed:** 1.5 gate member profile Giving tab by flag
 
 ---
 
@@ -143,13 +142,13 @@ Dashboards / Nav / Profile tabs pull Events + Donations hard
 
 | Task | Status | Notes |
 |------|--------|-------|
-| 1.1 Add flags: `members`, `households`, `events`, `donations`, `registration` | NOT STARTED | Default: members+households+auth ON; events+donations OFF |
-| 1.2 Gate routes by flag | NOT STARTED | |
-| 1.3 Gate Navigation items by flag | NOT STARTED | |
-| 1.4 Gate dashboard widgets by flag | NOT STARTED | |
-| 1.5 Gate member profile tabs (Giving) by flag | NOT STARTED | |
+| 1.1 Add flags: `members`, `households`, `events`, `donations`, `registration` | DONE | Defaults: members/households/registration ON; events/donations OFF |
+| 1.2 Gate routes by flag | DONE | FeatureGuard + router wraps; disabled → /dashboard |
+| 1.3 Gate Navigation items by flag | DONE | Nav + MobileMenu filter by feature |
+| 1.4 Gate dashboard widgets by flag | DONE | Admin/Pastor/Member dashboards gated |
+| 1.5 Gate member profile tabs (Giving) by flag | DONE | Tab + sidebar + header + activity gated |
 
-**Phase 1 exit criteria:** App boots with events+donations OFF; no broken imports on default path; member directory/profile/households work.
+**Phase 1 exit criteria:** App boots with events+donations OFF; no broken imports on default path; member directory/profile/households work. **MET (2026-08-11).**
 
 ---
 
@@ -159,7 +158,7 @@ Dashboards / Nav / Profile tabs pull Events + Donations hard
 
 | Task | Status | Notes |
 |------|--------|-------|
-| 2.1 Split `FirebaseService` into per-module facades / narrow hooks | NOT STARTED | |
+| 2.1 Split `FirebaseService` into per-module facades / narrow hooks | NOT STARTED | **← CURRENT** |
 | 2.2 Dashboard uses `useMemberStats` only when donations/events off | NOT STARTED | |
 | 2.3 Single converter path; quarantine unused mappers | NOT STARTED | A2 |
 | 2.4 Split oversized files only when touched (300 LOC rule) | NOT STARTED | No big-bang rewrite |
@@ -254,6 +253,11 @@ Put rabbit holes here. They are **not** tasks until promoted into a phase.
 | 2026-07-21 | **0.6a DONE (app):** Public register locked — `/register` is invite-only message; Login link removed; `signUp()` throws. QR `/register/qr` unchanged. Still need Auth blocking function for API-level signup. |
 | 2026-08-11 | **BUGFIX:** Member email/phone not persisting — `memberToMemberDocument` dropped `emails`/`phones` arrays. Converter + form prep now write arrays and derive legacy `email`/`phone`. |
 | 2026-08-11 | Parked member form polish: email type label Home→Personal; phone auto-format; phone Tab focus → SMS checkbox. |
+| 2026-08-11 | **1.1 DONE:** Module flags in `src/config/features.ts` + tests. Defaults events/donations OFF. Env overrides documented in `.env.example`. CURRENT FOCUS → 1.2 |
+| 2026-08-11 | **1.2 DONE:** `FeatureGuard` gates members/households/events/donations/registration routes (giving tab + QR included). Defaults redirect events/donations to dashboard. CURRENT FOCUS → 1.3 |
+| 2026-08-11 | **1.3 DONE:** Navigation + MobileMenu items gated by `isFeatureEnabled`. Events/Calendar/Donations/Giving hidden by default. CURRENT FOCUS → 1.4 |
+| 2026-08-11 | **1.4 DONE:** Admin/Pastor/Member dashboards gate stats, widgets, quick actions, event lists by flag. CURRENT FOCUS → 1.5 |
+| 2026-08-11 | **1.5 DONE / Phase 1 COMPLETE:** Giving tab, sidebar summary, Record Donation, activity donation fetch gated by donations flag. CURRENT FOCUS → 2.1 (await start) |
 
 ---
 

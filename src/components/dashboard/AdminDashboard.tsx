@@ -12,6 +12,7 @@ import {
 import { useAuth } from '../../hooks/useUnifiedAuth';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { DonationInsightsWidget } from '../donations/DonationInsightsWidget';
+import { isFeatureEnabled } from '../../config/features';
 import { logger } from '../../utils/logger';
 import {
   Users,
@@ -126,6 +127,20 @@ export function AdminDashboard({ member }: AdminDashboardProps) {
   const upcomingEvents = dashboardData?.upcomingEvents || [];
   const quickActions = dashboardData?.quickActions || [];
 
+  const showEvents = isFeatureEnabled('events');
+  const showDonations = isFeatureEnabled('donations');
+
+  const filteredQuickActions = quickActions.filter((action) => {
+    const route = action.route || '';
+    if (route.startsWith('/events') || route.startsWith('/calendar')) {
+      return showEvents;
+    }
+    if (route.startsWith('/donations') || route.includes('giving')) {
+      return showDonations;
+    }
+    return true;
+  });
+
   return (
     <div className="space-y-8">
       {/* Welcome Section */}
@@ -189,51 +204,55 @@ export function AdminDashboard({ member }: AdminDashboardProps) {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
-                <DollarSign className="w-4 h-4 text-white" />
+        {showDonations && (
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
+                  <DollarSign className="w-4 h-4 text-white" />
+                </div>
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Monthly Donations
+                  </dt>
+                  <dd className="flex items-baseline">
+                    <div className="text-2xl font-semibold text-gray-900">
+                      {formatCurrency(stats.monthlyDonations || 0)}
+                    </div>
+                    <div className="ml-2 flex items-center text-sm text-green-600">
+                      <TrendingUp className="w-3 h-3 mr-1" />
+                      <span>+5%</span>
+                    </div>
+                  </dd>
+                </dl>
               </div>
             </div>
-            <div className="ml-5 w-0 flex-1">
-              <dl>
-                <dt className="text-sm font-medium text-gray-500 truncate">
-                  Monthly Donations
-                </dt>
-                <dd className="flex items-baseline">
-                  <div className="text-2xl font-semibold text-gray-900">
-                    {formatCurrency(stats.monthlyDonations || 0)}
-                  </div>
-                  <div className="ml-2 flex items-center text-sm text-green-600">
-                    <TrendingUp className="w-3 h-3 mr-1" />
-                    <span>+5%</span>
-                  </div>
-                </dd>
-              </dl>
-            </div>
           </div>
-        </div>
+        )}
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
-                <Calendar className="w-4 h-4 text-white" />
+        {showEvents && (
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
+                  <Calendar className="w-4 h-4 text-white" />
+                </div>
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Upcoming Events
+                  </dt>
+                  <dd className="text-2xl font-semibold text-gray-900">
+                    {stats.upcomingEvents || 0}
+                  </dd>
+                </dl>
               </div>
             </div>
-            <div className="ml-5 w-0 flex-1">
-              <dl>
-                <dt className="text-sm font-medium text-gray-500 truncate">
-                  Upcoming Events
-                </dt>
-                <dd className="text-2xl font-semibold text-gray-900">
-                  {stats.upcomingEvents || 0}
-                </dd>
-              </dl>
-            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Admin Quick Actions */}
@@ -245,7 +264,7 @@ export function AdminDashboard({ member }: AdminDashboardProps) {
           Administrative Actions
         </h2>
         <div className="grid grid-cols-4 gap-4">
-          {quickActions.map((action) => (
+          {filteredQuickActions.map((action) => (
             <Link
               key={action.id}
               to={action.route}
@@ -276,62 +295,70 @@ export function AdminDashboard({ member }: AdminDashboardProps) {
             </Link>
           ))}
 
-          {/* Donation-specific quick actions — paths must match src/router/index.tsx */}
-          <Link
-            to="/donations/record"
-            className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <div className="w-5 h-5 mr-3 text-green-600">
-              <DollarSign className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="font-medium text-gray-900 block">
-                Record Donation
-              </span>
-              <span className="text-sm text-gray-500">Add new donation</span>
-            </div>
-          </Link>
+          {showDonations && (
+            <>
+              {/* Donation-specific quick actions — paths must match src/router/index.tsx */}
+              <Link
+                to="/donations/record"
+                className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <div className="w-5 h-5 mr-3 text-green-600">
+                  <DollarSign className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="font-medium text-gray-900 block">
+                    Record Donation
+                  </span>
+                  <span className="text-sm text-gray-500">Add new donation</span>
+                </div>
+              </Link>
 
-          <Link
-            to="/donations"
-            className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <div className="w-5 h-5 mr-3 text-blue-600">
-              <BarChart3 className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="font-medium text-gray-900 block">
-                Financial Reports
-              </span>
-              <span className="text-sm text-gray-500">View analytics</span>
-            </div>
-          </Link>
+              <Link
+                to="/donations"
+                className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <div className="w-5 h-5 mr-3 text-blue-600">
+                  <BarChart3 className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="font-medium text-gray-900 block">
+                    Financial Reports
+                  </span>
+                  <span className="text-sm text-gray-500">View analytics</span>
+                </div>
+              </Link>
 
-          <Link
-            to="/donations"
-            className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            <div className="w-5 h-5 mr-3 text-purple-600">
-              <Settings className="w-5 h-5" />
-            </div>
-            <div>
-              <span className="font-medium text-gray-900 block">
-                Donations Hub
-              </span>
-              <span className="text-sm text-gray-500">
-                Manage donations &amp; statements
-              </span>
-            </div>
-          </Link>
+              <Link
+                to="/donations"
+                className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <div className="w-5 h-5 mr-3 text-purple-600">
+                  <Settings className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="font-medium text-gray-900 block">
+                    Donations Hub
+                  </span>
+                  <span className="text-sm text-gray-500">
+                    Manage donations &amp; statements
+                  </span>
+                </div>
+              </Link>
+            </>
+          )}
         </div>
       </div>
 
       {/* Donation Insights Widget */}
       <div className="grid grid-cols-3 gap-6">
-        <div className="col-span-2">
-          <DonationInsightsWidget />
-        </div>
-        <div className="bg-white rounded-lg shadow p-6">
+        {showDonations && (
+          <div className="col-span-2">
+            <DonationInsightsWidget />
+          </div>
+        )}
+        <div
+          className={`bg-white rounded-lg shadow p-6${showDonations ? '' : ' col-span-3'}`}
+        >
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Quick Stats
           </h3>
@@ -348,12 +375,14 @@ export function AdminDashboard({ member }: AdminDashboardProps) {
                 {stats.totalHouseholds || 0}
               </span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Upcoming Events</span>
-              <span className="font-semibold text-gray-900">
-                {stats.upcomingEvents || 0}
-              </span>
-            </div>
+            {showEvents && (
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Upcoming Events</span>
+                <span className="font-semibold text-gray-900">
+                  {stats.upcomingEvents || 0}
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -361,6 +390,7 @@ export function AdminDashboard({ member }: AdminDashboardProps) {
       {/* Content Grid */}
       <div className="grid grid-cols-2 gap-8">
         {/* All Events (Including Private) */}
+        {showEvents && (
         <div className="bg-white rounded-lg shadow">
           <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
             <h2 className="text-lg font-semibold text-gray-900">
@@ -419,6 +449,7 @@ export function AdminDashboard({ member }: AdminDashboardProps) {
             )}
           </div>
         </div>
+        )}
 
         {/* System Activity */}
         <div className="bg-white rounded-lg shadow">

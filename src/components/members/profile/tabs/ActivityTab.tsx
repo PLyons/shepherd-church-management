@@ -4,6 +4,7 @@ import { MemberContext } from '../../../../pages/MemberProfile';
 import { useAuth } from '../../../../hooks/useUnifiedAuth';
 // import { activityService } from '../../../../services/firebase/activity.service';
 import { donationsService } from '../../../../services/firebase';
+import { isFeatureEnabled } from '../../../../config/features';
 import {
   MemberActivity,
   ActivityFilter,
@@ -182,10 +183,11 @@ export default function ActivityTab() {
         })
       );
 
-      // Fetch donation activities if allowed (admin any; member own only)
+      // Fetch donation activities if module on + allowed (admin any; member own only)
       let donationActivities: MemberActivity[] = [];
       const canViewDonations =
-        currentUser?.role === 'admin' || currentUser?.id === member.id;
+        isFeatureEnabled('donations') &&
+        (currentUser?.role === 'admin' || currentUser?.id === member.id);
 
       if (canViewDonations) {
         try {

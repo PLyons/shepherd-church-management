@@ -12,6 +12,7 @@ import {
 import { useAuth } from '../../hooks/useUnifiedAuth';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { GivingOverviewWidget } from '../donations/GivingOverviewWidget';
+import { isFeatureEnabled } from '../../config/features';
 import { logger } from '../../utils/logger';
 import {
   Users,
@@ -91,6 +92,20 @@ export function PastorDashboard({ member }: PastorDashboardProps) {
   const upcomingEvents = dashboardData?.upcomingEvents || [];
   const quickActions = dashboardData?.quickActions || [];
 
+  const showEvents = isFeatureEnabled('events');
+  const showDonations = isFeatureEnabled('donations');
+
+  const filteredQuickActions = quickActions.filter((action) => {
+    const route = action.route || '';
+    if (route.startsWith('/events') || route.startsWith('/calendar')) {
+      return showEvents;
+    }
+    if (route.startsWith('/donations') || route.includes('giving')) {
+      return showDonations;
+    }
+    return true;
+  });
+
   return (
     <div className="space-y-8">
       {/* Welcome Section */}
@@ -134,51 +149,55 @@ export function PastorDashboard({ member }: PastorDashboardProps) {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                <Calendar className="w-4 h-4 text-white" />
+        {showEvents && (
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                  <Calendar className="w-4 h-4 text-white" />
+                </div>
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Ministry Events
+                  </dt>
+                  <dd className="text-2xl font-semibold text-gray-900">
+                    {stats.upcomingEvents || 0}
+                  </dd>
+                </dl>
               </div>
             </div>
-            <div className="ml-5 w-0 flex-1">
-              <dl>
-                <dt className="text-sm font-medium text-gray-500 truncate">
-                  Ministry Events
-                </dt>
-                <dd className="text-2xl font-semibold text-gray-900">
-                  {stats.upcomingEvents || 0}
-                </dd>
-              </dl>
-            </div>
           </div>
-        </div>
+        )}
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
-                <Heart className="w-4 h-4 text-white" />
+        {showDonations && (
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
+                  <Heart className="w-4 h-4 text-white" />
+                </div>
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Giving (Monthly)
+                  </dt>
+                  <dd className="flex items-baseline">
+                    <div className="text-2xl font-semibold text-gray-900">
+                      {formatCurrency(stats.monthlyDonations || 0)}
+                    </div>
+                    <div className="ml-2 flex items-center text-sm text-green-600">
+                      <TrendingUp className="w-3 h-3 mr-1" />
+                      <span>+3%</span>
+                    </div>
+                  </dd>
+                </dl>
               </div>
             </div>
-            <div className="ml-5 w-0 flex-1">
-              <dl>
-                <dt className="text-sm font-medium text-gray-500 truncate">
-                  Giving (Monthly)
-                </dt>
-                <dd className="flex items-baseline">
-                  <div className="text-2xl font-semibold text-gray-900">
-                    {formatCurrency(stats.monthlyDonations || 0)}
-                  </div>
-                  <div className="ml-2 flex items-center text-sm text-green-600">
-                    <TrendingUp className="w-3 h-3 mr-1" />
-                    <span>+3%</span>
-                  </div>
-                </dd>
-              </dl>
-            </div>
           </div>
-        </div>
+        )}
 
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center">
@@ -205,7 +224,7 @@ export function PastorDashboard({ member }: PastorDashboardProps) {
           Ministry Actions
         </h2>
         <div className="grid grid-cols-3 gap-4">
-          {quickActions.map((action) => (
+          {filteredQuickActions.map((action) => (
             <Link
               key={action.id}
               to={action.route}
@@ -235,10 +254,14 @@ export function PastorDashboard({ member }: PastorDashboardProps) {
 
       {/* Giving Overview Widget */}
       <div className="grid grid-cols-3 gap-6">
-        <div className="col-span-2">
-          <GivingOverviewWidget />
-        </div>
-        <div className="bg-white rounded-lg shadow p-6">
+        {showDonations && (
+          <div className="col-span-2">
+            <GivingOverviewWidget />
+          </div>
+        )}
+        <div
+          className={`bg-white rounded-lg shadow p-6${showDonations ? '' : ' col-span-3'}`}
+        >
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Ministry Focus
           </h3>
@@ -249,12 +272,14 @@ export function PastorDashboard({ member }: PastorDashboardProps) {
                 {stats.activeMembers || 0}
               </span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Upcoming Events</span>
-              <span className="font-semibold text-gray-900">
-                {stats.upcomingEvents || 0}
-              </span>
-            </div>
+            {showEvents && (
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Upcoming Events</span>
+                <span className="font-semibold text-gray-900">
+                  {stats.upcomingEvents || 0}
+                </span>
+              </div>
+            )}
             <div className="pt-2 border-t border-gray-200">
               <Link
                 to="/member-care"
@@ -270,6 +295,7 @@ export function PastorDashboard({ member }: PastorDashboardProps) {
       {/* Content Grid */}
       <div className="grid grid-cols-2 gap-8">
         {/* All Ministry Events */}
+        {showEvents && (
         <div className="bg-white rounded-lg shadow">
           <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
             <h2 className="text-lg font-semibold text-gray-900">
@@ -333,6 +359,7 @@ export function PastorDashboard({ member }: PastorDashboardProps) {
             )}
           </div>
         </div>
+        )}
 
         {/* Member Engagement */}
         <div className="bg-white rounded-lg shadow">
@@ -462,18 +489,22 @@ export function PastorDashboard({ member }: PastorDashboardProps) {
             <div className="text-sm text-gray-500">Member Engagement</div>
             <div className="text-xs text-gray-400 mt-1">Above average</div>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">92%</div>
-            <div className="text-sm text-gray-500">Event Attendance</div>
-            <div className="text-xs text-gray-400 mt-1">
-              Strong participation
+          {showEvents && (
+            <div className="text-center">
+              <div className="text-2xl font-bold text-blue-600">92%</div>
+              <div className="text-sm text-gray-500">Event Attendance</div>
+              <div className="text-xs text-gray-400 mt-1">
+                Strong participation
+              </div>
             </div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-purple-600">78%</div>
-            <div className="text-sm text-gray-500">Giving Participation</div>
-            <div className="text-xs text-gray-400 mt-1">Regular donors</div>
-          </div>
+          )}
+          {showDonations && (
+            <div className="text-center">
+              <div className="text-2xl font-bold text-purple-600">78%</div>
+              <div className="text-sm text-gray-500">Giving Participation</div>
+              <div className="text-xs text-gray-400 mt-1">Regular donors</div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -483,9 +514,10 @@ export function PastorDashboard({ member }: PastorDashboardProps) {
           <AlertCircle className="w-5 h-5 text-purple-600 mt-0.5 mr-2" />
           <div className="text-sm text-purple-700">
             <strong>Pastoral Access:</strong> You can view member information
-            for pastoral care purposes and aggregate giving data for ministry
-            planning. Individual donation details require specific justification
-            and are logged for audit purposes.
+            for pastoral care purposes
+            {showDonations
+              ? '. Aggregate giving data is available for ministry planning; individual donation details require justification and are logged.'
+              : '.'}
           </div>
         </div>
       </div>

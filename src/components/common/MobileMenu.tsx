@@ -7,6 +7,10 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { X, LogOut, User, ChevronDown, ChevronRight } from 'lucide-react';
 import { useAuth } from '../../hooks/useUnifiedAuth';
+import {
+  isFeatureEnabled,
+  type FeatureModule,
+} from '../../config/features';
 
 interface MobileMenuProps {
   open: boolean;
@@ -14,22 +18,75 @@ interface MobileMenuProps {
   userRole: 'admin' | 'pastor' | 'member';
 }
 
-const navigationItems = [
+type UserRole = 'admin' | 'pastor' | 'member';
+
+interface MobileNavItem {
+  name: string;
+  href: string;
+  roles: UserRole[];
+  feature?: FeatureModule;
+  submenu?: { name: string; href: string }[];
+}
+
+const navigationItems: MobileNavItem[] = [
   {
     name: 'Dashboard',
     href: '/dashboard',
     roles: ['admin', 'pastor', 'member'],
   },
-  { name: 'Members', href: '/members', roles: ['admin', 'pastor', 'member'] },
+  {
+    name: 'Members',
+    href: '/members',
+    roles: ['admin', 'pastor', 'member'],
+    feature: 'members',
+  },
   {
     name: 'Households',
     href: '/households',
     roles: ['admin', 'pastor', 'member'],
+    feature: 'households',
+  },
+  {
+    name: 'Events',
+    href: '/events',
+    roles: ['admin', 'pastor', 'member'],
+    feature: 'events',
+  },
+  {
+    name: 'Calendar',
+    href: '/calendar',
+    roles: ['admin', 'pastor', 'member'],
+    feature: 'events',
+  },
+  {
+    name: 'Donations',
+    href: '/donations',
+    roles: ['admin'],
+    feature: 'donations',
+    submenu: [
+      { name: 'Quick Donate', href: '/donations/record' },
+      { name: 'Create Donation', href: '/donations/create' },
+      { name: 'Batch Entry', href: '/donations/batch' },
+      { name: 'Financial Reports', href: '/donations' },
+    ],
+  },
+  {
+    name: 'Giving Overview',
+    href: '/giving-overview',
+    roles: ['pastor'],
+    feature: 'donations',
+  },
+  {
+    name: 'My Giving',
+    href: '/my-giving',
+    roles: ['member'],
+    feature: 'donations',
   },
   {
     name: 'Registration',
     href: '/admin/registration-tokens',
     roles: ['admin', 'pastor'],
+    feature: 'registration',
     submenu: [
       { name: 'QR Tokens', href: '/admin/registration-tokens' },
       { name: 'Pending Registrations', href: '/admin/pending-registrations' },
@@ -44,8 +101,11 @@ export function MobileMenu({ open, onClose, userRole }: MobileMenuProps) {
   const { member, signOut } = useAuth();
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
 
-  const visibleItems = navigationItems.filter((item) =>
-    item.roles.includes(userRole)
+  // Role + feature flag (Phase 1.3) — keep mobile nav aligned with desktop
+  const visibleItems = navigationItems.filter(
+    (item) =>
+      item.roles.includes(userRole) &&
+      (item.feature === undefined || isFeatureEnabled(item.feature))
   );
 
   const handleSignOut = async () => {

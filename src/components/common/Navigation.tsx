@@ -5,16 +5,12 @@
 
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import {
-  Menu,
-  LogOut,
-  User,
-  ChevronDown,
-  DollarSign,
-  BarChart3,
-  Heart,
-} from 'lucide-react';
+import { Menu, LogOut, User, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../hooks/useUnifiedAuth';
+import {
+  isFeatureEnabled,
+  type FeatureModule,
+} from '../../config/features';
 
 interface NavigationProps {
   onMobileMenuToggle: () => void;
@@ -25,6 +21,8 @@ interface NavigationItem {
   name: string;
   href: string;
   roles: ('admin' | 'pastor' | 'member')[];
+  /** When set, item only shows if that module flag is enabled (Phase 1.3). */
+  feature?: FeatureModule;
   submenu?: { name: string; href: string }[];
 }
 
@@ -34,18 +32,35 @@ const navigationItems: NavigationItem[] = [
     href: '/dashboard',
     roles: ['admin', 'pastor', 'member'],
   },
-  { name: 'Members', href: '/members', roles: ['admin', 'pastor', 'member'] },
+  {
+    name: 'Members',
+    href: '/members',
+    roles: ['admin', 'pastor', 'member'],
+    feature: 'members',
+  },
   {
     name: 'Households',
     href: '/households',
     roles: ['admin', 'pastor', 'member'],
+    feature: 'households',
   },
-  { name: 'Events', href: '/events', roles: ['admin', 'pastor', 'member'] },
-  { name: 'Calendar', href: '/calendar', roles: ['admin', 'pastor', 'member'] },
+  {
+    name: 'Events',
+    href: '/events',
+    roles: ['admin', 'pastor', 'member'],
+    feature: 'events',
+  },
+  {
+    name: 'Calendar',
+    href: '/calendar',
+    roles: ['admin', 'pastor', 'member'],
+    feature: 'events',
+  },
   {
     name: 'Donations',
     href: '/donations',
     roles: ['admin'],
+    feature: 'donations',
     submenu: [
       { name: 'Quick Donate', href: '/donations/record' },
       { name: 'Create Donation', href: '/donations/create' },
@@ -53,12 +68,23 @@ const navigationItems: NavigationItem[] = [
       { name: 'Financial Reports', href: '/donations' },
     ],
   },
-  { name: 'Giving Overview', href: '/giving-overview', roles: ['pastor'] },
-  { name: 'My Giving', href: '/my-giving', roles: ['member'] },
+  {
+    name: 'Giving Overview',
+    href: '/giving-overview',
+    roles: ['pastor'],
+    feature: 'donations',
+  },
+  {
+    name: 'My Giving',
+    href: '/my-giving',
+    roles: ['member'],
+    feature: 'donations',
+  },
   {
     name: 'Registration',
     href: '/admin/registration-tokens',
     roles: ['admin', 'pastor'],
+    feature: 'registration',
     submenu: [
       { name: 'QR Tokens', href: '/admin/registration-tokens' },
       { name: 'Pending Registrations', href: '/admin/pending-registrations' },
@@ -73,8 +99,11 @@ export function Navigation({ onMobileMenuToggle, userRole }: NavigationProps) {
   const { member, signOut } = useAuth();
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
-  const visibleItems = navigationItems.filter((item) =>
-    item.roles.includes(userRole)
+  // Role + feature flag (Phase 1.3) — disabled modules stay out of the nav
+  const visibleItems = navigationItems.filter(
+    (item) =>
+      item.roles.includes(userRole) &&
+      (item.feature === undefined || isFeatureEnabled(item.feature))
   );
 
   const handleSignOut = async () => {

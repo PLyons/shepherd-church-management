@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Users, Plus, Settings, AlertCircle } from 'lucide-react';
 import { householdsService } from '../../../services/firebase/households.service';
 import { useAuth } from '../../../hooks/useUnifiedAuth';
+import { isFeatureEnabled } from '../../../config/features';
 import { Household } from '../../../types/firestore';
 import GivingSummary from '../../donations/GivingSummary';
 
@@ -383,8 +384,10 @@ const HouseholdSidebar = memo(
           {canManageHousehold && <HouseholdActions />}
         </div>
 
-        {/* Giving Summary */}
-        <GivingSummary memberId={memberId} />
+        {/* Giving Summary — only when donations module is enabled (Phase 1.5) */}
+        {isFeatureEnabled('donations') && (
+          <GivingSummary memberId={memberId} />
+        )}
       </div>
     );
   }

@@ -30,6 +30,19 @@ vi.mock('../../../services/firebase', () => ({
 
 vi.mock('../../../hooks/useUnifiedAuth');
 vi.mock('../../../contexts/ToastContext');
+
+// Phase 1.5 — profile giving tests assume donations module is enabled
+vi.mock('../../../config/features', () => ({
+  isFeatureEnabled: () => true,
+  moduleFlags: {
+    members: true,
+    households: true,
+    events: true,
+    donations: true,
+    registration: true,
+  },
+}));
+
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom');
   return {
@@ -256,14 +269,14 @@ describe('MemberProfile Integration with Donations', () => {
   });
 
   it('should restrict donation data access for member users', async () => {
-    // Set up member user context
+    // Set up member user context (useAuth exposes `member`, not currentMember)
     mockUseAuth.mockReturnValue({
       user: { uid: 'member-1', role: 'member' },
-      currentMember: { id: 'member-1', role: 'member' },
+      member: { id: 'member-1', role: 'member' },
       loading: false,
     });
 
-    render(
+    const { unmount } = render(
       <TestWrapper>
         <MemberProfile />
       </TestWrapper>
@@ -276,10 +289,12 @@ describe('MemberProfile Integration with Donations', () => {
       ).toBeInTheDocument();
     });
 
-    // But viewing another member's profile should NOT see giving data
+    unmount();
+
+    // Viewing another member's profile should NOT see giving data
     mockUseAuth.mockReturnValue({
       user: { uid: 'member-2', role: 'member' },
-      currentMember: { id: 'member-2', role: 'member' },
+      member: { id: 'member-2', role: 'member' },
       loading: false,
     });
 

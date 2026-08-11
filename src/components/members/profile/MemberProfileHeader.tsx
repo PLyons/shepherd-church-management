@@ -15,6 +15,7 @@ import {
 import { Link } from 'react-router-dom';
 import { Member } from '../../../types';
 import { useAuth } from '../../../hooks/useUnifiedAuth';
+import { isFeatureEnabled } from '../../../config/features';
 import Tooltip from '../../common/Tooltip';
 import { EnhancedDropdown, DropdownItem } from '../../common/Dropdown';
 import { MembershipTypeSelector } from './MembershipTypeSelector';
@@ -138,8 +139,10 @@ export default function MemberProfileHeader({
 
         {/* Actions */}
         <div className="flex items-center gap-2">
-          {/* Record Donation — admin only (Phase 0.5 / S5; pastors use giving-overview) */}
-          {currentUser?.role === 'admin' && onRecordDonation && (
+          {/* Record Donation — admin only + donations flag (Phase 1.5) */}
+          {isFeatureEnabled('donations') &&
+            currentUser?.role === 'admin' &&
+            onRecordDonation && (
               <Tooltip content="Record Donation">
                 <button
                   onClick={onRecordDonation}

@@ -1,13 +1,15 @@
 // src/router/index.tsx
 // Main router configuration defining all application routes with role-based access control
 // This file exists to centralize route definitions and enforce authentication and authorization patterns
-// RELEVANT FILES: src/components/auth/AuthGuard.tsx, src/components/auth/RoleGuard.tsx, src/components/common/Layout.tsx, src/pages/Dashboard.tsx
+// RELEVANT FILES: src/components/auth/AuthGuard.tsx, src/components/auth/RoleGuard.tsx, src/components/auth/FeatureGuard.tsx, src/config/features.ts
 
 import { createBrowserRouter, Navigate } from 'react-router-dom';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, type ReactElement } from 'react';
 import { AuthGuard } from '../components/auth/AuthGuard';
 import { RoleGuard } from '../components/auth/RoleGuard';
+import { FeatureGuard } from '../components/auth/FeatureGuard';
 import { Layout } from '../components/common/Layout';
+import type { FeatureModule } from '../config/features';
 
 // Pages
 import Dashboard from '../pages/Dashboard';
@@ -44,6 +46,11 @@ import CreateDonation from '../pages/CreateDonation';
 import MyGiving from '../pages/MyGiving';
 import GivingOverview from '../pages/GivingOverview';
 import DonationDetail from '../pages/DonationDetail';
+
+/** Wrap a route element so it is unreachable when the module flag is off. */
+function feature(module: FeatureModule, element: ReactElement): ReactElement {
+  return <FeatureGuard module={module}>{element}</FeatureGuard>;
+}
 
 // Lazy-loaded tab components
 const OverviewTab = lazy(
@@ -110,11 +117,12 @@ export const routes = [
       },
       {
         path: 'members',
-        element: <Members />,
+        element: feature('members', <Members />),
       },
       {
         path: 'members/new',
-        element: (
+        element: feature(
+          'members',
           <RoleGuard allowedRoles={['admin', 'pastor']}>
             <MemberFormEnhanced />
           </RoleGuard>
@@ -122,7 +130,8 @@ export const routes = [
       },
       {
         path: 'members/edit/:id',
-        element: (
+        element: feature(
+          'members',
           <RoleGuard allowedRoles={['admin', 'pastor']}>
             <MemberFormEnhanced />
           </RoleGuard>
@@ -130,7 +139,7 @@ export const routes = [
       },
       {
         path: 'members/:id',
-        element: <MemberProfile />,
+        element: feature('members', <MemberProfile />),
         children: [
           {
             index: true,
@@ -154,7 +163,8 @@ export const routes = [
           },
           {
             path: 'giving',
-            element: (
+            element: feature(
+              'donations',
               <Suspense fallback={<TabLoadingSpinner />}>
                 <MemberGivingTab />
               </Suspense>
@@ -192,11 +202,12 @@ export const routes = [
       },
       {
         path: 'households',
-        element: <Households />,
+        element: feature('households', <Households />),
       },
       {
         path: 'households/new',
-        element: (
+        element: feature(
+          'households',
           <RoleGuard allowedRoles={['admin', 'pastor']}>
             <CreateHousehold />
           </RoleGuard>
@@ -204,11 +215,12 @@ export const routes = [
       },
       {
         path: 'households/:id',
-        element: <HouseholdProfile />,
+        element: feature('households', <HouseholdProfile />),
       },
       {
         path: 'households/:id/edit',
-        element: (
+        element: feature(
+          'households',
           <RoleGuard allowedRoles={['admin', 'pastor']}>
             <EditHousehold />
           </RoleGuard>
@@ -216,7 +228,8 @@ export const routes = [
       },
       {
         path: 'households/:id/members',
-        element: (
+        element: feature(
+          'households',
           <RoleGuard allowedRoles={['admin', 'pastor']}>
             <HouseholdMembers />
           </RoleGuard>
@@ -224,25 +237,26 @@ export const routes = [
       },
       {
         path: 'events',
-        element: <Events />,
+        element: feature('events', <Events />),
       },
       {
         path: 'calendar',
-        element: <Calendar />,
+        element: feature('events', <Calendar />),
       },
       {
         path: 'events/new',
-        element: <CreateEvent />,
+        element: feature('events', <CreateEvent />),
       },
       {
         path: 'events/:id/edit',
-        element: <EditEvent />,
+        element: feature('events', <EditEvent />),
       },
       // Donation management — admin only (matches Firestore write rules)
       // Pastor: /giving-overview only. Member: /my-giving only.
       {
         path: 'donations',
-        element: (
+        element: feature(
+          'donations',
           <RoleGuard allowedRoles={['admin']}>
             <Donations />
           </RoleGuard>
@@ -250,7 +264,8 @@ export const routes = [
       },
       {
         path: 'donations/create',
-        element: (
+        element: feature(
+          'donations',
           <RoleGuard allowedRoles={['admin']}>
             <CreateDonation />
           </RoleGuard>
@@ -258,7 +273,8 @@ export const routes = [
       },
       {
         path: 'donations/record',
-        element: (
+        element: feature(
+          'donations',
           <RoleGuard allowedRoles={['admin']}>
             <RecordDonation />
           </RoleGuard>
@@ -266,7 +282,8 @@ export const routes = [
       },
       {
         path: 'donations/batch',
-        element: (
+        element: feature(
+          'donations',
           <RoleGuard allowedRoles={['admin']}>
             <BatchRecordDonations />
           </RoleGuard>
@@ -274,7 +291,8 @@ export const routes = [
       },
       {
         path: 'donations/:id/edit',
-        element: (
+        element: feature(
+          'donations',
           <RoleGuard allowedRoles={['admin']}>
             <EditDonation />
           </RoleGuard>
@@ -283,7 +301,8 @@ export const routes = [
       // Legacy edit path — same policy as donations/:id/edit
       {
         path: 'donations/edit/:id',
-        element: (
+        element: feature(
+          'donations',
           <RoleGuard allowedRoles={['admin']}>
             <EditDonation />
           </RoleGuard>
@@ -291,7 +310,8 @@ export const routes = [
       },
       {
         path: 'donations/:id',
-        element: (
+        element: feature(
+          'donations',
           <RoleGuard allowedRoles={['admin']}>
             <DonationDetail />
           </RoleGuard>
@@ -300,7 +320,8 @@ export const routes = [
       // Pastor Route - Giving Overview (aggregate only)
       {
         path: 'giving-overview',
-        element: (
+        element: feature(
+          'donations',
           <RoleGuard allowedRoles={['pastor']}>
             <GivingOverview />
           </RoleGuard>
@@ -309,7 +330,8 @@ export const routes = [
       // Member Route - My Giving
       {
         path: 'my-giving',
-        element: (
+        element: feature(
+          'donations',
           <RoleGuard allowedRoles={['member']}>
             <MyGiving />
           </RoleGuard>
@@ -317,7 +339,8 @@ export const routes = [
       },
       {
         path: 'admin/registration-tokens',
-        element: (
+        element: feature(
+          'registration',
           <RoleGuard allowedRoles={['admin', 'pastor']}>
             <RegistrationTokens />
           </RoleGuard>
@@ -325,7 +348,8 @@ export const routes = [
       },
       {
         path: 'admin/pending-registrations',
-        element: (
+        element: feature(
+          'registration',
           <RoleGuard allowedRoles={['admin', 'pastor']}>
             <PendingRegistrations />
           </RoleGuard>
@@ -333,7 +357,8 @@ export const routes = [
       },
       {
         path: 'admin/registration-analytics',
-        element: (
+        element: feature(
+          'registration',
           <RoleGuard allowedRoles={['admin', 'pastor']}>
             <RegistrationAnalytics />
           </RoleGuard>
@@ -373,7 +398,7 @@ export const routes = [
     path: '/register/qr',
     element: (
       <AuthGuard requireAuth={false}>
-        <QRRegistration />
+        {feature('registration', <QRRegistration />)}
       </AuthGuard>
     ),
   },

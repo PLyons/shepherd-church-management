@@ -17,6 +17,18 @@ import type { Member } from '../../types';
 // Mock authentication hook
 vi.mock('../../hooks/useUnifiedAuth');
 
+// Phase 1.2 — enable all modules in route tests so FeatureGuard does not redirect
+vi.mock('../../config/features', () => ({
+  isFeatureEnabled: () => true,
+  moduleFlags: {
+    members: true,
+    households: true,
+    events: true,
+    donations: true,
+    registration: true,
+  },
+}));
+
 // Mock Firebase services to prevent initialization errors
 vi.mock('../../services/firebase/event-rsvp.service', () => ({
   EventRSVPService: vi.fn().mockImplementation(() => ({})),

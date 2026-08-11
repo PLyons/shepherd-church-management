@@ -25,6 +25,18 @@ import { Member } from '../../../types';
 // Mock the useAuth hook
 vi.mock('../../../hooks/useUnifiedAuth');
 
+// Phase 1.3 — donation nav tests assume donations module is enabled
+vi.mock('../../../config/features', () => ({
+  isFeatureEnabled: () => true,
+  moduleFlags: {
+    members: true,
+    households: true,
+    events: true,
+    donations: true,
+    registration: true,
+  },
+}));
+
 // Mock authenticated members with different roles
 const createMockMember = (
   id: string,

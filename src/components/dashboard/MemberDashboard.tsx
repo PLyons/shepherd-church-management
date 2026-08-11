@@ -7,6 +7,7 @@ import {
 import { useAuth } from '../../hooks/useUnifiedAuth';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { MyGivingWidget } from '../donations/MyGivingWidget';
+import { isFeatureEnabled } from '../../config/features';
 import { logger } from '../../utils/logger';
 import {
   Calendar,
@@ -73,6 +74,20 @@ export function MemberDashboard({ member }: MemberDashboardProps) {
   const upcomingEvents = dashboardData?.upcomingEvents || [];
   const quickActions = dashboardData?.quickActions || [];
 
+  const showEvents = isFeatureEnabled('events');
+  const showDonations = isFeatureEnabled('donations');
+
+  const filteredQuickActions = quickActions.filter((action) => {
+    const route = action.route || '';
+    if (route.startsWith('/events') || route.startsWith('/calendar')) {
+      return showEvents;
+    }
+    if (route.startsWith('/donations') || route.includes('giving')) {
+      return showDonations;
+    }
+    return true;
+  });
+
   return (
     <div className="space-y-8">
       {/* Welcome Section */}
@@ -87,45 +102,49 @@ export function MemberDashboard({ member }: MemberDashboardProps) {
 
       {/* Personal Stats Grid */}
       <div className="grid grid-cols-3 gap-6">
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                <Calendar className="w-4 h-4 text-white" />
+        {showEvents && (
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                  <Calendar className="w-4 h-4 text-white" />
+                </div>
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    Upcoming Events
+                  </dt>
+                  <dd className="text-2xl font-semibold text-gray-900">
+                    {stats.upcomingEvents || 0}
+                  </dd>
+                </dl>
               </div>
             </div>
-            <div className="ml-5 w-0 flex-1">
-              <dl>
-                <dt className="text-sm font-medium text-gray-500 truncate">
-                  Upcoming Events
-                </dt>
-                <dd className="text-2xl font-semibold text-gray-900">
-                  {stats.upcomingEvents || 0}
-                </dd>
-              </dl>
-            </div>
           </div>
-        </div>
+        )}
 
-        <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
-                <Heart className="w-4 h-4 text-white" />
+        {showDonations && (
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
+                  <Heart className="w-4 h-4 text-white" />
+                </div>
+              </div>
+              <div className="ml-5 w-0 flex-1">
+                <dl>
+                  <dt className="text-sm font-medium text-gray-500 truncate">
+                    My Donations This Year
+                  </dt>
+                  <dd className="text-2xl font-semibold text-gray-900">
+                    ${stats.myDonationsThisYear || 0}
+                  </dd>
+                </dl>
               </div>
             </div>
-            <div className="ml-5 w-0 flex-1">
-              <dl>
-                <dt className="text-sm font-medium text-gray-500 truncate">
-                  My Donations This Year
-                </dt>
-                <dd className="text-2xl font-semibold text-gray-900">
-                  ${stats.myDonationsThisYear || 0}
-                </dd>
-              </dl>
-            </div>
           </div>
-        </div>
+        )}
 
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center">
@@ -154,7 +173,7 @@ export function MemberDashboard({ member }: MemberDashboardProps) {
           Quick Actions
         </h2>
         <div className="grid grid-cols-3 gap-4">
-          {quickActions.map((action) => (
+          {filteredQuickActions.map((action) => (
             <Link
               key={action.id}
               to={action.route}
@@ -180,10 +199,14 @@ export function MemberDashboard({ member }: MemberDashboardProps) {
 
       {/* My Giving Widget */}
       <div className="grid grid-cols-3 gap-6">
-        <div className="col-span-2">
-          <MyGivingWidget memberId={member.id} />
-        </div>
-        <div className="bg-white rounded-lg shadow p-6">
+        {showDonations && (
+          <div className="col-span-2">
+            <MyGivingWidget memberId={member.id} />
+          </div>
+        )}
+        <div
+          className={`bg-white rounded-lg shadow p-6${showDonations ? '' : ' col-span-3'}`}
+        >
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Personal Info
           </h3>
@@ -194,12 +217,14 @@ export function MemberDashboard({ member }: MemberDashboardProps) {
                 {new Date(member.joinDate).getFullYear()}
               </span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Upcoming Events</span>
-              <span className="font-semibold text-gray-900">
-                {stats.upcomingEvents || 0}
-              </span>
-            </div>
+            {showEvents && (
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Upcoming Events</span>
+                <span className="font-semibold text-gray-900">
+                  {stats.upcomingEvents || 0}
+                </span>
+              </div>
+            )}
             <div className="pt-2 border-t border-gray-200">
               <Link
                 to="/profile"
@@ -215,6 +240,7 @@ export function MemberDashboard({ member }: MemberDashboardProps) {
       {/* Content Grid */}
       <div className="grid grid-cols-2 gap-8">
         {/* Upcoming Public Events */}
+        {showEvents && (
         <div className="bg-white rounded-lg shadow">
           <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
             <h2 className="text-lg font-semibold text-gray-900">
@@ -267,6 +293,7 @@ export function MemberDashboard({ member }: MemberDashboardProps) {
             )}
           </div>
         </div>
+        )}
       </div>
 
       {/* Recent Personal Activity */}
@@ -316,9 +343,10 @@ export function MemberDashboard({ member }: MemberDashboardProps) {
         <div className="flex items-start">
           <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 mr-2" />
           <div className="text-sm text-blue-700">
-            <strong>Your Privacy Matters:</strong> You can only view your own
-            donation history and personal information. Contact church leadership
-            if you need assistance with your records.
+            <strong>Your Privacy Matters:</strong>{' '}
+            {showDonations
+              ? 'You can only view your own donation history and personal information. Contact church leadership if you need assistance with your records.'
+              : 'You can only view your own personal information. Contact church leadership if you need assistance with your records.'}
           </div>
         </div>
       </div>

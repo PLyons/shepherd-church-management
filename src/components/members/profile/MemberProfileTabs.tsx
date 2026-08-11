@@ -1,5 +1,11 @@
+// src/components/members/profile/MemberProfileTabs.tsx
+// Tab navigation for member profile sections with role- and feature-based visibility
+// Hides Giving History when donations module is off (Phase 1.5)
+// RELEVANT FILES: src/config/features.ts, src/pages/MemberProfile.tsx, src/router/index.tsx
+
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useUnifiedAuth';
+import { isFeatureEnabled } from '../../../config/features';
 import {
   User,
   Activity,
@@ -71,9 +77,10 @@ export default function MemberProfileTabs({
   const { member: currentMember } = useAuth();
 
   const visibleTabs = tabs.filter((tab) => {
-    // Giving tab: admin (any member) or member viewing own profile.
+    // Giving tab: donations flag ON + (admin any member OR own profile).
     // Pastors use /giving-overview aggregates — not individual history (Phase 0.5).
     if (tab.id === 'giving') {
+      if (!isFeatureEnabled('donations')) return false;
       const isAdmin = currentMember?.role === 'admin';
       const isOwnProfile = currentMember?.id === memberId;
       return isAdmin || isOwnProfile;
