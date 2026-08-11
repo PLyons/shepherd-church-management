@@ -19,7 +19,6 @@ import {
   eventToEventDocument,
 } from '../../utils/firestore-converters';
 
-// Re-export for callers that imported EventDocument from this service
 export type { EventDocument };
 
 export class EventsService extends BaseFirestoreService<EventDocument, Event> {
@@ -33,9 +32,6 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
     );
   }
 
-  /**
-   * Create a new event with proper timestamps
-   */
   async createEvent(
     eventData: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>
   ): Promise<Event> {
@@ -51,9 +47,6 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
     return this.create(event);
   }
 
-  /**
-   * Update an event with automatic updatedAt timestamp
-   */
   async updateEvent(id: string, eventData: Partial<Event>): Promise<Event> {
     const updateData = {
       ...eventData,
@@ -63,9 +56,6 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
     return this.update(id, updateData);
   }
 
-  /**
-   * Get upcoming events
-   */
   async getUpcomingEvents(limitCount = 10): Promise<Event[]> {
     const now = Timestamp.now();
     const constraints = [
@@ -300,5 +290,4 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
   }
 }
 
-// Create singleton instance
 export const eventsService = new EventsService();

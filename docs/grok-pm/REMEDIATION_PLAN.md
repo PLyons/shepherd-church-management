@@ -3,7 +3,7 @@
 **Owner:** Cursor Grok 4.5 (Project Manager)  
 **Human:** Paul (Builder)  
 **Created:** 2026-07-21  
-**Last Updated:** 2026-07-21  
+**Last Updated:** 2026-08-11  
 **Authority:** This file is the source of truth for simplification, hardening, and reintegration.  
 **Status:** ACTIVE — Phase 0 not started
 
@@ -27,16 +27,16 @@ You asked me to keep tight reins. I will.
 ## CURRENT FOCUS
 
 ```
-PHASE:  2 — Extract seams
-TASK:   2.4 — Split oversized files only when touched (300 LOC rule)
+PHASE:  3 — Member-only vertical slice
+TASK:   3.1 — Manual QA checklist (await "start 3.1")
 STATUS: NOT STARTED
-WHY:    Converters are unified; still many oversized files remain.
-OUT:    When editing a file >300 LOC, split it; no big-bang rewrite.
+WHY:    Phase 2 complete; prove the thin member core works end-to-end.
+OUT:    Login, directory, profile edit, household, roles QA checklist.
 ```
 
-**2.3 status:** DONE — firestore-converters canonical; unused mappers quarantined  
-**Do not start 2.4 until you say "start 2.4".**  
-**Just completed:** 2.3 single converter path; quarantine unused mappers
+**Phase 2 status:** COMPLETE (2.1–2.4 done)  
+**Do not start 3.1 until you say "start 3.1".**  
+**Just completed:** 2.4 split Phase-2-touched files under 300 LOC
 
 ---
 
@@ -161,9 +161,9 @@ Dashboards / Nav / Profile tabs pull Events + Donations hard
 | 2.1 Split `FirebaseService` into per-module facades / narrow hooks | DONE | Facades + lazy unified service; member pages use membersService |
 | 2.2 Dashboard uses `useMemberStats` only when donations/events off | DONE | useMemberStats hook; dynamic events import; lazy donation widgets |
 | 2.3 Single converter path; quarantine unused mappers | DONE | firestore-converters canonical; field-mapper + legacy quarantined |
-| 2.4 Split oversized files only when touched (300 LOC rule) | NOT STARTED | **← CURRENT** |
+| 2.4 Split oversized files only when touched (300 LOC rule) | DONE | Dashboards, Members, unified-firebase, events.service split/trimmed |
 
-**Phase 2 exit criteria:** Member core compiles and runs with zero donation/event imports on the default dashboard path.
+**Phase 2 exit criteria:** Member core compiles and runs with zero donation/event imports on the default dashboard path. **MET (2026-08-11).**
 
 ---
 
@@ -173,7 +173,7 @@ Dashboards / Nav / Profile tabs pull Events + Donations hard
 
 | Task | Status | Notes |
 |------|--------|-------|
-| 3.1 Manual QA checklist: login, directory, profile edit, household, roles | NOT STARTED | |
+| 3.1 Manual QA checklist: login, directory, profile edit, household, roles | NOT STARTED | **← CURRENT** |
 | 3.2 Tighten member/household read rules where safe (S3) | NOT STARTED | Careful — directory UX depends on this |
 | 3.3 Harden public registration (S4) | NOT STARTED | |
 | 3.4 Smoke tests for member core only | NOT STARTED | |
@@ -260,7 +260,7 @@ Put rabbit holes here. They are **not** tasks until promoted into a phase.
 | 2026-08-11 | **1.5 DONE / Phase 1 COMPLETE:** Giving tab, sidebar summary, Record Donation, activity donation fetch gated by donations flag. CURRENT FOCUS → 2.1 (await start) |
 | 2026-08-11 | **2.1 DONE:** Module facades (members/events/donations); `FirebaseService` moved to lazy unified file; Members + useMemberForm + MemberProfile import membersService directly. CURRENT FOCUS → 2.2 |
 | 2026-08-11 | **2.2 DONE:** `useMemberStats` hook; dashboard.service dynamic events import + activity filtering; Admin/Pastor/Member dashboards use member-only path when events+donations off; lazy donation widgets. CURRENT FOCUS → 2.3 |
-| 2026-08-11 | **2.3 DONE:** Canonical `firestore-converters.ts`; quarantined field-mapper + legacy event/content/volunteer converters; live event converters extracted; donation services import via canonical path. CURRENT FOCUS → 2.4 |
+| 2026-08-11 | **2.4 DONE / Phase 2 COMPLETE:** Split Admin/Pastor/Member dashboards into section components; extracted MemberDirectoryTable; trimmed unified-firebase + events.service to ≤299 LOC. CURRENT FOCUS → 3.1 (await start) |
 
 ---
 

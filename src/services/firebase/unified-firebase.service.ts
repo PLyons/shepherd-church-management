@@ -41,10 +41,7 @@ interface DashboardStatistics {
   };
 }
 
-/**
- * Lazy module bag — prefer facades / direct `*Service` imports for new code.
- * Sub-services are created on first access so unused modules stay cold.
- */
+/** Lazy module bag — sub-services created on first access. */
 export class FirebaseService {
   private _members?: MembersService;
   private _households?: HouseholdsService;
@@ -92,7 +89,6 @@ export class FirebaseService {
       thisMonth: 0,
     };
 
-    // Skip events work when the module flag is off (Phase 2.1 seam)
     if (isFeatureEnabled('events')) {
       const upcomingEvents = await this.events.getUpcomingPublicEvents(100);
       const now = new Date();
@@ -263,7 +259,6 @@ export class FirebaseService {
   }
 }
 
-/** Lazy getters — prefer module facades for new code. */
 export const firebase = {
   get members() {
     return new MembersService();
@@ -294,7 +289,6 @@ export function getFirebaseService(): FirebaseService {
   return (firebaseServiceSingleton ??= new FirebaseService());
 }
 
-/** @deprecated Prefer membersService / module facades. Lazy via Proxy. */
 export const firebaseService = new Proxy({} as FirebaseService, {
   get(_target, prop, receiver) {
     return Reflect.get(getFirebaseService(), prop, receiver);
