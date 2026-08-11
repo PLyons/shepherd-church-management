@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { firebaseService } from '../services/firebase';
+import { membersService } from '../services/firebase/members.service';
 import { Member } from '../types';
 import { useAuth } from '../hooks/useUnifiedAuth';
 import { formatPhoneForDisplay } from '../utils/member-form-utils';
@@ -43,7 +43,7 @@ export default function Members() {
       };
 
       const result =
-        await firebaseService.members.getMemberDirectoryPaginated(options);
+        await membersService.getMemberDirectoryPaginated(options);
       console.log('Fetched paginated members:', result);
 
       setMembers(result?.data || []);
@@ -80,7 +80,7 @@ export default function Members() {
     if (!confirmDelete) return;
 
     try {
-      await firebaseService.members.delete(memberId);
+      await membersService.delete(memberId);
       // Refresh the member list
       await fetchMembers();
     } catch (error) {

@@ -3,16 +3,22 @@
 // Displays member engagement metrics, upcoming events, and pastoral care features for pastor role users
 // RELEVANT FILES: src/services/firebase/dashboard.service.ts, src/pages/Dashboard.tsx, src/components/dashboard/StatsCard.tsx, src/components/auth/RoleGuard.tsx
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import {
   dashboardService,
   type DashboardData,
 } from '../../services/firebase/dashboard.service';
 import { useAuth } from '../../hooks/useUnifiedAuth';
+import { useMemberStats } from '../../hooks/useMemberStats';
 import { LoadingSpinner } from '../common/LoadingSpinner';
-import { GivingOverviewWidget } from '../donations/GivingOverviewWidget';
 import { isFeatureEnabled } from '../../config/features';
+
+const GivingOverviewWidget = lazy(() =>
+  import('../donations/GivingOverviewWidget').then((m) => ({
+    default: m.GivingOverviewWidget,
+  }))
+);
 import { logger } from '../../utils/logger';
 import {
   Users,
@@ -37,14 +43,36 @@ interface PastorDashboardProps {
 
 export function PastorDashboard({ member }: PastorDashboardProps) {
   const { user } = useAuth();
+  const memberOnlyCore =
+    !isFeatureEnabled('events') && !isFeatureEnabled('donations');
+  const {
+    stats: memberStats,
+    loading: memberStatsLoading,
+  } = useMemberStats({ enabled: memberOnlyCore });
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(
     null
   );
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchDashboardData();
-  }, [member]);
+    if (memberOnlyCore) {
+      if (memberStatsLoading) return;
+      setDashboardData({
+        stats: {
+          totalMembers: memberStats?.totalMembers ?? 0,
+          activeMembers: memberStats?.activeMembers ?? 0,
+          totalHouseholds: memberStats?.totalHouseholds,
+        },
+        recentActivity: [],
+        upcomingEvents: [],
+        quickActions: dashboardService.getQuickActionsForRole('pastor'),
+      });
+      setLoading(false);
+      return;
+    }
+
+    void fetchDashboardData();
+  }, [member, memberOnlyCore, memberStats, memberStatsLoading]);
 
   const fetchDashboardData = async () => {
     const userId = user?.uid;
@@ -256,7 +284,9 @@ export function PastorDashboard({ member }: PastorDashboardProps) {
       <div className="grid grid-cols-3 gap-6">
         {showDonations && (
           <div className="col-span-2">
-            <GivingOverviewWidget />
+            <Suspense fallback={null}>
+              <GivingOverviewWidget />
+            </Suspense>
           </div>
         )}
         <div

@@ -23,7 +23,7 @@ import { Role } from '../../types/events';
 import {
   donationDocumentToDonation,
   donationToDonationDocument,
-} from '../../utils/converters/donation-converters';
+} from '../../utils/firestore-converters';
 import { DonationCategoriesService } from './donation-categories.service';
 
 // Helper type for member donation summary

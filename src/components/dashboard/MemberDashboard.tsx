@@ -1,13 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import {
   dashboardService,
   type DashboardData,
 } from '../../services/firebase/dashboard.service';
 import { useAuth } from '../../hooks/useUnifiedAuth';
+import { useMemberStats } from '../../hooks/useMemberStats';
 import { LoadingSpinner } from '../common/LoadingSpinner';
-import { MyGivingWidget } from '../donations/MyGivingWidget';
 import { isFeatureEnabled } from '../../config/features';
+
+const MyGivingWidget = lazy(() =>
+  import('../donations/MyGivingWidget').then((m) => ({
+    default: m.MyGivingWidget,
+  }))
+);
 import { logger } from '../../utils/logger';
 import {
   Calendar,
@@ -28,14 +34,31 @@ interface MemberDashboardProps {
 
 export function MemberDashboard({ member }: MemberDashboardProps) {
   const { user } = useAuth();
+  const memberOnlyCore =
+    !isFeatureEnabled('events') && !isFeatureEnabled('donations');
+  const { loading: memberStatsLoading } = useMemberStats({
+    enabled: memberOnlyCore,
+  });
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(
     null
   );
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchDashboardData();
-  }, [member]);
+    if (memberOnlyCore) {
+      if (memberStatsLoading) return;
+      setDashboardData({
+        stats: {},
+        recentActivity: [],
+        upcomingEvents: [],
+        quickActions: dashboardService.getQuickActionsForRole('member'),
+      });
+      setLoading(false);
+      return;
+    }
+
+    void fetchDashboardData();
+  }, [member, memberOnlyCore, memberStatsLoading]);
 
   const fetchDashboardData = async () => {
     const userId = user?.uid;
@@ -201,7 +224,9 @@ export function MemberDashboard({ member }: MemberDashboardProps) {
       <div className="grid grid-cols-3 gap-6">
         {showDonations && (
           <div className="col-span-2">
-            <MyGivingWidget memberId={member.id} />
+            <Suspense fallback={null}>
+              <MyGivingWidget memberId={member.id} />
+            </Suspense>
           </div>
         )}
         <div

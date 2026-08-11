@@ -13,38 +13,14 @@ import {
 import { db } from '../../lib/firebase';
 import { BaseFirestoreService } from './base.service';
 import { Event, EventType, Role } from '../../types/events';
+import {
+  EventDocument,
+  eventDocumentToEvent,
+  eventToEventDocument,
+} from '../../utils/firestore-converters';
 
-// Updated EventDocument type to match PRP-2B-001 Event interface
-export interface EventDocument {
-  // Basic information
-  title: string;
-  description: string;
-  location: string;
-
-  // Temporal data
-  startDate: Timestamp;
-  endDate: Timestamp;
-  isAllDay: boolean;
-
-  // Event classification
-  eventType: EventType;
-  requiredRoles: Role[];
-
-  // Capacity management
-  capacity?: number;
-  currentAttendees?: number;
-  enableWaitlist: boolean;
-
-  // Administrative
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
-  createdBy: string; // Member ID
-
-  // Status
-  isActive: boolean;
-  isCancelled: boolean;
-  cancellationReason?: string;
-}
+// Re-export for callers that imported EventDocument from this service
+export type { EventDocument };
 
 export class EventsService extends BaseFirestoreService<EventDocument, Event> {
   constructor() {
@@ -322,58 +298,6 @@ export class EventsService extends BaseFirestoreService<EventDocument, Event> {
       eventsByType,
     };
   }
-}
-
-// Converter functions
-function eventDocumentToEvent(id: string, document: EventDocument): Event {
-  return {
-    id,
-    title: document.title,
-    description: document.description,
-    location: document.location,
-    startDate: document.startDate.toDate(),
-    endDate: document.endDate.toDate(),
-    isAllDay: document.isAllDay,
-    eventType: document.eventType,
-    requiredRoles: document.requiredRoles,
-    capacity: document.capacity,
-    currentAttendees: document.currentAttendees || 0,
-    enableWaitlist: document.enableWaitlist,
-    createdAt: document.createdAt.toDate(),
-    updatedAt: document.updatedAt.toDate(),
-    createdBy: document.createdBy,
-    isActive: document.isActive,
-    isCancelled: document.isCancelled,
-    cancellationReason: document.cancellationReason,
-  };
-}
-
-function eventToEventDocument(event: Partial<Event>): Partial<EventDocument> {
-  const document: Partial<EventDocument> = {};
-
-  if (event.title !== undefined) document.title = event.title;
-  if (event.description !== undefined) document.description = event.description;
-  if (event.location !== undefined) document.location = event.location;
-  if (event.startDate !== undefined)
-    document.startDate = Timestamp.fromDate(event.startDate);
-  if (event.endDate !== undefined)
-    document.endDate = Timestamp.fromDate(event.endDate);
-  if (event.isAllDay !== undefined) document.isAllDay = event.isAllDay;
-  if (event.eventType !== undefined) document.eventType = event.eventType;
-  if (event.requiredRoles !== undefined)
-    document.requiredRoles = event.requiredRoles;
-  if (event.capacity !== undefined) document.capacity = event.capacity;
-  if (event.currentAttendees !== undefined)
-    document.currentAttendees = event.currentAttendees;
-  if (event.enableWaitlist !== undefined)
-    document.enableWaitlist = event.enableWaitlist;
-  if (event.createdBy !== undefined) document.createdBy = event.createdBy;
-  if (event.isActive !== undefined) document.isActive = event.isActive;
-  if (event.isCancelled !== undefined) document.isCancelled = event.isCancelled;
-  if (event.cancellationReason !== undefined)
-    document.cancellationReason = event.cancellationReason;
-
-  return document;
 }
 
 // Create singleton instance

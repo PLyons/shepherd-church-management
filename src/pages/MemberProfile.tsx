@@ -3,16 +3,20 @@
 // This file exists to provide comprehensive member information display with role-based access and editing capabilities
 // RELEVANT FILES: src/components/members/profile/MemberProfileHeader.tsx, src/components/members/profile/MemberProfileTabs.tsx, src/components/members/profile/HouseholdSidebar.tsx, src/pages/Members.tsx
 
-import { useState, useEffect, createContext, Suspense } from 'react';
+import { useState, useEffect, createContext, Suspense, lazy } from 'react';
 import { useParams, Link, useNavigate, Outlet } from 'react-router-dom';
 import { Member } from '../types';
 import { useAuth } from '../hooks/useUnifiedAuth';
-import { membersService } from '../services/firebase';
+import { membersService } from '../services/firebase/members.service';
+import { isFeatureEnabled } from '../config/features';
 import MemberProfileHeader from '../components/members/profile/MemberProfileHeader';
 import MemberProfileTabs from '../components/members/profile/MemberProfileTabs';
 import HouseholdSidebar from '../components/members/profile/HouseholdSidebar';
-import QuickDonationModal from '../components/donations/QuickDonationModal';
 import { User } from 'lucide-react';
+
+const QuickDonationModal = lazy(
+  () => import('../components/donations/QuickDonationModal')
+);
 
 // Create context to pass member data to tabs
 export const MemberContext = createContext<{ member: Member | null }>({
@@ -168,15 +172,19 @@ export default function MemberProfile() {
       </div>
 
       {/* Quick Donation Modal — admin only */}
-      {member && canRecordDonation && (
-        <QuickDonationModal
-          isOpen={showDonationModal}
-          onClose={() => setShowDonationModal(false)}
-          memberId={member.id}
-          memberName={`${member.firstName} ${member.lastName}`}
-          onSuccess={handleDonationSuccess}
-        />
-      )}
+      {member &&
+        canRecordDonation &&
+        isFeatureEnabled('donations') && (
+          <Suspense fallback={null}>
+            <QuickDonationModal
+              isOpen={showDonationModal}
+              onClose={() => setShowDonationModal(false)}
+              memberId={member.id}
+              memberName={`${member.firstName} ${member.lastName}`}
+              onSuccess={handleDonationSuccess}
+            />
+          </Suspense>
+        )}
     </MemberContext.Provider>
   );
 }

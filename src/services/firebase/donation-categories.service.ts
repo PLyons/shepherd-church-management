@@ -14,7 +14,7 @@ import { Role } from '../../types';
 import {
   donationCategoryDocumentToDonationCategory,
   donationCategoryToDonationCategoryDocument,
-} from '../../utils/converters/donation-converters';
+} from '../../utils/firestore-converters';
 import { QueryConstraint, where, orderBy } from 'firebase/firestore';
 
 // ============================================================================

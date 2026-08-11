@@ -1,10 +1,10 @@
 // src/utils/firestore-converters.ts
-// Legacy export aggregator for backward compatibility with refactored converter architecture
-// Provides seamless transition to new modular converter structure while maintaining existing import paths
-// RELEVANT FILES: src/utils/converters/index.ts, src/utils/converters/member-converters.ts, src/utils/converters/household-converters.ts, src/utils/converters/donation-converters.ts
+// Canonical public entry for Firestore ↔ TypeScript converters (Phase 2.3)
+// Import from HERE in services — implementation lives in src/utils/converters/
+// RELEVANT FILES: src/utils/converters/index.ts, src/utils/_quarantine/README.md, src/services/firebase/members/members-service.ts
 
-// DEPRECATED: This file is kept for backward compatibility
-// New modular structure is located in src/utils/converters/
-// All functions are re-exported from the new location
-
+/**
+ * Single active converter path.
+ * Do not use src/utils/_quarantine/* (field-mapper, legacy events, content, volunteer).
+ */
 export * from './converters';

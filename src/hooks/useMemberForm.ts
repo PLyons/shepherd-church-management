@@ -8,7 +8,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { Timestamp } from 'firebase/firestore';
 import { useToast } from '../contexts/ToastContext';
-import { firebaseService } from '../services/firebase';
+import { membersService } from '../services/firebase/members.service';
 import { MemberFormData, Member } from '../types';
 
 interface CollapsibleSections {
@@ -83,7 +83,7 @@ export function useMemberForm() {
   const loadMemberData = async (memberId: string) => {
     try {
       setLoading(true);
-      const member = await firebaseService.members.getById(memberId);
+      const member = await membersService.getById(memberId);
 
       if (member) {
         // Migrate old data format if needed
@@ -173,10 +173,10 @@ export function useMemberForm() {
       const preparedData = prepareDataForFirestore(data);
 
       if (isEditMode && id) {
-        await firebaseService.members.update(id, preparedData);
+        await membersService.update(id, preparedData);
         showToast('Member updated successfully', 'success');
       } else {
-        await firebaseService.members.create(preparedData);
+        await membersService.create(preparedData);
         showToast('Member created successfully', 'success');
       }
 

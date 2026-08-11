@@ -1,16 +1,15 @@
 // src/services/firebase/dashboard.service.ts
 // Firebase service for role-based dashboard data aggregation including statistics, activity, and quick actions
 // Provides secure, role-filtered dashboard content with real-time updates and permission-based data access
-// RELEVANT FILES: src/services/firebase/members.service.ts, src/services/firebase/events.service.ts, src/types/index.ts, src/components/dashboard/AdminDashboard.tsx
+// RELEVANT FILES: src/services/firebase/members.service.ts, src/config/features.ts, src/types/index.ts, src/components/dashboard/AdminDashboard.tsx
 
 import { MembersService } from './members.service';
-import { eventsService } from './events.service';
+import { isFeatureEnabled } from '../../config/features';
 import type { Event, DashboardStats as MainDashboardStats } from '../../types';
 
 // ============================================================================
 // ROLE-BASED DASHBOARD SERVICE
 // ============================================================================
-// Provides secure, role-based data access for dashboard views
 
 export interface DashboardData {
   stats: MainDashboardStats;
@@ -45,13 +44,6 @@ export class DashboardService {
     this.membersService = new MembersService();
   }
 
-  // ============================================================================
-  // ROLE-BASED DASHBOARD DATA
-  // ============================================================================
-
-  /**
-   * Get dashboard data filtered by user role
-   */
   async getDashboardData(
     userId: string,
     userRole: 'admin' | 'pastor' | 'member'
@@ -68,81 +60,42 @@ export class DashboardService {
     }
   }
 
-  /**
-   * Admin Dashboard - Full system access
-   */
-  private async getAdminDashboard(_userId: string): Promise<DashboardData> {
-    try {
-      console.log('DashboardService: Starting admin dashboard data fetch');
-
-      const memberStats = await this.membersService
-        .getStatistics()
-        .catch((err: unknown) => {
-          console.error('Members stats error:', err);
-          return { total: 0, active: 0, inactive: 0, visitors: 0 };
-        });
-
-      console.log('DashboardService: Statistics fetched successfully');
-
-      // Get upcoming events using the same method as calendar for consistency
-      const now = new Date();
-      const thirtyDaysFromNow = new Date();
-      thirtyDaysFromNow.setDate(now.getDate() + 30);
-
-      const upcomingEvents = await eventsService
-        .getEventsInRange(now, thirtyDaysFromNow)
-        .catch((err: unknown) => {
-          console.error('Upcoming events error:', err);
-          return [];
-        });
-
-      const recentActivity = await this.getAdminActivity().catch(
-        (err: unknown) => {
-          console.error('Admin activity error:', err);
-          return [];
-        }
-      );
-
-      console.log('DashboardService: Admin dashboard data complete', {
-        totalMembers: memberStats.total,
-        upcomingEventsCount: upcomingEvents.length,
-        upcomingEvents: upcomingEvents.map((e) => ({
-          title: e.title,
-          startDate: e.startDate,
-        })),
-      });
-
-      return {
-        stats: {
-          totalMembers: memberStats.total,
-          activeMembers: memberStats.active,
-          upcomingEvents: upcomingEvents.length,
-        },
-        recentActivity,
-        upcomingEvents: upcomingEvents.slice(0, 5), // Limit to 5 for dashboard display
-        quickActions: this.getQuickActions('admin'),
-      };
-    } catch (error) {
-      console.error('DashboardService: Error in getAdminDashboard:', error);
-      throw error;
-    }
+  /** Public helper for member-only-core dashboards */
+  getQuickActionsForRole(role: 'admin' | 'pastor' | 'member'): QuickAction[] {
+    return this.filterQuickActionsByFeatures(this.getQuickActions(role));
   }
 
-  /**
-   * Pastor Dashboard - Pastoral care focus
-   */
+  private async getAdminDashboard(_userId: string): Promise<DashboardData> {
+    const memberStats = await this.membersService.getStatistics().catch(() => ({
+      total: 0,
+      active: 0,
+      inactive: 0,
+      visitors: 0,
+    }));
+
+    const upcomingEvents = await this.fetchAdminUpcomingEvents();
+    const recentActivity = this.filterActivityByFeatures(
+      await this.getAdminActivity().catch(() => [])
+    );
+
+    return {
+      stats: {
+        totalMembers: memberStats.total,
+        activeMembers: memberStats.active,
+        upcomingEvents: upcomingEvents.length,
+      },
+      recentActivity,
+      upcomingEvents: upcomingEvents.slice(0, 5),
+      quickActions: this.getQuickActionsForRole('admin'),
+    };
+  }
+
   private async getPastorDashboard(_userId: string): Promise<DashboardData> {
     const memberStats = await this.membersService.getStatistics();
-
-    // Get upcoming events for dashboard
-    const upcomingEvents = await eventsService
-      .getEventsByRoleSimple('pastor', 5)
-      .catch((err: unknown) => {
-        console.error('Upcoming events error:', err);
-        return [];
-      });
-
-    const recentActivity = await this.getPastorActivity();
+    const upcomingEvents = await this.fetchRoleUpcomingEvents('pastor', 5);
+    const recentActivity = this.filterActivityByFeatures(
+      await this.getPastorActivity()
+    );
 
     return {
       stats: {
@@ -151,52 +104,89 @@ export class DashboardService {
       },
       recentActivity,
       upcomingEvents,
-      quickActions: this.getQuickActions('pastor'),
+      quickActions: this.getQuickActionsForRole('pastor'),
     };
   }
 
-  /**
-   * Member Dashboard - Personal data only
-   */
   private async getMemberDashboard(userId: string): Promise<DashboardData> {
-    // Get member data
     const member = await this.membersService.getById(userId);
     if (!member) {
       throw new Error('Member not found');
     }
 
-    // Get upcoming events for dashboard
-    const upcomingEvents = await eventsService
-      .getEventsByRoleSimple('member', 5)
-      .catch((err: unknown) => {
-        console.error('Upcoming events error:', err);
-        return [];
-      });
-
-    // Get personal activity
-    const recentActivity = await this.getMemberActivity(userId);
+    const upcomingEvents = await this.fetchRoleUpcomingEvents('member', 5);
+    const recentActivity = this.filterActivityByFeatures(
+      await this.getMemberActivity(userId)
+    );
 
     return {
       stats: {},
       recentActivity,
       upcomingEvents,
-      quickActions: this.getQuickActions('member'),
+      quickActions: this.getQuickActionsForRole('member'),
     };
   }
 
-  // ============================================================================
-  // ACTIVITY FEEDS (ROLE-SPECIFIC)
-  // ============================================================================
+  private async fetchAdminUpcomingEvents(): Promise<Event[]> {
+    if (!isFeatureEnabled('events')) {
+      return [];
+    }
 
-  /**
-   * Get recent activity for admin users
-   */
+    const { eventsService } = await import('./events.service');
+    const now = new Date();
+    const thirtyDaysFromNow = new Date();
+    thirtyDaysFromNow.setDate(now.getDate() + 30);
+
+    return eventsService.getEventsInRange(now, thirtyDaysFromNow).catch(() => []);
+  }
+
+  private async fetchRoleUpcomingEvents(
+    role: 'pastor' | 'member',
+    limit: number
+  ): Promise<Event[]> {
+    if (!isFeatureEnabled('events')) {
+      return [];
+    }
+
+    const { eventsService } = await import('./events.service');
+    return eventsService.getEventsByRoleSimple(role, limit).catch(() => []);
+  }
+
+  private filterActivityByFeatures(activity: ActivityItem[]): ActivityItem[] {
+    return activity.filter((item) => {
+      if (
+        !isFeatureEnabled('events') &&
+        (item.type === 'event' || item.type === 'rsvp')
+      ) {
+        return false;
+      }
+      if (!isFeatureEnabled('donations') && item.type === 'donation') {
+        return false;
+      }
+      return true;
+    });
+  }
+
+  private filterQuickActionsByFeatures(actions: QuickAction[]): QuickAction[] {
+    return actions.filter((action) => {
+      const route = action.route || '';
+      if (
+        !isFeatureEnabled('events') &&
+        (route.startsWith('/events') || route.startsWith('/calendar'))
+      ) {
+        return false;
+      }
+      if (
+        !isFeatureEnabled('donations') &&
+        (route.startsWith('/donations') || route.includes('giving'))
+      ) {
+        return false;
+      }
+      return true;
+    });
+  }
+
   private async getAdminActivity(): Promise<ActivityItem[]> {
-    // TODO: Implement comprehensive admin activity feed
-    // - New member registrations
-    // - Event creations
-    // - Role changes
-    // - System activities
     return [
       {
         id: '1',
@@ -209,15 +199,7 @@ export class DashboardService {
     ];
   }
 
-  /**
-   * Get recent activity for pastor users
-   */
   private async getPastorActivity(): Promise<ActivityItem[]> {
-    // TODO: Implement pastor-focused activity feed
-    // - New member registrations
-    // - Event RSVPs
-    // - Pastoral care needs
-    // - Ministry activities
     return [
       {
         id: '1',
@@ -230,14 +212,7 @@ export class DashboardService {
     ];
   }
 
-  /**
-   * Get recent activity for member users
-   */
   private async getMemberActivity(_userId: string): Promise<ActivityItem[]> {
-    // TODO: Implement member personal activity feed
-    // - Own event RSVPs
-    // - Own donations
-    // - Volunteer assignments
     return [
       {
         id: '1',
@@ -250,13 +225,6 @@ export class DashboardService {
     ];
   }
 
-  // ============================================================================
-  // QUICK ACTIONS (ROLE-BASED)
-  // ============================================================================
-
-  /**
-   * Get role-appropriate quick actions
-   */
   private getQuickActions(role: 'admin' | 'pastor' | 'member'): QuickAction[] {
     const allActions: QuickAction[] = [
       {
@@ -288,10 +256,8 @@ export class DashboardService {
       },
     ];
 
-    // Filter actions based on role
     return allActions.filter((action) => action.allowedRoles.includes(role));
   }
 }
 
-// Create and export singleton instance
 export const dashboardService = new DashboardService();

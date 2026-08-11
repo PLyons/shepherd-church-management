@@ -3,16 +3,22 @@
 // Displays system-wide metrics, member management, event statistics, and administrative tools for admin users
 // RELEVANT FILES: src/services/firebase/dashboard.service.ts, src/pages/Dashboard.tsx, src/components/dashboard/StatsCard.tsx, src/components/auth/RoleGuard.tsx
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import {
   dashboardService,
   type DashboardData,
 } from '../../services/firebase/dashboard.service';
 import { useAuth } from '../../hooks/useUnifiedAuth';
+import { useMemberStats } from '../../hooks/useMemberStats';
 import { LoadingSpinner } from '../common/LoadingSpinner';
-import { DonationInsightsWidget } from '../donations/DonationInsightsWidget';
 import { isFeatureEnabled } from '../../config/features';
+
+const DonationInsightsWidget = lazy(() =>
+  import('../donations/DonationInsightsWidget').then((m) => ({
+    default: m.DonationInsightsWidget,
+  }))
+);
 import { logger } from '../../utils/logger';
 import {
   Users,
@@ -40,14 +46,37 @@ interface AdminDashboardProps {
 
 export function AdminDashboard({ member }: AdminDashboardProps) {
   const { user } = useAuth();
+  const memberOnlyCore =
+    !isFeatureEnabled('events') && !isFeatureEnabled('donations');
+  const {
+    stats: memberStats,
+    loading: memberStatsLoading,
+  } = useMemberStats({ enabled: memberOnlyCore });
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(
     null
   );
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchDashboardData();
-  }, [member]);
+    if (memberOnlyCore) {
+      if (memberStatsLoading) return;
+      setDashboardData({
+        stats: {
+          totalMembers: memberStats?.totalMembers ?? 0,
+          activeMembers: memberStats?.activeMembers ?? 0,
+          totalHouseholds: memberStats?.totalHouseholds ?? 0,
+          upcomingEvents: 0,
+        },
+        recentActivity: [],
+        upcomingEvents: [],
+        quickActions: dashboardService.getQuickActionsForRole('admin'),
+      });
+      setLoading(false);
+      return;
+    }
+
+    void fetchDashboardData();
+  }, [member, memberOnlyCore, memberStats, memberStatsLoading]);
 
   const fetchDashboardData = async () => {
     logger.debug('AdminDashboard: Starting fetchDashboardData');
@@ -61,12 +90,7 @@ export function AdminDashboard({ member }: AdminDashboardProps) {
 
     try {
       setLoading(true);
-      logger.debug('AdminDashboard: Fetching dashboard data', {
-        userId,
-        role: 'admin',
-      });
       const data = await dashboardService.getDashboardData(userId, 'admin');
-      logger.info('AdminDashboard: Successfully fetched dashboard data');
       setDashboardData(data);
     } catch (error) {
       logger.error('AdminDashboard: Error fetching dashboard data', {
@@ -74,7 +98,6 @@ export function AdminDashboard({ member }: AdminDashboardProps) {
         userId,
         userRole: 'admin',
       });
-      // Set some default data to prevent hanging
       setDashboardData({
         stats: {
           totalMembers: 0,
@@ -353,7 +376,9 @@ export function AdminDashboard({ member }: AdminDashboardProps) {
       <div className="grid grid-cols-3 gap-6">
         {showDonations && (
           <div className="col-span-2">
-            <DonationInsightsWidget />
+            <Suspense fallback={null}>
+              <DonationInsightsWidget />
+            </Suspense>
           </div>
         )}
         <div

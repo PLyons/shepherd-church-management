@@ -9,6 +9,7 @@ import { AdminDashboard } from '../AdminDashboard';
 import { useAuth } from '../../../hooks/useUnifiedAuth';
 import { dashboardService } from '../../../services/firebase/dashboard.service';
 import { isFeatureEnabled } from '../../../config/features';
+import { useMemberStats } from '../../../hooks/useMemberStats';
 import { Member } from '../../../types';
 
 vi.mock('../../../services/firebase', () => ({
@@ -23,6 +24,16 @@ vi.mock('../../../services/firebase', () => ({
 vi.mock('../../../services/firebase/dashboard.service', () => ({
   dashboardService: {
     getDashboardData: vi.fn(),
+    getQuickActionsForRole: vi.fn(() => [
+      {
+        id: 'add-member',
+        title: 'Add Member',
+        description: 'Register a new church member',
+        route: '/members?action=create',
+        icon: 'user-plus',
+        color: 'green',
+      },
+    ]),
   },
 }));
 
@@ -34,12 +45,23 @@ vi.mock('../../../config/features', () => ({
   isFeatureEnabled: vi.fn(),
 }));
 
+vi.mock('../../../hooks/useMemberStats', () => ({
+  useMemberStats: vi.fn(),
+}));
+
+vi.mock('../../../components/donations/DonationInsightsWidget', () => ({
+  DonationInsightsWidget: () => (
+    <div data-testid="donation-insights-widget">Donation Widget</div>
+  ),
+}));
+
 const mockDashboardService = dashboardService as unknown as {
   getDashboardData: Mock;
 };
 
 const mockUseAuth = useAuth as Mock;
 const mockIsFeatureEnabled = vi.mocked(isFeatureEnabled);
+const mockUseMemberStats = vi.mocked(useMemberStats);
 
 const adminMember: Member = {
   id: 'admin-id',
@@ -66,6 +88,13 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => (
 describe('Dashboard feature flags (Phase 1.4)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+
+    mockUseMemberStats.mockReturnValue({
+      stats: { totalMembers: 100, activeMembers: 95, totalHouseholds: 45 },
+      loading: false,
+      error: null,
+      refetch: vi.fn(),
+    });
 
     mockUseAuth.mockReturnValue({
       user: { uid: 'admin-uid', email: 'admin@test.com' },
@@ -144,6 +173,7 @@ describe('Dashboard feature flags (Phase 1.4)', () => {
     expect(screen.getByText('Total Members')).toBeInTheDocument();
     expect(screen.getByText('Quick Stats')).toBeInTheDocument();
     expect(screen.getByText('Recent System Activity')).toBeInTheDocument();
+    expect(mockDashboardService.getDashboardData).not.toHaveBeenCalled();
   });
 
   it('shows events UI when events flag is on', async () => {

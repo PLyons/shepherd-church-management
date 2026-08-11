@@ -28,15 +28,15 @@ You asked me to keep tight reins. I will.
 
 ```
 PHASE:  2 — Extract seams
-TASK:   2.1 — Split FirebaseService into per-module facades / narrow hooks
+TASK:   2.4 — Split oversized files only when touched (300 LOC rule)
 STATUS: NOT STARTED
-WHY:    Feature flags hide UI, but member core still pulls donation/event coupling.
-OUT:    Narrow module boundaries so default path does not need donation/event god-object.
+WHY:    Converters are unified; still many oversized files remain.
+OUT:    When editing a file >300 LOC, split it; no big-bang rewrite.
 ```
 
-**Phase 1 status:** COMPLETE (1.1–1.5)  
-**Do not start 2.1 until you say “start 2.1”.**  
-**Just completed:** 1.5 gate member profile Giving tab by flag
+**2.3 status:** DONE — firestore-converters canonical; unused mappers quarantined  
+**Do not start 2.4 until you say "start 2.4".**  
+**Just completed:** 2.3 single converter path; quarantine unused mappers
 
 ---
 
@@ -78,7 +78,7 @@ Priority key: **P0** = fix now · **P1** = fix this phase · **P2** = fix before
 | ID | Pri | Finding |
 |----|-----|---------|
 | A1 | P1 | Donations/Events tightly coupled into dashboards, nav, member profile tabs, `FirebaseService` |
-| A2 | P1 | Dual converter systems (`firestore-converters`, `utils/converters/*`, `firestore-field-mapper`) |
+| A2 | P1 | Dual converter systems (`firestore-converters`, `utils/converters/*`, `firestore-field-mapper`) | **FIXED (2.3)** — single public path; unused quarantined |
 | A3 | P2 | Many files/tests far over 300 LOC target |
 | A4 | P2 | Client-side “fetch many then filter” event search (scale/cost) |
 | A5 | P3 | Legacy Supabase feature flag surface still present |
@@ -158,10 +158,10 @@ Dashboards / Nav / Profile tabs pull Events + Donations hard
 
 | Task | Status | Notes |
 |------|--------|-------|
-| 2.1 Split `FirebaseService` into per-module facades / narrow hooks | NOT STARTED | **← CURRENT** |
-| 2.2 Dashboard uses `useMemberStats` only when donations/events off | NOT STARTED | |
-| 2.3 Single converter path; quarantine unused mappers | NOT STARTED | A2 |
-| 2.4 Split oversized files only when touched (300 LOC rule) | NOT STARTED | No big-bang rewrite |
+| 2.1 Split `FirebaseService` into per-module facades / narrow hooks | DONE | Facades + lazy unified service; member pages use membersService |
+| 2.2 Dashboard uses `useMemberStats` only when donations/events off | DONE | useMemberStats hook; dynamic events import; lazy donation widgets |
+| 2.3 Single converter path; quarantine unused mappers | DONE | firestore-converters canonical; field-mapper + legacy quarantined |
+| 2.4 Split oversized files only when touched (300 LOC rule) | NOT STARTED | **← CURRENT** |
 
 **Phase 2 exit criteria:** Member core compiles and runs with zero donation/event imports on the default dashboard path.
 
@@ -258,6 +258,9 @@ Put rabbit holes here. They are **not** tasks until promoted into a phase.
 | 2026-08-11 | **1.3 DONE:** Navigation + MobileMenu items gated by `isFeatureEnabled`. Events/Calendar/Donations/Giving hidden by default. CURRENT FOCUS → 1.4 |
 | 2026-08-11 | **1.4 DONE:** Admin/Pastor/Member dashboards gate stats, widgets, quick actions, event lists by flag. CURRENT FOCUS → 1.5 |
 | 2026-08-11 | **1.5 DONE / Phase 1 COMPLETE:** Giving tab, sidebar summary, Record Donation, activity donation fetch gated by donations flag. CURRENT FOCUS → 2.1 (await start) |
+| 2026-08-11 | **2.1 DONE:** Module facades (members/events/donations); `FirebaseService` moved to lazy unified file; Members + useMemberForm + MemberProfile import membersService directly. CURRENT FOCUS → 2.2 |
+| 2026-08-11 | **2.2 DONE:** `useMemberStats` hook; dashboard.service dynamic events import + activity filtering; Admin/Pastor/Member dashboards use member-only path when events+donations off; lazy donation widgets. CURRENT FOCUS → 2.3 |
+| 2026-08-11 | **2.3 DONE:** Canonical `firestore-converters.ts`; quarantined field-mapper + legacy event/content/volunteer converters; live event converters extracted; donation services import via canonical path. CURRENT FOCUS → 2.4 |
 
 ---
 
